@@ -43,11 +43,11 @@ export async function onRequestPost({ env, request, waitUntil }) {
   if (missing.length) return fail('Please complete all required fields. · 필수 항목을 모두 작성해 주세요.', 400, { missing });
 
   const now = new Date().toISOString();
-  await saveReferenceAnswers(env, record.appId, record.n, { ...answers, submittedAt: now, email: record.email });
+  const app = await loadFullApplication(env, record.appId);   // 지원자가 아직 제출 전이면 없다 — 제출할 때 이어 붙인다
+  await saveReferenceAnswers(env, record.appId, record.n, { ...answers, submittedAt: now, email: record.email }, { pending: !app });
   record.status = 'completed'; record.completedAt = now;
   await env.CAMP_KV.put(key, JSON.stringify(record), { expirationTtl: 60 * 86400 });
 
-  const app = await loadFullApplication(env, record.appId);
   if (app) {
     app.references = (app.references || []).map(x => (x.n === record.n ? { ...x, status: 'completed', completedAt: now } : x));
     addAudit(app, `referee:${record.email}`, 'reference', { note: `ref${record.n}` });

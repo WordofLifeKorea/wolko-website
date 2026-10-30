@@ -122,6 +122,15 @@ export async function loadDraft(env, email) {
 }
 export const deleteDraft = (env, email) => env.CAMP_KV.delete(DRAFT(email));
 
+/** 계정에 값을 더해 저장한다(세션 토큰은 빼고) — 추천서 요청 기록(refs)·미리 정한 신청서 id(pendingAppId) 등 */
+export async function updateApplicant(env, acct, patch) {
+  const { token, ...clean } = acct;
+  const next = { ...clean, ...patch };
+  await putApplicant(env, next);
+  return { ...next, token };
+}
+export const newAppId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
 /** 제출하면 계정에 신청서를 이어 둔다(진행 상황 보기·두 번 제출 막기) */
 export async function linkApplication(env, acct, app) {
   const { token, ...clean } = acct;

@@ -148,32 +148,50 @@ export function referenceEmailHtml({ refName, applicant, link, due }) {
 </table></td></tr></table></body></html>`;
 }
 
-/** 신청서의 추천인 1·2 에게 요청 메일을 보낸다. 보낸 요청 목록을 돌려준다(메일 실패는 status 'failed') */
-export async function sendReferenceRequests(env, app, values, origin) {
+/** 추천인 한 명에게 요청 메일을 보낸다 — 지원서를 내기 전(추천인 단계에서 '다음')에도 보낸다. appId 는 그때 미리 정해 둔 신청서 id.
+ *  돌려주는 key 는 토큰 기록의 KV 키(토큰 자체는 메일 링크에만 있다) */
+export async function sendOneReference(env, { appId, n, values, origin }) {
   const applicant = [values.firstName, values.lastName].filter(Boolean).join(' ') + (values.nameKo ? ` (${values.nameKo})` : '');
   const due = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10);
+  const email = normalizeEmail(values[`ref${n}Email`]);
+  const refName = [values[`ref${n}Prefix`], values[`ref${n}FirstName`], values[`ref${n}LastName`]].filter(Boolean).join(' ') || values[`ref${n}NameKo`] || '';
+  const token = randomToken(), key = await refKey(token);
+  const now = new Date();
+  const record = { appId, n, email, name: refName, nameKo: values[`ref${n}NameKo`] || '', applicant, status: 'sent', sentAt: now.toISOString(), expiresAt: new Date(now.getTime() + REF_TTL_DAYS * 86400000).toISOString() };
+  await env.CAMP_KV.put(key, JSON.stringify(record), { expirationTtl: REF_TTL_DAYS * 86400 });
+  let status = 'sent';
+  try {
+    if (!env.RESEND_API_KEY) throw new Error('no mail key');
+    await sendEmail(env, { to: email, subject: `Reference request for ${applicant} — Word of Life Korea · 추천서 요청`, html: referenceEmailHtml({ refName, applicant, link: `${origin}/reference/?t=${token}`, due }) });
+  } catch (error) { status = 'failed'; console.error('reference mail failed:', error.message); await env.CAMP_KV.delete(key); }
+  return { n, email, name: refName, status, sentAt: record.sentAt, key };
+}
+export const loadReferenceRecord = (env, key) => (key ? env.CAMP_KV.get(key, 'json') : null);
+/** 추천인을 바꾸면 예전 링크는 더 이상 열리지 않게 하고, 그 사람이 이미 써 둔 답변도 지운다 */
+export async function cancelReference(env, key, appId, n) {
+  if (key) await env.CAMP_KV.delete(key);
+  if (appId) await env.CAMP_KV.delete(REF_ANSWER_KEY(appId, n));
+}
+
+/** (예전 방식) 신청서의 추천인 1·2 에게 한꺼번에 요청 메일을 보낸다 */
+export async function sendReferenceRequests(env, app, values, origin) {
   const out = [];
   for (const n of [1, 2]) {
-    const email = normalizeEmail(values[`ref${n}Email`]);
-    if (!EMAIL_RE.test(email)) continue;
-    const refName = [values[`ref${n}Prefix`], values[`ref${n}FirstName`], values[`ref${n}LastName`]].filter(Boolean).join(' ') || values[`ref${n}NameKo`] || '';
-    const token = randomToken();
-    const now = new Date();
-    const record = { appId: app.id, n, email, name: refName, nameKo: values[`ref${n}NameKo`] || '', applicant, status: 'sent', sentAt: now.toISOString(), expiresAt: new Date(now.getTime() + REF_TTL_DAYS * 86400000).toISOString() };
-    await env.CAMP_KV.put(await refKey(token), JSON.stringify(record), { expirationTtl: REF_TTL_DAYS * 86400 });
-    let status = 'sent';
-    try {
-      if (!env.RESEND_API_KEY) throw new Error('no mail key');
-      await sendEmail(env, { to: email, subject: `Reference request for ${applicant} — Word of Life Korea · 추천서 요청`, html: referenceEmailHtml({ refName, applicant, link: `${origin}/reference/?t=${token}`, due }) });
-    } catch (error) { status = 'failed'; console.error('reference mail failed:', error.message); }
-    out.push({ n, email, name: refName, status, sentAt: record.sentAt });
+    if (!EMAIL_RE.test(normalizeEmail(values[`ref${n}Email`]))) continue;
+    const { key, ...r } = await sendOneReference(env, { appId: app.id, n, values, origin });
+    out.push(r);
   }
   return out;
 }
 
 /** 추천서 답변 저장(암호화) */
-export async function saveReferenceAnswers(env, appId, n, answers) {
-  await env.CAMP_KV.put(REF_ANSWER_KEY(appId, n), JSON.stringify(await sealSensitive(env, answers)));
+export async function saveReferenceAnswers(env, appId, n, answers, { pending = false } = {}) {
+  // 지원자가 아직 제출하지 않았으면 기한을 둔다(제출하면 keepReferenceAnswers 로 기한을 없앤다)
+  await env.CAMP_KV.put(REF_ANSWER_KEY(appId, n), JSON.stringify(await sealSensitive(env, answers)), pending ? { expirationTtl: (REF_TTL_DAYS + 30) * 86400 } : undefined);
+}
+export async function keepReferenceAnswers(env, appId, n) {
+  const raw = await env.CAMP_KV.get(REF_ANSWER_KEY(appId, n));
+  if (raw) await env.CAMP_KV.put(REF_ANSWER_KEY(appId, n), raw);
 }
 export async function loadReferenceAnswers(env, appId, n) {
   const sealed = await env.CAMP_KV.get(REF_ANSWER_KEY(appId, n), 'json');

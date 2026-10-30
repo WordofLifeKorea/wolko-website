@@ -46,10 +46,10 @@ function setup() {
 const FULL = {
   prefix: 'Ms.', firstName: 'Anna', lastName: 'Lee', gender: 'female', birthDate: '1995-04-12', phone: '010-1234-5678', email: 'someone-else@x.com',
   maritalStatus: 'single', divorced: 'no', criminal: 'no', abuse: 'no', hasChildren: 'no', occupation: 'Teacher', heardFrom: 'friend',
-  spiritualHabits: 'daily', testimony: 'My testimony', serviceHistory: 'youth group', gifts: 'teaching', servingWays: 'camp', education: 'BA',
+  spiritualHabits: 'daily', testimony: 'My testimony', serviceHistory: 'youth group', gifts: 'teaching', servingWays: 'camp', education: 'BA', eduLevel: 'bachelor',
   health: 'SECRET-HEALTH', allergies: 'none',
-  ref1FirstName: 'Paul', ref1LastName: 'Kim', ref1NameKo: '김바울', ref1Relationship: 'Pastor', ref1Email: 'pastor@x.com', ref1Phone: '010', ref1Years: '5',
-  ref2FirstName: 'Mary', ref2LastName: 'Park', ref2NameKo: '박마리아', ref2Relationship: 'Friend', ref2Email: 'mary@x.com', ref2Phone: '010', ref2Years: '3',
+  ref1FirstName: 'Paul', ref1LastName: 'Kim', ref1NameKo: '김바울', ref1Relationship: 'Pastor', ref1Email: 'pastor@x.com', ref1Phone: '010', ref1Years: '3-5',
+  ref2FirstName: 'Mary', ref2LastName: 'Park', ref2NameKo: '박마리아', ref2Relationship: 'Friend', ref2Email: 'mary@x.com', ref2Phone: '010', ref2Years: '3-5',
 };
 const ANSWERS = {
   capacity: 'pastor', yearsKnown: '3-5', churchMember: 'yes',
@@ -121,15 +121,16 @@ test('임시 계정: 틀린 비밀번호 5번이면 잠금, 새 비밀번호를 
 test('제출: 로그인해야 하고, 저장 → 추천인 2명에게 메일 → 작성 내용 삭제 → 다시 제출 못 함 → 진행 상황 보기', async () => {
   const t = setup();
   try {
-    assert.equal((await t.call(STAFF, 'POST', { body: { lang: 'en', values: FULL, consent: true } })).status, 401);
+    assert.equal((await t.call(STAFF, 'POST', { body: { lang: 'en', values: FULL, consent: true, consentSensitive: true } })).status, 401);
     const { token } = await t.signIn();
     await t.call(ACC, 'PUT', { token, body: { values: FULL, step: 2 } });
 
     assert.equal((await t.call(STAFF, 'POST', { token, body: { lang: 'en', values: FULL } })).status, 400, '동의 없이는 못 낸다');
-    const own = await t.call(STAFF, 'POST', { token, body: { lang: 'en', values: { ...FULL, ref2Email: 'anna@x.com' }, consent: true } });
+    assert.deepEqual((await t.call(STAFF, 'POST', { token, body: { lang: 'en', values: FULL, consent: true } })).missing, ['consentSensitive'], '민감정보 동의는 따로 받는다');
+    const own = await t.call(STAFF, 'POST', { token, body: { lang: 'en', values: { ...FULL, ref2Email: 'anna@x.com' }, consent: true, consentSensitive: true } });
     assert.deepEqual(own.missing, ['ref2Email'], '추천인 이메일이 본인 이메일이면 안 된다');
 
-    const res = await t.call(STAFF, 'POST', { token, body: { lang: 'en', values: FULL, consent: true } });
+    const res = await t.call(STAFF, 'POST', { token, body: { lang: 'en', values: FULL, consent: true, consentSensitive: true } });
     assert.equal(res.status, 200);
     assert.match(res.ref, /^WOLKO-\d{4}-[A-Z0-9]{5}$/);
     assert.deepEqual(res.references.map(r => r.status), ['sent', 'sent']);
@@ -141,7 +142,7 @@ test('제출: 로그인해야 하고, 저장 → 추천인 2명에게 메일 →
     assert.equal(JSON.parse(app).values.email, 'anna@x.com', '저장된 이메일은 로그인 이메일');
     assert.ok(!app.includes('SECRET-HEALTH'));
 
-    assert.equal((await t.call(STAFF, 'POST', { token, body: { lang: 'en', values: FULL, consent: true } })).status, 409);
+    assert.equal((await t.call(STAFF, 'POST', { token, body: { lang: 'en', values: FULL, consent: true, consentSensitive: true } })).status, 409);
     assert.equal((await t.call(ACC, 'PUT', { token, body: { values: FULL } })).status, 409);
     const me = await t.call(ACC, 'GET', { token });
     assert.equal(me.draft, null);
@@ -157,7 +158,7 @@ test('추천서: 메일 링크로 열고 한 번만 제출, 답변은 암호화 
   const t = setup();
   try {
     const { token } = await t.signIn();
-    await t.call(STAFF, 'POST', { token, body: { lang: 'en', values: FULL, consent: true } });
+    await t.call(STAFF, 'POST', { token, body: { lang: 'en', values: FULL, consent: true, consentSensitive: true } });
     const link = /\/reference\/\?t=([A-Za-z0-9_-]+)/.exec(t.mails.find(m => m.to[0] === 'pastor@x.com').html)[1];
 
     assert.equal((await t.call(REF, 'GET', { query: '?t=nope' })).status, 404);
@@ -197,10 +198,62 @@ test('질문 순서: 기본 정보 → 교회와 신앙 → 학력과 은사 →
   assert.ok(APPLICANT_SECTIONS.at(-1).intro.ko);
 });
 
+test('간증: \'아직 복음을 들어 본 적이 없습니다\'를 표시하면 비워도 제출할 수 있다', async () => {
+  const { missingRequired } = await import('../functions/lib/serveApplication.js');
+  const base = { ...FULL, email: 'a@x.com', consent: true, testimony: '' };
+  assert.ok(missingRequired(base).includes('testimony'));
+  assert.ok(!missingRequired({ ...base, noGospel: true }).includes('testimony'));
+  assert.ok(missingRequired({ ...base, noGospel: 'yes' }).includes('testimony'), '체크박스 값은 true 일 때만');
+  assert.ok(!missingRequired({ ...base, notSaved: true }).includes('testimony'), '영접하지 않았다고 표시해도 생략');
+  const empty = { ...base, spiritualHabits: '', serviceHistory: '' };
+  assert.deepEqual(missingRequired({ ...empty, notSaved: true }).filter(id => ['testimony', 'spiritualHabits', 'serviceHistory'].includes(id)), []);
+  assert.deepEqual(missingRequired({ ...empty, noChurch: true }).filter(id => ['spiritualHabits', 'serviceHistory', 'testimony'].includes(id)), ['testimony', 'spiritualHabits'], '교회만 안 다니면 섬김 경험만 생략');
+  const { cleanApplicationValues } = await import('../functions/lib/serveApplication.js');
+  assert.equal(cleanApplicationValues({ noChurch: true, notSaved: 'true' }).notSaved, true);
+});
+
 test('온라인 지원서는 호칭을 묻지 않는다(포탈 입력 정의에는 남는다)', async () => {
   const { APPLICANT_SECTIONS, SERVE_APPLICATION_FIELDS } = await import('../functions/lib/serveApplicationSchema.js');
   const ids = APPLICANT_SECTIONS.flatMap(s => s.fields.map(f => f.id));
   for (const id of ['prefix', 'ref1Prefix', 'ref2Prefix']) { assert.ok(!ids.includes(id), id); assert.ok(SERVE_APPLICATION_FIELDS.some(f => f.id === id), id); }
+});
+
+test('추천인 단계 \'다음\': 바로 요청 메일 · 같은 주소면 다시 안 보냄 · 주소를 바꾸면 예전 링크 닫힘 · 제출 전에 온 추천서도 이어 붙음', async () => {
+  const t = setup();
+  try {
+    const { token } = await t.signIn();
+    const send = (n, values, extra = {}) => t.call(ACC, 'POST', { token, body: { action: 'sendReference', n, values, step: 4, ...extra } });
+    assert.deepEqual((await send(1, { ...FULL, ref1Email: '' })).missing, ['ref1Email']);
+    const first = await send(1, FULL);
+    assert.equal(first.sent, true);
+    assert.equal(first.refs[1].status, 'sent');
+    assert.equal(t.mails.filter(m => m.to[0] === 'pastor@x.com').length, 1);
+    assert.equal((await send(1, FULL)).sent, false, '같은 주소면 다시 보내지 않는다');
+    assert.equal(t.mails.filter(m => m.to[0] === 'pastor@x.com').length, 1);
+    const oldLink = /\/reference\/\?t=([A-Za-z0-9_-]+)/.exec(t.mails.find(m => m.to[0] === 'pastor@x.com').html)[1];
+
+    // 주소를 바꾸면 새 주소로 보내고 예전 링크는 닫힌다
+    const moved = { ...FULL, ref1Email: 'pastor2@x.com' };
+    assert.equal((await send(1, moved)).sent, true);
+    assert.equal((await t.call(REF, 'GET', { query: `?t=${oldLink}` })).status, 404);
+    const link = /\/reference\/\?t=([A-Za-z0-9_-]+)/.exec(t.mails.find(m => m.to[0] === 'pastor2@x.com').html)[1];
+
+    // 지원자가 제출하기 전에 추천인이 먼저 제출
+    assert.equal((await t.call(REF, 'POST', { body: { t: link, answers: ANSWERS } })).status, 200);
+    assert.equal((await t.call(ACC, 'GET', { token })).account.refs[1].status, 'completed');
+    assert.equal((await send(1, moved, { resend: true })).sent, false, '이미 받은 추천서는 다시 요청하지 않는다');
+
+    // 제출: 추천인 1은 이미 도착, 추천인 2만 지금 발송
+    const res = await t.call(STAFF, 'POST', { token, body: { lang: 'en', values: moved, consent: true, consentSensitive: true } });
+    assert.equal(res.status, 200);
+    assert.deepEqual(res.references.map(r => [r.n, r.status]), [[1, 'completed'], [2, 'sent']]);
+    assert.equal(t.mails.filter(m => m.to[0] === 'pastor2@x.com').length, 1, '제출할 때 추천인 1에게 또 보내지 않는다');
+    const id = (await t.portal('')).applications[0].id;
+    const one = await t.portal(`?id=${id}`);
+    assert.equal(one.application.values.ref1Status, 'received');
+    assert.equal(one.application.referenceAnswers[1].strengths, 'Faithful');
+    assert.equal(t.ttl.get(`serve:refans:${id}:1`), undefined, '제출하면 추천서 답변의 임시 기한을 없앤다');
+  } finally { t.restore(); }
 });
 
 test('화면: 비공개 지원서·추천서 페이지는 검색 제외, 로그인 화면과 진행 상황 자리가 있다', () => {

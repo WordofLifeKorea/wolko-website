@@ -47,10 +47,10 @@ const other = ['other@wol.org', 'counselor'];
 const FULL = {
   prefix: 'Ms.', firstName: 'Anna', lastName: 'Lee', gender: 'female', birthDate: '1995-04-12', phone: '010-1234-5678', email: 'anna@x.com',
   maritalStatus: 'single', divorced: 'yes', divorcedNote: 'SECRET-DIVORCE-NOTE', criminal: 'no', abuse: 'no', hasChildren: 'no', occupation: 'Teacher', heardFrom: 'friend',
-  spiritualHabits: 'daily', testimony: 'My testimony', serviceHistory: 'youth group', gifts: 'teaching', servingWays: 'camp', education: 'BA',
+  spiritualHabits: 'daily', testimony: 'My testimony', serviceHistory: 'youth group', gifts: 'teaching', servingWays: 'camp', education: 'BA', eduLevel: 'bachelor',
   health: 'SECRET-HEALTH', allergies: 'SECRET-PEANUT',
-  ref1FirstName: 'Paul', ref1LastName: 'Kim', ref1NameKo: '김바울', ref1Relationship: 'Pastor', ref1Email: 'p@x.com', ref1Phone: '010', ref1Years: '5',
-  ref2FirstName: 'Mary', ref2LastName: 'Park', ref2NameKo: '박마리아', ref2Relationship: 'Friend', ref2Email: 'm@x.com', ref2Phone: '010', ref2Years: '3',
+  ref1FirstName: 'Paul', ref1LastName: 'Kim', ref1NameKo: '김바울', ref1Relationship: 'Pastor', ref1Email: 'p@x.com', ref1Phone: '010', ref1Years: '3-5',
+  ref2FirstName: 'Mary', ref2LastName: 'Park', ref2NameKo: '박마리아', ref2Relationship: 'Friend', ref2Email: 'm@x.com', ref2Phone: '010', ref2Years: '3-5',
   consent: true,
 };
 

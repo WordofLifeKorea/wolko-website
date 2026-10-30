@@ -5,14 +5,16 @@
  *   POST { action:'logout' }                                      (Bearer)
  *   GET                                                           (Bearer) → { account, draft, application }
  *   PUT  { values, step }                                         (Bearer) 작성 중인 지원서 저장(암호화)
+ *   POST { action:'sendReference', n, values, step, resend }      (Bearer) 추천인 단계에서 '다음' — 그 추천인에게 바로 요청 메일(같은 주소면 다시 안 보냄)
  * 마지막 로그인 후 30일이 지나면 계정과 작성 중인 내용은 자동으로 지워진다(applicantAccount.js).
  */
 import { APPLICANT_SECTIONS } from '../../lib/serveApplicationSchema.js';
-import { cleanApplicationValues, loadApplication } from '../../lib/serveApplication.js';
+import { cleanApplicationValues, loadApplication, missingRequired } from '../../lib/serveApplication.js';
+import { sendOneReference, loadReferenceRecord, cancelReference } from '../../lib/serveReference.js';
 import { isValidEmail, normalizeEmail } from '../../lib/hubAccounts.js';
 import {
   issueTempPassword, loginApplicant, applicantFromRequest, logoutApplicant, saveDraft, loadDraft,
-  applyRateLimited, accountExpiresAt,
+  applyRateLimited, accountExpiresAt, updateApplicant, newAppId,
 } from '../../lib/applicantAccount.js';
 
 const H = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };
@@ -35,13 +37,22 @@ async function draftView(env, acct) {
   if (acct.appId) return null;
   try { return await loadDraft(env, acct.email); } catch (e) { console.error('apply draft open failed:', e.message); return null; }
 }
-const accountView = acct => ({ email: acct.email, name: acct.name || '', lang: acct.lang, expiresAt: accountExpiresAt(acct), submitted: !!acct.appId });
+async function refsView(env, acct) {
+  const out = {};
+  for (const n of [1, 2]) {
+    const r = acct.refs?.[n]; if (!r) continue;
+    const rec = await loadReferenceRecord(env, r.key);
+    out[n] = { email: r.email, name: r.name || '', sentAt: r.sentAt, status: rec ? rec.status : 'expired', completedAt: rec?.completedAt || null };
+  }
+  return out;
+}
+const accountView = async (env, acct) => ({ email: acct.email, name: acct.name || '', lang: acct.lang, expiresAt: accountExpiresAt(acct), submitted: !!acct.appId, refs: await refsView(env, acct) });
 
 export async function onRequestGet({ env, request }) {
   if (!env.CAMP_KV) return fail('서버 설정이 필요합니다.', 500);
   const acct = await applicantFromRequest(env, request);
   if (!acct) return fail('로그인이 필요합니다. · Please sign in.', 401);
-  return Response.json({ account: accountView(acct), draft: await draftView(env, acct), application: await applicationView(env, acct) }, { headers: H });
+  return Response.json({ account: await accountView(env, acct), draft: await draftView(env, acct), application: await applicationView(env, acct) }, { headers: H });
 }
 
 export async function onRequestPost({ env, request }) {
@@ -74,7 +85,44 @@ export async function onRequestPost({ env, request }) {
     const r = await loginApplicant(env, { email, password: String(body.password) });
     if (r.error === 'locked') return fail(ko ? '비밀번호를 여러 번 틀려 15분 동안 잠겼습니다. 새 임시 비밀번호를 받거나 잠시 후 다시 시도해 주세요.' : 'Too many wrong attempts. Sign-in is locked for 15 minutes — request a new temporary password or try again later.', 429);
     if (r.error) return fail(ko ? '이메일 또는 임시 비밀번호가 맞지 않습니다.' : 'The email or temporary password is incorrect.', 401);
-    return Response.json({ ok: true, token: r.token, account: accountView(r.account), draft: await draftView(env, r.account), application: await applicationView(env, r.account) }, { headers: H });
+    return Response.json({ ok: true, token: r.token, account: await accountView(env, r.account), draft: await draftView(env, r.account), application: await applicationView(env, r.account) }, { headers: H });
+  }
+
+  if (action === 'sendReference') {
+    let acct = await applicantFromRequest(env, request);
+    if (!acct) return fail(ko ? '로그인이 필요합니다.' : 'Please sign in.', 401);
+    if (acct.appId) return fail(ko ? '이미 제출한 지원서입니다.' : 'This application has already been submitted.', 409);
+    const n = Number(body.n);
+    if (n !== 1 && n !== 2) return fail('잘못된 요청입니다.');
+    const raw = Object.fromEntries(Object.entries(body?.values || {}).filter(([k]) => APPLICANT_FIELD_IDS.has(k)));
+    const values = cleanApplicationValues({ ...raw, email: acct.email });
+    const step = Math.max(0, Math.min(APPLICANT_SECTIONS.length, parseInt(body?.step, 10) || 0));
+    await saveDraft(env, acct.email, { values, step, savedAt: new Date().toISOString() });   // 보낸 내용과 저장본이 어긋나지 않게
+    const sec = APPLICANT_SECTIONS.find(x => x.id === `reference${n}`);
+    const ids = new Set(sec.fields.map(f => f.id));
+    const missing = missingRequired(values).filter(id => ids.has(id));
+    if (missing.length) return fail(ko ? '추천인 정보를 모두 적어 주세요.' : 'Please complete the reference details.', 400, { missing });
+    const email = normalizeEmail(values[`ref${n}Email`]);
+    if (email === acct.email) return fail(ko ? '추천인 이메일은 본인 이메일과 달라야 합니다.' : 'A reference email cannot be your own email.', 400, { missing: [`ref${n}Email`] });
+    const other = acct.refs?.[3 - n];
+    if (other && other.email === email) return fail(ko ? '두 추천인의 이메일이 같습니다. 다른 분의 이메일을 적어 주세요.' : 'Both references have the same email. Please list two different people.', 400, { missing: [`ref${n}Email`] });
+
+    const prev = acct.refs?.[n];
+    if (prev && prev.email === email && !body.resend) return Response.json({ ok: true, sent: false, refs: await refsView(env, acct) }, { headers: H });
+    if (prev && prev.email === email) {
+      const rec = await loadReferenceRecord(env, prev.key);
+      if (rec?.status === 'completed') return Response.json({ ok: true, sent: false, refs: await refsView(env, acct) }, { headers: H });   // 이미 받은 추천서는 다시 요청하지 않는다
+    }
+    if (await applyRateLimited(env, `ref:${acct.email}:${n}`, 4)) return fail(ko ? '요청을 너무 자주 보냈습니다. 1시간 뒤에 다시 시도해 주세요.' : 'Too many requests. Please try again in an hour.', 429);
+    const appId = acct.pendingAppId || newAppId();
+    if (prev) await cancelReference(env, prev.key, appId, n);   // 주소를 바꿨거나 다시 보내면 예전 링크는 닫는다
+    const r = await sendOneReference(env, { appId, n, values, origin: new URL(request.url).origin });
+    if (r.status !== 'sent') {
+      acct = await updateApplicant(env, acct, { pendingAppId: appId, refs: { ...(acct.refs || {}), [n]: undefined } });
+      return fail(ko ? '추천인께 메일을 보내지 못했습니다. 이메일 주소를 확인하고 다시 시도해 주세요.' : 'We could not email your reference. Please check the address and try again.', 502, { missing: [`ref${n}Email`] });
+    }
+    acct = await updateApplicant(env, acct, { pendingAppId: appId, refs: { ...(acct.refs || {}), [n]: { email: r.email, name: r.name, key: r.key, sentAt: r.sentAt } } });
+    return Response.json({ ok: true, sent: true, refs: await refsView(env, acct) }, { headers: H });
   }
 
   if (action === 'logout') {

@@ -1,16 +1,16 @@
 /**
  * 비공개 스태프(섬김) 지원서 — 링크를 받은 사람만 쓰는 페이지(/apply/…)가 부르는 공개 API. 포탈 로그인 없음.
  *   GET  /api/apply/staff            지원서 항목(내부용 칸 제외)
- *   POST /api/apply/staff { lang, values, consent, website(함정 칸) }   임시 계정으로 로그인해야 한다(Bearer, account.js)
+ *   POST /api/apply/staff { lang, values, consent, consentSensitive, website(함정 칸) }   임시 계정으로 로그인해야 한다(Bearer, account.js)
  *     → 포탈 "섬김 지원 신청서"에 제출된 신청서로 저장(민감 항목은 분리·암호화) → 추천인 1·2 에게 추천서 요청 메일
  *       → 검토 담당자·마스터에게 알림(이름·내용 없이) → 지원자에게 접수 확인 메일
  */
 import { APPLICANT_SECTIONS } from '../../lib/serveApplicationSchema.js';
 import { cleanApplicationValues, missingRequired, saveApplication, addAudit } from '../../lib/serveApplication.js';
 import { reviewersFor, serveRateLimited } from '../../lib/serveInquiry.js';
-import { sendReferenceRequests } from '../../lib/serveReference.js';
+import { sendOneReference, loadReferenceRecord, cancelReference, keepReferenceAnswers } from '../../lib/serveReference.js';
 import { MASTER_EMAILS, normalizeEmail, sendEmail } from '../../lib/hubAccounts.js';
-import { applicantFromRequest, linkApplication, deleteDraft } from '../../lib/applicantAccount.js';
+import { applicantFromRequest, linkApplication, deleteDraft, newAppId } from '../../lib/applicantAccount.js';
 import { MAIL_LOGO } from '../../lib/applyMail.js';
 
 const H = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };
@@ -36,7 +36,8 @@ export async function onRequestPost({ env, request, waitUntil }) {
 
   const raw = Object.fromEntries(Object.entries(body?.values || {}).filter(([k]) => APPLICANT_FIELD_IDS.has(k)));
   const values = cleanApplicationValues({ ...raw, email: acct.email });   // 지원서 이메일 = 로그인한 이메일
-  if (body?.consent !== true) return fail(ko ? '개인정보 및 민감정보 수집·이용에 동의해 주세요.' : 'Please agree to the collection and use of your personal information.', 400, { missing: ['consent'] });
+  // 개인정보 보호법 제23조: 민감정보(건강·범죄경력 등)는 일반 개인정보와 따로 동의를 받는다
+  if (body?.consent !== true || body?.consentSensitive !== true) return fail(ko ? '개인정보 수집·이용과 민감정보 처리에 각각 동의해 주세요.' : 'Please give both consents (personal information and sensitive information).', 400, { missing: [body?.consent !== true ? 'consent' : 'consentSensitive'] });
   values.consent = true;   // 지원자가 직접 동의했다(내부 '동의 확인' 칸)
   const missing = missingRequired(values);
   if (missing.length) return fail(ko ? '필수 항목을 모두 작성해 주세요.' : 'Please complete all required fields.', 400, { missing });
@@ -48,14 +49,30 @@ export async function onRequestPost({ env, request, waitUntil }) {
   if (await serveRateLimited(env, { email, ip })) return fail(ko ? '잠시 후 다시 시도해 주세요.' : 'Please try again a little later.', 429);
 
   const now = new Date().toISOString();
-  const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const id = acct.pendingAppId || newAppId();   // 추천인 단계에서 요청을 미리 보냈다면 그때 정한 id
   const refNo = `WOLKO-${now.slice(2, 4)}${now.slice(5, 7)}-${id.slice(-5).toUpperCase()}`;
   const app = { id, refNo, source: 'online', lang, status: 'submitted', createdAt: now, updatedAt: now, submittedAt: now, createdBy: `applicant:${email}`, values: {}, audit: [] };
-  addAudit(app, `applicant:${email}`, 'submit', { note: ko ? '지원자가 온라인으로 제출(동의 포함)' : 'Submitted online by the applicant (with consent)' });
+  addAudit(app, `applicant:${email}`, 'submit', { note: ko ? '지원자가 온라인으로 제출(개인정보·민감정보 각각 동의)' : 'Submitted online by the applicant (separate consent to personal and sensitive information)' });
   const origin = new URL(request.url).origin;
-  app.references = await sendReferenceRequests(env, app, values, origin);
-  values.ref1Status = app.references.some(r => r.n === 1 && r.status === 'sent') ? 'contacted' : 'none';
-  values.ref2Status = app.references.some(r => r.n === 2 && r.status === 'sent') ? 'contacted' : 'none';
+  // 추천인 단계에서 이미 보낸 요청은 그대로 잇고(이미 도착한 추천서도), 아직 안 보냈거나 주소가 바뀐 추천인에게만 지금 보낸다
+  app.references = [];
+  for (const n of [1, 2]) {
+    const refEmail = normalizeEmail(values[`ref${n}Email`]);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(refEmail)) continue;
+    const prev = acct.refs?.[n];
+    const rec = prev ? await loadReferenceRecord(env, prev.key) : null;
+    if (rec && prev.email === refEmail && rec.appId === id) {
+      if (rec.status === 'completed') await keepReferenceAnswers(env, id, n);
+      app.references.push({ n, email: rec.email, name: rec.name, status: rec.status === 'completed' ? 'completed' : 'sent', sentAt: rec.sentAt, completedAt: rec.completedAt || null });
+      continue;
+    }
+    if (prev) await cancelReference(env, prev.key, id, n);
+    const { key, ...r } = await sendOneReference(env, { appId: id, n, values, origin });
+    app.references.push(r);
+  }
+  const refStatus = n => { const r = app.references.find(x => x.n === n); return !r ? 'none' : r.status === 'completed' ? 'received' : r.status === 'sent' ? 'contacted' : 'none'; };
+  values.ref1Status = refStatus(1);
+  values.ref2Status = refStatus(2);
   await saveApplication(env, app, values);
   await linkApplication(env, acct, app);
   await deleteDraft(env, acct.email);

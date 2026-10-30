@@ -57,8 +57,10 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 function visible(field, values) {
+  if (field.hideIf && values[field.hideIf] === true) return false;
   return !field.showIf || values[field.showIf.field] === field.showIf.equals;
 }
+const waived = (field, values) => [].concat(field.requiredUnless || []).some(id => values[id] === true);
 
 /** 화면이 보낸 값에서 정의된 항목만 골라 형식에 맞게 정리한다(없는 항목·잘못된 선택값은 버린다). */
 export function cleanApplicationValues(raw) {
@@ -80,7 +82,7 @@ export function cleanApplicationValues(raw) {
 export function missingRequired(values) {
   const missing = [];
   for (const f of SERVE_APPLICATION_FIELDS) {
-    if (!f.required || !visible(f, values)) continue;
+    if (!f.required || !visible(f, values) || waived(f, values)) continue;
     const v = values[f.id];
     if (f.type === 'checkbox' ? v !== true : !String(v ?? '').trim()) missing.push(f.id);
     else if (f.type === 'email' && !EMAIL_RE.test(v)) missing.push(f.id);
