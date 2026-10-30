@@ -357,7 +357,7 @@ const {
     window.addEventListener('resize', syncLangSliderPosition);
 
     function restoreHashScroll() {
-      if (!window.location.hash) return;
+      if (!window.location.hash || window.location.hash === '#partnerChurches') return;   // 협력 교회 목록 주소로 들어와도 첫 화면부터 보인다
       const target = document.getElementById(window.location.hash.slice(1));
       if (!target) return;
       requestAnimationFrame(function() {

@@ -28,14 +28,15 @@
 
   /** 목록으로 내려가기 — 천천히 출발해 빨라졌다가 천천히 멈춘다(ease-in-out). 거리에 따라 0.9~1.6초. 모션 줄이기면 바로 이동 */
   function glideTo(target) {
-    var margin = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+    var root = document.documentElement, margin = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
     var start = window.pageYOffset, end = Math.max(0, start + target.getBoundingClientRect().top - margin), dist = end - start;
     if (reduce || Math.abs(dist) < 2) { target.scrollIntoView({ behavior: 'auto', block: 'start' }); return; }
-    var ms = Math.min(1600, Math.max(900, Math.abs(dist) * 0.9)), t0 = null;
-    var ease = function (k) { return k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; };   // easeInOutCubic
-    var root = document.documentElement, prevBehavior = root.style.scrollBehavior;
+    var ms = Math.min(1500, Math.max(1000, Math.abs(dist) * 0.35)), t0 = null;
+    var ease = function (k) { return -(Math.cos(Math.PI * k) - 1) / 2; };   // easeInOutSine — 시작·끝이 완만하고 가운데가 너무 튀지 않는다
+    root.classList.add('is-gliding');   // 내려가는 동안 다른 애니메이션을 잠시 멈춰 스크롤 프레임이 밀리지 않게 한다
+    var prevBehavior = root.style.scrollBehavior;
     root.style.scrollBehavior = 'auto';   // 사이트 전체의 scroll-behavior: smooth 가 프레임마다 겹치지 않게 잠시 끈다
-    var stop = false, done = function () { root.style.scrollBehavior = prevBehavior; }, cancel = function () { stop = true; done(); };
+    var stop = false, done = function () { root.style.scrollBehavior = prevBehavior; root.classList.remove('is-gliding'); }, cancel = function () { stop = true; done(); };
     window.addEventListener('wheel', cancel, { passive: true, once: true });          // 사용자가 직접 스크롤하면 멈춘다
     window.addEventListener('touchstart', cancel, { passive: true, once: true });
     (function frame(now) {
@@ -45,6 +46,13 @@
       window.scrollTo(0, start + dist * ease(k));
       if (k < 1) requestAnimationFrame(frame); else done();
     })(performance.now());
+  }
+
+  // 예전에 주소에 남은 #partnerChurches 로 들어오면 바로 아래로 뛰지 않고 첫 화면부터 보이게 주소에서 지운다
+  if (location.hash === '#partnerChurches' && history.replaceState) {
+    history.replaceState(null, '', location.pathname + location.search);
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
   }
 
   function show(names) {
@@ -66,8 +74,7 @@
       var link = strip.querySelector('a');
       if (link) link.addEventListener('click', function (e) {
         e.preventDefault();
-        glideTo(band);
-        if (history.replaceState) history.replaceState(null, '', '#partnerChurches');
+        glideTo(band);   // 주소에 #partnerChurches 를 남기지 않는다 — 남기면 다음에 들어올 때 바로 아래로 뛰어내려간다
       });
     }
   }
