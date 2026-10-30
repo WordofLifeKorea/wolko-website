@@ -25,3 +25,12 @@ test('CRS 평택|제주: 목록 · 지도 · 필터 · 번호 · 새 교회 기�
   assert.match(src, /localStorage\.setItem\('wolko-crs-campus'/, '고른 지역은 기억한다');
   assert.match(src, /renderFilterSelects\(\); renderChurchList\(\); updateCrsMarkers\(\);/, '바꾸면 목록·필터·지도를 다시 그린다');
 });
+
+test('CRS 상세의 "정보 수정"은 뒤로 가기를 쓰지 않는다(상세가 기록 없이 열렸으면 페이지를 벗어나던 문제)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const page = readFileSync(new URL('../src/pages/portal/crs/index.astro', import.meta.url), 'utf8');
+  const handler = page.slice(page.indexOf("getElementById('detailEditBtn').addEventListener"), page.indexOf("getElementById('detailDeleteBtn')"));
+  assert.match(handler, /closeDetailModal\(\{ useHistory: false \}\)/);
+  assert.doesNotMatch(handler, /closeDetailModal\(\);/);
+  assert.match(handler, /openEditModal\(church\)/);
+});

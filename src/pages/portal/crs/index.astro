@@ -2449,7 +2449,11 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       item.addEventListener('click', () => openStepModal(church, parseInt(item.dataset.step)));
     });
     document.getElementById('detailEditBtn').addEventListener('click', () => {
-      closeDetailModal(); openEditModal(church);
+      // 뒤로 가기(history.back)로 닫으면, 상세가 기록 없이 열린 경우(새로고침·링크로 들어옴) CRS 페이지 자체를 벗어나거나
+      // 설치 앱에서 '종료' 확인이 뜬다 — 여기서는 기록을 쓰지 않고 상세만 닫고, 상세 표시만 기록에서 지운다
+      closeDetailModal({ useHistory: false });
+      if (history.state?.crsDetail) history.replaceState({ ...history.state, crsDetail: false, crsChurchId: null }, '', location.href);
+      openEditModal(church);
     });
     document.getElementById('detailDeleteBtn').addEventListener('click', () => deleteChurch(church));
     document.getElementById('stepsToggle').addEventListener('click', function() {
