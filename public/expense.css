@@ -33,6 +33,9 @@ button, input, select, textarea { font-family: inherit; font-size: 14px; color: 
 .ex-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
 .ex-field label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .06em; color: var(--mid); margin-bottom: 5px; font-family: var(--f-sans); text-transform: uppercase; }
 .ex-info { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; margin-left:7px; padding:0; border:1.5px solid var(--mid); border-radius:50%; background:transparent; color:var(--mid); font:italic 800 10px/1 Georgia, 'Times New Roman', serif; text-transform:none; letter-spacing:0; vertical-align:1px; cursor:help; aspect-ratio:1 / 1; }
+/* 16px 동그라미는 손가락으로 누르기 어려워서, 보이는 크기는 그대로 두고 눌리는 범위만 넓힌다 */
+.ex-info { position:relative; }
+.ex-info::after { content:''; position:absolute; inset:-6px; }
 .ex-info:hover, .ex-info:focus-visible { background:var(--mid); color:#fff; outline:none; }
 .ex-info-tip { max-width:380px; padding:12px 14px; font-size:13.5px; z-index:760; pointer-events:none; }
 .ex-field .ko { text-transform: none; letter-spacing: 0; font-family: var(--f-body); color: var(--light); font-weight: 500; margin-left: 4px; }
@@ -315,7 +318,9 @@ button, input, select, textarea { font-family: inherit; font-size: 14px; color: 
   /* 합계 + 제출 */
   .ex-total-bar { flex-direction: column; align-items: stretch; }
   .ex-total-bar .ex-actions { width: 100%; }
-  .ex-total-bar .ex-actions .ex-btn { flex: 1; padding: 12px; }
+  /* 두 버튼을 같은 폭으로 나누면 영어 'Submit expense report'가 두 줄로 쪼개진다 — 제출 버튼에 폭을 더 준다 */
+  .ex-total-bar .ex-actions .ex-btn { flex: 1 1 0; padding: 12px 10px; white-space: nowrap; }
+  .ex-total-bar .ex-actions .ex-btn.primary { flex-grow: 1.7; }
 
   /* 리포트 표 → 항목별 카드형 목록 (가로 스크롤 없이) */
   .ex-table { min-width: 0; }

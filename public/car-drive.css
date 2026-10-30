@@ -2,7 +2,7 @@
 .drive-bar { display: flex; align-items: center; gap: 10px; margin: 0 0 var(--wl-section-gap, 24px); }
 .drive-period { flex: 1; text-align: center; }
 .drive-period strong { font-size: 19px; font-weight: 800; letter-spacing: -.03em; color: var(--ink); }
-.drive-nav { width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 50%; background: #fff; color: var(--blue); font-size: 20px; line-height: 1; cursor: pointer; transition: background .15s; }
+.drive-nav { flex: none; display: inline-flex; align-items: center; justify-content: center; padding: 0; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 50%; background: #fff; color: var(--blue); font-size: 20px; line-height: 1; cursor: pointer; transition: background .15s; }
 .drive-nav:hover { background: #eef6f9; }
 .drive-today { height: 36px; padding: 0 14px; border: 0; border-radius: 10px; background: var(--blue); color: #fff; font-size: 12.5px; font-weight: 800; cursor: pointer; }
 .drive-note { margin: 4px 0 0; color: #7d98a3; font-size: 12.5px; text-align: center; }
@@ -75,6 +75,12 @@
   .drive-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 640px) {
+  /* 폰: 첫 줄은 ‹ 기간 ›, 둘째 줄은 오늘로·칸 관리·알림 시간 — 영어 라벨에서 기간이 다섯 줄로 쪼개지던 것 */
+  .drive-bar { flex-wrap: wrap; gap: 8px; }
+  .drive-period { flex: 1 1 calc(100% - 88px); min-width: 0; }
+  .drive-period strong { display: block; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .drive-today, .drive-manage { order: 1; }
+  .drive-manage { flex: 1 1 0; min-width: 0; padding: 0 10px; white-space: nowrap; }
   .drive-week-title { padding: 12px 14px; }
   .drive-day { grid-template-columns: 84px minmax(0, 1fr); padding: 10px 12px; }
   .drive-day-head .dow { font-size: 12px; }

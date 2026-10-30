@@ -155,6 +155,11 @@ body > header .wl-lang-btn, body > header .adm-lang-option, body > header .adm-l
   :root:root:root body > header .adm-lang-option span { display: none; }
   :root:root:root body > header :where(button, a.adm-header-control):where(:not(.wl-lang-btn, .wl-user-chip, .adm-lang-switch, .crs-bell)) { padding: 0 11px !important; }
   :root:root:root body > header select { max-width: 112px; padding: 0 8px !important; }
+  /* 버튼이 많은 헤더(카운슬러: 칩·캠프 선택·새로고침·로그아웃 + 햄버거)가 폰 폭을 넘어 햄버거가 화면 밖으로 밀리던 것:
+     오른쪽 묶음은 줄어들 수 있게 하고, 줄어드는 건 캠프 선택칸만 — 버튼들은 원래 크기를 지킨다. */
+  :root:root:root body > header > div:not(:first-child), :root:root:root body > header > .toolbar { flex: 0 1 auto !important; min-width: 0 !important; }
+  :root:root:root body > header > div:not(:first-child) > :not(select) { flex-shrink: 0; }
+  :root:root:root body > header select { min-width: 0; flex: 0 1 auto; }
   /* 카운슬러 헤더의 '새로고침'은 아이콘으로 */
   :root:root:root body > header #refreshBtn { font-size: 0 !important; padding: 0 !important; width: var(--wl-head-ctl); }
   :root:root:root body > header #refreshBtn::before { content: '↻'; font-size: 17px; line-height: 1; }

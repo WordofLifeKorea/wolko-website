@@ -158,6 +158,9 @@ span.wl-en { display: none; }
 .wj-wrap .course-name { font-size: 15px; font-weight: 600; color: var(--c-deep); margin-bottom: var(--sp-xs); }
 .wj-wrap .course-desc { font-size: 13px; color: var(--c-muted); line-height: 1.65; }
 .wj-wrap .course-tag { display: inline-block; margin-top: var(--sp-sm); font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-mid); background: var(--c-pale); padding: 3px 10px; border-radius: 100px; }
+/* 위 규칙이 전역 언어 숨김(span.wl-en)보다 구체적이라 한국어 화면에 영어 태그가 같이 보이던 것 */
+.wj-wrap .course-tag.wl-en { display: none; }
+:global(.lang-en) .wj-wrap .course-tag.wl-en { display: inline-block !important; }
 
 /* ── TRIPS ── */
 .wj-wrap .trips { background: var(--c-white); }

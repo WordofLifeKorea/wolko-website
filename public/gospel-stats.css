@@ -437,9 +437,12 @@
 .gs-bar .gs-actions .gs-small, .gs-bar .gs-actions .gs-dl summary { border: 1px solid #cfe0e6; background: #fff; color: var(--ink); }
 .gs-bar .gs-actions .gs-small:hover, .gs-bar .gs-actions .gs-dl summary:hover { background: #f4f9fb; border-color: #b6d0da; }
 .gs-bar .gs-actions .gs-primary { padding: 0 20px !important; box-shadow: 0 10px 20px -12px rgba(0, 79, 104, .7); }
+.gs-bar .gs-monthbtn { white-space: nowrap; }
 @media (max-width: 640px) {
   .gs-bar .gs-month { width: 100%; justify-content: space-between; }
-  .gs-bar .gs-monthbtn { min-width: 0; flex: 1; }
+  /* 버튼을 감싼 칸이 늘어나야 'September 2026'이 두 줄로 쪼개지지 않는다 */
+  .gs-bar .gs-monthpick-wrap { flex: 1; min-width: 0; }
+  .gs-bar .gs-monthbtn { min-width: 0; width: 100%; font-size: 16px; }
 }
 /* MRIC 새 창의 연·월 버튼 — 눌러서 달력을 연다 */
 .gs-mricmonthbtn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 112px; white-space: nowrap; height: 30px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; color: #fff; font: 800 14px/1 'Noto Sans KR', sans-serif; cursor: pointer; }
