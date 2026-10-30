@@ -23,7 +23,7 @@ const ROLE_BADGE_KO = { Staff: '스태프', Intern: '인턴', Missionaries: '선
 const roleBadgeKo = (value) => ROLE_BADGE_KO[value] || value;
 ---
 
-<BaseLayout title="섬기는이 — WOLKO 월코" activeNav="about" whiteNav={true}>
+<BaseLayout title="섬기는이 — WOLKO 월코" activeNav="about">
   <style>
     .wp-wrap {
       --wp-blue-deep: #004f68; --wp-blue-mid: #007ea1; --wp-blue-light: #73d1f5;
@@ -38,17 +38,69 @@ const roleBadgeKo = (value) => ROLE_BADGE_KO[value] || value;
       background: var(--wp-white);
     }
 
-    /* Hero */
-    .wp-hero { position: relative; background: linear-gradient(135deg, var(--wp-blue-deep) 0%, var(--wp-blue-mid) 100%); padding: 80px 24px 70px; text-align: center; overflow: hidden; }
-    .wp-hero::before { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1.5' fill='rgba(255,255,255,0.07)'/%3E%3C/svg%3E") repeat; }
-    .wp-hero-label { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--wp-blue-light); margin-bottom: 16px; position: relative; }
-    .wp-hero-title { font-size: clamp(32px, 5vw, 52px); font-weight: 800; color: var(--wp-white); line-height: 1.15; position: relative; margin-bottom: 12px; }
-    .wp-hero-title em { font-style: normal; color: var(--wp-blue-light); }
-    .wp-hero-sub { font-size: 15px; color: rgba(255,255,255,0.7); position: relative; letter-spacing: 0.3px; }
+    /* Hero — 월코소개 히어로와 같은 형식: 사진 전체, 아래쪽에 큰 제목, 구분선 위로 설명 · 숫자 · 버튼 */
+    .wp-hero {
+      position: relative; overflow: hidden; color: #fff; word-break: keep-all; font-family: var(--ff-sans);
+      min-height: clamp(620px, 86vh, 820px); padding-top: 150px; box-sizing: border-box;
+      display: flex; flex-direction: column; background: #0b1e27;
+    }
+    /* 드론 사진 — 가운데 W 로고와 둘러선 사역자들이 보이게 */
+    .wp-hero::before { content: ''; position: absolute; inset: 0; background: url('/images/people/hero-drone.jpg') 50% 42% / cover no-repeat; }
+    .wp-hero::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(0deg, rgba(5,20,28,0.9) 0%, rgba(5,20,28,0.6) 40%, rgba(5,20,28,0.08) 70%, rgba(5,20,28,0.3) 100%);
+    }
+    .wp-hero-inner { position: relative; z-index: 1; flex: 1; width: 100%; max-width: 1248px; margin: 0 auto; padding: 0 24px 64px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; }
+    .wp-hero-label { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; letter-spacing: 0.02em; color: rgba(255,255,255,0.86); }
+    .wp-hero-label::before { content: ''; width: 28px; height: 1px; background: currentColor; }
+    .wp-hero-title { margin: 20px 0 0; font-family: var(--ff-serif); font-size: clamp(40px, 5.2vw, 74px); line-height: 1.14; font-weight: 700; letter-spacing: -0.04em; color: #fff; }
+    .wp-hero-title .wl-en { font-size: 0.78em; }
+    .wp-hero-bar { margin-top: 40px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,0.3); display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.4fr) auto; gap: 0 56px; align-items: center; }
+    .wp-hero-sub { margin: 0; font-size: 17px; line-height: 1.75; color: rgba(255,255,255,0.84); }
+    .wp-hero-stats { margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 24px; }
+    .wp-hero-stat { display: flex; flex-direction: column-reverse; gap: 6px; }
+    .wp-hero-stat dd { margin: 0; font-family: var(--ff-serif); font-size: 28px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; color: #fff; white-space: nowrap; }
+    .wp-hero-stat dt { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.74); }
+    .wp-hero-cta {
+      display: inline-flex; align-items: center; gap: 14px; height: 52px; padding: 0 24px; box-sizing: border-box;
+      border-radius: 2px; background: #fff; color: var(--wp-blue-deep); font-size: 15px; font-weight: 700; text-decoration: none; white-space: nowrap;
+      transition: background-color .18s, gap .25s;
+    }
+    .wp-hero-cta:hover { background: #e8f1f4; gap: 18px; }
+    .wp-hero-cta:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+    .wp-hero-cta svg { width: 15px; height: 15px; }
+    @media (max-width: 1100px) {
+      .wp-hero-bar { grid-template-columns: minmax(0, 1fr) auto; }
+      .wp-hero-stats { grid-column: 1 / -1; grid-row: 2; margin-top: 28px; }
+    }
+    /* 휴대폰: 위쪽은 사진이 또렷하게, 아래로 남색에 이어진 뒤 글이 시작된다 */
+    @media (max-width: 640px) {
+      .wp-hero { min-height: 0; padding-top: 0; }
+      .wp-hero::before { bottom: auto; height: 400px; background-position: 50% 45%; }
+      .wp-hero::after { background: linear-gradient(180deg, rgba(5,20,28,0.35) 0px, rgba(5,20,28,0) 120px, rgba(5,20,28,0) 230px, #0b1e27 400px); }
+      .wp-hero-inner { padding: 330px 20px 28px; }
+      .wp-hero-title { margin-top: 18px; font-size: 34px; line-height: 1.25; }
+      .wp-hero-bar { display: block; margin-top: 24px; padding-top: 22px; }
+      .wp-hero-sub { font-size: 15.5px; }
+      .wp-hero-sub br { display: none; }
+      .wp-hero-stats { gap: 0 12px; margin-top: 28px; }
+      .wp-hero-stat dd { font-size: 24px; }
+      .wp-hero-stat dt { font-size: 12px; }
+      .wp-hero-cta { width: 100%; justify-content: space-between; margin-top: 24px; padding: 0 20px; }
+    }
+    /* 움직임 — 자바스크립트가 html 에 .wl-motion 을 붙일 때만 (움직임 줄이기 설정이면 처음부터 다 보인다) */
+    @keyframes wpHeroZoom { from { transform: scale(1.08); } to { transform: none; } }
+    @keyframes wpRise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+    @keyframes wpLine { from { width: 0; } to { width: 28px; } }
+    :global(.wl-motion) .wp-hero::before { animation: wpHeroZoom 3.8s cubic-bezier(.2,.6,.2,1) both; }
+    :global(.wl-motion) .wp-hero-label { animation: wpRise 1.2s .25s cubic-bezier(.2,.7,.2,1) both; }
+    :global(.wl-motion) .wp-hero-label::before { animation: wpLine 1s .55s ease-out both; }
+    :global(.wl-motion) .wp-hero-title { animation: wpRise 1.3s .5s cubic-bezier(.2,.7,.2,1) both; }
+    :global(.wl-motion) .wp-hero-bar { animation: wpRise 1.3s .95s cubic-bezier(.2,.7,.2,1) both; }
 
     /* Accordion */
     .wp-accordion-wrap { max-width: 1080px; margin: 0 auto; padding: 48px 24px 72px; display: flex; flex-direction: column; gap: 16px; }
-    .wp-acc-item { border-radius: var(--wp-radius); overflow: hidden; box-shadow: var(--wp-card-shadow); background: var(--wp-white); }
+    .wp-acc-item { scroll-margin-top: 110px; border-radius: var(--wp-radius); overflow: hidden; box-shadow: var(--wp-card-shadow); background: var(--wp-white); }
     .wp-acc-trigger { width: 100%; display: flex; align-items: center; gap: 16px; padding: 24px 28px; background: var(--wp-white); border: none; cursor: pointer; text-align: left; transition: background 0.2s; }
     .wp-acc-trigger:hover { background: var(--wp-gray-bg); }
     .wp-loc-badge { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 10px; background: var(--wp-blue-deep); color: var(--wp-white); font-size: 17px; font-weight: 900; flex-shrink: 0; }
@@ -115,15 +167,37 @@ const roleBadgeKo = (value) => ROLE_BADGE_KO[value] || value;
 
     <!-- Hero -->
     <section class="wp-hero">
-      <div class="wp-hero-label"><span class="wl-ko">섬기는이 · 월코</span><span class="wl-en">Our Team · Word of Life Korea</span></div>
-      <h1 class="wp-hero-title">
-        <span class="wl-ko">함께 <em>사역하는</em> 이들</span>
-        <span class="wl-en">Meet Our <em>Ministry Team</em></span>
-      </h1>
-      <p class="wp-hero-sub">
-        <span class="wl-ko">하나님의 부르심을 따라 다음 세대를 위해 헌신하는 월코의 사역자들을 소개합니다</span>
-        <span class="wl-en">Called by God and committed to the next generation — meet the people of Word of Life Korea</span>
-      </p>
+      <div class="wp-hero-inner">
+        <div class="wp-hero-label"><span class="wl-ko">섬기는이</span><span class="wl-en">Our Team</span></div>
+        <h1 class="wp-hero-title">
+          <span class="wl-ko">함께 사역하는 이들</span>
+          <span class="wl-en">Meet Our Ministry Team</span>
+        </h1>
+        <div class="wp-hero-bar">
+          <p class="wp-hero-sub">
+            <span class="wl-ko">하나님의 부르심을 따라 다음 세대를 위해 <br>헌신하는 월코의 사역자들을 소개합니다.</span>
+            <span class="wl-en">Called by God and committed to the next generation — <br>meet the people of Word of Life Korea.</span>
+          </p>
+          <dl class="wp-hero-stats">
+            <div class="wp-hero-stat">
+              <dt><span class="wl-ko">선교사</span><span class="wl-en">Missionaries</span></dt>
+              <dd><span data-count-from="0">{pyMissionary.length + jejuMissionary.length}</span></dd>
+            </div>
+            <div class="wp-hero-stat">
+              <dt><span class="wl-ko">단기 사역자</span><span class="wl-en">Short-term Workers</span></dt>
+              <dd><span data-count-from="0">{pyStw.length + jejuStw.length}</span></dd>
+            </div>
+            <div class="wp-hero-stat">
+              <dt><span class="wl-ko">사역 캠퍼스</span><span class="wl-en">Campuses</span></dt>
+              <dd><span data-count-from="0">2</span></dd>
+            </div>
+          </dl>
+          <a href="#wp-pyeongtaek" class="wp-hero-cta">
+            <span class="wl-ko">사역자 보기</span><span class="wl-en">Meet the Team</span>
+            <svg aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M8 2v11M4 9l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
+          </a>
+        </div>
+      </div>
     </section>
 
     <!-- Accordion -->
@@ -335,6 +409,33 @@ const roleBadgeKo = (value) => ROLE_BADGE_KO[value] || value;
 
     </div>
   </div>
+
+  <script is:inline>
+    // 섬기는이 히어로 움직임: 사진이 천천히 자리 잡고 글이 차례로 떠오르며, 숫자는 0부터 올라간다.
+    // 움직임 줄이기 설정이거나 IntersectionObserver 가 없으면 아무것도 하지 않는다 — 처음부터 그대로 다 보인다.
+    (function () {
+      if (!('IntersectionObserver' in window)) return;
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      document.documentElement.classList.add('wl-motion');
+      var counters = [].slice.call(document.querySelectorAll('.wp-hero [data-count-from]'));
+      counters.forEach(function (el) { el.dataset.countTo = el.textContent.trim(); el.textContent = el.dataset.countFrom; });
+      function count(el) {
+        var from = +el.dataset.countFrom, to = +el.dataset.countTo, dur = 2000;
+        setTimeout(function () {
+          var t0 = Date.now();
+          (function step() {
+            var k = Math.min(1, (Date.now() - t0) / dur), e = 1 - Math.pow(1 - k, 4);
+            el.textContent = Math.round(from + (to - from) * e);
+            if (k < 1) setTimeout(step, 30);
+          })();
+        }, 1400);                                   // 아래 줄이 떠오른 뒤에
+      }
+      var cio = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) { cio.unobserve(en.target); count(en.target); } });
+      }, { threshold: 0.6 });
+      counters.forEach(function (el) { cio.observe(el); });
+    })();
+  </script>
 
   <script>
     // 아코디언
