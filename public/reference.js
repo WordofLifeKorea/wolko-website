@@ -9,8 +9,9 @@
       intro: '위 지원자가 월코(Word of Life Korea) 스태프로 지원하면서 귀하를 추천인으로 적어 주셨습니다. 월코 스태프는 청소년을 가까이에서 섬기게 되므로, 지원자의 신앙과 인격에 대해 아시는 대로 솔직하게 적어 주시기 바랍니다. 이 추천서는 검토 담당자만 열람하며 지원자에게는 공개되지 않습니다.',
       rateLead: '해당하는 칸에 표시해 주세요.', confirm: '위 내용은 사실과 다름이 없음을 확인합니다.', signLabel: '추천인', signMark: '(서명)', signPh: '성함',
       secure: '제출하면 수정할 수 없습니다. 내용은 암호화하여 보관됩니다.', submit: '추천서 제출', submitting: '제출하는 중…', optional: '선택', select: '선택',
-      errRequired: '이 항목을 적어 주세요.', errStep: '빠진 항목이 있습니다. 표시된 곳을 확인해 주세요.', errNet: '제출하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.',
+      errRequired: '이 항목을 적어 주세요.', errStep: function (list) { return '빠진 항목이 있습니다: ' + list + '. 빨갛게 표시된 곳을 확인해 주세요.'; }, errNet: '제출하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.',
       invalid: '링크가 올바르지 않거나 기한이 지났습니다. 월코로 문의해 주세요.', already: '이미 제출된 추천서입니다. 감사합니다.',
+      certifyShort: '확인 체크', andMore: function (n) { return '외 ' + n + '개'; },
       vTitle: '본인 확인', vLead: function (h) { return '추천서 요청 메일을 받으신 이메일 주소를 입력해 주세요. (' + h + ')'; }, vLabel: '이메일 주소', vBtn: '확인', vChecking: '확인하는 중…', vNote: '요청 메일을 받으신 분만 추천서를 작성하실 수 있도록 한 번 확인합니다.', vWrong: '요청 메일을 보낸 이메일 주소와 다릅니다. 다시 확인해 주세요.', vLocked: '여러 번 틀려 15분 동안 잠겼습니다. 잠시 후 다시 시도해 주세요.', vAgain: '확인한 지 시간이 지나 다시 확인이 필요합니다. 적어 주신 내용은 그대로 있습니다.',
       doneTitle: '추천서를 잘 받았습니다. 감사합니다.', doneLead: '귀한 시간을 내어 주셔서 감사드립니다. 이 창은 닫으셔도 됩니다.', footNote: '월코 (Word of Life Korea) · 이 문서는 스태프 선발에만 사용됩니다.' },
     en: { title: 'Reference', sub: 'Staff Applicant Reference', docNo: 'Document no.', sent: 'Issued', security: 'Viewed by', secret: 'Reviewers only', loading: 'Loading…',
@@ -18,8 +19,9 @@
       intro: 'The applicant named above has applied to join the staff of Word of Life Korea and has named you as a reference. Our staff work closely with young people, so we ask you to tell us candidly what you know of the applicant’s faith and character. Only our reviewers will read this reference; it is never shown to the applicant.',
       rateLead: 'Please mark one box for each line.', confirm: 'I confirm that the above is true to the best of my knowledge.', signLabel: 'Referee', signMark: '(signature)', signPh: 'Full name',
       secure: 'Once submitted, this reference cannot be changed. It is stored encrypted.', submit: 'Submit reference', submitting: 'Submitting…', optional: 'Optional', select: 'Select',
-      errRequired: 'Please fill this in.', errStep: 'Some answers are missing. Please check the marked items.', errNet: 'Could not submit. Please check your connection and try again.',
+      errRequired: 'Please fill this in.', errStep: function (list) { return 'Some answers are missing: ' + list + '. Please check the items marked in red.'; }, errNet: 'Could not submit. Please check your connection and try again.',
       invalid: 'This link is invalid or has expired. Please contact Word of Life Korea.', already: 'This reference has already been submitted. Thank you.',
+      certifyShort: 'confirmation checkbox', andMore: function (n) { return 'and ' + n + ' more'; },
       vTitle: 'Confirm your email', vLead: function (h) { return 'Please enter the email address where you received our request (' + h + ').'; }, vLabel: 'Email address', vBtn: 'Continue', vChecking: 'Checking…', vNote: 'We ask this so that only the person who received our request can write this reference.', vWrong: 'This is not the address we sent the request to. Please check and try again.', vLocked: 'Too many wrong attempts. Please try again in 15 minutes.', vAgain: 'Please confirm your email again. Your answers are kept.',
       doneTitle: 'Thank you. Your reference has been received.', doneLead: 'We are grateful for the time you have given. You may close this page.', footNote: 'Word of Life Korea · This document is used only for staff selection.' },
   };
@@ -147,7 +149,15 @@
   $('rfForm').addEventListener('submit', async function (e) {
     e.preventDefault();
     errors = validate();
-    if (Object.keys(errors).length) { rerender(); showErr(t('errStep')); var el = document.querySelector('.has-err'); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+    if (Object.keys(errors).length) {
+      // 무엇이 빠졌는지 이름으로 알려 주고, 첫 항목으로 데려간다(평가표 한 줄·선택칸처럼 눈에 덜 띄는 칸도 찾기 쉽게)
+      var names = [];
+      data.sections.forEach(function (sec) { sec.fields.forEach(function (f) { if (errors[f.id]) names.push(f.id === 'certify' ? t('certifyShort') : tx(f.label).replace(/\s*\(.*\)$/, '')); }); });
+      rerender(); showErr(t('errStep')(names.slice(0, 4).join(', ') + (names.length > 4 ? ' ' + t('andMore')(names.length - 4) : '')));
+      var el = document.querySelector('.has-err');
+      if (el) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); var inp = el.querySelector('input:not([type=radio]), select, textarea'); if (inp) setTimeout(function () { inp.focus({ preventScroll: true }); }, 400); }
+      return;
+    }
     var btn = $('rfSubmit'); btn.disabled = true; btn.textContent = t('submitting'); showErr('');
     try {
       var res = await fetch('/api/apply/reference', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ t: token, v: verifyV, answers: values }) });
