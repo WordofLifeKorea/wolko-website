@@ -158,6 +158,8 @@
   window.addEventListener('pagehide', function () { if (saveTimer && token) { clearTimeout(saveTimer); fetch('/api/apply/account', { method: 'PUT', keepalive: true, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ values: values, step: step }) }).catch(function () {}); } });
 
   /* ───────── 지원서 ───────── */
+  // 생년월일은 포탈 공용 달력(wolko-datepicker.js)에 연·월 선택칸을 붙여 연다 — 만 15세~85세 범위, 빈 칸이면 25년 전부터 보여 준다
+  function birthCal() { var y = new Date().getFullYear(); return ' data-cal-jump data-cal-years="' + (y - 85) + ',' + (y - 15) + '" data-cal-start="' + (y - 25) + '"'; }
   function countText(v, max) { return num(String(v || '').length) + ' / ' + num(max) + (lang === 'ko' ? '자' : ''); }
   function fieldHtml(f) {
     var v = values[f.id] == null ? '' : values[f.id], id = 'f_' + f.id, err = errors[f.id];
@@ -166,7 +168,7 @@
     if (f.type === 'textarea') input = '<textarea id="' + id + '" data-f="' + f.id + '" rows="5">' + esc(v) + '</textarea>';
     else if (f.type === 'select') input = '<select id="' + id + '" data-f="' + f.id + '"><option value="">' + (lang === 'ko' ? '선택' : 'Select') + '</option>' + f.options.map(function (o) { return '<option value="' + esc(o.v) + '"' + (v === o.v ? ' selected' : '') + '>' + esc(tx(o)) + '</option>'; }).join('') + '</select>';
     else if (f.type === 'radio') input = '<div class="ap-choices" role="radiogroup" aria-labelledby="' + id + '">' + f.options.map(function (o) { return '<label class="ap-choice"><input type="radio" name="' + id + '" data-f="' + f.id + '" value="' + esc(o.v) + '"' + (v === o.v ? ' checked' : '') + '><span>' + esc(tx(o)) + '</span></label>'; }).join('') + '</div>';
-    else input = '<input id="' + id + '" data-f="' + f.id + '" type="' + (f.type === 'tel' ? 'tel' : f.type === 'email' ? 'email' : f.type === 'date' ? 'date' : 'text') + '" value="' + esc(v) + '"' + (f.max ? ' maxlength="' + f.max + '"' : '') + (f.type === 'email' ? ' autocomplete="email"' : f.type === 'tel' ? ' autocomplete="tel"' : '') + (locked ? ' readonly' : '') + '>';
+    else input = '<input id="' + id + '" data-f="' + f.id + '" type="' + (f.type === 'tel' ? 'tel' : f.type === 'email' ? 'email' : f.type === 'date' ? 'date' : 'text') + '" value="' + esc(v) + '"' + (f.max ? ' maxlength="' + f.max + '"' : '') + (f.type === 'email' ? ' autocomplete="email"' : f.type === 'tel' ? ' autocomplete="tel"' : '') + (f.id === 'birthDate' ? birthCal() : '') + (locked ? ' readonly' : '') + '>';
     if (f.type === 'textarea' && f.max) input += '<span class="ap-count" data-count="' + f.id + '" data-max="' + f.max + '">' + countText(v, f.max) + '</span>';
     var wide = f.type === 'textarea' || f.type === 'radio';
     return '<div class="ap-field' + (wide ? ' wide' : '') + (err ? ' has-err' : '') + '" data-wrap="' + f.id + '">' + head + input + (locked ? '<p class="ap-fhint">' + esc(t('emailLocked')) + '</p>' : '') + (err ? '<p class="ap-ferr">' + esc(err) + '</p>' : '') + '</div>';
