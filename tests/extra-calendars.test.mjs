@@ -27,7 +27,8 @@ test('다른 캘린더 설정: 환경 변수 JSON을 읽고, 이상한 key·색�
   const cals = extraCalendars({ GOOGLE_EXTRA_CALENDARS: EXTRA });
   assert.deepEqual(cals.map(c => c.key), ['jeju', 'broken']);
   assert.equal(cals[1].color, '#8a6d3b', '잘못된 색은 기본색');
-  assert.deepEqual(extraCalendars({ GOOGLE_EXTRA_CALENDARS: '{oops' }), []);
+  assert.deepEqual(extraCalendars({ GOOGLE_EXTRA_CALENDARS: '{oops' }), extraCalendars({}), '깨진 JSON이면 코드의 목록');
+  assert.ok(extraCalendars({}).some(c => c.key === 'school-ministry'));
   assert.equal(isExtraEventId('jeju:abc'), true);
   assert.equal(isExtraEventId('abc123'), false);
 });

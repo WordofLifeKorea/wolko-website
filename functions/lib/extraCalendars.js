@@ -9,7 +9,9 @@
  */
 import { listCalendarEvents } from './googleCalendar.js';
 
-export const EXTRA_CALENDARS = [];
+export const EXTRA_CALENDARS = [
+  { key: 'school-ministry', id: '0td0ui68ldb21umdoackqhcqs0@group.calendar.google.com', name_ko: 'School Ministry', name_en: 'School Ministry', color: '#0b8043' },
+];
 
 const KEY_RE = /^[a-z0-9-]{1,24}$/;
 const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
