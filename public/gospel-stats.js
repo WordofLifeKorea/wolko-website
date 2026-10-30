@@ -415,10 +415,15 @@
     el.hidden = !msgs.length; el.innerHTML = msgs.map(esc).join('<br>');
   }
 
+  /** 작성 패널 맨 위의 안내 줄 — info 면 파란 안내, 아니면 붉은 오류(오류는 패널을 맨 위로 올려 바로 보이게 한다) */
+  function formNote(msg, info) {
+    var el = $('formError'); el.textContent = msg || ''; el.classList.toggle('is-info', !!info);
+    if (msg && !info && !$('formPanel').hidden) $('formPanel').scrollTo({ top: 0, behavior: 'smooth' });
+  }
   function openForm(report) {
     editing = report || null;
     buildForm(report);
-    $('formError').textContent = '';
+    formNote('');
     if (!report) { formKey = null; syncExisting(); }     // 같은 달·같은 단위로 이미 낸 보고가 있으면 불러온다
     $('formPanel').hidden = false;
     $('formPanel').scrollTop = 0;
@@ -504,12 +509,12 @@
     var pool = unit.scope === 'ministry' ? (info.ministry || []) : info.mine;
     var match = pool.filter(function (r) { return r.scope === unit.scope && (unit.scope === 'individual' || (unit.scope === 'ministry' ? r.location === unit.team : String(r.teamName).toLowerCase() === unit.team)); })[0];
     var draft = drafts[key];
-    $('formError').textContent = '';
+    formNote('');
     applyScopeUi();
     existing = match || null; if ($('fDelete')) $('fDelete').hidden = !existing;
     var ministry = unit.scope === 'ministry', placeKeep = ministry ? unit.team : '';
     if (draft) fillForm(draft.values, ministry ? placeKeep : draft.place, draft.churchEntries);
-    else if (match) { fillForm(match.values, match.location, match.churchEntries); $('formError').textContent = t('formLoaded'); if (ministry) { if (unit.month === data.reportMonth || unit.month === data.current) applyCrs(false); else applyCrsNoteOnly(); } }   // 열린 달은 통계가 CRS 지금 값을 쓰므로 화면도 같은 값으로
+    else if (match) { fillForm(match.values, match.location, match.churchEntries); formNote(t('formLoaded'), true); if (ministry) { if (unit.month === data.reportMonth || unit.month === data.current) applyCrs(false); else applyCrsNoteOnly(); } }   // 열린 달은 통계가 CRS 지금 값을 쓰므로 화면도 같은 값으로
     else if (!prevTeamEmpty) { fillForm({}, ministry ? placeKeep : ((data.me && data.me.location) || lastPlace()), []); if (ministry) applyCrs(false); }   // 팀 이름만 막 정한 경우가 아니면 새 보고는 0 에서 시작
   }
 
@@ -518,10 +523,10 @@
     var scope = document.querySelector('input[name="fScope"]:checked').value;
     var placeEl = document.querySelector('input[name="fPlace"]:checked');
     var team = ($('fTeam').value || '').trim();
-    if (!placeEl) { $('formError').textContent = t('needPlace'); return; }
-    if (scope === 'team' && !team) { $('formError').textContent = t('needTeam'); return; }
-    if (scope !== 'individual' && !(data.me && data.me.designated)) { $('formError').textContent = t('needDesignated'); return; }
-    $('fSave').disabled = true; $('fSave').textContent = t('saving'); $('formError').textContent = '';
+    if (!placeEl) { formNote(t('needPlace')); return; }
+    if (scope === 'team' && !team) { formNote(t('needTeam')); return; }
+    if (scope !== 'individual' && !(data.me && data.me.designated)) { formNote(t('needDesignated')); return; }
+    $('fSave').disabled = true; $('fSave').textContent = t('saving'); formNote('');
     try {
       var month = $('fMonth').value;
       var res = await fetch(API, { method: 'POST', headers: headers(true), body: JSON.stringify({ month: month, scope: scope, teamName: scope === 'team' ? team : '', location: placeEl.value, values: formValues(), churchEntries: scope === 'ministry' ? [] : churchEntriesFromForm() }) });
@@ -535,7 +540,7 @@
       say(body.updated ? t('savedUpdated') : t('saved'));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
-      $('formError').textContent = error.message;
+      formNote(error.message);
     } finally {
       var btn = $('fSave'); if (btn) { btn.disabled = false; btn.textContent = t('save'); }
     }
@@ -646,7 +651,7 @@
         .then(function (res) { return res.json().catch(function () { return {}; }).then(function (body) { if (!res.ok) throw new Error(body.error || t('denied')); }); })
         .then(function () { clearCache(); $('formPanel').hidden = true; return load(viewKey()); })
         .then(function () { say(t('formDeleted')); })
-        .catch(function (error) { $('formError').textContent = error.message; });
+        .catch(function (error) { formNote(error.message); });
       return;
     }
     if (e.target.id === 'churchAdd') { $('churchRows').insertAdjacentHTML('beforeend', churchRowHtml()); updateChurchTotal(); var last = $('churchRows').lastElementChild; if (last) last.querySelector('.gs-ce-church').focus(); return; }
@@ -655,7 +660,7 @@
       var sums = { eeAttendance: 0, eeSalvations: 0, eeDedications: 0 };
       churchEntriesFromForm().forEach(function (r) { sums.eeAttendance += n(r.students); sums.eeSalvations += n(r.salvations); sums.eeDedications += n(r.dedications); });
       Object.keys(sums).forEach(function (id) { var el = $('f_' + id); if (el) { el.value = String(sums[id]); el.dispatchEvent(new Event('input', { bubbles: true })); } });
-      $('formError').textContent = t('churchApplied');
+      formNote(t('churchApplied'), true);
       return;
     }
     var step = e.target.closest('[data-step]');
