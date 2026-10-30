@@ -320,6 +320,7 @@
 
   /* ───────── 보고 쓰기 ───────── */
   function monthOptions() {
+    if (!(data.me && data.me.role === 'master')) return [data.reportMonth];   // 지난달 보고만 쓰고 고친다(그 전 달은 마감) — 마스터만 예전 달도
     var out = [], m = data.reportMonth;
     while (m >= data.earliest) { out.push(m); var p = m.split('-'); var d = new Date(Date.UTC(Number(p[0]), Number(p[1]) - 2, 1)); m = d.toISOString().slice(0, 7); }
     return out;
@@ -373,7 +374,8 @@
   }
 
   function buildForm(report) {
-    var month = report ? report.month : (viewMonth >= data.earliest && viewMonth <= data.reportMonth ? viewMonth : data.reportMonth);
+    var master = data.me && data.me.role === 'master';   // 마스터가 아니면 늘 지난달(그 전 달은 마감)
+    var month = !master ? data.reportMonth : report ? report.month : (viewMonth >= data.earliest && viewMonth <= data.reportMonth ? viewMonth : data.reportMonth);
     var scope = report ? report.scope : 'individual';
     var place = report ? report.location : ((data.me && data.me.location) || lastPlace()); // 새 보고: 가입할 때 고른 소속(평택/제주)이 기본값
     var v = (report && report.values) || {};

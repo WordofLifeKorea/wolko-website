@@ -172,6 +172,8 @@ export async function onRequestPost({ env, request }) {
   try { body = await request.json(); } catch { return fail('잘못된 요청입니다.'); }
   const month = String(body?.month || '');
   if (!reportableMonth(month)) return fail(`보고는 끝난 달(지난달)부터 ${MONTHS_BACK}개월 전까지 낼 수 있어요.`);
+  // 지난달(보고하는 달) 보고만 쓰고 고칠 수 있다 — 그보다 오래된 달은 마감. 마스터만 바로잡기 위해 예전 달도 고칠 수 있다
+  if (month !== reportMonth() && session.role !== 'master') return fail('지난달 보고만 쓰거나 고칠 수 있어요. 그 전 달 보고는 마감됐어요.', 403);
   const scope = SCOPES.includes(body?.scope) ? body.scope : null;
   if (!scope) return fail('개인, 팀 또는 사역 현황을 선택해 주세요.');
   const designated = await isDesignated(env, session);

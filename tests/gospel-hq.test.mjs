@@ -271,7 +271,7 @@ test('열린 달(보고하는 달·이번 달)의 사역 현황은 CRS 지금 �
   assert.equal((await view(month)).mainland.churchA, 2, 'CRS 에서 등급을 바꾸면 바로 반영');
 
   // 지난 달은 저장값을 그대로 쓴다(CRS 에는 등급 이력이 없다)
-  await t.stats('POST', anna, { body: { month: old, location: 'mainland', scope: 'ministry', values: { churchA: 7 } } });
+  await t.stats('POST', master, { body: { month: old, location: 'mainland', scope: 'ministry', values: { churchA: 7 } } });   // 예전 달은 마스터만
   assert.equal((await view(old)).mainland.churchA, 7);
 
   // CRS 를 읽을 수 없으면 저장값으로 돌아간다

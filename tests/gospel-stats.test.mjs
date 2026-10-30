@@ -149,7 +149,7 @@ test('익명: 예전에 이름·이메일과 함께 저장된 보고는 읽을 �
 
 test('추이: 선택한 달까지 최근 6개월 합계', async () => {
   const t = setup(); await t.acc(anna[0]);
-  await t.call('POST', anna, { body: report({ month: shiftMonth(month, -2), values: { evangelism: 3 } }) });
+  await t.call('POST', master, { body: report({ month: shiftMonth(month, -2), values: { evangelism: 3 } }) });   // 예전 달은 마스터만 쓸 수 있다
   await t.call('POST', anna, { body: report({ values: { evangelism: 4 } }) });
   const r = await t.call('GET', anna, { query: `?month=${month}` });
   assert.equal(r.trend.length, 6); assert.equal(r.trend[5].month, month);
@@ -307,4 +307,13 @@ test('집계 저장(캐시): 한 번 계산한 달은 저장해 두고, 보고�
   assert.ok(store.has(`gospel:agg:${cur}`), '달 화면을 열면 고른 달 집계도 갱신 저장된다');
   assert.equal((await call('DELETE', anna, { query: `?month=${cur}&id=${mine.id}` })).status, 200);
   assert.equal(store.has(`gospel:agg:${cur}`), false, '지우면 그 달 저장값이 지워진다');
+});
+
+test('마감: 지난달 보고만 쓰고 고칠 수 있다 — 그 전 달은 막히고, 마스터만 예전 달도 고칠 수 있다', async () => {
+  const t = setup(); await t.acc(anna[0]);
+  const old = shiftMonth(month, -1);
+  const r = await t.call('POST', anna, { body: report({ month: old, values: { evangelism: 1 } }) });
+  assert.equal(r.status, 403); assert.match(r.error, /지난달 보고만/);
+  assert.equal((await t.call('POST', anna, { body: report({ values: { evangelism: 2 } }) })).status, 200, '지난달은 된다');
+  assert.equal((await t.call('POST', master, { body: report({ month: old, values: { evangelism: 3 } }) })).status, 200, '마스터는 예전 달도');
 });
