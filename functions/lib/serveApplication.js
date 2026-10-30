@@ -6,7 +6,7 @@
  *   serve:appsens:{id}  민감 항목(이혼·형사·학대 관련·건강·알레르기). SERVE_APP_KEY 가 있으면 AES-GCM 으로 암호화해 저장한다.
  *
  * 민감 항목은 알림 메일·알림톡·로그·외부 AI/번역 서비스로 절대 내보내지 않는다.
- * 거절·보류된 신청서는 결정 후 12개월이 지나면 두 키 모두 자동 삭제한다(목록을 읽을 때 정리).
+ * 거절(부적합)한 신청서는 결정 후 30일, 보류한 신청서는 12개월이 지나면 추천서 답변까지 모두 자동 삭제한다(목록을 읽을 때 정리).
  */
 import { MASTER_EMAILS, normalizeEmail } from './hubAccounts.js';
 import { reviewersFor } from './serveInquiry.js';
@@ -14,7 +14,8 @@ import { SERVE_APPLICATION_FIELDS, SENSITIVE_FIELD_IDS, APPLICATION_STATUSES } f
 
 export const APP_PREFIX = 'serve:app:';
 export const APP_SENS_PREFIX = 'serve:appsens:';
-export const RETENTION_DAYS = 365;
+export const RETENTION_DAYS = 365;          // 보류
+export const REJECT_RETENTION_DAYS = 30;    // 거절(검토 후 부적합) — 지원자 안내·동의서 문구와 같다
 const AUDIT_LIMIT = 300;
 
 export function canAccessServeApplication(session, app) {
@@ -144,6 +145,8 @@ export function summarize(app) {
 export async function deleteApplication(env, id) {
   await env.CAMP_KV.delete(`${APP_PREFIX}${id}`);
   await env.CAMP_KV.delete(`${APP_SENS_PREFIX}${id}`);
+  await env.CAMP_KV.delete(`serve:refans:${id}:1`);   // 추천서 답변(serveReference.js REF_ANSWER_KEY)도 함께 폐기
+  await env.CAMP_KV.delete(`serve:refans:${id}:2`);
 }
 
 export async function listApplications(env) {
@@ -155,11 +158,12 @@ export async function listApplications(env) {
     cursor = page.list_complete ? undefined : page.cursor;
   } while (cursor);
   const apps = (await Promise.all(keys.map(k => env.CAMP_KV.get(k, 'json')))).filter(Boolean);
-  // 보관 기간(거절·보류 결정 후 12개월)이 지난 신청서는 삭제한다
-  const limit = Date.now() - RETENTION_DAYS * 86400000;
+  // 보관 기간이 지난 신청서는 삭제한다: 거절(부적합) 결정 후 30일, 보류 결정 후 12개월
+  const days = { rejected: REJECT_RETENTION_DAYS, hold: RETENTION_DAYS };
   const alive = [];
   for (const app of apps) {
-    if ((app.status === 'rejected' || app.status === 'hold') && app.decidedAt && new Date(app.decidedAt).getTime() < limit) await deleteApplication(env, app.id);
+    const keep = days[app.status];
+    if (keep && app.decidedAt && new Date(app.decidedAt).getTime() < Date.now() - keep * 86400000) await deleteApplication(env, app.id);
     else alive.push(app);
   }
   return alive.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));

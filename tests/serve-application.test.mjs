@@ -125,7 +125,7 @@ test('신청서 흐름: 승인된 문의로만 생성 · 문의 정보 미리 �
   } finally { t.restore(); }
 });
 
-test('신청서 결정: 승인·보류·거절 · 다시 열기 · 결정 후 수정 불가 · 삭제는 마스터만 · 12개월 지난 거절/보류는 자동 삭제', async () => {
+test('신청서 결정: 승인·보류·거절 · 다시 열기 · 결정 후 수정 불가 · 삭제는 마스터만 · 12개월 지난 보류는 자동 삭제', async () => {
   const t = setup();
   try {
     await t.acc('esooy@wol.org');
@@ -140,13 +140,26 @@ test('신청서 결정: 승인·보류·거절 · 다시 열기 · 결정 후 �
     assert.equal((await t.call(A, 'PATCH', estelle, { body: { id, action: 'decide', status: 'approved' } })).application.status, 'approved');
     // 삭제는 마스터만
     assert.equal((await t.call(A, 'DELETE', estelle, { query: `?id=${id}` })).status, 403);
-    // 12개월 지난 거절 건은 목록을 읽을 때 지워진다
+    // 12개월 지난 보류 건은 목록을 읽을 때 지워진다
     await t.call(A, 'PATCH', estelle, { body: { id, action: 'decide', status: 'hold' } });
     const rec = JSON.parse(t.store.get(`serve:app:${id}`)); rec.decidedAt = new Date(Date.now() - 400 * 86400000).toISOString();
     t.store.set(`serve:app:${id}`, JSON.stringify(rec));
     assert.equal((await t.call(A, 'GET', master)).applications.length, 0);
     assert.equal(t.store.has(`serve:app:${id}`), false);
     assert.equal(t.store.has(`serve:appsens:${id}`), false);
+  } finally { t.restore(); }
+});
+
+test('보관 기간: 거절(부적합)은 결정 후 30일, 보류는 12개월 — 추천서 답변까지 함께 폐기', async () => {
+  const t = setup();
+  try {
+    const now = Date.now(), day = 86400000;
+    const put = (id, status, ago) => { t.store.set(`serve:app:${id}`, JSON.stringify({ id, status, decidedAt: new Date(now - ago * day).toISOString(), updatedAt: '', values: {} })); t.store.set(`serve:appsens:${id}`, '{}'); t.store.set(`serve:refans:${id}:1`, '{}'); };
+    put('rej-old', 'rejected', 31); put('rej-new', 'rejected', 20); put('hold-40', 'hold', 40); put('hold-old', 'hold', 400);
+    const ids = (await t.call(A, 'GET', master)).applications.map(a => a.id).sort();
+    assert.deepEqual(ids, ['hold-40', 'rej-new']);
+    for (const k of ['serve:app:rej-old', 'serve:appsens:rej-old', 'serve:refans:rej-old:1', 'serve:refans:hold-old:1']) assert.equal(t.store.has(k), false, k);
+    assert.equal(t.store.has('serve:refans:rej-new:1'), true);
   } finally { t.restore(); }
 });
 
