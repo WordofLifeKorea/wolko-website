@@ -188,6 +188,15 @@ test('추천서: 메일 링크로 열고 한 번만 제출, 답변은 암호화 
   } finally { t.restore(); }
 });
 
+test('질문 순서: 기본 정보 → 교회와 신앙 → 학력과 은사 → 건강 → 추천인 → 무거운 추가 질문은 맨 뒤', async () => {
+  const { APPLICANT_SECTIONS } = await import('../functions/lib/serveApplicationSchema.js');
+  assert.deepEqual(APPLICANT_SECTIONS.map(s => s.id), ['application', 'spiritual', 'skills', 'health', 'reference1', 'reference2', 'background']);
+  const first = APPLICANT_SECTIONS[0].fields.map(f => f.id);
+  for (const id of ['divorced', 'criminal', 'abuse']) assert.ok(!first.includes(id), id);
+  assert.deepEqual(APPLICANT_SECTIONS.at(-1).fields.filter(f => !f.showIf).map(f => f.id), ['divorced', 'criminal', 'abuse']);
+  assert.ok(APPLICANT_SECTIONS.at(-1).intro.ko);
+});
+
 test('온라인 지원서는 호칭을 묻지 않는다(포탈 입력 정의에는 남는다)', async () => {
   const { APPLICANT_SECTIONS, SERVE_APPLICATION_FIELDS } = await import('../functions/lib/serveApplicationSchema.js');
   const ids = APPLICANT_SECTIONS.flatMap(s => s.fields.map(f => f.id));

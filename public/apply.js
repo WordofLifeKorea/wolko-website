@@ -211,7 +211,8 @@
     if (step < SECTIONS.length) {
       var s = SECTIONS[step];
       var isRef = s.id.indexOf('reference') === 0;
-      html = '<div class="ap-sec-head"><h2>' + (step + 1) + '. ' + esc(tx(s.title)) + '</h2>' + (isRef ? '<p class="ap-sec-lead">' + esc(t('refNote')) + '</p>' : '') + '</div><div class="ap-grid">' + s.fields.filter(visible).map(fieldHtml).join('') + '</div>';
+      var lead = s.intro ? tx(s.intro) : isRef ? t('refNote') : '';
+      html = '<div class="ap-sec-head"><h2>' + (step + 1) + '. ' + esc(tx(s.title)) + '</h2>' + (lead ? '<p class="ap-sec-lead">' + esc(lead) + '</p>' : '') + '</div><div class="ap-grid">' + s.fields.filter(visible).map(fieldHtml).join('') + '</div>';
     } else html = renderReview();
     $('apStep').innerHTML = html;
     $('apPrev').hidden = step === 0;

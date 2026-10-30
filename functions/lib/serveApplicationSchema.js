@@ -36,12 +36,6 @@ export const SERVE_APPLICATION_SECTIONS = [
       { id: 'maritalStatus', type: 'select', required: true, label: L('현재 결혼 상태', 'Current Marital Status'), options: [
         { v: 'single', ko: '미혼', en: 'Single' }, { v: 'married', ko: '기혼', en: 'Married' }, { v: 'divorced', ko: '이혼', en: 'Divorced' },
         { v: 'separated', ko: '별거', en: 'Separated' }, { v: 'widowed', ko: '사별', en: 'Widowed' }] },
-      { id: 'divorced', type: 'radio', required: true, sensitive: true, label: L('이혼 경험이 있습니까?', 'Have you ever been divorced?'), options: YN },
-      { id: 'divorcedNote', type: 'textarea', sensitive: true, showIf: { field: 'divorced', equals: 'yes' }, label: L('있다면 설명해 주세요', 'If so, please explain'), max: 2000 },
-      { id: 'criminal', type: 'radio', required: true, sensitive: true, label: L('형사 처벌을 받았거나 기소 중인 사건이 있습니까?', 'Have you ever been convicted of a crime or have pending charges?'), options: YN },
-      { id: 'criminalNote', type: 'textarea', sensitive: true, showIf: { field: 'criminal', equals: 'yes' }, label: L('있다면 설명해 주세요', 'If so, please explain'), max: 2000 },
-      { id: 'abuse', type: 'radio', required: true, sensitive: true, label: L('신체적·성적 학대로 유죄 판결을 받았거나 의혹을 받은 적이 있습니까?', 'Have you ever been guilty of, or accused of, physical or sexual abuse?'), options: YN },
-      { id: 'abuseNote', type: 'textarea', sensitive: true, showIf: { field: 'abuse', equals: 'yes' }, label: L('있다면 설명해 주세요', 'If so, please explain'), max: 2000 },
       { id: 'hasChildren', type: 'radio', required: true, label: L('자녀가 있습니까?', 'Do you have any children?'), options: YN },
       { id: 'childrenNote', type: 'textarea', showIf: { field: 'hasChildren', equals: 'yes' }, label: L('자녀의 이름과 나이', 'Names and ages of children'), max: 1000 },
       { id: 'occupation', type: 'text', required: true, label: L('현재 직업', 'Current occupation'), max: 200 },
@@ -52,21 +46,21 @@ export const SERVE_APPLICATION_SECTIONS = [
     ],
   },
   {
-    id: 'spiritual', title: L('영적 생활', 'Spiritual Life'),
+    id: 'spiritual', title: L('교회와 신앙', 'Church & Faith'),
     fields: [
-      { id: 'spiritualHabits', type: 'textarea', required: true, label: L('개인의 영적 생활 습관 (성경 공부, 경건의 시간, 기도, 전도 등)', 'Personal spiritual life habits (Bible study, quiet time, prayer, witnessing)'), max: 4000 },
-      { id: 'testimony', type: 'textarea', required: true, label: L('간증 (구원받기 전, 구원의 경험, 구원받은 후)', 'Testimony (life before salvation, the salvation experience, and life after)'), max: 6000 },
-      { id: 'serviceHistory', type: 'textarea', required: true, label: L('교회·지역사회에서의 과거와 현재의 섬김', 'Past and current service in church or community'), max: 4000 },
       { id: 'church', type: 'text', label: L('출석하는 교회', 'Church you attend'), max: 200 },
       { id: 'pastor', type: 'text', label: L('담임목사님 성함', "Pastor's name"), max: 120 },
+      { id: 'testimony', type: 'textarea', required: true, label: L('간증 (구원받기 전, 구원의 경험, 구원받은 후)', 'Testimony (life before salvation, the salvation experience, and life after)'), max: 6000 },
+      { id: 'spiritualHabits', type: 'textarea', required: true, label: L('개인의 영적 생활 습관 (성경 공부, 경건의 시간, 기도, 전도 등)', 'Personal spiritual life habits (Bible study, quiet time, prayer, witnessing)'), max: 4000 },
+      { id: 'serviceHistory', type: 'textarea', required: true, label: L('교회·지역사회에서의 과거와 현재의 섬김', 'Past and current service in church or community'), max: 4000 },
     ],
   },
   {
-    id: 'skills', title: L('은사와 훈련', 'Skills & Training'),
+    id: 'skills', title: L('학력과 은사', 'Education & Gifts'),
     fields: [
+      { id: 'education', type: 'textarea', required: true, label: L('학력 (고등학교, 대학교, 성경학교, 대학원, 학위·수료증)', 'Education (high school, university, Bible school, postgraduate, degrees or diplomas)'), max: 4000 },
       { id: 'gifts', type: 'textarea', required: true, label: L('강점과 영적 은사', 'Strengths and spiritual gifts'), max: 4000 },
       { id: 'servingWays', type: 'textarea', required: true, label: L('즐겁게 섬기고 돕는 방식', 'Ways you enjoy serving and helping'), max: 4000 },
-      { id: 'education', type: 'textarea', required: true, label: L('학력 (고등학교, 대학교, 성경학교, 대학원, 학위·수료증)', 'Education (high school, university, Bible school, postgraduate, degrees or diplomas)'), max: 4000 },
     ],
   },
   {
@@ -78,6 +72,18 @@ export const SERVE_APPLICATION_SECTIONS = [
   },
   { id: 'reference1', title: L('추천인 1 (목회자 또는 교회 지도자)', 'Reference 1 (pastor or church leader)'), fields: reference(1) },
   { id: 'reference2', title: L('추천인 2 (동역자 또는 친구)', 'Reference 2 (co-worker or friend)'), fields: reference(2) },
+  {
+    id: 'background', title: L('추가 질문', 'Additional Questions'),
+    intro: L('청소년을 섬기는 사역이어서 모든 지원자에게 같은 질문을 드립니다. 답변은 검토 담당자만 열람합니다.', 'Because our staff serve young people, we ask every applicant these questions. Only our reviewers see your answers.'),
+    fields: [
+      { id: 'divorced', type: 'radio', required: true, sensitive: true, label: L('이혼 경험이 있습니까?', 'Have you ever been divorced?'), options: YN },
+      { id: 'divorcedNote', type: 'textarea', sensitive: true, showIf: { field: 'divorced', equals: 'yes' }, label: L('있다면 설명해 주세요', 'If so, please explain'), max: 2000 },
+      { id: 'criminal', type: 'radio', required: true, sensitive: true, label: L('형사 처벌을 받았거나 기소 중인 사건이 있습니까?', 'Have you ever been convicted of a crime or have pending charges?'), options: YN },
+      { id: 'criminalNote', type: 'textarea', sensitive: true, showIf: { field: 'criminal', equals: 'yes' }, label: L('있다면 설명해 주세요', 'If so, please explain'), max: 2000 },
+      { id: 'abuse', type: 'radio', required: true, sensitive: true, label: L('신체적·성적 학대로 유죄 판결을 받았거나 의혹을 받은 적이 있습니까?', 'Have you ever been guilty of, or accused of, physical or sexual abuse?'), options: YN },
+      { id: 'abuseNote', type: 'textarea', sensitive: true, showIf: { field: 'abuse', equals: 'yes' }, label: L('있다면 설명해 주세요', 'If so, please explain'), max: 2000 },
+    ],
+  },
   {
     id: 'internal', title: L('인터뷰·추천인 확인·동의 (내부용)', 'Interview, references & consent (internal)'),
     fields: [
