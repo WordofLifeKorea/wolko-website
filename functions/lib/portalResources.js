@@ -68,23 +68,25 @@ function snap10(value) {
   return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n / 10) * 10)) : 0;
 }
 
-// 두 번째(검토) 단계만은 손으로 정하지 않는다 — 이 항목의 파일 중 하나라도
-// "검토 완료"를 체크한 서로 다른 선교사 수로 매긴다. 한 명당 33%, 3명이면
-// 100%이고, 4명 이상이어도 100%를 넘지 않는다.
+// 두 번째(검토) 단계만은 손으로 정하지 않는다 — 이 항목에 노트를 남긴 서로 다른 사람 수로 매긴다.
+// 2명이면 검토 완료(100%), 1명이면 50%. 휴지통에 들어간 노트는 세지 않는다.
+// (예전에는 "검토 완료"를 체크한 선교사 3명이 기준이었다 — 체크 기록은 남아 있지만 진행률에는 쓰지 않는다)
 export const REVIEW_STAGE_INDEX = 1;
-export const REVIEWERS_FOR_FULL_REVIEW = 3;
+export const REVIEWERS_FOR_FULL_REVIEW = 2;
 
 export function reviewerCountOf(item) {
-  const slugs = new Set();
-  for (const file of filesOf(item)) {
-    for (const slug of Object.keys(file.reviewConfirmations || {})) slugs.add(slug);
+  const authors = new Set();
+  for (const note of annotationsOf(item)) {
+    if (note.deletedAt) continue;
+    const who = String(note.createdBy || '').trim().toLowerCase();
+    if (who) authors.add(who);
   }
-  return slugs.size;
+  return authors.size;
 }
 
 export function reviewPercentOf(item) {
   const count = reviewerCountOf(item);
-  return count >= REVIEWERS_FOR_FULL_REVIEW ? 100 : count * 33;
+  return count >= REVIEWERS_FOR_FULL_REVIEW ? 100 : Math.round(count * 100 / REVIEWERS_FOR_FULL_REVIEW);
 }
 
 function storedStagePercentsOf(item) {

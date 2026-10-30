@@ -11,7 +11,7 @@
  * DELETE /api/portal/resource-annotation?id=&annotationId=            — 노트를 휴지통으로 이동(바로 지우지 않음 — deletedAt만 표시).
  *                                                                        10일 지나면 annotationsOf가 자동으로 걸러낸다. 작성자 본인 또는 admin/master만.
  */
-import { sessionFor, canWrite, text, readData, saveData, error, filesOf, annotationsOf, commentsOf, MAX_ANNOTATIONS_PER_ITEM } from '../../lib/portalResources.js';
+import { sessionFor, canWrite, text, readData, saveData, error, filesOf, annotationsOf, commentsOf, MAX_ANNOTATIONS_PER_ITEM, refreshProgress } from '../../lib/portalResources.js';
 import { getAccount } from '../../lib/hubAccounts.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' };
@@ -121,6 +121,7 @@ export async function onRequestPost({ env, request }) {
   item.annotations = [...annotations, annotation];
   item.updatedAt = now;
   data.items[index] = item;
+  refreshProgress(item);   // 노트를 남긴 사람 수가 곧 검토 단계 % — 노트가 바뀔 때마다 진행률도 바로 맞춘다
   const saved = await saveData(env, data.items);
   return Response.json({ item, updatedAt: saved.updatedAt }, { headers: CORS });
 }
@@ -164,6 +165,7 @@ export async function onRequestPut({ env, request }) {
   item.annotations = annotations.map((a, i) => i === annotationIndex ? updated : a);
   item.updatedAt = new Date().toISOString();
   data.items[index] = item;
+  refreshProgress(item);   // 노트를 남긴 사람 수가 곧 검토 단계 % — 노트가 바뀔 때마다 진행률도 바로 맞춘다
   const saved = await saveData(env, data.items);
   return Response.json({ item, updatedAt: saved.updatedAt }, { headers: CORS });
 }
@@ -194,6 +196,7 @@ export async function onRequestDelete({ env, request }) {
   item.annotations = annotations.map(a => a.id === annotationId ? { ...a, deletedAt: now, updatedAt: now } : a);
   item.updatedAt = new Date().toISOString();
   data.items[index] = item;
+  refreshProgress(item);   // 노트를 남긴 사람 수가 곧 검토 단계 % — 노트가 바뀔 때마다 진행률도 바로 맞춘다
   const saved = await saveData(env, data.items);
   return Response.json({ item, updatedAt: saved.updatedAt }, { headers: CORS });
 }

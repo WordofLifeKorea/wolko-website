@@ -305,7 +305,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         noteDeleteConfirm: '이 노트를 삭제할까요? (휴지통에서 10일간 복원할 수 있습니다)', noteSaveFailed: '노트를 저장하지 못했습니다.', noteDeleteFailed: '노트를 삭제하지 못했습니다.', noteUpdateFailed: '노트를 수정하지 못했습니다.',
         noteDeletedToast: '노트를 휴지통으로 옮겼습니다.',
         trashLabel: '휴지통', backToNotes: '← 노트 목록', trashEmpty: '휴지통이 비어 있습니다.', noteRestore: '복원',
-        reviewLabel: (done, total) => `검토 완료 확인 (${done}/${total})`, reviewStageNote: n => `검토 완료 ${n}명 · 3명이면 100%`, reviewUpdateFailed: '검토 완료 확인을 저장하지 못했습니다.', reviewEmpty: '평택센터 선교사 명단을 불러오지 못했습니다.',
+        reviewLabel: (done, total) => `검토 완료 확인 (${done}/${total})`, reviewStageNote: n => `노트를 남긴 사람 ${n}명 · 2명이면 검토 완료`, reviewUpdateFailed: '검토 완료 확인을 저장하지 못했습니다.', reviewEmpty: '평택센터 선교사 명단을 불러오지 못했습니다.',
         trashExpiresIn: n => n <= 0 ? '오늘 완전히 삭제됩니다' : `${n}일 후 완전히 삭제됩니다`,
         noteRestoredToast: '노트를 복원했습니다.', noteRestoreFailed: '노트를 복원하지 못했습니다.',
         noteComment: '의견 추가', commentsLabel: n => `추가 의견 ${n}개`, commentPlaceholder: '이 노트에 대한 의견을 입력해 주세요', commentSave: '등록', commentDelete: '삭제',
@@ -365,7 +365,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         noteDeleteConfirm: 'Delete this note? (Recoverable from Trash for 10 days)', noteSaveFailed: 'Could not save the note.', noteDeleteFailed: 'Could not delete the note.', noteUpdateFailed: 'Could not update the note.',
         noteDeletedToast: 'Note moved to Trash.',
         trashLabel: 'Trash', backToNotes: '← Notes', trashEmpty: 'Trash is empty.', noteRestore: 'Restore',
-        reviewLabel: (done, total) => `Review sign-off (${done}/${total})`, reviewStageNote: n => `${n} signed off · 100% at 3`, reviewUpdateFailed: 'Could not save the review sign-off.', reviewEmpty: 'Could not load the Pyeongtaek missionary roster.',
+        reviewLabel: (done, total) => `Review sign-off (${done}/${total})`, reviewStageNote: n => `${n} people left notes · review complete at 2`, reviewUpdateFailed: 'Could not save the review sign-off.', reviewEmpty: 'Could not load the Pyeongtaek missionary roster.',
         trashExpiresIn: n => n <= 0 ? 'Permanently deleted today' : `Permanently deleted in ${n} day${n === 1 ? '' : 's'}`,
         noteRestoredToast: 'Note restored.', noteRestoreFailed: 'Could not restore the note.',
         noteComment: 'Add comment', commentsLabel: n => `${n} comment${n === 1 ? '' : 's'}`, commentPlaceholder: 'Add your thoughts about this note', commentSave: 'Post', commentDelete: 'Delete',
@@ -1899,7 +1899,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         if (!res.ok) throw new Error(data.error || t('reviewUpdateFailed'));
         applyNoteMutationItem(data.item);
         renderNotesList();
-        // 체크 수가 곧 검토 단계 %라서, 뒤에 깔린 목록 카드와 상세 보기의 진행률도 같이 갱신한다.
+        // 뒤에 깔린 목록 카드와 상세 보기도 서버가 돌려준 최신 항목으로 다시 그린다.
         render();
         if (!$('editorOverlay').hidden && editorMode === 'view') renderDetailView();
       } catch (e) { toast(e.message || t('reviewUpdateFailed'), true); renderNotesList(); }
@@ -2529,13 +2529,13 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     // 진행 단계 스텝퍼 — 버튼 N을 누르면 1~N단계가 완료로, 이미 N단계까지
     // 완료된 상태에서 N을 다시 누르면 한 단계 되돌린다(간단한 토글식 취소).
     let editorStagePercents = [0, 0, 0];
-    // 검토(두 번째) 단계는 손으로 고르지 않는다 — 서버가 "검토 완료"를 체크한
-    // 서로 다른 선교사 수로 매긴 값(1명 33%, 3명 이상 100%)을 그대로 보여준다.
+    // 검토(두 번째) 단계는 손으로 고르지 않는다 — 서버가 노트를 남긴 서로 다른
+    // 사람 수로 매긴 값(1명 50%, 2명 이상 100%)을 그대로 보여준다.
     const REVIEW_STAGE_INDEX = 1;
-    function reviewerCount(item) {
-      const slugs = new Set();
-      for (const file of item?.files || []) Object.keys(file.reviewConfirmations || {}).forEach(slug => slugs.add(slug));
-      return slugs.size;
+    function reviewerCount(item) {   // 노트를 남긴 서로 다른 사람 수(휴지통 노트 제외) — 2명이면 검토 완료. 서버(portalResources.js)와 같은 기준
+      const authors = new Set();
+      for (const note of item?.annotations || []) { if (!note.deletedAt && note.createdBy) authors.add(String(note.createdBy).trim().toLowerCase()); }
+      return authors.size;
     }
     function renderStageStepper(percents) {
       editorStagePercents = percents.slice(0, STAGE_COUNT);
