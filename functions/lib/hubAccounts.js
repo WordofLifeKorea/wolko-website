@@ -223,7 +223,7 @@ export async function listAccounts(env) {
   return items;
 }
 
-export async function sendEmail(env, { to, subject, html, replyTo }) {
+export async function sendEmail(env, { to, subject, html, replyTo, fromName, text }) {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -231,10 +231,11 @@ export async function sendEmail(env, { to, subject, html, replyTo }) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'WOLKO Portal <hub@wolko.org>',
+      from: `${fromName || 'WOLKO Portal'} <hub@wolko.org>`,   // 지원서·추천서 메일은 '월코 Word of Life Korea' 로 보낸다
       to: Array.isArray(to) ? to : [to],
       subject,
       html,
+      ...(text ? { text } : {}),
       ...(replyTo ? { reply_to: replyTo } : {}),
     }),
   });

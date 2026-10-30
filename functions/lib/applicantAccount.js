@@ -7,7 +7,7 @@
  */
 import { hashPassword, verifyPassword, normalizeEmail, sendEmail } from './hubAccounts.js';
 import { sealSensitive, openSensitive } from './serveApplication.js';
-import { MAIL_LOGO, MAIL_NAVY } from './applyMail.js';
+import { MAIL_LOGO, MAIL_NAVY, MAIL_FROM } from './applyMail.js';
 
 export const ACCOUNT_IDLE_DAYS = 30;
 export const SESSION_HOURS = 12;
@@ -61,6 +61,7 @@ export async function issueTempPassword(env, { email, name, lang, origin }) {
   await env.CAMP_KV.delete(FAIL(email));
   await sendEmail(env, {
     to: email,
+    fromName: MAIL_FROM,
     subject: ko ? '[월코] 스태프 지원서 임시 비밀번호' : '[Word of Life Korea] Your temporary password for the staff application',
     html: tempPasswordEmailHtml({ name: acct.name, password, ko, link: `${origin}/apply/wolko-staff-k7m2q9/` }),
   });

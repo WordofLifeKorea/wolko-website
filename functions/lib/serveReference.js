@@ -11,7 +11,7 @@
  * 링크의 토큰은 메일에만 있고 서버에는 해시만 둔다. 60일 지나면 링크가 만료된다.
  */
 import { sendEmail, normalizeEmail } from './hubAccounts.js';
-import { MAIL_LOGO, MAIL_NAVY } from './applyMail.js';
+import { MAIL_LOGO, MAIL_NAVY, MAIL_FROM, preheader } from './applyMail.js';
 import { sealSensitive, openSensitive } from './serveApplication.js';
 
 export const REF_PREFIX = 'serve:ref:';
@@ -114,38 +114,56 @@ export const refKey = async token => `${REF_PREFIX}${await sha256Hex(token)}`;
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-/** 공식 추천서 요청 메일 — 레터헤드 · 요청 내용 · 버튼 · 기한 · 비밀 유지 안내 (한·영 함께) */
-export function referenceEmailHtml({ refName, applicant, link, due }) {
-  return `<!doctype html><html><body style="margin:0;padding:0;background:#f2f5f7;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f5f7;padding:32px 12px;word-break:keep-all;font-family:'Apple SD Gothic Neo','Malgun Gothic',Arial,sans-serif;color:#13242d;">
+/** 추천서 요청 메일 — 스팸으로 오해받지 않게: 한국어 이름이 있으면 한국어 먼저, 미리보기 줄·텍스트판 포함 */
+export function referenceEmailSubject({ applicantKo, applicantEn }) {
+  return applicantKo ? `[월코] ${applicantKo} 님의 추천서 작성을 부탁드립니다` : `Reference request for ${applicantEn} — Word of Life Korea`;
+}
+const fmtDue = (iso, ko) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return !m ? iso : ko ? `${m[1]}년 ${+m[2]}월 ${+m[3]}일` : `${m[1]}-${m[2]}-${m[3]}`; };
+function refCopy({ refName, refNameKo, applicantKo, applicantEn }) {
+  const ko = !!applicantKo, who = applicantKo || applicantEn;
+  return {
+    ko, who,
+    pre: ko ? `${who} 님이 월코 스태프 지원서에 귀하를 추천인으로 적어 주셨습니다. 10분 정도면 작성하실 수 있습니다.` : `${who} has named you as a reference for a Word of Life Korea staff application. It takes about 10 minutes.`,
+    hello: ko ? `${refNameKo || refName || '추천인'} 님께` : `Dear ${refName || 'Referee'},`,
+    body: ko ? `${who} 님이 월코(Word of Life Korea) 스태프로 지원하시면서 귀하를 추천인으로 적어 주셨습니다. 월코 스태프는 청소년을 가까이에서 섬기게 되므로, 지원자의 신앙과 인격에 대해 아시는 대로 솔직한 의견을 부탁드립니다.`
+      : `${who} has applied to serve on staff with Word of Life Korea (WOLKO) and has named you as a reference. Our staff work closely with young people, so we would be grateful for your honest view of the applicant’s faith and character.`,
+    other: ko ? `${applicantEn ? applicantEn + ' has' : 'The applicant has'} applied to serve with Word of Life Korea and named you as a reference. The form is available in English.` : '',
+    btn: ko ? '추천서 작성하기' : 'Complete the reference',
+    rows: ko ? [['지원자', who], ['소요 시간', '약 10분'], ['회신 기한', null]] : [['Applicant', who], ['Time needed', 'About 10 minutes'], ['Please reply by', null]],
+    note: ko ? '이 링크는 귀하만을 위한 것입니다. 작성하신 내용은 검토 담당자만 보며 지원자에게는 공개되지 않습니다.' : 'This link is for you only. Your reference is read by our reviewers and is not shown to the applicant.',
+    alt: ko ? '버튼이 열리지 않으면 아래 주소를 브라우저에 붙여 넣어 주세요.' : 'If the button does not work, paste this address into your browser:',
+  };
+}
+export function referenceEmailHtml({ refName, refNameKo, applicantKo, applicantEn, link, due }) {
+  const c = refCopy({ refName, refNameKo, applicantKo, applicantEn });
+  due = fmtDue(due, c.ko);
+  const rows = c.rows.map(([k, v]) => `<tr><td style="padding:9px 0;color:#5b6b73;width:34%;border-bottom:1px solid #e3e6e8;">${k}</td><td style="padding:9px 0;font-weight:600;border-bottom:1px solid #e3e6e8;">${esc(v ?? due)}</td></tr>`).join('');
+  return `<!doctype html><html lang="${c.ko ? 'ko' : 'en'}"><body style="margin:0;padding:0;background:#f4f5f6;">
+${preheader(esc(c.pre))}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5f6;padding:28px 12px;word-break:keep-all;font-family:'Apple SD Gothic Neo','Malgun Gothic',Arial,sans-serif;color:#2b2d2f;">
 <tr><td align="center">
-<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border:1px solid #dfe7eb;border-radius:4px;">
-<tr><td style="padding:28px 36px 20px;border-bottom:2px solid #3a3a3c;">
-  ${MAIL_LOGO}
-  <div style="font-size:20px;font-weight:700;margin-top:22px;">Reference Request</div>
-  <div style="font-size:14px;color:#56707b;margin-top:2px;">추천서 요청</div>
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border:1px solid #d5d9dc;">
+<tr><td style="padding:26px 34px 18px;border-bottom:2px solid #3a3a3c;">${MAIL_LOGO}</td></tr>
+<tr><td style="padding:26px 34px 6px;font-size:15px;line-height:1.75;">
+  <p style="margin:0 0 14px;font-weight:600;">${esc(c.hello)}</p>
+  <p style="margin:0 0 18px;">${esc(c.body)}</p>
+  <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;font-size:14px;border-top:1px solid #3a3a3c;">${rows}</table>
 </td></tr>
-<tr><td style="padding:26px 36px 8px;font-size:15px;line-height:1.75;">
-  <p style="margin:0 0 14px;">${esc(refName) ? `Dear ${esc(refName)},` : 'Dear Referee,'}</p>
-  <p style="margin:0 0 14px;"><b>${esc(applicant)}</b> has applied to serve with Word of Life Korea (WOLKO) and has listed you as a reference. Because our staff serve young people, we ask references to share an honest assessment of the applicant’s faith, character, and fitness for ministry.</p>
-  <p style="margin:0 0 14px;color:#33505c;">${esc(applicant)}님이 월코(Word of Life Korea) 사역에 지원하시면서 귀하를 추천인으로 적어 주셨습니다. 월코의 스태프는 청소년을 섬기기에, 지원자의 신앙과 인격, 사역 적합성에 대한 솔직한 의견을 부탁드립니다.</p>
+<tr><td style="padding:24px 34px 8px;">
+  <a href="${esc(link)}" style="display:inline-block;background:${MAIL_NAVY};color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 30px;">${c.btn}</a>
 </td></tr>
-<tr><td style="padding:6px 36px 6px;">
-  <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;background:#f6f9fa;border:1px solid #e3ebee;border-radius:4px;font-size:14px;">
-    <tr><td style="padding:12px 16px;color:#56707b;width:40%;">Applicant · 지원자</td><td style="padding:12px 16px;font-weight:700;">${esc(applicant)}</td></tr>
-    <tr><td style="padding:0 16px 12px;color:#56707b;">Estimated time · 소요 시간</td><td style="padding:0 16px 12px;">About 10 minutes · 약 10분</td></tr>
-    <tr><td style="padding:0 16px 12px;color:#56707b;">Please respond by · 회신 기한</td><td style="padding:0 16px 12px;">${esc(due)}</td></tr>
-  </table>
+<tr><td style="padding:14px 34px 24px;font-size:12.5px;line-height:1.7;color:#6a6d72;">
+  <p style="margin:0 0 8px;">${c.note}</p>
+  ${c.other ? `<p style="margin:0 0 8px;">${esc(c.other)}</p>` : ''}
+  <p style="margin:0;">${c.alt}<br><span style="word-break:break-all;color:${MAIL_NAVY};">${esc(link)}</span></p>
 </td></tr>
-<tr><td align="center" style="padding:24px 36px 8px;">
-  <a href="${esc(link)}" style="display:inline-block;background:${MAIL_NAVY};color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 30px;border-radius:2px;">Complete the Reference &nbsp;·&nbsp; 추천서 작성하기</a>
-</td></tr>
-<tr><td style="padding:16px 36px 26px;font-size:12.5px;line-height:1.7;color:#6a808a;">
-  <p style="margin:0 0 8px;">This link is unique to you. Your response is confidential and will not be shared with the applicant. · 이 링크는 귀하만을 위한 것입니다. 작성하신 내용은 비공개로 다뤄지며 지원자에게 공개되지 않습니다.</p>
-  <p style="margin:0;">If the button does not work, copy this address into your browser: · 버튼이 열리지 않으면 아래 주소를 브라우저에 붙여 넣어 주세요.<br><span style="word-break:break-all;color:${MAIL_NAVY};">${esc(link)}</span></p>
-</td></tr>
-<tr><td style="padding:16px 36px;border-top:1px solid #e6eef1;font-size:12px;color:#8a9ca4;">Word of Life Korea · 월코 &nbsp;|&nbsp; wolko.org</td></tr>
+<tr><td style="padding:14px 34px;border-top:1px solid #e3e6e8;font-size:12px;color:#6a6d72;">월코 (Word of Life Korea) · wolko.org</td></tr>
 </table></td></tr></table></body></html>`;
+}
+export function referenceEmailText({ refName, refNameKo, applicantKo, applicantEn, link, due }) {
+  const c = refCopy({ refName, refNameKo, applicantKo, applicantEn });
+  due = fmtDue(due, c.ko);
+  return [c.hello, '', c.body, '', ...c.rows.map(([k, v]) => `${k}: ${v ?? due}`), '', `${c.btn}: ${link}`, '', c.note, c.other, '', '월코 (Word of Life Korea) · wolko.org'].filter(x => x !== undefined).join('\n');
 }
 
 /** 추천인 한 명에게 요청 메일을 보낸다 — 지원서를 내기 전(추천인 단계에서 '다음')에도 보낸다. appId 는 그때 미리 정해 둔 신청서 id.
@@ -162,7 +180,8 @@ export async function sendOneReference(env, { appId, n, values, origin }) {
   let status = 'sent';
   try {
     if (!env.RESEND_API_KEY) throw new Error('no mail key');
-    await sendEmail(env, { to: email, subject: `Reference request for ${applicant} — Word of Life Korea · 추천서 요청`, html: referenceEmailHtml({ refName, applicant, link: `${origin}/reference/?t=${token}`, due }) });
+    const mail = { refName, refNameKo: values[`ref${n}NameKo`] || '', applicantKo: values.nameKo || '', applicantEn: [values.firstName, values.lastName].filter(Boolean).join(' '), link: `${origin}/reference/?t=${token}`, due };
+    await sendEmail(env, { to: email, fromName: MAIL_FROM, subject: referenceEmailSubject(mail), html: referenceEmailHtml(mail), text: referenceEmailText(mail) });
   } catch (error) { status = 'failed'; console.error('reference mail failed:', error.message); await env.CAMP_KV.delete(key); }
   return { n, email, name: refName, status, sentAt: record.sentAt, key };
 }

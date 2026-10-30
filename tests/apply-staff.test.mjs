@@ -266,6 +266,21 @@ test('추천인 단계 \'다음\': 바로 요청 메일 · 같은 주소면 다�
   } finally { t.restore(); }
 });
 
+test('추천서 요청 메일: 한국어 이름이 있으면 한국어 제목 · 단체 이름으로 발송 · 미리보기 줄과 텍스트판', async () => {
+  const t = setup();
+  try {
+    const { token } = await t.signIn();
+    await t.call(ACC, 'POST', { token, body: { action: 'sendReference', n: 1, values: { ...FULL, nameKo: '김환규' }, step: 4 } });
+    const m = t.mails.find(x => x.to[0] === 'pastor@x.com');
+    assert.equal(m.subject, '[월코] 김환규 님의 추천서 작성을 부탁드립니다');
+    assert.match(m.from, /^월코 Word of Life Korea </);
+    assert.match(m.html, /display:none[^>]*>김환규 님이 월코 스태프 지원서에 귀하를 추천인으로/);
+    assert.ok(!/Confidential|비공개\)/.test(m.subject + m.html), '스팸처럼 보이는 표현을 쓰지 않는다');
+    assert.match(m.text, /추천서 작성하기: https:\/\/wolko\.org\/reference\/\?t=/);
+    assert.match(t.mails.find(x => x.to[0] === 'anna@x.com').from, /^월코 Word of Life Korea </, '임시 비밀번호 메일도 단체 이름');
+  } finally { t.restore(); }
+});
+
 test('화면: 비공개 지원서·추천서 페이지는 검색 제외, 로그인 화면과 진행 상황 자리가 있다', () => {
   const page = readFileSync(new URL('../src/pages/apply/wolko-staff-k7m2q9.astro', import.meta.url), 'utf8');
   const ref = readFileSync(new URL('../src/pages/reference/index.astro', import.meta.url), 'utf8');
