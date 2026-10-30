@@ -1,5 +1,6 @@
 /**
  * GET    /api/schedule/events?start=&end=  — 목록 조회. role 무관, 유효한 포탈 계정이면 누구나.
+ *        월코 캘린더 + 함께 보는 다른 구글 캘린더(extraCalendars.js, 보기 전용) → { events, calendars }
  * POST   /api/schedule/events               — 새 일정 등록. admin/master만.
  * PUT    /api/schedule/events                — 일정 수정(body.id 필요). admin/master만.
  * DELETE /api/schedule/events?id=            — 일정 삭제. admin/master만.
@@ -13,7 +14,10 @@
  * 동일한 이유(요청 사항)와 동일한 방식.
  */
 import { parseHubSessionToken } from '../../lib/hubAccounts.js';
-import { listCalendarEvents, createCalendarEvent, deleteCalendarEventById } from '../../lib/googleCalendar.js';
+import { createCalendarEvent, deleteCalendarEventById } from '../../lib/googleCalendar.js';
+import { listMergedEvents, isExtraEventId } from '../../lib/extraCalendars.js';
+
+const READ_ONLY_MSG = '다른 캘린더의 일정은 포탈에서 고칠 수 없습니다. 그 구글 캘린더에서 직접 수정해 주세요.';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -93,13 +97,12 @@ export async function onRequestGet(context) {
   }
 
   try {
-    const events = await listCalendarEvents({
-      serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
-      calendarId: env.GOOGLE_STAFF_CALENDAR_ID,
+    const { events, calendars } = await listMergedEvents(env, {
+      mainCalendarId: env.GOOGLE_STAFF_CALENDAR_ID,
       timeMin: new Date(`${start}T00:00:00+09:00`).toISOString(),
       timeMax: new Date(`${end}T23:59:59+09:00`).toISOString(),
     });
-    return Response.json({ events }, { headers: CORS });
+    return Response.json({ events, calendars }, { headers: CORS });
   } catch (error) {
     console.error('schedule events error:', error);
     return Response.json({ error: '캘린더를 불러오지 못했습니다.' }, { status: 500, headers: CORS });
@@ -168,6 +171,7 @@ export async function onRequestPut(context) {
   if (!id) {
     return Response.json({ error: '일정 ID가 없습니다.' }, { status: 400, headers: CORS });
   }
+  if (isExtraEventId(id)) return Response.json({ error: READ_ONLY_MSG }, { status: 403, headers: CORS });
 
   try {
     const parsed = parseEventInput(body);
@@ -210,6 +214,7 @@ export async function onRequestDelete(context) {
   if (!id) {
     return Response.json({ error: '일정 ID가 없습니다.' }, { status: 400, headers: CORS });
   }
+  if (isExtraEventId(id)) return Response.json({ error: READ_ONLY_MSG }, { status: 403, headers: CORS });
 
   try {
     await deleteCalendarEventById({ serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON, calendarId: env.GOOGLE_STAFF_CALENDAR_ID, eventId: id });

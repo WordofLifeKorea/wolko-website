@@ -4,7 +4,7 @@
  */
 import { SLOTS as KITCHEN_SLOTS, readDay } from './kitchenDuty.js';
 import { SLOTS as DRIVE_SLOTS, closedKey as driveClosedKey, currentWeekStart, isSlotClosed as driveSlotClosed, periodFor, shownName, slotKey, todayKst } from './carDrive.js';
-import { listCalendarEvents } from './googleCalendar.js';
+import { listMergedEvents, extraCalendars } from './extraCalendars.js';
 import { firebaseDatabaseToken } from './firebaseCrsDatabase.js';
 import { prayerBoard } from './prayers.js';
 import { needsTranslation, translateNotice } from './prayerTranslate.js';
@@ -102,16 +102,19 @@ export async function carToday(env, today) {
 /** 오늘부터 14일 안의 일정 몇 개 — 캘린더가 연결되지 않았으면 null */
 export async function upcomingEvents(env, today, limit = 5, campus = 'wolko') {
   // 제주 캘린더는 나중에 따로 연결한다 — GOOGLE_JEJU_STAFF_CALENDAR_ID 가 생기기 전에는 제주 소속에게 일정 칸을 보이지 않는다
-  const calendarId = normalizeCampus(campus) === 'jeju' ? env.GOOGLE_JEJU_STAFF_CALENDAR_ID : env.GOOGLE_STAFF_CALENDAR_ID;
+  const jeju = normalizeCampus(campus) === 'jeju';
+  const calendarId = jeju ? env.GOOGLE_JEJU_STAFF_CALENDAR_ID : env.GOOGLE_STAFF_CALENDAR_ID;
   if (!env.GOOGLE_SERVICE_ACCOUNT_JSON || !calendarId) return null;
-  const events = await listCalendarEvents({
-    serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
-    calendarId,
+  // 월코 캘린더를 보는 사람에게는 함께 보는 다른 캘린더(extraCalendars.js) 일정도 섞어 보여 준다
+  const { events } = await listMergedEvents(env, {
+    mainCalendarId: calendarId,
+    includeExtras: !jeju,
     timeMin: new Date(`${today}T00:00:00+09:00`).toISOString(),
     timeMax: new Date(`${addDays(today, 14)}T23:59:59+09:00`).toISOString(),
   });
+  const cals = Object.fromEntries(extraCalendars(env).map(c => [c.key, c]));
   return events
-    .map(e => ({ title: clean(e.summary, 120), allDay: !!e.allDay, start: e.start, end: e.end, location: clean(e.location, 80) }))
+    .map(e => ({ title: clean(e.summary, 120), allDay: !!e.allDay, start: e.start, end: e.end, location: clean(e.location, 80), ...(cals[e.calendar] ? { cal: { ko: cals[e.calendar].name_ko, en: cals[e.calendar].name_en, color: cals[e.calendar].color } } : {}) }))
     .filter(e => e.title && e.start)
     .sort((a, b) => String(a.start).localeCompare(String(b.start)))
     .slice(0, limit);

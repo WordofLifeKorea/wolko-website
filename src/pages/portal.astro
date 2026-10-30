@@ -670,7 +670,7 @@
         const when = e.allDay ? '<span class="hub-tag">' + esc(t('allDay')) + '</span>' : '<span class="hub-time">' + esc(fmtTime(e.start)) + '</span>';
         return '<li' + (isToday ? ' class="is-today"' : '') + '><span class="hub-datetile"><small>' + esc(p.month + (hubLang === 'en' ? '' : '월')) + '</small><b>' + esc(p.day) + '</b><i>' + esc(p.weekday) + '</i></span>'
           + '<span class="hub-event-text"><b>' + esc(e.title) + '' + '</b>'
-          + '<small>' + when + (e.location ? '<span class="hub-loc">' + esc(e.location) + '</span>' : '') + '</small></span></li>';
+          + '<small>' + when + (e.location ? '<span class="hub-loc">' + esc(e.location) + '</span>' : '') + (e.cal ? '<span class="hub-loc" style="color:' + esc(e.cal.color) + ';font-weight:700">● ' + esc(hubLang === 'en' ? e.cal.en : e.cal.ko) + '</span>' : '') + '</small></span></li>';
       }).join('') + '</ul>';
       return dashCard('hub-dcard-events', '#3b8ff0', 'calendar', t('dashEvents'), body, '/portal/schedule');
     }

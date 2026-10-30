@@ -160,6 +160,13 @@
     }
     .sc-selected-date-bar button:hover { color:var(--blue); }
 
+    .sc-cal-legend { display:flex; flex-wrap:wrap; align-items:center; gap:8px 18px; margin:0 0 12px; font:600 12.5px/1.4 var(--body); color:var(--mid); }
+    .sc-cal-legend label { display:inline-flex; align-items:center; gap:7px; cursor:pointer; }
+    .sc-cal-legend input { width:15px; height:15px; margin:0; accent-color:var(--cal-color, var(--blue)); }
+    .sc-cal-legend .sc-cal-dot { width:9px; height:9px; border-radius:50%; background:var(--cal-color, var(--blue)); flex:none; }
+    .sc-cal-legend .is-error { color:#b3261e; font-weight:500; }
+    .sc-card-cal { display:inline-flex; align-items:center; gap:5px; margin:5px 0 0; font-size:11px; font-weight:700; color:var(--mid); }
+    .sc-card-cal::before { content:''; width:7px; height:7px; border-radius:50%; background:var(--card-color, var(--blue)); }
     .sc-empty { padding:60px 20px; text-align:center; color:var(--light); font-size:13px; line-height:1.7; }
     .sc-empty svg { display:block; margin:0 auto 10px; opacity:.5; }
 
@@ -303,6 +310,7 @@
 
     <!-- 캘린더 본체 -->
     <div id="calendarBody" class="hidden">
+      <div class="sc-cal-legend hidden" id="calLegend" aria-label="calendars"></div>
       <div class="sc-layout">
         <div class="sc-calendar">
           <div class="cal-header">
@@ -406,6 +414,7 @@
         selectDayHint: '날짜를 클릭하면 그날의 일정이 여기에 표시됩니다.',
         emptyDay: '이 날짜에는 일정이 없습니다.',
         loadError: '캘린더를 불러오지 못했습니다.',
+        mainCalendar: '월코 캘린더', calendarError: '불러오지 못함', readOnlyNote: '보기 전용',
         setupNotice: '아직 캘린더가 연결되지 않았습니다. 관리자에게 문의해 주세요.',
         newEvent: '새 일정',
         newEventTitle: '새 일정',
@@ -441,6 +450,7 @@
         selectDayHint: 'Click a date to see that day\'s schedule here.',
         emptyDay: 'No events on this date.',
         loadError: 'Could not load the calendar.',
+        mainCalendar: 'WOLKO Calendar', calendarError: 'could not load', readOnlyNote: 'View only',
         setupNotice: 'No calendar has been connected yet. Please contact an admin.',
         newEvent: 'New Event',
         newEventTitle: 'New Event',
@@ -471,6 +481,7 @@
       '6': '#f4511e', '7': '#039be5', '8': '#616161', '9': '#3f51b5', '10': '#0b8043', '11': '#d50000',
     };
     function eventColor(ev) {
+      if (ev.calendar && ev.calendar !== 'main') { const c = calInfo(ev.calendar); if (c) return c.color; }   // 함께 보는 다른 캘린더는 그 캘린더 색
       return (ev.colorId && EVENT_COLORS[ev.colorId]) || 'var(--blue)';
     }
     let scLang = localStorage.getItem('wolko-lang') || 'ko';
@@ -485,7 +496,7 @@
       $('langKoBtn')?.classList.toggle('is-active', scLang === 'ko');
       $('langEnBtn')?.classList.toggle('is-active', scLang === 'en');
       populateMonthPicker();
-      if (!$('calendarBody').classList.contains('hidden')) { renderCalendar(); renderAgenda(); }
+      if (!$('calendarBody').classList.contains('hidden')) { renderLegend(); renderCalendar(); renderAgenda(); }
     }
     function setScLang(lang) {
       if (scLang === lang) return;
@@ -548,7 +559,26 @@
     /* ── 상태 ── */
     let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     let selectedDate = todayStr(); // 기본으로 오늘 날짜가 선택된 채로 시작 — 아래 상세 목록이 바로 채워지도록
-    let events = []; // 현재 로드된(표시 중인 월 기준) 이벤트 목록
+    let events = []; // 현재 로드된(표시 중인 월 기준) 이벤트 목록 — 숨긴 캘린더는 빠진 상태
+    let allEvents = []; // 월코 캘린더 + 함께 보는 다른 캘린더 일정 전부
+    let calendars = []; // 함께 보는 다른 캘린더 [{ key, name_ko, name_en, color, error }]
+    const HIDDEN_KEY = 'wolko-cal-hidden';
+    let hiddenCals = new Set((() => { try { return JSON.parse(localStorage.getItem(HIDDEN_KEY) || '[]'); } catch (e) { return []; } })());
+    function calInfo(key) { return calendars.find(c => c.key === key); }
+    function applyCalendarFilter() { events = allEvents.filter(ev => !hiddenCals.has(ev.calendar || 'main')); }
+    function renderLegend() {
+      const box = $('calLegend');
+      if (!calendars.length) { box.classList.add('hidden'); return; }
+      box.classList.remove('hidden');
+      const item = (key, name, color, err) => `<label style="--cal-color:${color}"><input type="checkbox" data-cal="${esc(key)}"${hiddenCals.has(key) ? '' : ' checked'}><span class="sc-cal-dot"></span>${esc(name)}${err ? ` <span class="is-error">(${esc(t('calendarError'))})</span>` : ''}</label>`;
+      box.innerHTML = item('main', t('mainCalendar'), 'var(--blue)') + calendars.map(c => item(c.key, scLang === 'en' ? c.name_en : c.name_ko, c.color, c.error)).join('');
+    }
+    document.addEventListener('change', e => {
+      const key = e.target.getAttribute && e.target.getAttribute('data-cal'); if (!key) return;
+      if (e.target.checked) hiddenCals.delete(key); else hiddenCals.add(key);
+      try { localStorage.setItem(HIDDEN_KEY, JSON.stringify([...hiddenCals])); } catch (err) {}
+      applyCalendarFilter(); renderCalendar(); renderAgenda();
+    });
     let loadToken = 0;
     let canWrite = false; // admin/master만 등록/수정/삭제 가능(서버가 다시 검증)
     let editingId = null; // 모달이 수정 모드일 때 대상 이벤트 id, 등록 모드면 null
@@ -573,7 +603,10 @@
         const data = await res.json();
         if (myToken !== loadToken) return; // 더 최근 요청이 있으면 이 결과는 버림
         if (!res.ok) throw new Error(data.error || t('loadError'));
-        events = data.events || [];
+        allEvents = data.events || [];
+        calendars = data.calendars || [];
+        applyCalendarFilter();
+        renderLegend();
         renderCalendar();
         renderAgenda();
       } catch (e) {
@@ -751,8 +784,9 @@
             <p class="sc-card-title"><span class="sc-card-time">${esc(formatTimeRange(ev))}</span>${esc(ev.summary || (scLang === 'en' ? '(No title)' : '(제목 없음)'))}</p>
             ${ev.location ? `<p class="sc-card-location">📍 ${esc(ev.location)}</p>` : ''}
             ${ev.description ? `<p class="sc-card-desc">${esc(ev.description)}</p>` : ''}
+            ${ev.readOnly && calInfo(ev.calendar) ? `<p class="sc-card-cal">${esc(scLang === 'en' ? calInfo(ev.calendar).name_en : calInfo(ev.calendar).name_ko)} · ${esc(t('readOnlyNote'))}</p>` : ''}
           </div>
-          ${canWrite ? `
+          ${canWrite && !ev.readOnly ? `
           <div class="sc-card-actions">
             <button class="sc-card-btn" onclick="openEditModal('${esc(ev.id)}')" aria-label="edit">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
@@ -968,7 +1002,7 @@
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
-        if (!$('calendarBody').classList.contains('hidden')) { renderCalendar(); renderAgenda(); }
+        if (!$('calendarBody').classList.contains('hidden')) { renderLegend(); renderCalendar(); renderAgenda(); }
       }, 150);
     });
 
