@@ -402,7 +402,7 @@
     });
     html += '<section class="gs-sec" id="churchSec"><h4 class="gs-sec-head">' + esc(t('churchTitle')) + '</h4><div class="gs-ce-body"><p class="gs-ce-hint">' + esc(t('churchHint')) + '</p><div id="churchRows">' + ((report && report.churchEntries) || []).map(churchRowHtml).join('') + '</div>'
       + '<div class="gs-ce-foot"><button type="button" class="gs-small" id="churchAdd">＋ ' + esc(t('churchAdd')) + '</button><span class="gs-ce-total" id="churchTotal"></span><button type="button" class="gs-small" id="churchApply" hidden>' + esc(t('churchApply')) + '</button></div></div></section><datalist id="gsChurchList"></datalist>';
-    html += '<p class="gs-warn" id="fWarn" hidden></p><div class="gs-formbtns"><button type="submit" class="gs-primary" id="fSave">' + esc(t('save')) + '</button><button type="button" class="gs-small" id="fCancel">' + esc(t('cancel')) + '</button><button type="button" class="gs-small gs-danger" id="fDelete" hidden>' + esc(t('formDelete')) + '</button></div>';
+    html += '<p class="gs-warn" id="fWarn" hidden></p><div class="gs-formbtns"><button type="submit" class="gs-primary" id="fSave">' + esc(t('save')) + '</button><button type="button" class="gs-small" id="fCancel">' + esc(t('cancel')) + '</button></div>';   // '이 보고 지우기' 버튼은 뺐다 — 고쳐서 저장하면 덮어쓴다
     $('reportForm').innerHTML = html;
     drafts = {}; applyScopeUi(); formKey = unitKey(currentUnit());
     updateWarn(); updateChurchTotal(); loadChurches();
@@ -513,13 +513,13 @@
     try { info = cache[unit.month] || await fetchMonth(unit.month); } catch (e) { clearTimeout(busy); showBusy(false); return; }
     clearTimeout(busy); showBusy(false);
     if (unitKey(currentUnit()) !== key) return;            // 기다리는 사이 또 바꿨으면 마지막 선택만 처리
-    existing = null; if ($('fDelete')) $('fDelete').hidden = true;
+    existing = null;
     var pool = unit.scope === 'ministry' ? (info.ministry || []) : info.mine;
     var match = pool.filter(function (r) { return r.scope === unit.scope && (unit.scope === 'individual' || (unit.scope === 'ministry' ? r.location === unit.team : String(r.teamName).toLowerCase() === unit.team)); })[0];
     var draft = drafts[key];
     formNote('');
     applyScopeUi();
-    existing = match || null; if ($('fDelete')) $('fDelete').hidden = !existing;
+    existing = match || null;
     var ministry = unit.scope === 'ministry', placeKeep = ministry ? unit.team : '';
     if (draft) fillForm(draft.values, ministry ? placeKeep : draft.place, draft.churchEntries);
     else if (match) { fillForm(match.values, match.location, match.churchEntries); formNote(t('formLoaded'), true); if (ministry) { if (unit.month === data.reportMonth || unit.month === data.current) applyCrs(false); else applyCrsNoteOnly(); } }   // 열린 달은 통계가 CRS 지금 값을 쓰므로 화면도 같은 값으로
@@ -652,16 +652,6 @@
   $('reportForm').addEventListener('click', function (e) {
     if (e.target.id === 'fCancel') { $('formPanel').hidden = true; return; }
     if (e.target.id === 'crsReload') { applyCrs(true); return; }
-    if (e.target.id === 'fDelete' && existing) {
-      if (!confirm(t('formDelAsk'))) return;
-      var delMonth = $('fMonth').value, delId = existing.id;
-      fetch(API + '?month=' + encodeURIComponent(delMonth) + '&id=' + encodeURIComponent(delId), { method: 'DELETE', headers: headers() })
-        .then(function (res) { return res.json().catch(function () { return {}; }).then(function (body) { if (!res.ok) throw new Error(body.error || t('denied')); }); })
-        .then(function () { clearCache(); $('formPanel').hidden = true; return load(viewKey()); })
-        .then(function () { say(t('formDeleted')); })
-        .catch(function (error) { formNote(error.message); });
-      return;
-    }
     if (e.target.id === 'churchAdd') { $('churchRows').insertAdjacentHTML('beforeend', churchRowHtml()); updateChurchTotal(); var last = $('churchRows').lastElementChild; if (last) last.querySelector('.gs-ce-church').focus(); return; }
     if (e.target.closest('.gs-ce-del')) { e.target.closest('.gs-ce').remove(); updateChurchTotal(); return; }
     if (e.target.id === 'churchApply') {
