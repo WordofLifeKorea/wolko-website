@@ -66,6 +66,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .hero-br { display: inline; }
   }
 
+  /* ── 글꼴 — 홈 화면과 같게: 제목·숫자는 G마켓 산스, 본문은 Pretendard (편지 카드의 손글씨 느낌 글꼴은 그대로) ── */
+  .ab-hero, .section { font-family: var(--ff-sans); }
+  .hero-inner h1, .hero-stat-num, .section-title, .history-year, .history-card h3, .vismis-card h3,
+  .value-title, .value-num, .commit-card h4, .commit-num, .ministry-card h4 { font-family: var(--ff-serif); }
+
   /* ── 움직임 — 자바스크립트가 html 에 .wl-motion 을 붙일 때만 (움직임 줄이기 설정이면 붙이지 않아 처음부터 다 보인다) ── */
   @keyframes abHeroZoom { from { transform: scale(1.08); } to { transform: none; } }
   @keyframes abRise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
@@ -173,7 +178,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .value-card:hover .value-num { color:#73d1f5; transform:scale(1.05); }
   .value-card:hover .value-title, .value-card:hover .value-desc { color:#fff; }
   .value-card:hover .value-desc { color:rgba(255,255,255,0.82); }
-  .value-num { font:800 56px/1 Montserrat,sans-serif; letter-spacing:-0.04em; color:var(--primary); transition:color .22s, transform .3s; position:relative; z-index:1; margin-bottom:8px; transform-origin:left bottom; }
+  .value-num { font:800 56px/1 var(--ff-serif); letter-spacing:-0.04em; color:var(--primary); transition:color .22s, transform .3s; position:relative; z-index:1; margin-bottom:8px; transform-origin:left bottom; }
   .value-title { font-size:22px; font-weight:800; letter-spacing:-0.02em; color:#102028; line-height:1.3; transition:color .22s; position:relative; z-index:1; }
   .value-desc { font-size:15px; line-height:1.8; color:var(--muted); transition:color .22s; position:relative; z-index:1; }
 
@@ -198,7 +203,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .commit-card:hover { transform:translateY(-4px); background:linear-gradient(180deg, #0a5b76 0%, #004f68 100%); border-color:transparent; box-shadow:0 20px 48px rgba(0,79,104,0.22); }
   .commit-card:hover::before { transform:scale(1.3); opacity:.9; }
   .commit-card > * { position:relative; z-index:1; }
-  .commit-num { grid-row:1 / span 3; align-self:start; font:800 58px/1 Montserrat,sans-serif; letter-spacing:-0.04em; background:linear-gradient(160deg, var(--primary) 0%, #4cc1e6 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; transition:transform .3s; transform-origin:left top; }
+  .commit-num { grid-row:1 / span 3; align-self:start; font:800 58px/1 var(--ff-serif); letter-spacing:-0.04em; background:linear-gradient(160deg, var(--primary) 0%, #4cc1e6 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; transition:transform .3s; transform-origin:left top; }
   .commit-card:hover .commit-num { background:none; -webkit-text-fill-color:#73d1f5; transform:scale(1.06); }
   .commit-card h4 { grid-column:2; font-size:20px; font-weight:800; letter-spacing:-0.01em; color:#102028; line-height:1.35; transition:color .22s; }
   .commit-card p { grid-column:2; font-size:14.5px; line-height:1.85; color:var(--muted); transition:color .22s; }
