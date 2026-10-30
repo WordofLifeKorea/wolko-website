@@ -389,7 +389,8 @@
         + (section.id === 'church' ? '<div class="gs-crsbar"><p class="gs-ce-hint" id="crsNote"></p><button type="button" class="gs-small" id="crsReload">' + esc(t('crsReload')) + '</button></div>' : '') + section.fields.map(function (f) {
         var parts = tx(f.label).split(' — '), title = parts[0], desc = parts.slice(1).join(' — ');
         return '<div class="gs-row"><div class="gs-row-text"><label for="f_' + f.id + '"><strong>' + esc(title) + '</strong></label>' + (f.crs ? '<span class="gs-crsbadge" title="' + esc(t('crsHint')) + '">' + esc(t('crsBadge')) + '</span>' : '')
-          + (desc ? '<button type="button" class="gs-info" data-tip="' + esc(desc) + '" aria-label="' + esc(t('infoLabel', title)) + '">i</button>' : '') + '</div>'
+          + (f.note ? '<button type="button" class="gs-info" data-tip="' + esc(tx(f.note)) + '" aria-label="' + esc(t('infoLabel', title)) + '">i</button>' : '')   // ⓘ 에는 정의서 각주만(통계 표와 같은 방식)
+          + (desc ? '<span class="gs-row-desc">' + esc(desc) + '</span>' : '') + '</div>'   // 설명은 이름 아래에 바로 보인다
           + '<div class="gs-step"><button type="button" class="gs-stepbtn" data-step="-1" data-for="' + f.id + '" aria-label="' + esc(t('minus')) + '">−</button>'
           + '<input id="f_' + f.id + '" type="text" inputmode="numeric" autocomplete="off" data-field="' + f.id + '" value="' + (v[f.id] ? v[f.id] : 0) + '" placeholder="0" aria-label="' + esc(title) + '">'
           + '<button type="button" class="gs-stepbtn" data-step="1" data-for="' + f.id + '" aria-label="' + esc(t('plus')) + '">+</button></div></div>';
