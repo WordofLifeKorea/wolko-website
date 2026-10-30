@@ -9,10 +9,10 @@ test('ministry hub presents all four ministries in both languages', async () => 
   const ministry = await read('src/pages/ministry/index.astro');
 
   assert.match(ministry, /<BaseLayout[\s\S]*activeNav="ministry"/);
-  assert.match(ministry, /href="\/camp"/);
-  assert.match(ministry, /href="\/wolbi-jeju"/);
-  assert.match(ministry, /href="\/youth"/);
-  assert.match(ministry, /href="\/jr-syme"/);
+  assert.match(ministry, /href: '\/camp'/);
+  assert.match(ministry, /href: '\/wolbi-jeju'/);
+  assert.match(ministry, /href: '\/youth'/);
+  assert.match(ministry, /href: '\/jr-syme'/);
   assert.match(ministry, /캠프 사역/);
   assert.match(ministry, /Camp Ministry/);
   assert.match(ministry, /제주월비/);
