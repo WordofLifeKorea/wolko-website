@@ -26,6 +26,27 @@
     io.observe(root);
   }
 
+  /** 목록으로 내려가기 — 천천히 출발해 빨라졌다가 천천히 멈춘다(ease-in-out). 거리에 따라 0.9~1.6초. 모션 줄이기면 바로 이동 */
+  function glideTo(target) {
+    var margin = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+    var start = window.pageYOffset, end = Math.max(0, start + target.getBoundingClientRect().top - margin), dist = end - start;
+    if (reduce || Math.abs(dist) < 2) { target.scrollIntoView({ behavior: 'auto', block: 'start' }); return; }
+    var ms = Math.min(1600, Math.max(900, Math.abs(dist) * 0.9)), t0 = null;
+    var ease = function (k) { return k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; };   // easeInOutCubic
+    var root = document.documentElement, prevBehavior = root.style.scrollBehavior;
+    root.style.scrollBehavior = 'auto';   // 사이트 전체의 scroll-behavior: smooth 가 프레임마다 겹치지 않게 잠시 끈다
+    var stop = false, done = function () { root.style.scrollBehavior = prevBehavior; }, cancel = function () { stop = true; done(); };
+    window.addEventListener('wheel', cancel, { passive: true, once: true });          // 사용자가 직접 스크롤하면 멈춘다
+    window.addEventListener('touchstart', cancel, { passive: true, once: true });
+    (function frame(now) {
+      if (stop) return;
+      if (t0 === null) t0 = now;
+      var k = Math.min(1, (now - t0) / ms);
+      window.scrollTo(0, start + dist * ease(k));
+      if (k < 1) requestAnimationFrame(frame); else done();
+    })(performance.now());
+  }
+
   function show(names) {
     Array.prototype.forEach.call(band.querySelectorAll('.pc-count'), function (c) { c.textContent = names.length; });
     names.forEach(function (name) {
@@ -45,8 +66,7 @@
       var link = strip.querySelector('a');
       if (link) link.addEventListener('click', function (e) {
         e.preventDefault();
-        var smooth = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-        band.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+        glideTo(band);
         if (history.replaceState) history.replaceState(null, '', '#partnerChurches');
       });
     }
