@@ -6,9 +6,8 @@
  * 링크가 다른 사람에게 전달돼도 요청을 받은 이메일을 모르면 열어 볼 수도, 대신 써 낼 수도 없다.
  */
 import { REFERENCE_SECTIONS, cleanReferenceAnswers, missingReference, refKey, TOKEN_RE, saveReferenceAnswers } from '../../lib/serveReference.js';
-import { loadApplication, loadFullApplication, saveApplication, addAudit } from '../../lib/serveApplication.js';
-import { reviewersFor } from '../../lib/serveInquiry.js';
-import { MASTER_EMAILS, normalizeEmail, sendEmail } from '../../lib/hubAccounts.js';
+import { loadApplication, loadFullApplication, saveApplication, addAudit, ONLINE_APP_VIEWERS } from '../../lib/serveApplication.js';
+import { normalizeEmail, sendEmail } from '../../lib/hubAccounts.js';
 import { applyRateLimited } from '../../lib/applicantAccount.js';
 
 const H = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };
@@ -103,7 +102,7 @@ export async function onRequestPost({ env, request, waitUntil }) {
     const lang = app.lang;
     const notify = async () => {
       if (!env.RESEND_API_KEY) return;
-      const to = [...new Set([...reviewersFor(lang), ...MASTER_EMAILS.map(normalizeEmail)])];
+      const to = ONLINE_APP_VIEWERS;
       await sendEmail(env, { to, subject: lang === 'en' ? '[WOLKO] A reference was submitted' : '[WOLKO] 추천서가 도착했습니다', html: `<div style="word-break:keep-all;font-family:'Apple SD Gothic Neo',Arial,sans-serif;font-size:15px;line-height:1.7;color:#0d1b24;"><p>${lang === 'en' ? `Reference ${record.n} has been submitted for application ${app.refNo || ''}.` : `신청서 ${app.refNo || ''}의 추천인 ${record.n} 추천서가 도착했습니다.`}</p><p><a href="${PAGE_URL}">${PAGE_URL}</a></p></div>` }).catch(e => console.error('reference notify failed:', e.message));
     };
     if (waitUntil) waitUntil(notify()); else await notify();

@@ -13,7 +13,7 @@ import { portalSession } from '../../lib/hubAccounts.js';
 import { SERVE_INQUIRY_PREFIX, canViewServeInquiry, SERVE_REVIEWER_EMAILS } from '../../lib/serveInquiry.js';
 import { SERVE_APPLICATION_SECTIONS } from '../../lib/serveApplicationSchema.js';
 import {
-  APP_PREFIX, canAccessServeApplication, createApplication, loadApplication, loadFullApplication, saveApplication,
+  APP_PREFIX, canAccessServeApplication, isOnlineAppViewer, createApplication, loadApplication, loadFullApplication, saveApplication,
   cleanApplicationValues, missingRequired, addAudit, summarize, listApplications, deleteApplication, RETENTION_DAYS,
 } from '../../lib/serveApplication.js';
 
@@ -24,7 +24,7 @@ const json = body => Response.json(body, { headers: H });
 async function requireSession(request, env) {
   const session = await portalSession(request, env);
   if (!session) return { res: fail('포탈 로그인이 필요합니다.', 401) };
-  const allowed = session.role === 'master' || Object.values(SERVE_REVIEWER_EMAILS).flat().includes(session.email);
+  const allowed = session.role === 'master' || Object.values(SERVE_REVIEWER_EMAILS).flat().includes(session.email) || isOnlineAppViewer(session);
   if (!allowed) return { res: fail('이 화면을 볼 권한이 없습니다.', 403) };
   return { session };
 }
@@ -130,7 +130,9 @@ export async function onRequestDelete({ env, request }) {
   if (g.res) return g.res;
   if (g.session.role !== 'master') return fail('신청서 삭제는 마스터만 할 수 있습니다.', 403);
   const id = new URL(request.url).searchParams.get('id');
-  if (!id || !(await loadApplication(env, id))) return fail('신청서를 찾을 수 없습니다.', 404);
+  const target = id ? await loadApplication(env, id) : null;
+  if (!target) return fail('신청서를 찾을 수 없습니다.', 404);
+  if (!canAccessServeApplication(g.session, target)) return fail('이 신청서를 삭제할 권한이 없습니다.', 403);   // 온라인 지원서는 볼 수 있는 사람만
   await deleteApplication(env, id);
   return json({ ok: true });
 }

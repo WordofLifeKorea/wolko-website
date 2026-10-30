@@ -19,6 +19,7 @@ function setup() {
     async list({ prefix }) { return { keys: [...store.keys()].filter(k => k.startsWith(prefix)).map(name => ({ name })), list_complete: true }; },
   };
   const env = { CAMP_KV: kv, ADMIN_PASSWORD: 'secret', RESEND_API_KEY: 'x', SERVE_APP_KEY: KEY };
+  for (const [email, role] of [['esooy@wol.org', 'counselor'], ['samuelsong@wol.org', 'admin'], ['jacobmorse@wol.org', 'admin'], ['jeremyrodgers@wol.org', 'admin'], ['hlim@wol.org', 'counselor']]) store.set(`hub:account:${email}`, JSON.stringify({ email, name: email, role, status: 'approved' }));
   const realFetch = globalThis.fetch;
   globalThis.fetch = async (url, init) => { if (String(url).includes('resend')) mails.push(JSON.parse(init.body)); return new Response('{}', { status: 200 }); };
   const call = async (mod, method, { body, token, query = '', ip = '1.1.1.1' } = {}) => {
@@ -29,8 +30,8 @@ function setup() {
     const res = await fn({ env, request: req });
     return { ...(await res.json()), status: res.status };
   };
-  const portal = async (query) => {
-    const req = new Request('https://wolko.org/api/portal/serve-applications' + query, { headers: { Authorization: 'Bearer ' + await H.createHubSessionToken('secret', 'admin@wolko.org', 'master') } });
+  const portal = async (query, who = ['esooy@wol.org', 'counselor']) => {
+    const req = new Request('https://wolko.org/api/portal/serve-applications' + query, { headers: { Authorization: 'Bearer ' + await H.createHubSessionToken('secret', who[0], who[1]) } });
     const res = await A.onRequestGet({ env, request: req });
     return { ...(await res.json()), status: res.status };
   };
@@ -305,6 +306,27 @@ test('추천서 본인 확인: 틀린 이메일 5번이면 15분 잠금 · 다�
     assert.equal((await t.call(REF, 'POST', { body: { t: l1, action: 'verify', email: 'pastor@x.com' } })).status, 429, '잠긴 동안은 맞는 이메일도 거절');
     const { v: v2 } = await t.call(REF, 'POST', { body: { t: l2, action: 'verify', email: 'mary@x.com' } });
     assert.equal((await t.call(REF, 'POST', { body: { t: l1, v: v2, answers: ANSWERS } })).status, 401, '다른 링크의 확인표는 쓸 수 없다');
+  } finally { t.restore(); }
+});
+
+test('온라인 지원서는 esooy · Samuel Song · Jacob Morse · Jeremy 네 명만 포탈에서 본다 · 알림도 네 명에게만', async () => {
+  const t = setup();
+  try {
+    const { token } = await t.signIn();
+    await t.call(STAFF, 'POST', { token, body: { lang: 'ko', values: { ...FULL, nameKo: '김환규' }, consent: true, consentSensitive: true } });
+    const notice = t.mails.find(m => /새 온라인 스태프 지원서/.test(m.subject));
+    assert.deepEqual([...notice.to].sort(), ['esooy@wol.org', 'jacobmorse@wol.org', 'jeremyrodgers@wol.org', 'samuelsong@wol.org']);
+    for (const who of [['esooy@wol.org', 'counselor'], ['samuelsong@wol.org', 'admin'], ['jacobmorse@wol.org', 'master'], ['jeremyrodgers@wol.org', 'admin']]) {
+      const list = await t.portal('', who);
+      assert.equal(list.applications.length, 1, who[0]);
+      assert.equal((await t.portal(`?id=${list.applications[0].id}`, who)).status, 200, who[0]);
+    }
+    const id = (await t.portal('')).applications[0].id;
+    for (const who of [['admin@wolko.org', 'master'], ['hlim@wol.org', 'counselor'], ['wolkorea1@gmail.com', 'master']]) {
+      const list = await t.portal('', who);
+      assert.equal((list.applications || []).length, 0, who[0] + ' 목록에 안 보인다');
+      assert.ok([401, 403].includes((await t.portal(`?id=${id}`, who)).status), who[0] + ' 열 수 없다');
+    }
   } finally { t.restore(); }
 });
 

@@ -18,8 +18,13 @@ export const RETENTION_DAYS = 365;          // 보류
 export const REJECT_RETENTION_DAYS = 30;    // 거절(검토 후 부적합) — 지원자 안내·동의서 문구와 같다
 const AUDIT_LIMIT = 300;
 
+/** 온라인 비공개 지원서(/apply/…)와 그 추천서를 포탈에서 볼 수 있는 사람 — 이 네 명뿐(마스터·언어별 담당자도 아니다). 2026-10-30 요청 */
+export const ONLINE_APP_VIEWERS = ['esooy@wol.org', 'samuelsong@wol.org', 'jacobmorse@wol.org', 'jeremyrodgers@wol.org'];
+export const isOnlineAppViewer = session => !!session && ONLINE_APP_VIEWERS.includes(normalizeEmail(session.email));
+
 export function canAccessServeApplication(session, app) {
   if (!session) return false;
+  if (app?.source === 'online') return isOnlineAppViewer(session);
   if (session.role === 'master' || MASTER_EMAILS.includes(normalizeEmail(session.email))) return true;
   return reviewersFor(app?.lang).includes(normalizeEmail(session.email));
 }

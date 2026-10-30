@@ -6,10 +6,10 @@
  *       → 검토 담당자·마스터에게 알림(이름·내용 없이) → 지원자에게 접수 확인 메일
  */
 import { APPLICANT_SECTIONS } from '../../lib/serveApplicationSchema.js';
-import { cleanApplicationValues, missingRequired, saveApplication, addAudit } from '../../lib/serveApplication.js';
-import { reviewersFor, serveRateLimited } from '../../lib/serveInquiry.js';
+import { cleanApplicationValues, missingRequired, saveApplication, addAudit, ONLINE_APP_VIEWERS } from '../../lib/serveApplication.js';
+import { serveRateLimited } from '../../lib/serveInquiry.js';
 import { sendOneReference, loadReferenceRecord, cancelReference, keepReferenceAnswers } from '../../lib/serveReference.js';
-import { MASTER_EMAILS, normalizeEmail, sendEmail } from '../../lib/hubAccounts.js';
+import { normalizeEmail, sendEmail } from '../../lib/hubAccounts.js';
 import { applicantFromRequest, linkApplication, deleteDraft, newAppId } from '../../lib/applicantAccount.js';
 import { MAIL_LOGO, MAIL_FROM } from '../../lib/applyMail.js';
 
@@ -79,7 +79,7 @@ export async function onRequestPost({ env, request, waitUntil }) {
 
   const notify = async () => {
     if (!env.RESEND_API_KEY) return;
-    const to = [...new Set([...reviewersFor(lang), ...MASTER_EMAILS.map(normalizeEmail)])];
+    const to = ONLINE_APP_VIEWERS;   // 온라인 지원서는 이 네 명만 본다
     await sendEmail(env, {
       to,
       subject: ko ? '[WOLKO] 새 온라인 스태프 지원서가 접수되었습니다' : '[WOLKO] A new online staff application was submitted',
