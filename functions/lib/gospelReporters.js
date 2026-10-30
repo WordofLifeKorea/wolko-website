@@ -3,6 +3,7 @@
  *  팀 보고 · 캠프 · 제자훈련 · 지역교회(CRS 연동) 보고는 담당자만 쓴다. 담당자는
  *    - 마스터(늘 담당자),
  *    - 홈페이지 인원 소개의 풀타임 선교사(category: missionary) — 자동. 단기 사역자(stw)는 해당 없음,
+ *    - 코드로 고정한 사람(ALWAYS_REPORTER_EMAILS),
  *    - 마스터가 따로 지정한 사람.
  *  개인 전도 보고와 전도 행사 칸은 포탈 계정이 있으면 누구나.
  *  저장: KV gospel:reporters = { emails: [...] } (마스터가 직접 지정한 사람만 — 풀타임 선교사는 인원 소개에서 매번 가져온다)
@@ -11,6 +12,8 @@ import { normalizeEmail } from './hubAccounts.js';
 import { isFulltimeMissionary } from './fulltimeMissionaries.js';
 
 export const REPORTERS_KEY = 'gospel:reporters';
+/** 풀타임 선교사가 아니어도 늘 담당자인 계정(코드로 고정) — Estelle Sooy */
+export const ALWAYS_REPORTER_EMAILS = ['esooy@wol.org'];
 export const MAX_REPORTERS = 60;
 
 export async function loadReporters(env) {
@@ -22,6 +25,7 @@ export async function loadReporters(env) {
 export async function isDesignated(env, session) {
   if (!session) return false;
   if (session.role === 'master') return true;
+  if (ALWAYS_REPORTER_EMAILS.includes(normalizeEmail(session.email))) return true;
   if ((await loadReporters(env)).includes(normalizeEmail(session.email))) return true;
   return isFulltimeMissionary(env, { name: session.name, email: session.email });
 }

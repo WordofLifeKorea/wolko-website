@@ -188,3 +188,11 @@ test('원복: MASTER_EQUIVALENT_EMAILS 에서 한 줄을 지우면 계정은 그
   } finally { H.MASTER_EQUIVALENT_EMAILS.splice(i, 0, 'wolkorea1@gmail.com'); }
   assert.equal(H.effectiveRole('wolkorea1@gmail.com', 'counselor'), 'master');
 });
+
+test('esooy@wol.org 는 단기 사역자지만 늘 보고 담당자다(팀·사역 현황 보고)', async () => {
+  const t = setup(); await t.acc('esooy@wol.org', 'Estelle Sooy');
+  const month = reportMonth();
+  const r = await t.call(G, 'POST', ['esooy@wol.org', 'counselor'], { body: { month, location: 'mainland', scope: 'team', teamName: 'Crew', values: { campCount: 1 } } });
+  assert.equal(r.status, 200);
+  assert.equal((await t.call(G, 'GET', ['esooy@wol.org', 'counselor'], { query: `?month=${month}` })).me.designated, true);
+});

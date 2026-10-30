@@ -4,7 +4,7 @@
  *   POST /api/portal/gospel-reporters { emails } 지정 목록을 통째로 저장
  */
 import { portalSession, listAccounts, normalizeEmail } from '../../lib/hubAccounts.js';
-import { loadReporters, saveReporters } from '../../lib/gospelReporters.js';
+import { loadReporters, saveReporters, ALWAYS_REPORTER_EMAILS } from '../../lib/gospelReporters.js';
 import { loadMissionaryKeys, matchesMissionary } from '../../lib/fulltimeMissionaries.js';
 
 const H = { 'Cache-Control': 'no-store' };
@@ -14,7 +14,7 @@ async function view(env, emails) {
   const accounts = (await listAccounts(env)).filter(a => a?.status === 'approved' && a.email);
   const nameOf = new Map(accounts.map(a => [normalizeEmail(a.email), String(a.name || '').trim() || String(a.email).split('@')[0]]));
   const keys = await loadMissionaryKeys(env);   // 인원 소개의 풀타임 선교사 — 직접 지정하지 않아도 담당자
-  const auto = accounts.filter(a => matchesMissionary(keys, { name: a.name, email: a.email })).map(a => ({ email: normalizeEmail(a.email), name: nameOf.get(normalizeEmail(a.email)) })).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+  const auto = accounts.filter(a => ALWAYS_REPORTER_EMAILS.includes(normalizeEmail(a.email)) || matchesMissionary(keys, { name: a.name, email: a.email })).map(a => ({ email: normalizeEmail(a.email), name: nameOf.get(normalizeEmail(a.email)) })).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
   return {
     reporters: emails.map(email => ({ email, name: nameOf.get(email) || email.split('@')[0] })),
     auto,
