@@ -124,46 +124,73 @@ function refCopy({ refName, refNameKo, applicantKo, applicantEn }) {
   return {
     ko, who,
     pre: ko ? `${who} 님이 월코 스태프 지원서에 귀하를 추천인으로 적어 주셨습니다. 10분 정도면 작성하실 수 있습니다.` : `${who} has named you as a reference for a Word of Life Korea staff application. It takes about 10 minutes.`,
+    kicker: ko ? '추천서 작성 요청' : 'Reference request',
+    title: ko ? `${who} 님의 추천서를 부탁드립니다` : `Would you write a reference for ${who}?`,
     hello: ko ? `${refNameKo || refName || '추천인'} 님께` : `Dear ${refName || 'Referee'},`,
     body: ko ? `${who} 님이 월코(Word of Life Korea) 스태프로 지원하시면서 귀하를 추천인으로 적어 주셨습니다. 월코 스태프는 청소년을 가까이에서 섬기게 되므로, 지원자의 신앙과 인격에 대해 아시는 대로 솔직한 의견을 부탁드립니다.`
       : `${who} has applied to serve on staff with Word of Life Korea (WOLKO) and has named you as a reference. Our staff work closely with young people, so we would be grateful for your honest view of the applicant’s faith and character.`,
-    other: ko ? `${applicantEn ? applicantEn + ' has' : 'The applicant has'} applied to serve with Word of Life Korea and named you as a reference. The form is available in English.` : '',
-    btn: ko ? '추천서 작성하기' : 'Complete the reference',
-    rows: ko ? [['지원자', who], ['소요 시간', '약 10분'], ['회신 기한', null]] : [['Applicant', who], ['Time needed', 'About 10 minutes'], ['Please reply by', null]],
+    rows: ko ? [['지원자', who], ['지원 분야', '스태프'], ['작성 시간', '약 10분'], ['회신 기한', null]] : [['Applicant', who], ['Position', 'Staff'], ['Time needed', 'About 10 minutes'], ['Please reply by', null]],
+    howTitle: ko ? '작성 방법' : 'How it works',
+    how: ko ? ['아래 버튼을 눌러 추천서 양식을 엽니다.', '이 메일을 받으신 주소를 한 번 입력해 본인 확인을 합니다.', '질문에 답하고 성함으로 서명한 뒤 제출합니다. 적는 중에는 자동으로 임시 저장됩니다.']
+      : ['Open the reference form with the button below.', 'Enter the email address this message was sent to, to confirm it is you.', 'Answer the questions, sign with your name and submit. Your answers are saved as you go.'],
+    btn: ko ? '추천서 작성하기' : 'Write the reference',
     note: ko ? '이 링크는 귀하만을 위한 것입니다. 작성하신 내용은 검토 담당자만 보며 지원자에게는 공개되지 않습니다.' : 'This link is for you only. Your reference is read by our reviewers and is not shown to the applicant.',
+    other: ko ? `${applicantEn ? applicantEn + ' has' : 'The applicant has'} applied to serve with Word of Life Korea and named you as a reference. The form is also available in English.` : '',
     alt: ko ? '버튼이 열리지 않으면 아래 주소를 브라우저에 붙여 넣어 주세요.' : 'If the button does not work, paste this address into your browser:',
   };
 }
 export function referenceEmailHtml({ refName, refNameKo, applicantKo, applicantEn, link, due }) {
   const c = refCopy({ refName, refNameKo, applicantKo, applicantEn });
   due = fmtDue(due, c.ko);
-  const rows = c.rows.map(([k, v]) => `<tr><td style="padding:9px 0;color:#5b6b73;width:34%;border-bottom:1px solid #e3e6e8;">${k}</td><td style="padding:9px 0;font-weight:600;border-bottom:1px solid #e3e6e8;">${esc(v ?? due)}</td></tr>`).join('');
-  return `<!doctype html><html lang="${c.ko ? 'ko' : 'en'}"><body style="margin:0;padding:0;background:#f4f5f6;">
+  const F = "font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',Arial,sans-serif;";
+  const rows = c.rows.map(([k, v], i) => `<tr><td style="${F}padding:11px 0;width:30%;font-size:14px;color:#6a6d72;${i ? 'border-top:1px solid #e3e6e8;' : ''}">${k}</td><td style="${F}padding:11px 0;font-size:14px;font-weight:600;color:#2b2d2f;${i ? 'border-top:1px solid #e3e6e8;' : ''}">${esc(v ?? due)}</td></tr>`).join('');
+  const how = c.how.map((h, i) => `<tr><td valign="top" style="${F}width:28px;padding:6px 0;font-size:14px;font-weight:700;color:${MAIL_NAVY};">${i + 1}</td><td style="${F}padding:6px 0;font-size:14px;line-height:1.65;color:#3d4044;">${esc(h)}</td></tr>`).join('');
+  return `<!doctype html><html lang="${c.ko ? 'ko' : 'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${esc(c.kicker)}</title></head>
+<body style="margin:0;padding:0;background:#f4f5f6;">
 ${preheader(esc(c.pre))}
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5f6;padding:28px 12px;word-break:keep-all;font-family:'Apple SD Gothic Neo','Malgun Gothic',Arial,sans-serif;color:#2b2d2f;">
-<tr><td align="center">
-<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border:1px solid #d5d9dc;">
-<tr><td style="padding:26px 34px 18px;border-bottom:2px solid #3a3a3c;">${MAIL_LOGO}</td></tr>
-<tr><td style="padding:26px 34px 6px;font-size:15px;line-height:1.75;">
-  <p style="margin:0 0 14px;font-weight:600;">${esc(c.hello)}</p>
-  <p style="margin:0 0 18px;">${esc(c.body)}</p>
-  <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;font-size:14px;border-top:1px solid #3a3a3c;">${rows}</table>
-</td></tr>
-<tr><td style="padding:24px 34px 8px;">
-  <a href="${esc(link)}" style="display:inline-block;background:${MAIL_NAVY};color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 30px;">${c.btn}</a>
-</td></tr>
-<tr><td style="padding:14px 34px 24px;font-size:12.5px;line-height:1.7;color:#6a6d72;">
-  <p style="margin:0 0 8px;">${c.note}</p>
-  ${c.other ? `<p style="margin:0 0 8px;">${esc(c.other)}</p>` : ''}
-  <p style="margin:0;">${c.alt}<br><span style="word-break:break-all;color:${MAIL_NAVY};">${esc(link)}</span></p>
-</td></tr>
-<tr><td style="padding:14px 34px;border-top:1px solid #e3e6e8;font-size:12px;color:#6a6d72;">월코 (Word of Life Korea) · wolko.org</td></tr>
-</table></td></tr></table></body></html>`;
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f5f6;">
+<tr><td align="center" style="padding:28px 12px 36px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#ffffff;border:1px solid #d5d9dc;word-break:keep-all;">
+  <tr><td style="padding:24px 36px 20px;border-bottom:1px solid #e3e6e8;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+      <td valign="middle">${MAIL_LOGO}</td>
+      <td valign="middle" align="right" style="${F}font-size:12px;color:#6a6d72;white-space:nowrap;padding-left:12px;">${esc(c.kicker)}</td>
+    </tr></table>
+  </td></tr>
+  <tr><td style="padding:34px 36px 0;">
+    <h1 style="${F}margin:0;font-size:24px;line-height:1.35;font-weight:700;color:#2b2d2f;letter-spacing:-0.3px;">${esc(c.title)}</h1>
+  </td></tr>
+  <tr><td style="padding:22px 36px 0;">
+    <p style="${F}margin:0 0 10px;font-size:15px;font-weight:600;color:#2b2d2f;">${esc(c.hello)}</p>
+    <p style="${F}margin:0;font-size:15px;line-height:1.8;color:#3d4044;">${esc(c.body)}</p>
+  </td></tr>
+  <tr><td style="padding:24px 36px 0;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:2px solid #3a3a3c;border-bottom:1px solid #3a3a3c;">${rows}</table>
+  </td></tr>
+  <tr><td style="padding:26px 36px 0;">
+    <p style="${F}margin:0 0 6px;font-size:14px;font-weight:700;color:#2b2d2f;">${esc(c.howTitle)}</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${how}</table>
+  </td></tr>
+  <tr><td style="padding:26px 36px 0;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+      <td align="center" bgcolor="${MAIL_NAVY}" style="background:${MAIL_NAVY};">
+        <a href="${esc(link)}" target="_blank" style="${F}display:block;padding:16px 24px;font-size:16px;font-weight:700;color:#ffffff;text-decoration:none;">${esc(c.btn)}</a>
+      </td>
+    </tr></table>
+  </td></tr>
+  <tr><td style="padding:22px 36px 30px;">
+    <p style="${F}margin:0 0 8px;font-size:13px;line-height:1.7;color:#4e5155;">${esc(c.note)}</p>
+    ${c.other ? `<p style="${F}margin:0 0 8px;font-size:13px;line-height:1.7;color:#6a6d72;">${esc(c.other)}</p>` : ''}
+    <p style="${F}margin:0;font-size:12.5px;line-height:1.7;color:#6a6d72;">${esc(c.alt)}<br><a href="${esc(link)}" style="color:${MAIL_NAVY};word-break:break-all;">${esc(link)}</a></p>
+  </td></tr>
+  <tr><td style="${F}padding:16px 36px;background:#fafbfb;border-top:1px solid #e3e6e8;font-size:12px;line-height:1.6;color:#6a6d72;">월코 (Word of Life Korea) · <a href="https://wolko.org" style="color:#6a6d72;">wolko.org</a></td></tr>
+</table>
+</td></tr></table></body></html>`;
 }
 export function referenceEmailText({ refName, refNameKo, applicantKo, applicantEn, link, due }) {
   const c = refCopy({ refName, refNameKo, applicantKo, applicantEn });
   due = fmtDue(due, c.ko);
-  return [c.hello, '', c.body, '', ...c.rows.map(([k, v]) => `${k}: ${v ?? due}`), '', `${c.btn}: ${link}`, '', c.note, c.other, '', '월코 (Word of Life Korea) · wolko.org'].filter(x => x !== undefined).join('\n');
+  return [c.title, '', c.hello, '', c.body, '', ...c.rows.map(([k, v]) => `${k}: ${v ?? due}`), '', c.howTitle, ...c.how.map((h, i) => `${i + 1}. ${h}`), '', `${c.btn}: ${link}`, '', c.note, c.other, '', '월코 (Word of Life Korea) · wolko.org'].filter(x => x !== undefined && x !== null).join('\n');
 }
 
 /** 추천인 한 명에게 요청 메일을 보낸다 — 지원서를 내기 전(추천인 단계에서 '다음')에도 보낸다. appId 는 그때 미리 정해 둔 신청서 id.

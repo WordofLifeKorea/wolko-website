@@ -11,7 +11,7 @@
       secure: '제출하면 수정할 수 없습니다. 내용은 암호화하여 보관됩니다.', submit: '추천서 제출', submitting: '제출하는 중…', optional: '선택', select: '선택',
       errRequired: '이 항목을 적어 주세요.', errStep: function (list) { return '빠진 항목이 있습니다: ' + list + '. 빨갛게 표시된 곳을 확인해 주세요.'; }, errNet: '제출하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.',
       invalid: '링크가 올바르지 않거나 기한이 지났습니다. 월코로 문의해 주세요.', already: '이미 제출된 추천서입니다. 감사합니다.',
-      certifyShort: '확인 체크', andMore: function (n) { return '외 ' + n + '개'; },
+      draftSaved: '적은 내용이 이 기기에 임시 저장되었습니다.', draftRestored: '전에 적어 두신 내용을 불러왔습니다.', certifyShort: '확인 체크', andMore: function (n) { return '외 ' + n + '개'; },
       vTitle: '본인 확인', vLead: function (h) { return '추천서 요청 메일을 받으신 이메일 주소를 입력해 주세요. (' + h + ')'; }, vLabel: '이메일 주소', vBtn: '확인', vChecking: '확인하는 중…', vNote: '요청 메일을 받으신 분만 추천서를 작성하실 수 있도록 한 번 확인합니다.', vWrong: '요청 메일을 보낸 이메일 주소와 다릅니다. 다시 확인해 주세요.', vLocked: '여러 번 틀려 15분 동안 잠겼습니다. 잠시 후 다시 시도해 주세요.', vAgain: '확인한 지 시간이 지나 다시 확인이 필요합니다. 적어 주신 내용은 그대로 있습니다.',
       doneTitle: '추천서를 잘 받았습니다. 감사합니다.', doneLead: '귀한 시간을 내어 주셔서 감사드립니다. 이 창은 닫으셔도 됩니다.', footNote: '월코 (Word of Life Korea) · 이 문서는 스태프 선발에만 사용됩니다.' },
     en: { title: 'Reference', sub: 'Staff Applicant Reference', docNo: 'Document no.', sent: 'Issued', security: 'Viewed by', secret: 'Reviewers only', loading: 'Loading…',
@@ -21,7 +21,7 @@
       secure: 'Once submitted, this reference cannot be changed. It is stored encrypted.', submit: 'Submit reference', submitting: 'Submitting…', optional: 'Optional', select: 'Select',
       errRequired: 'Please fill this in.', errStep: function (list) { return 'Some answers are missing: ' + list + '. Please check the items marked in red.'; }, errNet: 'Could not submit. Please check your connection and try again.',
       invalid: 'This link is invalid or has expired. Please contact Word of Life Korea.', already: 'This reference has already been submitted. Thank you.',
-      certifyShort: 'confirmation checkbox', andMore: function (n) { return 'and ' + n + ' more'; },
+      draftSaved: 'Your answers are saved on this device.', draftRestored: 'We restored the answers you started earlier.', certifyShort: 'confirmation checkbox', andMore: function (n) { return 'and ' + n + ' more'; },
       vTitle: 'Confirm your email', vLead: function (h) { return 'Please enter the email address where you received our request (' + h + ').'; }, vLabel: 'Email address', vBtn: 'Continue', vChecking: 'Checking…', vNote: 'We ask this so that only the person who received our request can write this reference.', vWrong: 'This is not the address we sent the request to. Please check and try again.', vLocked: 'Too many wrong attempts. Please try again in 15 minutes.', vAgain: 'Please confirm your email again. Your answers are kept.',
       doneTitle: 'Thank you. Your reference has been received.', doneLead: 'We are grateful for the time you have given. You may close this page.', footNote: 'Word of Life Korea · This document is used only for staff selection.' },
   };
@@ -31,6 +31,11 @@
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var fmt = function (iso) { return new Date(iso).toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', lang === 'ko' ? { year: 'numeric', month: 'long', day: 'numeric' } : { dateStyle: 'long' }); };
   var data = null, values = {}, errors = {}, gate = null, verifyV = '';
+  /* 적는 중인 내용은 이 기기에 임시 저장 — 새로 고치거나 나중에 다시 열어도 이어서 쓴다. 제출하면 지운다(링크 기한 60일 뒤에도 지운다) */
+  var DRAFT_KEY = 'wolko-ref-draft:' + token, draftTimer = null;
+  function loadDraft() { try { var d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); if (d && d.until > Date.now()) return d.values || {}; localStorage.removeItem(DRAFT_KEY); } catch (e) {} return {}; }
+  function saveDraft() { clearTimeout(draftTimer); draftTimer = setTimeout(function () { try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ values: values, until: Date.now() + 60 * 86400000 })); $('rfSaved').textContent = t('draftSaved'); } catch (e) {} }, 500); }
+  function dropDraft() { clearTimeout(draftTimer); try { localStorage.removeItem(DRAFT_KEY); } catch (e) {} }
   var VKEY = 'wolko-ref-ok:' + token;   // 같은 창에서 새로 고쳐도 다시 묻지 않게(창을 닫으면 사라진다)
   var visible = function (f) { return !f.showIf || values[f.showIf.field] === f.showIf.equals; };
   var req = function (f) { return f.required ? '<span class="ap-req" aria-hidden="true">*</span>' : '<span class="ap-opt">' + esc(t('optional')) + '</span>'; };
@@ -105,7 +110,7 @@
       var res = await fetch('/api/apply/reference?t=' + encodeURIComponent(token), { cache: 'no-store' });
       var body = await res.json().catch(function () { return {}; });
       if (!res.ok) throw new Error(t('invalid'));
-      if (body.status === 'completed') { $('rfStatus').textContent = t('already'); return; }   // 제출 후에는 이름 등 정보를 받지 않는다
+      if (body.status === 'completed') { dropDraft(); $('rfStatus').textContent = t('already'); return; }   // 제출 후에는 이름 등 정보를 받지 않는다
       gate = body;
       var saved = ''; try { saved = sessionStorage.getItem(VKEY) || ''; } catch (e) {}
       if (saved && await verify(saved, true)) return;
@@ -126,6 +131,7 @@
       var body = await res.json().catch(function () { return {}; });
       if (!res.ok) throw new Error(res.status === 403 ? t('vWrong') : res.status === 429 ? t('vLocked') : res.status === 404 ? t('invalid') : (body.error || t('errNet')));
       verifyV = body.v; data = body;
+      if (!Object.keys(values).length) { values = loadDraft(); if (Object.keys(values).length) setTimeout(function () { $('rfSaved').textContent = t('draftRestored'); }, 0); }
       try { sessionStorage.setItem(VKEY, email); } catch (e) {}
       $('rfVerify').hidden = true; $('rfStatus').hidden = true; $('rfBody').hidden = false; render();
       return true;
@@ -140,10 +146,12 @@
   $('rfForm').addEventListener('input', function (e) {
     var f = e.target.getAttribute('data-f'); if (!f) return;
     values[f] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    saveDraft();
   });
   $('rfForm').addEventListener('change', function (e) {
     var f = e.target.getAttribute('data-f'); if (!f) return;
     values[f] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    saveDraft();
     if (e.target.type === 'radio' && f === 'concern') rerender();   // '예'이면 설명 칸이 나온다
   });
   $('rfForm').addEventListener('submit', async function (e) {
@@ -164,6 +172,7 @@
       var body = await res.json().catch(function () { return {}; });
       if (res.status === 401 && body.needVerify) { btn.disabled = false; btn.textContent = t('submit'); showVerify(t('vAgain')); window.scrollTo({ top: 0 }); return; }   // 확인 시간이 지나면 다시 확인(적은 내용은 그대로)
       if (!res.ok) throw new Error(body.error || t('errNet'));
+      dropDraft();
       $('rfBody').hidden = true; $('rfDone').hidden = false; window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) { showErr(err.message || t('errNet')); btn.disabled = false; btn.textContent = t('submit'); }
   });
