@@ -497,7 +497,7 @@ body.gs-writing { overflow: hidden; }
   border-radius: 22px 0 0 22px; background: #fff; overflow-y: auto; overscroll-behavior: contain;
   box-shadow: -30px 0 70px -28px rgba(0, 40, 55, .55); animation: gs-sheet-in .34s cubic-bezier(.2, .8, .2, 1);
 }
-:root:root #formPanel .gs-sheet-head { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 -26px 18px; padding: 20px 26px 14px; background: rgba(255, 255, 255, .96); border-bottom: 1px solid #e6eef1; }
+:root:root #formPanel .gs-sheet-head { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 -26px 18px; padding: 20px 26px 14px; background: #fff; border-bottom: 1px solid #e6eef1; }
 :root:root #formPanel .gs-sheet-head h2 { margin: 0; outline: none; }
 :root:root .gs-sheet-close { flex: none; width: 38px !important; height: 38px !important; min-width: 0 !important; min-height: 0 !important; padding: 0 !important; border: 1px solid #d7e4e8; border-radius: 12px; background: #fff; color: #476470; font-size: 22px; line-height: 1; cursor: pointer; }
 :root:root .gs-sheet-close:hover { background: #eef5f7; color: #0a6a8f; }
@@ -506,7 +506,8 @@ body.gs-writing { overflow: hidden; }
 @keyframes gs-fade { from { opacity: 0; } to { opacity: 1; } }
 @media (max-width: 640px) {
   :root:root #formPanel:not([hidden]) { top: max(10px, env(safe-area-inset-top)); width: 100vw; padding: 0 16px 24px; border-radius: 20px 20px 0 0; animation-name: gs-sheet-up; }
-  :root:root #formPanel .gs-sheet-head { margin: 0 -16px 14px; padding: 16px 16px 12px; }
+  /* 휴대폰: 제목 줄이 내용을 가리지 않도록 붙박이로 두지 않고 같이 스크롤된다(닫기는 아래 늘 보이는 '닫기' 버튼으로도 된다) */
+  :root:root #formPanel .gs-sheet-head { position: static; margin: 0 -16px 14px; padding: 16px 16px 12px; }
 }
 @keyframes gs-sheet-up { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { :root:root #formPanel:not([hidden]), .gs-sheet-backdrop { animation: none; } }
