@@ -23,7 +23,7 @@ const reference = n => [
 
 export const SERVE_APPLICATION_SECTIONS = [
   {
-    id: 'application', title: L('신청서', 'Application'),
+    id: 'application', title: L('기본 정보', 'Personal Information'),
     fields: [
       { id: 'prefix', type: 'select', label: L('호칭', 'Prefix'), options: PREFIX },
       { id: 'firstName', type: 'text', required: true, label: L('영문 이름(First)', 'First Name'), max: 80 },
@@ -97,4 +97,7 @@ export const SENSITIVE_FIELD_IDS = new Set(SERVE_APPLICATION_FIELDS.filter(f => 
 export const APPLICATION_STATUSES = ['draft', 'submitted', 'approved', 'hold', 'rejected'];
 
 /** 지원자가 직접 쓰는 비공개 지원서(/apply/…)에 보여 주는 영역 — 내부용(인터뷰·추천인 확인·동의 확인)은 뺀다 */
-export const APPLICANT_SECTIONS = SERVE_APPLICATION_SECTIONS.filter(s => s.id !== 'internal');
+const APPLICANT_HIDDEN = new Set(['prefix', 'ref1Prefix', 'ref2Prefix']);   // 호칭은 온라인 지원서에서 묻지 않는다(포탈 입력에는 남김)
+export const APPLICANT_SECTIONS = SERVE_APPLICATION_SECTIONS
+  .filter(s => s.id !== 'internal')
+  .map(s => ({ ...s, fields: s.fields.filter(f => !APPLICANT_HIDDEN.has(f.id)) }));

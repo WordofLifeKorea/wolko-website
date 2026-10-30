@@ -11,6 +11,7 @@
  * 링크의 토큰은 메일에만 있고 서버에는 해시만 둔다. 60일 지나면 링크가 만료된다.
  */
 import { sendEmail, normalizeEmail } from './hubAccounts.js';
+import { MAIL_LOGO, MAIL_NAVY } from './applyMail.js';
 import { sealSensitive, openSensitive } from './serveApplication.js';
 
 export const REF_PREFIX = 'serve:ref:';
@@ -119,9 +120,9 @@ export function referenceEmailHtml({ refName, applicant, link, due }) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f5f7;padding:32px 12px;font-family:'Apple SD Gothic Neo','Malgun Gothic',Arial,sans-serif;color:#13242d;">
 <tr><td align="center">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border:1px solid #dfe7eb;border-radius:4px;">
-<tr><td style="padding:26px 36px 20px;border-bottom:3px solid #0b4a62;">
-  <div style="font-size:12px;letter-spacing:.18em;color:#0b4a62;font-weight:700;">WORD OF LIFE KOREA</div>
-  <div style="font-size:20px;font-weight:700;margin-top:6px;">Confidential Reference Request</div>
+<tr><td style="padding:28px 36px 20px;border-bottom:2px solid #3a3a3c;">
+  ${MAIL_LOGO}
+  <div style="font-size:20px;font-weight:700;margin-top:22px;">Confidential Reference Request</div>
   <div style="font-size:14px;color:#56707b;margin-top:2px;">추천서 요청 (비공개)</div>
 </td></tr>
 <tr><td style="padding:26px 36px 8px;font-size:15px;line-height:1.75;">
@@ -137,11 +138,11 @@ export function referenceEmailHtml({ refName, applicant, link, due }) {
   </table>
 </td></tr>
 <tr><td align="center" style="padding:24px 36px 8px;">
-  <a href="${esc(link)}" style="display:inline-block;background:#0b4a62;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 30px;border-radius:4px;">Complete the Reference &nbsp;·&nbsp; 추천서 작성하기</a>
+  <a href="${esc(link)}" style="display:inline-block;background:${MAIL_NAVY};color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 30px;border-radius:2px;">Complete the Reference &nbsp;·&nbsp; 추천서 작성하기</a>
 </td></tr>
 <tr><td style="padding:16px 36px 26px;font-size:12.5px;line-height:1.7;color:#6a808a;">
   <p style="margin:0 0 8px;">This link is unique to you. Your response is confidential and will not be shared with the applicant. · 이 링크는 귀하만을 위한 것입니다. 작성하신 내용은 비공개로 다뤄지며 지원자에게 공개되지 않습니다.</p>
-  <p style="margin:0;">If the button does not work, copy this address into your browser: · 버튼이 열리지 않으면 아래 주소를 브라우저에 붙여 넣어 주세요.<br><span style="word-break:break-all;color:#0b4a62;">${esc(link)}</span></p>
+  <p style="margin:0;">If the button does not work, copy this address into your browser: · 버튼이 열리지 않으면 아래 주소를 브라우저에 붙여 넣어 주세요.<br><span style="word-break:break-all;color:${MAIL_NAVY};">${esc(link)}</span></p>
 </td></tr>
 <tr><td style="padding:16px 36px;border-top:1px solid #e6eef1;font-size:12px;color:#8a9ca4;">Word of Life Korea · 월코 &nbsp;|&nbsp; wolko.org</td></tr>
 </table></td></tr></table></body></html>`;

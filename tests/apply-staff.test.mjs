@@ -188,6 +188,12 @@ test('추천서: 메일 링크로 열고 한 번만 제출, 답변은 암호화 
   } finally { t.restore(); }
 });
 
+test('온라인 지원서는 호칭을 묻지 않는다(포탈 입력 정의에는 남는다)', async () => {
+  const { APPLICANT_SECTIONS, SERVE_APPLICATION_FIELDS } = await import('../functions/lib/serveApplicationSchema.js');
+  const ids = APPLICANT_SECTIONS.flatMap(s => s.fields.map(f => f.id));
+  for (const id of ['prefix', 'ref1Prefix', 'ref2Prefix']) { assert.ok(!ids.includes(id), id); assert.ok(SERVE_APPLICATION_FIELDS.some(f => f.id === id), id); }
+});
+
 test('화면: 비공개 지원서·추천서 페이지는 검색 제외, 로그인 화면과 진행 상황 자리가 있다', () => {
   const page = readFileSync(new URL('../src/pages/apply/wolko-staff-k7m2q9.astro', import.meta.url), 'utf8');
   const ref = readFileSync(new URL('../src/pages/reference/index.astro', import.meta.url), 'utf8');

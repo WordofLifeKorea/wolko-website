@@ -11,6 +11,7 @@ import { reviewersFor, serveRateLimited } from '../../lib/serveInquiry.js';
 import { sendReferenceRequests } from '../../lib/serveReference.js';
 import { MASTER_EMAILS, normalizeEmail, sendEmail } from '../../lib/hubAccounts.js';
 import { applicantFromRequest, linkApplication, deleteDraft } from '../../lib/applicantAccount.js';
+import { MAIL_LOGO } from '../../lib/applyMail.js';
 
 const H = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };
 const fail = (error, status = 400, extra = {}) => Response.json({ error, ...extra }, { status, headers: H });
@@ -70,7 +71,7 @@ export async function onRequestPost({ env, request, waitUntil }) {
     await sendEmail(env, {
       to: email,
       subject: ko ? '지원서가 접수되었습니다 — 월코 (Word of Life Korea)' : 'Application received — Word of Life Korea',
-      html: `<div style="font-family:'Apple SD Gothic Neo',Arial,sans-serif;font-size:15px;line-height:1.75;color:#13242d;max-width:560px;"><div style="font-size:12px;letter-spacing:.18em;color:#0b4a62;font-weight:700;">WORD OF LIFE KOREA</div><h2 style="margin:6px 0 14px;font-size:20px;">${ko ? '지원서가 접수되었습니다' : 'Your application has been received'}</h2><p>${ko ? `${esc(values.nameKo || values.firstName)}님, 월코에 지원해 주셔서 감사합니다. 작성해 주신 추천인께 추천서 요청 메일을 보내 드렸습니다. 검토 후 담당자가 연락드리겠습니다. 지원서 페이지에 로그인하면 추천서 진행 상황을 확인할 수 있습니다.` : `Dear ${esc(values.firstName)}, thank you for applying to serve with Word of Life Korea. We have emailed reference requests to the references you listed. Our team will contact you after reviewing your application. You can sign in to the application page to see the status of your references.`}</p><p style="background:#f6f9fa;border:1px solid #e3ebee;padding:12px 16px;border-radius:4px;">${ko ? '접수 번호' : 'Reference no.'}: <b>${esc(refNo)}</b></p></div>`,
+      html: `<div style="font-family:'Apple SD Gothic Neo',Arial,sans-serif;font-size:15px;line-height:1.75;color:#13242d;max-width:560px;"><div style="padding-bottom:16px;border-bottom:2px solid #3a3a3c;">${MAIL_LOGO}</div><h2 style="margin:22px 0 14px;font-size:20px;">${ko ? '지원서가 접수되었습니다' : 'Your application has been received'}</h2><p>${ko ? `${esc(values.nameKo || values.firstName)}님, 월코에 지원해 주셔서 감사합니다. 작성해 주신 추천인께 추천서 요청 메일을 보내 드렸습니다. 검토 후 담당자가 연락드리겠습니다. 지원서 페이지에 로그인하면 추천서 진행 상황을 확인할 수 있습니다.` : `Dear ${esc(values.firstName)}, thank you for applying to serve with Word of Life Korea. We have emailed reference requests to the references you listed. Our team will contact you after reviewing your application. You can sign in to the application page to see the status of your references.`}</p><p style="border:1px solid #3a3a3c;padding:12px 16px;">${ko ? '접수 번호' : 'Reference no.'}: <b>${esc(refNo)}</b></p></div>`,
     }).catch(e => console.error('apply confirm failed:', e.message));
   };
   if (waitUntil) waitUntil(notify()); else await notify();

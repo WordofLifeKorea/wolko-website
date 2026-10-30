@@ -1,6 +1,7 @@
 ---
 // 추천서 작성 — 스태프 지원서를 낸 사람의 추천인이 메일로 받은 개인 링크(?t=…)로 들어온다. 검색엔진에 올리지 않는다.
 // 답변은 functions/api/apply/reference.js 가 암호화해 저장하고, 포탈 섬김 지원 신청서에서 검토 담당자만 본다.
+// 인쇄된 공문서 모양: 공식 로고 · 문서번호 · 가운데 제목 · 기재 표 · 평가표 · "위 내용은 사실과 다름이 없음을 확인합니다" · 날짜 · 서명.
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -12,52 +13,58 @@
   <title>Confidential Reference · 추천서 — Word of Life Korea</title>
   <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/apply.css?v=2">
-  <link rel="stylesheet" href="/reference.css?v=2">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/apply.css?v=4">
+  <link rel="stylesheet" href="/reference.css?v=4">
   <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
 </head>
 <body class="rf">
-  <header class="ap-top">
-    <div class="ap-top-in">
-      <span class="ap-brand"><img src="/images/WOLKO Circle.png" alt=""><span><b>Word of Life Korea</b><small>월코</small></span></span>
-      <div class="ap-lang" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="ko">한국어</button></div>
-    </div>
-  </header>
+  <div class="rf-bar">
+    <div class="ap-lang" role="group" aria-label="Language"><button type="button" data-lang="ko">한국어</button><button type="button" data-lang="en">English</button></div>
+  </div>
 
   <main class="rf-main">
     <article class="rf-doc" id="rfDoc">
       <div class="rf-letterhead">
-        <div><p class="rf-org">WORD OF LIFE KOREA</p><h1 data-i="title">Confidential Reference Form</h1><p class="rf-sub" data-i="sub">Staff Application · 스태프 지원서 추천서</p></div>
-        <span class="rf-stamp" data-i="stamp">CONFIDENTIAL</span>
+        <img class="rf-logo" src="/images/wolko-logo.svg" alt="WOLKO 월코 — Word of Life Korea" width="206" height="40">
+        <table class="rf-docmeta" id="rfDocMeta" hidden>
+          <tbody>
+            <tr><th scope="row" data-i="docNo">Document no.</th><td id="rfDocNo">—</td></tr>
+            <tr><th scope="row" data-i="sent">Issued</th><td id="rfSent">—</td></tr>
+            <tr><th scope="row" data-i="security">Security</th><td class="rf-secret" data-i="secret">Confidential</td></tr>
+          </tbody>
+        </table>
       </div>
+
+      <h1 class="rf-title" data-i="title">Reference</h1>
+      <p class="rf-sub" data-i="sub">Staff Applicant Reference · Confidential</p>
       <p class="rf-status" id="rfStatus" data-i="loading">Loading…</p>
+
       <div id="rfBody" hidden>
         <table class="rf-meta">
-          <tr><th data-i="applicant">Applicant</th><td id="rfApplicant">—</td></tr>
-          <tr><th data-i="referee">Referee</th><td id="rfReferee">—</td></tr>
-          <tr><th data-i="position">Position applied for</th><td data-i="positionV">Staff — Word of Life Korea</td></tr>
-          <tr><th data-i="due">Link valid until</th><td id="rfDue">—</td></tr>
+          <tbody>
+            <tr><th scope="row" data-i="applicant">Applicant</th><td id="rfApplicant">—</td><th scope="row" data-i="position">Position</th><td data-i="positionV">Staff</td></tr>
+            <tr><th scope="row" data-i="referee">Referee</th><td id="rfReferee">—</td><th scope="row" data-i="due">Reply by</th><td id="rfDue">—</td></tr>
+          </tbody>
         </table>
-        <div class="rf-intro" data-i="intro">The applicant named above has applied to serve with Word of Life Korea, a ministry that reaches and disciples young people, and has listed you as a reference. Please answer candidly. Your reference is confidential: it is read only by our reviewers and is never shared with the applicant.</div>
+        <p class="rf-intro" data-i="intro">The applicant named above has applied to join the staff of Word of Life Korea and has named you as a reference. Our staff work closely with young people, so we ask you to tell us candidly what you know of the applicant’s faith and character. Only our reviewers will read this reference; it is never shown to the applicant.</p>
         <form id="rfForm" novalidate>
           <div id="rfSections"></div>
-          <div class="rf-sign">
-            <div class="rf-sign-line"><span class="rf-sign-preview" id="rfSignPreview"></span></div>
-            <div class="rf-sign-meta"><span data-i="signedBy">Signature of referee</span><span id="rfDate"></span></div>
-          </div>
           <p class="ap-err" id="rfErr" role="alert" hidden></p>
-          <div class="ap-actions"><span class="ap-saved" data-i="secure">Submitted securely · 암호화하여 저장됩니다</span><button type="submit" class="ap-btn primary" id="rfSubmit" data-i="submit">Submit Reference</button></div>
+          <div class="rf-actions">
+            <span data-i="secure">Once submitted, this reference cannot be changed. It is stored encrypted.</span>
+            <button type="submit" class="ap-btn primary" id="rfSubmit" data-i="submit">Submit reference</button>
+          </div>
         </form>
       </div>
+
       <div class="rf-done" id="rfDone" hidden>
-        <div class="ap-done-mark" aria-hidden="true">✓</div>
-        <h2 data-i="doneTitle">Thank you for your reference</h2>
-        <p data-i="doneLead">Your reference has been submitted securely. We are grateful for the time you took to help us care for the young people we serve.</p>
+        <h2 data-i="doneTitle">Thank you. Your reference has been received.</h2>
+        <p data-i="doneLead">We are grateful for the time you have given. You may close this page.</p>
       </div>
     </article>
+    <p class="rf-foot" data-i="footNote">Word of Life Korea · This document is used only for staff selection.</p>
   </main>
-  <footer class="ap-foot"><span>© Word of Life Korea · 월코</span><span data-i="footNote">This form is confidential and used only for staff selection.</span></footer>
-  <script is:inline src="/reference.js?v=1" defer></script>
+  <script is:inline src="/reference.js?v=4" defer></script>
 </body>
 </html>

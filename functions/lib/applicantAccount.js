@@ -7,6 +7,7 @@
  */
 import { hashPassword, verifyPassword, normalizeEmail, sendEmail } from './hubAccounts.js';
 import { sealSensitive, openSensitive } from './serveApplication.js';
+import { MAIL_LOGO, MAIL_NAVY } from './applyMail.js';
 
 export const ACCOUNT_IDLE_DAYS = 30;
 export const SESSION_HOURS = 12;
@@ -68,11 +69,11 @@ export async function issueTempPassword(env, { email, name, lang, origin }) {
 
 export function tempPasswordEmailHtml({ name, password, ko, link }) {
   return `<div style="font-family:'Apple SD Gothic Neo',Arial,sans-serif;font-size:15px;line-height:1.75;color:#13242d;max-width:560px;">
-<div style="font-size:12px;letter-spacing:.18em;color:#0b4a62;font-weight:700;">WORD OF LIFE KOREA</div>
-<h2 style="margin:6px 0 14px;font-size:20px;">${ko ? '스태프 지원서 임시 비밀번호' : 'Your temporary password'}</h2>
+<div style="padding-bottom:16px;border-bottom:2px solid #3a3a3c;">${MAIL_LOGO}</div>
+<h2 style="margin:22px 0 14px;font-size:20px;">${ko ? '스태프 지원서 임시 비밀번호' : 'Your temporary password'}</h2>
 <p>${ko ? `${esc(name) || '지원자'}님, 아래 임시 비밀번호로 로그인하면 지원서를 저장하며 이어서 작성할 수 있습니다.` : `Dear ${esc(name) || 'applicant'}, sign in with the temporary password below to save your application and continue it at any time.`}</p>
-<p style="margin:18px 0;padding:14px 18px;border:1px solid #dbe6ea;border-radius:4px;background:#f6f9fa;font-size:22px;font-weight:700;letter-spacing:.12em;font-family:Menlo,Consolas,monospace;">${esc(password)}</p>
-<p><a href="${esc(link)}" style="color:#0b4a62;font-weight:700;">${ko ? '지원서로 가기' : 'Open the application'}</a></p>
+<p style="margin:18px 0;padding:14px 18px;border:1px solid #3a3a3c;background:#ffffff;font-size:22px;font-weight:700;letter-spacing:.12em;font-family:Menlo,Consolas,monospace;">${esc(password)}</p>
+<p><a href="${esc(link)}" style="color:${MAIL_NAVY};font-weight:700;">${ko ? '지원서로 가기' : 'Open the application'}</a></p>
 <p style="color:#5b6b73;font-size:13px;">${ko ? `30일 동안 로그인하지 않으면 임시 계정과 작성 중인 내용이 자동으로 삭제됩니다. 비밀번호를 잃어버리면 같은 이메일로 새 임시 비밀번호를 받으세요. 직접 요청하지 않았다면 이 메일은 무시하셔도 됩니다.` : `If you do not sign in for 30 days, this temporary account and any unsubmitted draft are deleted automatically. If you lose this password, request a new one with the same email. If you did not request this, you can ignore this email.`}</p>
 </div>`;
 }
