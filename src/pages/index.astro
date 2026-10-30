@@ -527,7 +527,9 @@ const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? camp
 .wh-promo-row { width: 100%; max-width: 400px; max-height: 100%; display: flex; flex-direction: column; align-items: center; gap: 14px; margin: auto; }
 .wh-promo-stage { width: 100%; display: grid; touch-action: pan-y pinch-zoom; }
 .wh-promo-stage > .wh-promo-card { grid-area: 1 / 1; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .45s ease, visibility 0s linear .45s, transform .4s cubic-bezier(.2,.8,.3,1.1); }
-.wh-promo-stage > .wh-promo-card.is-active { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .45s ease; }
+/* 열려 있을 때만 보이고 눌린다. (예전엔 .is-active 카드가 스스로 visibility:visible 이라, 팝업을 닫아도 투명한 카드와 '초대장 보기' 버튼이 화면 가운데에 남아 눌렸다) */
+.wh-promo-overlay.is-open .wh-promo-stage > .wh-promo-card.is-active { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .45s ease; }
+.wh-promo-overlay:not(.is-open) { pointer-events: none; }
 .wh-promo-stage > .wh-promo-card[hidden] { display: none; }
 .wh-promo-dots { display: flex; gap: 10px; align-items: center; justify-content: center; }
 .wh-promo-dots[hidden] { display: none; }
