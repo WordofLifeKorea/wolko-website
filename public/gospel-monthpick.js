@@ -1,5 +1,6 @@
 /* 복음 통계 — 연·월 선택기. 일(日)은 필요 없으니 달 12칸(또는 연도 칸)만 보여 주는 작은 창.
- *   GospelMonthPick.open(anchor, { mode: 'month'|'year', value: 'YYYY-MM'|'YYYY', min: 'YYYY-MM', max: 'YYYY-MM', lang: 'ko'|'en', onPick(value) })
+ *   GospelMonthPick.open(anchor, { mode: 'month'|'year', value: 'YYYY-MM'|'YYYY', min: 'YYYY-MM', max: 'YYYY-MM', lang: 'ko'|'en', onPick(value),
+ *                                   yearAll?: { label(y), minYear, maxYear } — 달 아래에 '그 해 전체' 버튼(고르면 'YYYY') })
  * 월 모드: 위에서 해를 넘기고(‹ 2026 ›) 아래 12칸에서 달을 고른다. min~max 밖의 달은 눌리지 않는다.
  * 연 모드: min~max 사이의 해만 칸으로 보여 준다. 바깥을 누르거나 Esc 로 닫는다. */
 (function () {
@@ -45,6 +46,8 @@
           html += '<button type="button" class="gs-mp-cell' + (ym === value ? ' is-on' : '') + '" data-v="' + ym + '"' + (off ? ' disabled' : '') + '>' + NAMES[lang][m - 1] + '</button>';
         }
         html += '</div>';
+        var all = cfg.yearAll;   // 선택: 그 해 전체(연간 보기)를 고르는 버튼 — 고르면 onPick('YYYY')
+        if (all && year >= all.minYear && year <= all.maxYear) html += '<button type="button" class="gs-mp-all' + (value === String(year) ? ' is-on' : '') + '" data-v="' + year + '">' + all.label(year) + '</button>';
       } else {
         html += '<div class="gs-mp-grid gs-mp-years">';
         for (var y = maxY; y >= minY; y--) html += '<button type="button" class="gs-mp-cell' + (String(y) === value ? ' is-on' : '') + '" data-v="' + y + '">' + (lang === 'en' ? y : y + '년') + '</button>';
