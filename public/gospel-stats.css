@@ -511,3 +511,16 @@ body.gs-writing { overflow: hidden; }
 }
 @keyframes gs-sheet-up { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { :root:root #formPanel:not([hidden]), .gs-sheet-backdrop { animation: none; } }
+
+/* 작성 패널 아래 버튼 줄 — 비치는 그라데이션 대신 불투명한 한 줄 바. 패널 폭 전체를 덮고, 버튼은 한 줄(저장이 넓게, 지우기는 오른쪽 끝) */
+:root:root #formPanel .gs-formbtns { flex-wrap: nowrap; align-items: center; margin: 18px -26px 0; padding: 12px 26px calc(12px + env(safe-area-inset-bottom, 0px)); background: #fff; border-top: 1px solid #e3ecef; box-shadow: 0 -8px 18px -14px rgba(0, 40, 55, .35); }
+:root:root #formPanel .gs-formbtns .gs-primary { flex: 1 1 auto; min-width: 0; }
+:root:root #formPanel .gs-formbtns .gs-small { flex: 0 0 auto; white-space: nowrap; }
+:root:root #formPanel .gs-formbtns .gs-danger { margin-left: auto; }
+@media (max-width: 640px) {
+  :root:root #formPanel .gs-formbtns { gap: 6px; margin: 16px -16px 0; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); }
+  :root:root #formPanel .gs-formbtns .gs-small { padding-left: 12px !important; padding-right: 12px !important; font-size: 13px; }
+}
+/* 버튼 줄이 패널 바닥에 딱 붙도록(붙박이 위치는 패널 안쪽 여백만큼 위로 뜬다) 패널 아래 여백을 없앤다 */
+:root:root #formPanel:not([hidden]) { padding-bottom: 0 !important; }   /* 공용 패널 규칙이 !important 로 아래 여백을 준다 */
+:root:root #formPanel #formError:empty { display: none !important; }
