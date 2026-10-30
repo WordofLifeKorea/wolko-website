@@ -70,13 +70,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   @keyframes abHeroZoom { from { transform: scale(1.08); } to { transform: none; } }
   @keyframes abRise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
   @keyframes abLine { from { width: 0; } to { width: 28px; } }
-  :global(.wl-motion) .ab-hero::before { animation: abHeroZoom 2.6s cubic-bezier(.2,.6,.2,1) both; }
-  :global(.wl-motion) .hero-eyebrow { animation: abRise .8s .15s cubic-bezier(.2,.7,.2,1) both; }
-  :global(.wl-motion) .hero-eyebrow::before { animation: abLine .7s .35s ease-out both; }
-  :global(.wl-motion) .hero-inner h1 { animation: abRise .9s .3s cubic-bezier(.2,.7,.2,1) both; }
-  :global(.wl-motion) .hero-bar { animation: abRise .9s .6s cubic-bezier(.2,.7,.2,1) both; }
+  :global(.wl-motion) .ab-hero::before { animation: abHeroZoom 3.8s cubic-bezier(.2,.6,.2,1) both; }
+  :global(.wl-motion) .hero-eyebrow { animation: abRise 1.2s .25s cubic-bezier(.2,.7,.2,1) both; }
+  :global(.wl-motion) .hero-eyebrow::before { animation: abLine 1s .55s ease-out both; }
+  :global(.wl-motion) .hero-inner h1 { animation: abRise 1.3s .5s cubic-bezier(.2,.7,.2,1) both; }
+  :global(.wl-motion) .hero-bar { animation: abRise 1.3s .95s cubic-bezier(.2,.7,.2,1) both; }
   /* 스크롤하면 하나씩 떠오른다 — 같은 줄의 카드는 --d 만큼 늦게 */
-  :global(.wl-motion) .rv { opacity: 0; transform: translateY(32px); transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1); transition-delay: var(--d, 0s); }
+  :global(.wl-motion) .rv { opacity: 0; transform: translateY(32px); transition: opacity 1.2s cubic-bezier(.2,.7,.2,1), transform 1.2s cubic-bezier(.2,.7,.2,1); transition-delay: var(--d, 0s); }
   :global(.wl-motion) .rv.is-in { opacity: 1; transform: none; }
 
   /* ── 공통 섹션 ── */
@@ -570,11 +570,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     document.documentElement.classList.add('wl-motion');
 
-    // 숫자 올라가기 — 처음엔 시작 숫자를 보여 주고, 보이면 1.6초 동안 끝 숫자까지
+    // 숫자 올라가기 — 처음엔 시작 숫자를 보여 주고, 보이면 2.4초 동안 끝 숫자까지
     var counters = [].slice.call(document.querySelectorAll('[data-count-from]'));
     counters.forEach(function (el) { el.dataset.countTo = el.textContent.trim(); el.textContent = el.dataset.countFrom; });
     function count(el, delay) {
-      var from = +el.dataset.countFrom, to = +el.dataset.countTo, dur = 1600;
+      var from = +el.dataset.countFrom, to = +el.dataset.countTo, dur = 2400;
       setTimeout(function () {
         var t0 = Date.now();
         (function step() {
@@ -588,7 +588,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       entries.forEach(function (en) {
         if (!en.isIntersecting) return;
         cio.unobserve(en.target);
-        count(en.target, en.target.closest('.ab-hero') ? 900 : 200);   // 히어로 숫자는 줄이 떠오른 뒤에
+        count(en.target, en.target.closest('.ab-hero') ? 1400 : 300);   // 히어로 숫자는 줄이 떠오른 뒤에
       });
     }, { threshold: 0.6 });
     counters.forEach(function (el) { cio.observe(el); });
@@ -597,7 +597,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     var groups = ['.history-grid', '.values-grid', '.vismis-grid', '.commit-grid', '.ministry-grid'];
     var items = [].slice.call(document.querySelectorAll('.section .section-badge, .section .section-title, .section .section-desc, .who-title-rule'));
     groups.forEach(function (g) {
-      [].slice.call(document.querySelectorAll(g + ' > *')).forEach(function (el, i) { el.style.setProperty('--d', (i % 4) * 0.12 + 's'); items.push(el); });
+      [].slice.call(document.querySelectorAll(g + ' > *')).forEach(function (el, i) { el.style.setProperty('--d', (i % 4) * 0.18 + 's'); items.push(el); });
     });
     var rio = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('is-in'); rio.unobserve(en.target); } });
