@@ -28,30 +28,51 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .ab-hero {
     position: relative; overflow: hidden; color: #fff; word-break: keep-all;
     min-height: clamp(640px, 90vh, 860px); padding-top: 150px; box-sizing: border-box;
-    display: flex; flex-direction: column;
+    display: flex; flex-direction: column; background: #0b1e27;
+  }
+  .ab-hero::before { content: ""; position: absolute; inset: 0; background: url("https://wolko.synology.me/Web_Contents/Photos/Youth_Ministry/Banner%202.png") 50% 38% / cover no-repeat; }
+  .ab-hero::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
     background:
       linear-gradient(0deg, rgba(5,20,28,0.72) 0%, rgba(5,20,28,0) 36%),
-      linear-gradient(90deg, rgba(5,20,28,0.82) 0%, rgba(5,20,28,0.6) 40%, rgba(5,20,28,0.16) 74%, rgba(5,20,28,0.08) 100%),
-      #0b1e27 url("https://wolko.synology.me/Web_Contents/Photos/Youth_Ministry/Banner%202.png") 50% 38% / cover no-repeat;
+      linear-gradient(90deg, rgba(5,20,28,0.78) 0%, rgba(5,20,28,0.55) 45%, rgba(5,20,28,0.4) 100%);
   }
-  .hero-inner { flex: 1; width: 100%; max-width: 1248px; margin: 0 auto; padding: 0 24px; box-sizing: border-box; display: flex; flex-direction: column; }
-  .hero-copy { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; max-width: 700px; padding-bottom: 56px; }
+  .hero-inner { position: relative; z-index: 1; flex: 1; width: 100%; max-width: 1248px; margin: 0 auto; padding: 0 24px; box-sizing: border-box; display: flex; flex-direction: column; }
+  /* 왼쪽: 제목 / 오른쪽: 설명과 버튼 — 제목 아래 끝선에 맞춰 화면 양쪽을 고르게 쓴다 */
+  .hero-copy { flex: 1; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 0 64px; align-content: center; align-items: end; padding-bottom: 64px; }
+  .hero-head { min-width: 0; }
+  .hero-side { min-width: 0; padding-bottom: 6px; }
   .hero-eyebrow { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; letter-spacing: 0.02em; color: rgba(255,255,255,0.86); }
   .hero-eyebrow::before { content: ""; width: 28px; height: 1px; background: currentColor; }
   .hero-inner h1 { margin: 26px 0 0; font-size: clamp(40px, 5.2vw, 64px); line-height: 1.2; font-weight: 700; letter-spacing: -0.035em; color: #fff; text-wrap: balance; }
-  .hero-sub { margin: 26px 0 0; font-size: 18px; line-height: 1.75; color: rgba(255,255,255,0.84); }
+  .hero-sub { margin: 0; font-size: 18px; line-height: 1.75; color: rgba(255,255,255,0.84); }
   .hero-cta {
-    display: inline-flex; align-items: center; gap: 14px; margin-top: 40px; height: 54px; padding: 0 26px; box-sizing: border-box;
+    display: inline-flex; align-items: center; gap: 14px; margin-top: 32px; height: 54px; padding: 0 26px; box-sizing: border-box;
     border-radius: 2px; background: #fff; color: var(--primary); font-size: 15px; font-weight: 700; text-decoration: none;
     transition: background-color .18s, color .18s;
   }
   .hero-cta:hover { background: #e8f1f4; color: var(--primary-deep); }
   .hero-cta:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
-  .hero-stats { margin: 0; padding: 26px 0 38px; border-top: 1px solid rgba(255,255,255,0.3); display: grid; grid-template-columns: repeat(3, 220px); gap: 0 48px; }
+  .hero-stats { margin: 0; padding: 26px 0 38px; border-top: 1px solid rgba(255,255,255,0.3); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 48px; }
   .hero-stat { display: flex; flex-direction: column-reverse; gap: 6px; }
+  .hero-stat + .hero-stat { padding-left: 48px; border-left: 1px solid rgba(255,255,255,0.18); margin-left: -48px; }
   .hero-stat-num { margin: 0; font-size: 34px; font-weight: 600; letter-spacing: -0.02em; line-height: 1; color: #fff; }
   .hero-stat-num small { font-size: 22px; font-weight: 500; margin-left: 2px; }
   .hero-stat-label { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.74); }
+
+  /* ── 움직임 — 자바스크립트가 html 에 .wl-motion 을 붙일 때만 (움직임 줄이기 설정이면 붙이지 않아 처음부터 다 보인다) ── */
+  @keyframes abHeroZoom { from { transform: scale(1.08); } to { transform: none; } }
+  @keyframes abRise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+  @keyframes abLine { from { width: 0; } to { width: 28px; } }
+  :global(.wl-motion) .ab-hero::before { animation: abHeroZoom 2.6s cubic-bezier(.2,.6,.2,1) both; }
+  :global(.wl-motion) .hero-eyebrow { animation: abRise .8s .15s cubic-bezier(.2,.7,.2,1) both; }
+  :global(.wl-motion) .hero-eyebrow::before { animation: abLine .7s .35s ease-out both; }
+  :global(.wl-motion) .hero-inner h1 { animation: abRise .9s .3s cubic-bezier(.2,.7,.2,1) both; }
+  :global(.wl-motion) .hero-side { animation: abRise .9s .55s cubic-bezier(.2,.7,.2,1) both; }
+  :global(.wl-motion) .hero-stats { animation: abRise .9s .75s cubic-bezier(.2,.7,.2,1) both; }
+  /* 스크롤하면 하나씩 떠오른다 — 같은 줄의 카드는 --d 만큼 늦게 */
+  :global(.wl-motion) .rv { opacity: 0; transform: translateY(32px); transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1); transition-delay: var(--d, 0s); }
+  :global(.wl-motion) .rv.is-in { opacity: 1; transform: none; }
 
   /* ── 공통 섹션 ── */
   .section { padding:var(--sec-y) 24px; }
@@ -209,19 +230,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .ministry-grid { grid-template-columns:repeat(2,1fr); }
   }
   @media (max-width:860px) {
+    .hero-copy { grid-template-columns: 1fr; }
+    .hero-side { margin-top: 26px; padding-bottom: 0; }
     .history-grid, .vismis-grid, .commit-grid { grid-template-columns:1fr; }
     .values-grid { grid-template-columns:repeat(2,1fr); }
     .value-card, .value-card:nth-child(n+4) { grid-column:auto; }
     .value-card:nth-child(5) { grid-column:1 / -1; }
   }
   @media (max-width:640px) {
-    .ab-hero {
-      min-height: 0; padding-top: 112px;
-      background:
-        linear-gradient(0deg, rgba(5,20,28,0.9) 0%, rgba(5,20,28,0.7) 45%, rgba(5,20,28,0.25) 75%, rgba(5,20,28,0.35) 100%),
-        #0b1e27 url("https://wolko.synology.me/Web_Contents/Photos/Youth_Ministry/Banner%202.png") 58% 40% / cover no-repeat;
-    }
-    .hero-copy { padding: 120px 0 32px; }
+    /* 위쪽은 사진이 또렷하게 보이고, 아래로 남색에 자연스럽게 이어진 뒤 글이 시작된다 */
+    .ab-hero { min-height: 0; padding-top: 0; }
+    .ab-hero::before { bottom: auto; height: 400px; background-position: 62% 0; }
+    .ab-hero::after { background: linear-gradient(180deg, rgba(5,20,28,0.35) 0px, rgba(5,20,28,0) 120px, rgba(5,20,28,0) 230px, #0b1e27 400px); }
+    .hero-copy { padding: 330px 0 32px; }
     .hero-inner h1 { margin-top: 18px; font-size: 36px; line-height: 1.25; }
     .hero-sub { margin-top: 18px; font-size: 15.5px; }
     .hero-sub br { display: none; }
@@ -292,32 +313,36 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <section class="ab-hero">
   <div class="hero-inner">
     <div class="hero-copy">
-      <div class="hero-eyebrow"><span class="wl-ko">월코 소개</span><span class="wl-en">About WOLKO</span></div>
-      <h1>
-        <span class="wl-ko">복음으로<br>다음 세대를 세웁니다</span>
-        <span class="wl-en">Raising the Next Generation<br>Through the Gospel</span>
-      </h1>
-      <p class="hero-sub">
-        <span class="wl-ko">캠프와 학생 사역을 통해 청소년과 다음 세대를 <br>예수 그리스도의 제자로 세워 갑니다.</span>
-        <span class="wl-en">Through camps and student ministry, we raise the next generation <br>as disciples of Jesus Christ.</span>
-      </p>
-      <a href="/ministry" class="hero-cta">
-        <span class="wl-ko">사역 살펴보기</span><span class="wl-en">Explore Our Ministry</span>
-        <svg aria-hidden="true" viewBox="0 0 16 16" width="15" height="15" fill="none"><path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
-      </a>
+      <div class="hero-head">
+        <div class="hero-eyebrow"><span class="wl-ko">월코 소개</span><span class="wl-en">About WOLKO</span></div>
+        <h1>
+          <span class="wl-ko">복음으로<br>다음 세대를 세웁니다</span>
+          <span class="wl-en">Raising the Next Generation<br>Through the Gospel</span>
+        </h1>
+      </div>
+      <div class="hero-side">
+        <p class="hero-sub">
+          <span class="wl-ko">캠프와 학생 사역을 통해 청소년과 다음 세대를 <br>예수 그리스도의 제자로 세워 갑니다.</span>
+          <span class="wl-en">Through camps and student ministry, we raise the next generation <br>as disciples of Jesus Christ.</span>
+        </p>
+        <a href="/ministry" class="hero-cta">
+          <span class="wl-ko">사역 살펴보기</span><span class="wl-en">Explore Our Ministry</span>
+          <svg aria-hidden="true" viewBox="0 0 16 16" width="15" height="15" fill="none"><path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
+        </a>
+      </div>
     </div>
     <dl class="hero-stats">
       <div class="hero-stat">
         <dt class="hero-stat-label"><span class="wl-ko">설립</span><span class="wl-en">Founded</span></dt>
-        <dd class="hero-stat-num">1993</dd>
+        <dd class="hero-stat-num"><span data-count-from="1950">1993</span></dd>
       </div>
       <div class="hero-stat">
         <dt class="hero-stat-label"><span class="wl-ko">세계 사역 국가</span><span class="wl-en">Nations Worldwide</span></dt>
-        <dd class="hero-stat-num">90<small>+</small></dd>
+        <dd class="hero-stat-num"><span data-count-from="0">90</span><small>+</small></dd>
       </div>
       <div class="hero-stat">
         <dt class="hero-stat-label"><span class="wl-ko">주요 사역</span><span class="wl-en">Major Ministries</span></dt>
-        <dd class="hero-stat-num">4</dd>
+        <dd class="hero-stat-num"><span data-count-from="0">4</span></dd>
       </div>
     </dl>
   </div>
@@ -376,14 +401,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   </div>
   <div class="history-grid page-wrap">
     <div class="history-card history-card--camp">
-      <div class="history-year">1946</div>
+      <div class="history-year"><span data-count-from="1900">1946</span></div>
       <span class="history-tag">WORD OF LIFE CAMPS</span>
       <h3><span class="wl-ko">캠프 사역의 시작</span><span class="wl-en">Word of Life Camps</span></h3>
       <p class="wl-ko">잭 월츤과 해리는 50센트짜리 보트를 빌려 처음으로 지금의 생명의 말씀 섬에 노를 저어 갔습니다. 부지는 폐허 상태였지만, 두 사람은 누구의 기대도 뛰어넘는 비전을 그 섬에서 보았습니다. 잭은 83세의 소유주 클라크 여사에게 매매가의 5분의 1인 2만 5천 달러를 제안했고, 그녀가 이를 수락했습니다. 그날 이후로 수십만 명의 청소년들이 생명의 말씀 섬 캠프에 참가했습니다.</p>
       <p class="wl-en">Jack and Harry rented a rowboat for fifty cents and rowed over to what is now Word of Life Island for the very first time. Though the property was in shambles, the pair had a vision for that island that far exceeded anyone's expectation. Jack offered $25,000 — a fifth of the asking price — to the eighty-three-year-old owner, Miss Clark, and she accepted. Since that day, hundreds of thousands of teens have attended camp on Word of Life Island.</p>
     </div>
     <div class="history-card history-card--institute">
-      <div class="history-year">1970</div>
+      <div class="history-year"><span data-count-from="1920">1970</span></div>
       <span class="history-tag">WORD OF LIFE BIBLE INSTITUTE</span>
       <h3><span class="wl-ko">월비 사역의 시작</span><span class="wl-en">Word of Life Bible Institute</span></h3>
       <p class="wl-ko">브라질 상파울루에 설립된 첫 번째 캠퍼스의 모델을 따라 미국에서도 첫 번째 성경학교가 문을 열었습니다. 생명의말씀협회 성경학교는 체계적인 제자 훈련과 세계 수준의 성경 교사들로 알려져 있습니다. 오늘날 생명의말씀협회는 전 세계 14개국에 성경학교를 두고 매년 수천 명의 청소년들을 훈련하고 있으며, 성경학교는 학생들이 전 세계로 복음을 들고 나아가는 발판이 되었습니다.</p>
@@ -538,6 +563,55 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
 
 <script is:inline>
+  // 월코소개 움직임: 히어로가 차례로 나타나고, 숫자는 화면에 보일 때 올라가며, 아래 섹션은 스크롤하면 하나씩 떠오른다.
+  // 움직임 줄이기 설정이거나 IntersectionObserver 가 없으면 아무것도 하지 않는다 — 처음부터 그대로 다 보인다.
+  (function () {
+    if (!('IntersectionObserver' in window)) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    document.documentElement.classList.add('wl-motion');
+
+    // 숫자 올라가기 — 처음엔 시작 숫자를 보여 주고, 보이면 1.6초 동안 끝 숫자까지
+    var counters = [].slice.call(document.querySelectorAll('[data-count-from]'));
+    counters.forEach(function (el) { el.dataset.countTo = el.textContent.trim(); el.textContent = el.dataset.countFrom; });
+    function count(el, delay) {
+      var from = +el.dataset.countFrom, to = +el.dataset.countTo, dur = 1600;
+      setTimeout(function () {
+        var t0 = Date.now();
+        (function step() {
+          var k = Math.min(1, (Date.now() - t0) / dur), e = 1 - Math.pow(1 - k, 4);
+          el.textContent = Math.round(from + (to - from) * e);
+          if (k < 1) setTimeout(step, 30);
+        })();
+      }, delay);
+    }
+    var cio = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        cio.unobserve(en.target);
+        count(en.target, en.target.closest('.ab-hero') ? 900 : 200);   // 히어로 숫자는 줄이 떠오른 뒤에
+      });
+    }, { threshold: 0.6 });
+    counters.forEach(function (el) { cio.observe(el); });
+
+    // 섹션 떠오르기 — 편지(봉투)는 따로 움직이니 뺀다
+    var groups = ['.history-grid', '.values-grid', '.vismis-grid', '.commit-grid', '.ministry-grid'];
+    var items = [].slice.call(document.querySelectorAll('.section .section-badge, .section .section-title, .section .section-desc, .who-title-rule'));
+    groups.forEach(function (g) {
+      [].slice.call(document.querySelectorAll(g + ' > *')).forEach(function (el, i) { el.style.setProperty('--d', (i % 4) * 0.12 + 's'); items.push(el); });
+    });
+    var rio = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('is-in'); rio.unobserve(en.target); } });
+    }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+    items.forEach(function (el) {
+      el.classList.add('rv'); rio.observe(el);
+      // 다 떠오르면 표시를 떼어 카드 원래의 호버 움직임으로 돌려 놓는다
+      el.addEventListener('transitionend', function done(e) {
+        if (e.target !== el || e.propertyName !== 'transform' || !el.classList.contains('is-in')) return;
+        el.removeEventListener('transitionend', done); el.classList.remove('rv', 'is-in'); el.style.removeProperty('--d');
+      });
+    });
+  })();
+
   // 월코소개 편지: 스크롤하면 봉투가 열리고 편지가 쓰윽 올라온다. 움직임 줄이기 설정이거나 자바스크립트가 꺼져 있으면 그냥 편지만 보인다.
   (function () {
     var stage = document.getElementById('letterStage'), letter = document.getElementById('letterAnim'), env = document.getElementById('env');
