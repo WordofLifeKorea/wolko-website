@@ -25,7 +25,7 @@
       vTitle: 'Confirm your email', vLead: function (h) { return 'Please enter the email address where you received our request (' + h + ').'; }, vLabel: 'Email address', vBtn: 'Continue', vChecking: 'Checking…', vNote: 'We ask this so that only the person who received our request can write this reference.', vWrong: 'This is not the address we sent the request to. Please check and try again.', vLocked: 'Too many wrong attempts. Please try again in 15 minutes.', vAgain: 'Please confirm your email again. Your answers are kept.',
       doneTitle: 'Thank you. Your reference has been received.', doneLead: 'We are grateful for the time you have given. You may close this page.', footNote: 'Word of Life Korea · This document is used only for staff selection.' },
   };
-  var lang = (function () { try { var v = localStorage.getItem('wolko-ref-lang'); if (v === 'ko' || v === 'en') return v; } catch (e) {} return /^ko/i.test(navigator.language || '') ? 'ko' : 'en'; })();
+  var lang = (function () { var q = new URLSearchParams(location.search).get('lang'); if (q === 'ko' || q === 'en') { try { localStorage.setItem('wolko-ref-lang', q); } catch (e) {} return q; } try { var v = localStorage.getItem('wolko-ref-lang'); if (v === 'ko' || v === 'en') return v; } catch (e) {} return /^ko/i.test(navigator.language || '') ? 'ko' : 'en'; })();
   var t = function (k) { return T[lang][k]; };
   var tx = function (o) { return (o && (o[lang] || o.en)) || ''; };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };

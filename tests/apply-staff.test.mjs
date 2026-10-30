@@ -287,6 +287,8 @@ test('추천서 요청 메일: 한국어 이름이 있으면 한국어 제목 ·
     assert.match(m.html, /display:none[^>]*>김환규 님이 월코 스태프 지원서에 귀하를 추천인으로/);
     assert.ok(!/Confidential|비공개\)/.test(m.subject + m.html), '스팸처럼 보이는 표현을 쓰지 않는다');
     assert.match(m.text, /추천서 작성하기: https:\/\/wolko\.org\/reference\/\?t=/);
+    assert.match(m.html, /김환규 님의 추천서 작성을 부탁드립니다/);
+    assert.match(m.html, /reference\/\?t=[A-Za-z0-9_-]+&amp;lang=en"[^>]*>Open the form in English/, '영어로 바로 여는 링크');
     assert.match(t.mails.find(x => x.to[0] === 'anna@x.com').from, /^월코 Word of Life Korea </, '임시 비밀번호 메일도 단체 이름');
   } finally { t.restore(); }
 });

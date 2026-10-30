@@ -125,7 +125,7 @@ function refCopy({ refName, refNameKo, applicantKo, applicantEn }) {
     ko, who,
     pre: ko ? `${who} 님이 월코 스태프 지원서에 귀하를 추천인으로 적어 주셨습니다. 10분 정도면 작성하실 수 있습니다.` : `${who} has named you as a reference for a Word of Life Korea staff application. It takes about 10 minutes.`,
     kicker: ko ? '추천서 작성 요청' : 'Reference request',
-    title: ko ? `${who} 님의 추천서를 부탁드립니다` : `Would you write a reference for ${who}?`,
+    title: ko ? `${who} 님의 추천서 작성을 부탁드립니다` : `Would you write a reference for ${who}?`,
     hello: ko ? `${refNameKo || refName || '추천인'} 님께` : `Dear ${refName || 'Referee'},`,
     body: ko ? `${who} 님이 월코(Word of Life Korea) 스태프로 지원하시면서 귀하를 추천인으로 적어 주셨습니다. 월코 스태프는 청소년을 가까이에서 섬기게 되므로, 지원자의 신앙과 인격에 대해 아시는 대로 솔직한 의견을 부탁드립니다.`
       : `${who} has applied to serve on staff with Word of Life Korea (WOLKO) and has named you as a reference. Our staff work closely with young people, so we would be grateful for your honest view of the applicant’s faith and character.`,
@@ -135,7 +135,9 @@ function refCopy({ refName, refNameKo, applicantKo, applicantEn }) {
       : ['Open the reference form with the button below.', 'Enter the email address this message was sent to, to confirm it is you.', 'Answer the questions, sign with your name and submit. Your answers are saved as you go.'],
     btn: ko ? '추천서 작성하기' : 'Write the reference',
     note: ko ? '이 링크는 귀하만을 위한 것입니다. 작성하신 내용은 검토 담당자만 보며 지원자에게는 공개되지 않습니다.' : 'This link is for you only. Your reference is read by our reviewers and is not shown to the applicant.',
-    other: ko ? `${applicantEn ? applicantEn + ' has' : 'The applicant has'} applied to serve with Word of Life Korea and named you as a reference. The form is also available in English.` : '',
+    other: ko ? `${applicantEn ? applicantEn + ' has' : 'The applicant has'} applied to serve with Word of Life Korea and named you as a reference.` : '추천서 양식은 한국어로도 작성하실 수 있습니다.',
+    otherLink: ko ? 'Open the form in English' : '한국어로 작성하기',
+    otherLang: ko ? 'en' : 'ko',
     alt: ko ? '버튼이 열리지 않으면 아래 주소를 브라우저에 붙여 넣어 주세요.' : 'If the button does not work, paste this address into your browser:',
   };
 }
@@ -180,7 +182,7 @@ ${preheader(esc(c.pre))}
   </td></tr>
   <tr><td style="padding:22px 36px 30px;">
     <p style="${F}margin:0 0 8px;font-size:13px;line-height:1.7;color:#4e5155;">${esc(c.note)}</p>
-    ${c.other ? `<p style="${F}margin:0 0 8px;font-size:13px;line-height:1.7;color:#6a6d72;">${esc(c.other)}</p>` : ''}
+    <p style="${F}margin:0 0 8px;font-size:13px;line-height:1.7;color:#6a6d72;">${esc(c.other)} <a href="${esc(link)}&amp;lang=${c.otherLang}" style="color:${MAIL_NAVY};font-weight:600;">${esc(c.otherLink)}</a></p>
     <p style="${F}margin:0;font-size:12.5px;line-height:1.7;color:#6a6d72;">${esc(c.alt)}<br><a href="${esc(link)}" style="color:${MAIL_NAVY};word-break:break-all;">${esc(link)}</a></p>
   </td></tr>
   <tr><td style="${F}padding:16px 36px;background:#fafbfb;border-top:1px solid #e3e6e8;font-size:12px;line-height:1.6;color:#6a6d72;">월코 (Word of Life Korea) · <a href="https://wolko.org" style="color:#6a6d72;">wolko.org</a></td></tr>
@@ -190,7 +192,7 @@ ${preheader(esc(c.pre))}
 export function referenceEmailText({ refName, refNameKo, applicantKo, applicantEn, link, due }) {
   const c = refCopy({ refName, refNameKo, applicantKo, applicantEn });
   due = fmtDue(due, c.ko);
-  return [c.title, '', c.hello, '', c.body, '', ...c.rows.map(([k, v]) => `${k}: ${v ?? due}`), '', c.howTitle, ...c.how.map((h, i) => `${i + 1}. ${h}`), '', `${c.btn}: ${link}`, '', c.note, c.other, '', '월코 (Word of Life Korea) · wolko.org'].filter(x => x !== undefined && x !== null).join('\n');
+  return [c.title, '', c.hello, '', c.body, '', ...c.rows.map(([k, v]) => `${k}: ${v ?? due}`), '', c.howTitle, ...c.how.map((h, i) => `${i + 1}. ${h}`), '', `${c.btn}: ${link}`, '', c.note, `${c.other} ${c.otherLink}: ${link}&lang=${c.otherLang}`, '', '월코 (Word of Life Korea) · wolko.org'].filter(x => x !== undefined && x !== null).join('\n');
 }
 
 /** 추천인 한 명에게 요청 메일을 보낸다 — 지원서를 내기 전(추천인 단계에서 '다음')에도 보낸다. appId 는 그때 미리 정해 둔 신청서 id.
