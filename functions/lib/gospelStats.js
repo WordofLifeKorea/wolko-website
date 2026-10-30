@@ -10,7 +10,7 @@
 const L = (ko, en) => ({ ko, en });
 
 /* 구역(section)마다
- *   access: 'all' = 포탈 계정 누구나 쓴다 | 'designated' = 마스터가 지정한 보고 담당자만 쓴다(팀·캠프·행사·교회 보고)
+ *   access: 'all' = 포탈 계정 누구나 쓴다 | 'extended' = 담당자(풀타임 선교사 등)와 제주 멤버 | 'designated' = 보고 담당자만 쓴다(캠프·사역 현황)
  *   scope : 'report' = 개인/팀 보고에 들어간다 | 'ministry' = 평택·제주 월별 "사역 현황" 보고(제자훈련·지역교회)에만 들어간다
  * 항목(field)에는
  *   hq: false  = 본부(미국) 보고 양식에 없는 우리 내부 항목
@@ -38,7 +38,7 @@ export const GOSPEL_SECTIONS = [
     ],
   },
   {
-    id: 'events', access: 'all', scope: 'report', title: L('전도 행사', 'Evangelistic Events'),
+    id: 'events', access: 'extended', scope: 'report', title: L('전도 행사', 'Evangelistic Events'),
     fields: [
       { id: 'eeAttendance', label: L('월코 행사 참석 인원 — 복음을 전한 전도 행사(스포츠, 수련회, 세미나, 지역 교회 사역 등)에 참석한 인원', 'EE Attendance — people who attended evangelistic events (sports, retreats, seminars, local church ministries, etc.) where you and/or your team shared the Gospel'), short: L('월코 행사 참석 인원', 'WOLKO event attendance'), note: L('복음 전도 보고 지침\nA. 세는 것: 개인이나 소그룹으로 복음을 전한 사람 수는 개인 전도의 ‘복음 들은 인원’에 세요. 큰 모임에서 팀원이 복음을 전하는 것을 들은 사람 수는 ‘월코 행사 참석 인원’에 세요. 같은 사람에게 다른 날이나 다른 행사에서 다시 전했다면 그때마다 세어요.\nB. 세지 않는 것: 월코의 공식 임무나 협력으로 섬기면서 복음을 전한 경우가 아니면 행사 참석 인원은 세지 않아요. 중복해서 세지 마세요. 팀에서는 한 명만 참석 인원을 보고하세요. 행사 중의 개인 복음 대화와 소그룹 발표는 ‘월코 행사 참석 인원’이 아니라 ‘복음 들은 인원’으로 보고하세요.\nC. 예외 — 다른 사람을 도울 때: 월코의 공식 임무나 협력으로 섬기는데 월코 밖의 사람이 복음을 전했다면, 그 참석 인원을 ‘월코 행사 참석 인원’에 셀 수 있어요. 다만 같은 청중이 대부분인 행사가 정기적으로 반복되면 첫 행사와 그 이후 분기마다 한 번만 세어요.', 'Guidelines for Reporting Gospel Reach\nA. What to Count: Count the number of people you or your team shared the Gospel with individually or in small groups under Personal Evangelism (Heard the Gospel). Count the number of people in a large group who heard someone on your team share the Gospel under Evangelistic Event Attendance. If you or your team share the Gospel with the same person (people) on another day or at another event count it each time.\nB. What NOT to Count: Do not count attendance at an event unless you are serving through an official Word of Life assignment or partnership AND sharing the Gospel with them. Do not double-count. Only one staff member should report attendance for the team. Personal Gospel conversations and small-group presentations during an event should be reported under Personal Evangelism (Heard the Gospel), not Evangelistic Event Attendance.\nC. Exception – Assisting Others: If you or your team are serving through an official Word of Life assignment or partnership AND someone OUTSIDE Word of Life presents the Gospel, you may count the attendance under Evangelistic Event Attendance. However, if this event is repeated regularly with mostly the same audience, ONLY count the attendance at the first event and once every quarter afterward.') },
       { id: 'eeSalvations', label: L('구원 — 이 행사에서 예수님을 믿는다고 고백한 사람', 'Salvations — people who indicated they believed in Jesus for salvation during these events'), short: L('행사 구원', 'Event salvations') },
@@ -126,9 +126,9 @@ export function cleanText(value, max) {
 }
 
 /** 보고 유형(scope)과 작성자 권한에서 쓸 수 있는 항목 id — 개인 전도는 누구나, 캠프·행사는 지정 담당자의 개인/팀 보고, 제자훈련·지역교회는 지정 담당자의 사역 현황 보고 */
-export function allowedFieldIds(scope, designated) {
+export function allowedFieldIds(scope, designated, extended = designated) {
   return GOSPEL_SECTIONS
-    .filter(section => (scope === 'ministry' ? section.scope === 'ministry' : section.scope === 'report') && (section.access === 'all' || designated))
+    .filter(section => (scope === 'ministry' ? section.scope === 'ministry' : section.scope === 'report') && (section.access === 'all' || designated || (section.access === 'extended' && extended)))
     .flatMap(section => section.fields.map(field => field.id));
 }
 

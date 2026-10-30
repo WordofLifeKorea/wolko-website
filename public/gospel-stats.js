@@ -19,7 +19,7 @@
       item: '항목', combined: '통합', month: '달', reports: '보고', tHeard: '들은 인원', tSalv: '구원', tDed: '헌신', monthShort: function (m) { return Number(m.split('-')[1]) + '월'; },
       rName: '보고자', rPlace: '위치', rType: '유형', rUpdated: '수정', individual: '개인', team: '팀', teamOf: function (n) { return '팀 · ' + n; },
       mineTitle: '내가 낸 보고', edit: '고치기', del: '지우기', delAsk: '이 보고를 지울까요?',
-      formTitle: '월간 복음 전도 보고', formMonth: '보고하는 달', formWho: '개인 / 팀', formTeam: '팀 이름', formTeamPh: '예: 평택 캠프팀', formPlace: '위치 (평택 또는 제주)',
+      formTitle: '월간 복음 전도 보고', formMonth: '보고하는 달', formWho: '보고 종류', formTeam: '팀 이름', formTeamPh: '예: 평택 캠프팀', formPlace: '위치 (평택 또는 제주)',
       placeMainland: '평택', placeJeju: '제주', save: '저장하기', saving: '저장 중…', cancel: '닫기',
       formLoaded: '이미 낸 보고를 불러왔어요. 고쳐서 저장하면 덮어써요.', saved: '저장했어요.', savedUpdated: '고쳐서 저장했어요.',
       needPlace: '위치(평택 또는 제주)를 선택해 주세요.', needTeam: '팀 이름을 입력해 주세요.',
@@ -47,7 +47,7 @@
       item: 'Item', combined: 'Combined', month: 'Month', reports: 'Reports', tHeard: 'Heard', tSalv: 'Saved', tDed: 'Dedicated', monthShort: function (m) { return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Number(m.split('-')[1]) - 1]; },
       rName: 'Reporter', rPlace: 'Location', rType: 'Type', rUpdated: 'Updated', individual: 'Individual', team: 'Team', teamOf: function (n) { return 'Team · ' + n; },
       mineTitle: 'My reports', edit: 'Edit', del: 'Delete', delAsk: 'Delete this report?',
-      formTitle: 'Monthly Gospel Outreach Report', formMonth: 'Month', formWho: 'Individual / Team', formTeam: 'Team name', formTeamPh: 'e.g. Pyeongtaek Camp Team', formPlace: 'Location (Pyeongtaek or Jeju)',
+      formTitle: 'Monthly Gospel Outreach Report', formMonth: 'Month', formWho: 'Report type', formTeam: 'Team name', formTeamPh: 'e.g. Pyeongtaek Camp Team', formPlace: 'Location (Pyeongtaek or Jeju)',
       placeMainland: 'Pyeongtaek', placeJeju: 'Jeju', save: 'Save', saving: 'Saving…', cancel: 'Close',
       formLoaded: 'Loaded the report you already submitted. Saving will overwrite it.', saved: 'Saved.', savedUpdated: 'Updated.',
       needPlace: 'Please choose a location (Pyeongtaek or Jeju).', needTeam: 'Please enter a team name.',
@@ -381,10 +381,10 @@
     var v = (report && report.values) || {};
     var designated = !!(data.me && data.me.designated);
     var html = '<div class="gs-meta"><fieldset class="gs-fieldset"><legend>' + esc(t('formMonth')) + '</legend><select id="fMonth" class="gs-select">' + monthOptions().map(function (m) { return '<option value="' + m + '"' + (m === month ? ' selected' : '') + '>' + esc(t('monthLabel', m)) + '</option>'; }).join('') + '</select></fieldset>' +
-      '<fieldset class="gs-fieldset"><legend>' + esc(t('formWho')) + '</legend><div class="gs-choices">' +
-        '<label class="gs-choice"><input type="radio" name="fScope" value="individual"' + (scope === 'individual' ? ' checked' : '') + '> ' + esc(t('individual')) + '</label>' +
-        (designated ? '<label class="gs-choice"><input type="radio" name="fScope" value="team"' + (scope === 'team' ? ' checked' : '') + '> ' + esc(t('team')) + '</label>' +
-        '<label class="gs-choice"><input type="radio" name="fScope" value="ministry"' + (scope === 'ministry' ? ' checked' : '') + '> ' + esc(t('scopeMinistry')) + '</label>' : '') + '</div>' +
+      // 개인/팀 구분은 없앴다(입력 항목이 같다). 담당자만 '사역 현황'을 고를 수 있고, 아니면 고를 것이 없어 이 칸을 숨긴다
+      '<fieldset class="gs-fieldset"' + (designated ? '' : ' hidden') + '><legend>' + esc(t('formWho')) + '</legend><div class="gs-choices">' +
+        '<label class="gs-choice"><input type="radio" name="fScope" value="individual"' + (scope !== 'ministry' ? ' checked' : '') + '> ' + esc(t('individual')) + '</label>' +
+        (designated ? '<label class="gs-choice"><input type="radio" name="fScope" value="ministry"' + (scope === 'ministry' ? ' checked' : '') + '> ' + esc(t('scopeMinistry')) + '</label>' : '') + '</div>' +
         '<input id="fTeam" class="gs-text" type="text" maxlength="60" placeholder="' + esc(t('formTeamPh')) + '" aria-label="' + esc(t('formTeam')) + '" value="' + esc(report ? report.teamName : '') + '"' + (scope === 'team' ? '' : ' hidden') + '></fieldset>' +
       '<fieldset class="gs-fieldset"><legend>' + esc(t('formPlace')) + '</legend><div class="gs-choices">' +
         '<label class="gs-choice"><input type="radio" name="fPlace" value="mainland"' + (place === 'mainland' ? ' checked' : '') + '> ' + esc(t('placeMainland')) + '</label>' +
@@ -465,12 +465,13 @@
   /** 고르기에 따라 쓸 수 있는 구역만 보이게 — 개인 전도는 누구나, 캠프·행사는 담당자의 개인/팀, 제자훈련·지역교회는 담당자의 사역 현황 */
   function applyScopeUi() {
     var scope = document.querySelector('input[name="fScope"]:checked').value, designated = !!(data.me && data.me.designated);
+    var extended = designated || !!(data.me && data.me.extended);   // 평택 일반 멤버: 개인 전도만 / 담당자·제주 멤버: 전도 행사·교회 행사까지
     data.schema.sections.forEach(function (sec) {
       var el = document.querySelector('#reportForm [data-sec="' + sec.id + '"]'); if (!el) return;
       var inScope = scope === 'ministry' ? sec.scope === 'ministry' : sec.scope === 'report';
-      el.hidden = !(inScope && (sec.access === 'all' || designated));
+      el.hidden = !(inScope && (sec.access === 'all' || designated || (sec.access === 'extended' && extended)));
     });
-    var ce = $('churchSec'); if (ce) ce.hidden = !(designated && scope !== 'ministry');
+    var ce = $('churchSec'); if (ce) ce.hidden = !(extended && scope !== 'ministry');
     if ($('fTeam')) $('fTeam').hidden = scope !== 'team';
   }
   /** 사역 현황: CRS 교회 기록에서 연결 교회 A/B/C 수와 그 달 리더십 훈련 인원을 불러와 칸에 채운다 */

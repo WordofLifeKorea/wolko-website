@@ -13,6 +13,7 @@ import { monthCamps, addCampsToSummary } from '../../lib/gospelCamps.js';
 import { reporterRoster, missingReporters, submittedEmails } from '../../lib/gospelReminder.js';
 import { getAccount, portalSession } from '../../lib/hubAccounts.js';
 import { isDesignated, loadReporters } from '../../lib/gospelReporters.js';
+import { campusOf } from '../../lib/campus.js';
 import { ministryFromCrs } from '../../lib/crsMinistry.js';
 import { loadSlimChurches } from './gospel-ministry.js';
 import { CAMPUS_OVERRIDES } from '../../../src/lib/expense-config.js';
@@ -34,7 +35,8 @@ async function defaultLocation(env, session) {
 }
 /** 화면이 보내 주는 '나' — designated: 팀·캠프·행사·제자훈련·지역교회 보고를 쓸 수 있는지 */
 async function meOf(env, session, review) {
-  return { email: session.email, name: displayName(session), role: session.role, canReview: review, designated: await isDesignated(env, session), location: await defaultLocation(env, session) };
+  const designated = await isDesignated(env, session);
+  return { email: session.email, name: displayName(session), role: session.role, canReview: review, designated, extended: designated || await campusOf(env, session) === 'jeju', location: await defaultLocation(env, session) };
 }
 const displayName = session => cleanText(session.name, 80) || session.email.split('@')[0];
 
@@ -182,10 +184,12 @@ export async function onRequestPost({ env, request }) {
   if (!location) return fail('위치(평택 또는 제주)를 선택해 주세요.');
   const teamName = scope === 'team' ? cleanText(body?.teamName, 60) : '';
   if (scope === 'team' && !teamName) return fail('팀 이름을 입력해 주세요.');
+  // 평택 일반 멤버는 개인 전도만, 담당자(풀타임 선교사 등)와 제주 멤버는 전도 행사·교회 행사 기록까지
+  const extended = designated || await campusOf(env, session) === 'jeju';
   let values;
-  try { values = cleanValues(body?.values, allowedFieldIds(scope, designated)); } catch { return fail('숫자는 0 이상의 정수로 입력해 주세요.'); }
+  try { values = cleanValues(body?.values, allowedFieldIds(scope, designated, extended)); } catch { return fail('숫자는 0 이상의 정수로 입력해 주세요.'); }
   let churchEntries;
-  try { churchEntries = scope === 'ministry' || !designated ? [] : cleanChurchEntries(body?.churchEntries); } catch (error) { return fail(String(error.message).includes('churchName') ? '교회 행사 기록에는 교회 이름이 필요합니다.' : '교회 행사 기록의 숫자는 0 이상의 정수로 입력해 주세요.'); }
+  try { churchEntries = scope === 'ministry' || !extended ? [] : cleanChurchEntries(body?.churchEntries); } catch (error) { return fail(String(error.message).includes('churchName') ? '교회 행사 기록에는 교회 이름이 필요합니다.' : '교회 행사 기록의 숫자는 0 이상의 정수로 입력해 주세요.'); }
 
   const id = scope === 'ministry' ? await ministryId(env, location) : await unitId(env, session.email, scope, teamName);
   const key = reportKey(month, id);

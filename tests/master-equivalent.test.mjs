@@ -83,13 +83,24 @@ test('풀타임 선교사는 직접 지정하지 않아도 팀 보고를 쓰고,
   assert.equal((await team(['anderson@wol.org', 'counselor'])).status, 403, '명단 없음 → 풀타임 판정 안 함');
 });
 
-test('전도 행사 칸은 모든 사람에게 열려 있다(개인 보고에도)', async () => {
-  assert.deepEqual(allowedFieldIds('individual', false), ['preEvangelism', 'evangelism', 'salvation', 'literature', 'social', 'eeAttendance', 'eeSalvations', 'eeDedications']);
-  assert.ok(!allowedFieldIds('individual', false).includes('campCount'), '캠프는 담당자만');
-  const t = setup(); await t.acc('amy@wol.org', 'Amy Short');
-  const r = await t.call(G, 'POST', ['amy@wol.org', 'counselor'], { body: { month: reportMonth(), location: 'jeju', scope: 'individual', values: { evangelism: 3, eeAttendance: 40, eeSalvations: 2, eeDedications: 1, campCount: 9 } } });
-  assert.equal(r.status, 200);
-  assert.deepEqual([r.report.values.eeAttendance, r.report.values.eeSalvations, r.report.values.eeDedications, r.report.values.campCount], [40, 2, 1, 0]);
+test('개인 보고 항목: 평택 일반 멤버는 개인 전도만, 제주 멤버와 풀타임 선교사는 전도 행사·교회 행사 기록까지', async () => {
+  assert.deepEqual(allowedFieldIds('individual', false), ['preEvangelism', 'evangelism', 'salvation', 'literature', 'social']);
+  assert.ok(allowedFieldIds('individual', false, true).includes('eeAttendance'));
+  assert.ok(!allowedFieldIds('individual', false, true).includes('campCount'), '캠프는 담당자만');
+  const t = setup(); await t.acc('amy@wol.org', 'Amy Short', { campus: 'wolko' }); await t.acc('jj@wol.org', 'Jeju Member', { campus: 'jeju' }); await t.acc('anderson@wol.org', 'Jason Anderson');
+  const values = { evangelism: 3, eeAttendance: 40, eeSalvations: 2, eeDedications: 1, campCount: 9 };
+  const entries = [{ id: 'e1', churchName: '평택중앙교회', event: '집회', date: reportMonth() + '-05', students: 10, salvations: 1, dedications: 0 }];
+  const post = who => t.call(G, 'POST', [who, 'counselor'], { body: { month: reportMonth(), location: 'jeju', scope: 'individual', values, churchEntries: entries } });
+  const amy = await post('amy@wol.org');
+  assert.equal(amy.status, 200); assert.deepEqual([amy.report.values.evangelism, amy.report.values.eeAttendance, amy.report.values.campCount], [3, 0, 0], '평택 일반 멤버: 전도 행사는 저장되지 않는다');
+  assert.equal((amy.report.churchEntries || []).length, 0, '교회 행사 기록도 없다');
+  const jj = await post('jj@wol.org');
+  assert.deepEqual([jj.report.values.eeAttendance, jj.report.values.eeSalvations, jj.report.values.campCount], [40, 2, 0], '제주 멤버: 전도 행사까지(캠프는 아님)');
+  assert.equal(jj.report.churchEntries.length, 1, '제주 멤버: 교회 행사 기록');
+  const ft = await post('anderson@wol.org');
+  assert.deepEqual([ft.report.values.eeAttendance, ft.report.churchEntries.length], [40, 1], '풀타임 선교사: 전도 행사·교회 행사');
+  const me = async who => (await t.call(G, 'GET', [who, 'counselor'], { query: `?month=${reportMonth()}` })).me;
+  assert.deepEqual([(await me('amy@wol.org')).extended, (await me('jj@wol.org')).extended, (await me('anderson@wol.org')).extended], [false, true, true]);
 });
 
 test('Jacob Morse: 마스터와 같은 권한 — 보고 담당자 지정·보고 제외·제출 현황', async () => {
