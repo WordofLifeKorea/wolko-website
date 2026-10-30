@@ -26,11 +26,12 @@ test('CRS 평택|제주: 목록 · 지도 · 필터 · 번호 · 새 교회 기�
   assert.match(src, /renderFilterSelects\(\); renderChurchList\(\); updateCrsMarkers\(\);/, '바꾸면 목록·필터·지도를 다시 그린다');
 });
 
-test('CRS 상세의 "정보 수정"은 뒤로 가기를 쓰지 않는다(상세가 기록 없이 열렸으면 페이지를 벗어나던 문제)', async () => {
+test('CRS 상세의 "정보 수정"은 상세를 닫지 않고 그 위에 수정 창을 띄우고, 저장하면 상세를 다시 그린다', async () => {
   const { readFileSync } = await import('node:fs');
   const page = readFileSync(new URL('../src/pages/portal/crs/index.astro', import.meta.url), 'utf8');
   const handler = page.slice(page.indexOf("getElementById('detailEditBtn').addEventListener"), page.indexOf("getElementById('detailDeleteBtn')"));
-  assert.match(handler, /closeDetailModal\(\{ useHistory: false \}\)/);
-  assert.doesNotMatch(handler, /closeDetailModal\(\);/);
+  assert.doesNotMatch(handler, /closeDetailModal/, '상세를 닫지 않는다(뒤로 가기도 쓰지 않는다)');
   assert.match(handler, /openEditModal\(church\)/);
+  assert.match(page, /if \(fresh\) openDetailModal\(fresh, \{ updateHistory: false \}\)/, '저장 후 상세를 고친 내용으로 다시 그린다');
+  assert.match(page, /#editModal\.modal-backdrop \{ z-index:1300; \}/, '휴대폰에서 상세(1200) 위에 뜬다');
 });

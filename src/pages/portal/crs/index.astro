@@ -820,6 +820,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .is-dragging { opacity:.5; outline:2px dashed var(--crs-cyan, #2d9fba); outline-offset:2px; }
   .drop-target { outline:2px solid var(--crs-cyan, #2d9fba); outline-offset:2px; background-color:#f4fafb; }
   body.crs-dragging { user-select:none; -webkit-user-select:none; cursor:grabbing; }
+  /* 수정 창은 휴대폰에서 화면 전체를 덮는 상세(z-index 1200) 위에 뜬다 */
+  #editModal.modal-backdrop { z-index:1300; }
   .crs-drag-chip { position:fixed; z-index:3000; transform:translate(14px, 14px); padding:.38rem .8rem; border-radius:999px; background:#004f68; color:#fff; font-size:.78rem; font-weight:800; box-shadow:0 8px 20px rgba(0,30,44,.28); pointer-events:none; white-space:nowrap; }
   .detail-layout-hint { display:flex; align-items:center; gap:.6rem; margin:.1rem 0 0; color:#8aa0a8; font-size:.74rem; }
   .btn-layout-reset { border:none; background:none; padding:0; color:#4a8a9a; font-size:.74rem; font-weight:700; cursor:pointer; text-decoration:underline; }
@@ -2173,8 +2175,14 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         data.number = churches.filter(c => churchCampus(c) === churchCampus(data)).reduce((max, c) => Math.max(max, c.number || 0), 0) + 1;   // 번호는 평택·제주 각각 이어서 붙는다
         await push(ref(db, 'churches'), data);
       }
+      const editedId = editingChurch?.id || null;
       closeEditModal();
       await loadChurches();
+      // 상세 화면에서 고쳤으면 고친 내용으로 상세를 다시 그린다(기록은 건드리지 않는다)
+      if (editedId && viewingChurch?.id === editedId && document.getElementById('appBody')?.classList.contains('split')) {
+        const fresh = churches.find(c => c.id === editedId);
+        if (fresh) openDetailModal(fresh, { updateHistory: false });
+      }
     } catch(e) {
       alert(t('save_error') + e.message);
     }
@@ -2449,10 +2457,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       item.addEventListener('click', () => openStepModal(church, parseInt(item.dataset.step)));
     });
     document.getElementById('detailEditBtn').addEventListener('click', () => {
-      // 뒤로 가기(history.back)로 닫으면, 상세가 기록 없이 열린 경우(새로고침·링크로 들어옴) CRS 페이지 자체를 벗어나거나
-      // 설치 앱에서 '종료' 확인이 뜬다 — 여기서는 기록을 쓰지 않고 상세만 닫고, 상세 표시만 기록에서 지운다
-      closeDetailModal({ useHistory: false });
-      if (history.state?.crsDetail) history.replaceState({ ...history.state, crsDetail: false, crsChurchId: null }, '', location.href);
+      // 상세 화면은 닫지 않고 그 위에 수정 창을 띄운다(예전엔 상세를 닫아서 목록으로 '뒤로 나간' 것처럼 보였다). 저장하면 상세에 바로 반영된다
       openEditModal(church);
     });
     document.getElementById('detailDeleteBtn').addEventListener('click', () => deleteChurch(church));
