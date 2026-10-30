@@ -8,230 +8,6 @@ import PageHero from '../../components/PageHero.astro';
   activeNav="ministry"
 >
 
-<style>
-
-.jr {
-  --jc-deep:  #004f68;
-  --jc-mid:   #007ea1;
-  --jc-light: #73d1f5;
-  --jc-ink:   #152028;
-  --jc-muted: #637a86;
-  --jc-line:  #dde6ea;
-  --jc-bg:    #f5f8fa;
-  font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif;
-  color: var(--jc-ink);
-  word-break: keep-all;
-  -webkit-font-smoothing: antialiased;
-}
-/* 언어 토글 */
-.jr .wl-en         { display: none; }
-.jr span.wl-en     { display: none; }
-.lang-en .jr .wl-ko    { display: none !important; }
-.lang-en .jr .wl-en    { display: block !important; }
-.lang-en .jr span.wl-ko { display: none !important; }
-.lang-en .jr span.wl-en { display: inline !important; }
-
-/* ──────────────────────────────
-   NOTICE
-────────────────────────────── */
-.jr-notice {
-  background: #fffbef;
-  border-bottom: 1px solid #e8d98a;
-  padding: 16px 40px;
-}
-.jr-notice-inner {
-  max-width: 860px;
-  margin: 0 auto;
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
-.jr-notice-badge {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: #856400;
-  background: #f0d84a30;
-  border: 1px solid #c9a80060;
-  padding: 3px 8px;
-  border-radius: 5px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.jr-notice p {
-  font-size: 13.5px;
-  line-height: 1.7;
-  color: #5a4500;
-}
-.jr-notice strong { font-weight: 700; }
-
-/* ──────────────────────────────
-   ABOUT SECTION
-────────────────────────────── */
-.jr-about {
-  padding: 80px 40px;
-  background: #fff;
-}
-.jr-about-inner {
-  max-width: 860px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 5fr 6fr;
-  gap: 72px;
-  align-items: start;
-}
-.jr-label {
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  color: var(--jc-mid);
-  text-transform: uppercase;
-  margin-bottom: 14px;
-}
-.jr-h2 {
-  font-size: clamp(22px, 2.8vw, 30px);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.3;
-  color: var(--jc-ink);
-  margin-bottom: 18px;
-}
-.jr-body {
-  font-size: 14.5px;
-  line-height: 1.95;
-  color: var(--jc-muted);
-}
-
-.jr-items { display: flex; flex-direction: column; gap: 0; }
-.jr-item {
-  display: flex;
-  gap: 18px;
-  align-items: flex-start;
-  padding: 22px 0;
-  border-bottom: 1px solid var(--jc-line);
-}
-.jr-item:first-child { padding-top: 0; }
-.jr-item:last-child { border-bottom: none; padding-bottom: 0; }
-.jr-item-num {
-  width: 26px; height: 26px;
-  border-radius: 7px;
-  background: var(--jc-deep);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 800;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-.jr-item-title {
-  font-size: 14.5px;
-  font-weight: 700;
-  color: var(--jc-ink);
-  margin-bottom: 5px;
-}
-.jr-item-desc {
-  font-size: 13.5px;
-  line-height: 1.75;
-  color: var(--jc-muted);
-}
-
-/* ──────────────────────────────
-   PROGRAMS SECTION
-────────────────────────────── */
-.jr-programs {
-  padding: 72px 40px;
-  background: var(--jc-bg);
-  border-top: 1px solid var(--jc-line);
-}
-.jr-programs-head {
-  max-width: 860px;
-  margin: 0 auto 36px;
-}
-.jr-programs-head .jr-h2 { margin-bottom: 8px; }
-.jr-programs-desc {
-  font-size: 14px;
-  line-height: 1.8;
-  color: var(--jc-muted);
-}
-
-.jr-cards {
-  max-width: 860px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-.jr-card {
-  background: #fff;
-  border: 1px solid var(--jc-line);
-  border-radius: 14px;
-  padding: 26px 22px;
-  display: flex;
-  flex-direction: column;
-  transition: box-shadow .2s, border-color .2s, transform .2s;
-}
-.jr-card:hover {
-  border-color: var(--jc-mid);
-  box-shadow: 0 8px 28px rgba(0,79,104,0.1);
-  transform: translateY(-2px);
-}
-.jr-card-flag { font-size: 24px; margin-bottom: 10px; }
-.jr-card-region {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  color: var(--jc-mid);
-  margin-bottom: 3px;
-}
-.jr-card-name {
-  font-size: 17px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--jc-ink);
-  margin-bottom: 16px;
-}
-.jr-card-link {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 13px;
-  color: var(--jc-muted);
-  text-decoration: none;
-  margin-top: 5px;
-  transition: color .15s;
-  word-break: break-all;
-}
-.jr-card-link:hover { color: var(--jc-deep); }
-.jr-card-link svg {
-  width: 13px; height: 13px;
-  stroke: var(--jc-mid);
-  fill: none;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  flex-shrink: 0;
-}
-.jr-card-note {
-  margin-top: 12px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--jc-deep);
-  background: #e8f4f9;
-  display: inline-block;
-  padding: 4px 9px;
-  border-radius: 6px;
-}
-
-/* ── 반응형 ── */
-@media (max-width: 700px) {
-  .jr-notice { padding: 14px 24px; }
-  .jr-about { padding: 56px 24px; }
-  .jr-about-inner { grid-template-columns: 1fr; gap: 40px; }
-  .jr-programs { padding: 56px 24px; }
-  .jr-cards { grid-template-columns: 1fr; }
-}
-</style>
-
 <PageHero image="/images/syme-community.jpg" pos="50% 42%">
   <Fragment slot="eyebrow"><span class="wl-ko">SYME 사역</span><span class="wl-en">Ministry · SYME</span></Fragment>
   <Fragment slot="title">Jr. SYME</Fragment>
@@ -250,22 +26,24 @@ import PageHero from '../../components/PageHero.astro';
 
 <div class="jr">
 
-  <!-- NOTICE -->
-  <div class="jr-notice">
-    <div class="jr-notice-inner">
-      <span class="jr-notice-badge"><span class="wl-ko">공지</span><span class="wl-en">NOTICE</span></span>
-      <p>
-        <span class="wl-ko"><strong>한국 SYME는 현재 잠정 중단 중입니다.</strong> 그 동안 중·고등학생을 대상으로 Jr. SYME를 운영하고 있습니다.</span>
-        <span class="wl-en"><strong>SYME Korea is currently on a temporary hold.</strong> In the meantime, Jr. SYME is available for middle &amp; high school students.</span>
-      </p>
+  <!-- NOTICE — 옅은 바탕 + 고른 테두리 상자 (왼쪽 강조선 없음) -->
+  <div class="jr-notice-wrap">
+    <div class="jr-shell">
+      <div class="jr-notice" role="note">
+        <p class="jr-notice-label"><span class="wl-ko">공지</span><span class="wl-en">NOTICE</span></p>
+        <p class="jr-notice-text">
+          <span class="wl-ko"><strong>한국 SYME는 현재 잠정 중단 중입니다.</strong> 그 동안 중·고등학생을 대상으로 Jr. SYME를 운영하고 있습니다.</span>
+          <span class="wl-en"><strong>SYME Korea is currently on a temporary hold.</strong> In the meantime, Jr. SYME is available for middle &amp; high school students.</span>
+        </p>
+      </div>
     </div>
   </div>
 
-  <!-- ABOUT -->
-  <div class="jr-about">
-    <div class="jr-about-inner">
-      <div>
-        <p class="jr-label">About Jr. SYME</p>
+  <!-- ABOUT — 왼쪽 소개, 오른쪽 세 가지 특징 줄 목록 -->
+  <section class="jr-about">
+    <div class="jr-shell jr-about-inner">
+      <div class="jr-about-copy">
+        <p class="jr-eyebrow">About Jr. SYME</p>
         <h2 class="jr-h2">
           <span class="wl-ko">복음으로 세워지는<br>다음 세대 리더</span>
           <span class="wl-en">Raising the Next Generation<br>of Gospel-Centered Leaders</span>
@@ -276,95 +54,227 @@ import PageHero from '../../components/PageHero.astro';
         </p>
       </div>
 
-      <div class="jr-items">
-        <div class="jr-item">
-          <div class="jr-item-num">01</div>
+      <ol class="jr-items">
+        <li class="jr-item">
+          <span class="jr-item-num">01</span>
           <div>
-            <p class="jr-item-title"><span class="wl-ko">영어 집중 환경</span><span class="wl-en">English Immersion</span></p>
+            <h3 class="jr-item-title"><span class="wl-ko">영어 집중 환경</span><span class="wl-en">English Immersion</span></h3>
             <p class="jr-item-desc"><span class="wl-ko">모든 강의와 활동이 영어로 진행됩니다. 자연스러운 환경 속에서 언어와 신앙이 함께 성장합니다.</span><span class="wl-en">All sessions are in English — faith and language grow together in a natural immersion environment.</span></p>
           </div>
-        </div>
-        <div class="jr-item">
-          <div class="jr-item-num">02</div>
+        </li>
+        <li class="jr-item">
+          <span class="jr-item-num">02</span>
           <div>
-            <p class="jr-item-title"><span class="wl-ko">말씀 중심 커리큘럼</span><span class="wl-en">Word-Centered Curriculum</span></p>
+            <h3 class="jr-item-title"><span class="wl-ko">말씀 중심 커리큘럼</span><span class="wl-en">Word-Centered Curriculum</span></h3>
             <p class="jr-item-desc"><span class="wl-ko">성경 묵상, 말씀 암송, 소그룹 나눔을 통해 하나님의 말씀 위에 삶을 세웁니다.</span><span class="wl-en">Daily devotions, Scripture memory, and small groups — building lives on the foundation of God's Word.</span></p>
           </div>
-        </div>
-        <div class="jr-item">
-          <div class="jr-item-num">03</div>
+        </li>
+        <li class="jr-item">
+          <span class="jr-item-num">03</span>
           <div>
-            <p class="jr-item-title"><span class="wl-ko">공동체와 제자훈련</span><span class="wl-en">Community &amp; Discipleship</span></p>
+            <h3 class="jr-item-title"><span class="wl-ko">공동체와 제자훈련</span><span class="wl-en">Community &amp; Discipleship</span></h3>
             <p class="jr-item-desc"><span class="wl-ko">또래와 함께하는 3주간의 공동체 생활로 서로 세우고 도전하며 성장합니다.</span><span class="wl-en">3 weeks of community life with peers — challenging and building each other in faith and character.</span></p>
           </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- RELATED PROGRAMS — 남색 마무리 띠 -->
+  <section class="jr-programs">
+    <div class="jr-shell">
+      <div class="jr-programs-head">
+        <div>
+          <p class="jr-eyebrow">Word of Life Worldwide</p>
+          <h2 class="jr-h2">
+            <span class="wl-ko">더 깊은 훈련을 원하신다면</span>
+            <span class="wl-en">Looking for a Deeper Experience?</span>
+          </h2>
         </div>
+        <p class="jr-programs-desc">
+          <span class="wl-ko">Jr. SYME 외에도 전 세계 Word of Life 훈련 프로그램을 살펴보세요. 제주 월비를 제외한 해외 프로그램은 영어 문의만 가능합니다.</span>
+          <span class="wl-en">Explore other Word of Life training programs worldwide. International programs (except Jeju WOLBI) accept English inquiries only.</span>
+        </p>
+      </div>
+
+      <div class="jr-cards">
+
+        <div class="jr-card">
+          <p class="jr-card-region">Taiwan</p>
+          <h3 class="jr-card-name">SYME Taiwan</h3>
+          <ul class="jr-card-links">
+            <li>
+              <a class="jr-card-link" href="https://syme.woltaiwan.com/en/home" target="_blank" rel="noopener">
+                <span>syme.woltaiwan.com</span>
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+              </a>
+            </li>
+            <li>
+              <a class="jr-card-link" href="mailto:symetaiwan@gmail.com">
+                <span>symetaiwan@gmail.com</span>
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+              </a>
+            </li>
+          </ul>
+          <p class="jr-card-note"><span class="wl-ko">영어 문의만 가능</span><span class="wl-en">English only</span></p>
+        </div>
+
+        <div class="jr-card">
+          <p class="jr-card-region">Jeju, Korea</p>
+          <h3 class="jr-card-name">WOLBI Jeju</h3>
+          <ul class="jr-card-links">
+            <li>
+              <a class="jr-card-link" href="https://www.wolbijeju.org" target="_blank" rel="noopener">
+                <span>wolbijeju.org</span>
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+              </a>
+            </li>
+            <li>
+              <a class="jr-card-link" href="mailto:wolbijeju.contact@gmail.com">
+                <span>wolbijeju.contact@gmail.com</span>
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="jr-card">
+          <p class="jr-card-region">United States</p>
+          <h3 class="jr-card-name">WOLBI USA</h3>
+          <ul class="jr-card-links">
+            <li>
+              <a class="jr-card-link" href="https://wordoflife.edu" target="_blank" rel="noopener">
+                <span>wordoflife.edu</span>
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+              </a>
+            </li>
+            <li>
+              <a class="jr-card-link" href="mailto:admissions@wol.org">
+                <span>admissions@wol.org</span>
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+              </a>
+            </li>
+          </ul>
+          <p class="jr-card-note"><span class="wl-ko">영어 문의만 가능</span><span class="wl-en">English only</span></p>
+        </div>
+
       </div>
     </div>
-  </div>
-
-  <!-- RELATED PROGRAMS -->
-  <div class="jr-programs">
-    <div class="jr-programs-head">
-      <p class="jr-label">Word of Life Worldwide</p>
-      <h2 class="jr-h2">
-        <span class="wl-ko">더 깊은 훈련을 원하신다면</span>
-        <span class="wl-en">Looking for a Deeper Experience?</span>
-      </h2>
-      <p class="jr-programs-desc">
-        <span class="wl-ko">Jr. SYME 외에도 전 세계 Word of Life 훈련 프로그램을 살펴보세요. 제주 월비를 제외한 해외 프로그램은 영어 문의만 가능합니다.</span>
-        <span class="wl-en">Explore other Word of Life training programs worldwide. International programs (except Jeju WOLBI) accept English inquiries only.</span>
-      </p>
-    </div>
-
-    <div class="jr-cards">
-
-      <div class="jr-card">
-        <div class="jr-card-flag">🇹🇼</div>
-        <p class="jr-card-region">Taiwan</p>
-        <p class="jr-card-name">SYME Taiwan</p>
-        <a class="jr-card-link" href="https://syme.woltaiwan.com/en/home" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          syme.woltaiwan.com
-        </a>
-        <a class="jr-card-link" href="mailto:symetaiwan@gmail.com">
-          <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          symetaiwan@gmail.com
-        </a>
-        <span class="jr-card-note"><span class="wl-ko">영어 문의만 가능</span><span class="wl-en">English only</span></span>
-      </div>
-
-      <div class="jr-card">
-        <div class="jr-card-flag">🇰🇷</div>
-        <p class="jr-card-region">Jeju, Korea</p>
-        <p class="jr-card-name">WOLBI Jeju</p>
-        <a class="jr-card-link" href="https://www.wolbijeju.org" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          wolbijeju.org
-        </a>
-        <a class="jr-card-link" href="mailto:wolbijeju.contact@gmail.com">
-          <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          wolbijeju.contact@gmail.com
-        </a>
-      </div>
-
-      <div class="jr-card">
-        <div class="jr-card-flag">🇺🇸</div>
-        <p class="jr-card-region">United States</p>
-        <p class="jr-card-name">WOLBI USA</p>
-        <a class="jr-card-link" href="https://wordoflife.edu" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          wordoflife.edu
-        </a>
-        <a class="jr-card-link" href="mailto:admissions@wol.org">
-          <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          admissions@wol.org
-        </a>
-        <span class="jr-card-note"><span class="wl-ko">영어 문의만 가능</span><span class="wl-en">English only</span></span>
-      </div>
-
-    </div>
-  </div>
+  </section>
 
 </div>
+
+<script is:inline>
+  // Jr. SYME 움직임: 스크롤하면 글이 아래에서 차례로 떠오른다.
+  // 움직임 줄이기 설정이거나 IntersectionObserver 가 없으면 아무것도 하지 않는다 — 처음부터 그대로 다 보인다.
+  (function () {
+    if (!('IntersectionObserver' in window)) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var items = [].slice.call(document.querySelectorAll('.jr .jr-notice, .jr .jr-about-copy > *, .jr .jr-item, .jr .jr-programs-head > *, .jr .jr-card'));
+    items.forEach(function (el) {
+      var sib = el.parentNode.children, i = [].indexOf.call(sib, el);
+      el.style.setProperty('--d', Math.min(i, 6) * 0.08 + 's');
+      el.classList.add('jr-rv');
+    });
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); } });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    items.forEach(function (el) { io.observe(el); });
+  })();
+</script>
+
+<style>
+/* Jr. SYME 본문 — 사역 페이지(/ministry)와 같은 편집 디자인
+   언어 표시/숨김은 global.css 가 맡으므로, .wl-ko/.wl-en 이 붙은 요소에는 display 를 주지 않는다. */
+.jr {
+  --jc-deep: #004f68;
+  --jc-navy: #0b2430;
+  --jc-ink: #10252e;
+  --jc-text: #4a5d66;
+  --jc-body: #3e535d;
+  --jc-muted: #587383;
+  --jc-label: #5a7380;
+  --jc-line: #d6dee2;
+  --jc-soft: #f6f9fb;
+  --jc-fill: #f3f7f9;
+  font-family: var(--ff-sans);
+  color: var(--jc-ink);
+  background: #fff;
+  word-break: keep-all;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+}
+.jr-shell { width: min(1200px, calc(100% - 48px)); margin-inline: auto; }
+.jr svg { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: square; }
+.jr ol, .jr ul { list-style: none; }
+
+/* 작은 표시 — 앞에 가는 선 */
+.jr-eyebrow { display: flex; align-items: center; gap: 12px; color: var(--jc-deep); font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.jr-eyebrow::before { content: ''; width: 28px; height: 1px; background: currentColor; flex: none; }
+.jr-h2 { margin-top: 20px; font-family: var(--ff-serif); font-size: clamp(30px, 3.4vw, 46px); font-weight: 700; line-height: 1.22; letter-spacing: -.03em; color: var(--jc-navy); }
+.jr-body { margin-top: 24px; font-size: 17px; line-height: 1.85; color: var(--jc-body); }
+
+/* NOTICE — 옅은 바탕 + 고른 테두리 */
+.jr-notice-wrap { padding-top: 72px; }
+.jr-notice { display: flex; align-items: baseline; gap: 24px; padding: 20px 24px; background: var(--jc-soft); border: 1px solid var(--jc-line); }
+.jr-notice-label { flex: none; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--jc-deep); }
+.jr-notice-text { font-size: 15px; line-height: 1.75; color: var(--jc-body); }
+.jr-notice-text strong { font-weight: 700; color: var(--jc-navy); }
+
+/* ABOUT */
+.jr-about { padding: 88px 0 120px; }
+.jr-about-inner { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 80px; align-items: start; }
+.jr-items { border-bottom: 1px solid var(--jc-line); }
+.jr-item { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; padding: 28px 0; border-top: 1px solid var(--jc-line); }
+.jr-item:first-child { border-top: 2px solid var(--jc-navy); }
+.jr-item-num { font-family: var(--ff-serif); font-size: 15px; line-height: 1.7; color: var(--jc-deep); }
+.jr-item-title { font-size: 19px; font-weight: 700; line-height: 1.5; color: var(--jc-navy); }
+.jr-item-desc { margin-top: 8px; font-size: 15.5px; line-height: 1.85; color: var(--jc-text); }
+
+/* RELATED PROGRAMS — 남색 띠 */
+.jr-programs { padding: 112px 0 120px; background: var(--jc-navy); color: #fff; }
+.jr-programs .jr-eyebrow { color: rgba(255,255,255,.78); }
+.jr-programs .jr-h2 { color: #fff; font-size: clamp(28px, 3vw, 40px); line-height: 1.25; }
+.jr-programs-head { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 80px; align-items: end; margin-bottom: 64px; }
+.jr-programs-desc { max-width: 560px; font-size: 16px; line-height: 1.85; color: rgba(255,255,255,.74); }
+.jr-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; }
+.jr-card { padding-top: 24px; border-top: 1px solid rgba(255,255,255,.4); display: flex; flex-direction: column; }
+.jr-card-region { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.6); }
+.jr-card-name { margin-top: 10px; font-family: var(--ff-serif); font-size: 24px; font-weight: 700; letter-spacing: -.02em; color: #fff; }
+.jr-card-links { margin-top: 22px; border-bottom: 1px solid rgba(255,255,255,.16); }
+.jr-card-links li { border-top: 1px solid rgba(255,255,255,.16); }
+.jr-card-link { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 15px 0; font-size: 15px; color: rgba(255,255,255,.88); text-decoration: none; transition: color .2s, gap .25s; }
+.jr-card-link span { min-width: 0; overflow-wrap: anywhere; }
+.jr-card-link:hover { color: #fff; }
+.jr-card-link:hover span { text-decoration: underline; text-underline-offset: 4px; }
+.jr-card-note { margin-top: 14px; font-size: 13px; color: rgba(255,255,255,.6); }
+
+/* 스크롤하면 떠오르기 — 스크립트가 .jr-rv 를 붙일 때만 */
+.jr-rv { opacity: 0; transform: translateY(28px); transition: opacity 1.1s cubic-bezier(.2,.7,.2,1) var(--d, 0s), transform 1.1s cubic-bezier(.2,.7,.2,1) var(--d, 0s); }
+.jr-rv.is-in { opacity: 1; transform: none; }
+
+/* ── 반응형 ── */
+@media (max-width: 980px) {
+  .jr-about-inner, .jr-programs-head { grid-template-columns: 1fr; gap: 40px; align-items: start; }
+  .jr-programs-head { gap: 24px; }
+  .jr-cards { grid-template-columns: 1fr; gap: 40px; }
+}
+@media (max-width: 740px) {
+  .jr-shell { width: calc(100% - 40px); }
+  .jr-notice-wrap { padding-top: 48px; }
+  .jr-notice { flex-direction: column; gap: 8px; padding: 18px 20px; }
+  .jr-about { padding: 56px 0 72px; }
+  .jr-body { font-size: 15.5px; }
+  .jr-item { grid-template-columns: 44px minmax(0, 1fr); padding: 24px 0; }
+  .jr-item-title { font-size: 17px; }
+  .jr-item-desc { font-size: 15px; }
+  .jr-programs { padding: 72px 0; }
+  .jr-programs-head { margin-bottom: 48px; }
+  .jr-programs-desc { font-size: 15px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jr-card-link { transition: none; }
+}
+</style>
 
 </BaseLayout>
