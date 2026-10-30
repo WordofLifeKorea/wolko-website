@@ -32,7 +32,7 @@
 .gs-tab span { color: var(--muted); font-size: 12px; font-weight: 700; }
 .gs-tab.is-active { border-color: var(--blue); background: #e8f3f5; color: var(--blue); }
 
-.gs-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0 0 8px; }
+.gs-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0 0 8px; }
 .gs-kpi { padding: 18px 20px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
 .gs-kpi strong { display: block; color: var(--blue); font: 800 32px/1.1 'Montserrat', var(--sans); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
 .gs-kpi.has-break { display: flex; flex-direction: column; }
@@ -98,6 +98,7 @@
 
 @media (max-width: 760px) {
   .gs-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gs-kpis > .gs-kpi:first-child { grid-column: 1 / -1; }   /* 카드 세 장: 좁은 화면에서는 첫 장(복음 들은 인원)을 한 줄 전체로 */
   .gs-kpi strong { font-size: 26px; }
   .gs-fields { grid-template-columns: minmax(0, 1fr); }
   .gs-actions { width: 100%; }

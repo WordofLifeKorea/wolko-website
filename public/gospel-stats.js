@@ -128,7 +128,6 @@
   function totals(src, key) { return (src && src[SELECTED[key]]) || {}; }
   function sumSalv(x) { return (x.salvation || 0) + (x.campSalvations || 0) + (x.eeSalvations || 0); }
   function sumDed(x) { return (x.campDedications || 0) + (x.eeDedications || 0); }
-  function sumReach(x) { return (x.campAttendance || 0) + (x.eeAttendance || 0); }
 
   function render() {
     document.documentElement.lang = lang;
@@ -231,7 +230,7 @@
   function renderKpis() {
     var x = totals(data.summary, tab), c = data.summary.counts;
     $('kpiCaption').innerHTML = view === 'year' ? esc(t('ytdCaption', data.year, Number(String(data.ytd.from).slice(5)), Number(String(data.ytd.to).slice(5)))) + infoKey('ytdTip') : esc(t('monthLabel', data.month));
-    var kpis = [[t('kGospel'), sumHeard(x), 'kGospelTip', 'heard'], [t('kSalv'), sumSalv(x), 'kSalvTip', 'saved'], [t('kDed'), sumDed(x), 'kDedTip', 'ded'], [t('kReach'), sumReach(x), 'kReachTip', 'reach']];   // 네 카드 모두 같은 구조(라벨 · 숫자 · 도넛)
+    var kpis = [[t('kGospel'), sumHeard(x), 'kGospelTip', 'heard'], [t('kSalv'), sumSalv(x), 'kSalvTip', 'saved'], [t('kDed'), sumDed(x), 'kDedTip', 'ded']];   // 세 카드 모두 같은 구조(라벨 · 숫자 · 도넛). 캠프·월코 행사 참석 인원 카드는 뺐다(항목별 통계 표에 숫자가 있다)
     var box = $('kpis');
     if (box.dataset.lang !== lang || box.children.length !== kpis.length) {          // 처음이거나 언어가 바뀌면 카드를 새로 만든다
       box.dataset.lang = lang;

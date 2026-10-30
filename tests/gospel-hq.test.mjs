@@ -211,12 +211,12 @@ test('복음 통계 카드 그래프: 가로 막대 대신 도넛(원형) — �
   assert.ok(Math.abs(lens.reduce((a, b) => a + b, 0) - (100 - 3 * gap)) < 1e-9);
 });
 
-test('복음 통계 숫자 카드 네 장은 같은 구조(라벨 · 숫자 · 도넛)라 높이가 같다 — 헌신·참석 인원도 캠프/월코 행사 도넛을 가진다', async () => {
+test('복음 통계 숫자 카드 세 장은 같은 구조(라벨 · 숫자 · 도넛)라 높이가 같다 — 헌신도 캠프/월코 행사 도넛을 가진다, 참석 인원 카드는 없다', async () => {
   const { readFileSync } = await import('node:fs');
   const stats = readFileSync(new URL('../public/gospel-stats.js', import.meta.url), 'utf8');
   const charts = readFileSync(new URL('../public/gospel-charts.js', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../public/gospel-stats.css', import.meta.url), 'utf8');
-  assert.match(stats, /'kDedTip', 'ded'\]/); assert.match(stats, /'kReachTip', 'reach'\]/);
+  assert.match(stats, /'kDedTip', 'ded'\]\];/); assert.doesNotMatch(stats, /'kReachTip', 'reach'\]/);
   assert.match(charts, /ded: two\(\['campDedications', 'eeDedications'\]\)/);
   assert.match(charts, /reach: two\(\['campAttendance', 'eeAttendance'\]\)/);
   assert.match(css, /\.gs-kpi > span \{ min-height: 2\.9em/, '라벨 두 줄 자리를 늘 잡아 숫자 높이가 같다');
