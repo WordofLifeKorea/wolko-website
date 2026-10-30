@@ -8,7 +8,7 @@ body.rf { background: #eef0f1; }
 .rf-docmeta { border-collapse: collapse; font-size: 12.5px; color: var(--ink2); }
 .rf-docmeta th { padding: 0 10px 2px 0; text-align: left; font-weight: 500; }
 .rf-docmeta td { padding: 0 0 2px; font-variant-numeric: tabular-nums; }
-.rf-docmeta .rf-secret { font-weight: 700; color: #8e2424; }
+.rf-docmeta .rf-secret { font-weight: 600; color: var(--ink); }
 .rf-title { margin: 44px 0 0; text-align: center; font-family: var(--serif); font-size: 32px; font-weight: 700; letter-spacing: .5em; text-indent: .5em; }
 html[lang="en"] .rf-title { letter-spacing: .08em; text-indent: 0; }
 .rf-sub { margin: 6px 0 0; text-align: center; font-size: 13px; color: var(--muted); }
@@ -31,14 +31,15 @@ html[lang="en"] .rf-title { letter-spacing: .08em; text-indent: 0; }
 .rf-table th { width: 34%; text-align: left; font-weight: 500; vertical-align: middle; }
 .rf-table td { padding: 6px 10px; border-bottom: 1px solid #cfd4d7; }
 .rf-table tr:last-child th, .rf-table tr:last-child td { border-bottom-color: var(--ink); }
-.rf-table input[type="text"], .rf-table input[type="tel"], .rf-table select { width: 100%; height: 36px; padding: 0 8px; border: 0; border-bottom: 1px solid var(--field); border-radius: 0; background: transparent; outline: none; }
+.rf-table td { padding: 8px 10px; }
+.rf-table input[type="text"], .rf-table input[type="tel"], .rf-table select { width: 100%; height: 40px; padding: 0 10px; border: 1px solid var(--field); border-radius: var(--r); background: #fff; outline: none; }
 .rf-table select { -webkit-appearance: none; appearance: none; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='none' stroke='%232b2d2f' stroke-width='2'%3E%3Cpolyline points='5 8 10 13 15 8'/%3E%3C/svg%3E") no-repeat right 8px center; padding-right: 28px; }
-.rf-table input:focus, .rf-table select:focus { border-bottom: 2px solid var(--navy); }
+.rf-table input:focus, .rf-table select:focus { border-color: var(--navy); outline: 2px solid rgba(0, 78, 101, .18); }
 .rf-table .ap-choices { gap: 4px 20px; padding: 4px 0; }
 .rf-table .ap-choice { font-size: 14px; min-height: 30px; }
 .rf-table th .ap-fhint { display: block; margin: 2px 0 0; font-size: 12.5px; font-weight: 400; }
 .rf-table tr.has-err th { color: var(--err); }
-.rf-table tr.has-err input, .rf-table tr.has-err select { border-bottom-color: var(--err); }
+.rf-table tr.has-err input, .rf-table tr.has-err select { border-color: var(--err); }
 /* 서술형은 질문 아래 넓게 */
 .rf-stack { display: grid; gap: 22px; }
 .rf-stack .ap-field textarea { min-height: 110px; }
@@ -72,28 +73,62 @@ html[lang="en"] .rf-title { letter-spacing: .08em; text-indent: 0; }
 .rf-done p { margin: 10px 0 0; color: var(--ink2); }
 .rf-foot { margin: 14px 0 0; text-align: center; font-size: 12px; color: var(--muted); }
 
+/* 휴대폰: 문서 틀 대신 스태프 지원서와 같은 모양 — 흰 바탕, 질문 위·입력칸 아래, 테두리 있는 입력칸 */
 @media (max-width: 700px) {
+  body.rf { background: #fff; }
   .rf-bar { padding: 12px 16px 0; }
-  .rf-main { padding: 8px 0 40px; }
-  .rf-doc { padding: 28px 18px 32px; border-left: 0; border-right: 0; }
-  .rf-logo { height: 32px; }
-  .rf-title { margin-top: 32px; font-size: 26px; }
+  .rf-main { padding: 0 0 40px; }
+  .rf-doc { padding: 16px 16px 28px; border: 0; }
+  .rf-letterhead { flex-direction: column; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+  .rf-logo { height: 30px; }
+  .rf-docmeta { font-size: 12px; }
+  .rf-title { margin-top: 26px; text-align: left; font-family: var(--sans); font-size: 28px; letter-spacing: -.03em; text-indent: 0; }
+  .rf-sub { text-align: left; }
+  .rf-status { text-align: left; }
+  /* 기본 정보: 표 대신 항목 · 값 줄 */
+  .rf-meta { margin-top: 20px; border-top: 2px solid var(--rule); }
   .rf-meta, .rf-meta tbody, .rf-meta tr { display: block; }
-  .rf-meta tr { display: grid; grid-template-columns: 34% minmax(0, 1fr); }
-  .rf-meta th { width: auto; }
-  .rf-meta td { border-right: 0; }
-  .rf-meta tr:last-child th, .rf-meta tr:last-child td { border-bottom-color: #cfd4d7; }
-  .rf-meta tr:last-child th:last-of-type, .rf-meta tr:last-child td:last-child { border-bottom-color: var(--ink); }
+  .rf-meta tr { display: grid; grid-template-columns: 30% minmax(0, 1fr); }
+  .rf-meta th, .rf-meta td { padding: 11px 0; border: 0; border-bottom: 1px solid var(--line2); background: none; text-align: left; font-weight: 400; }
+  .rf-meta th { width: auto; color: var(--muted); }
+  .rf-meta td { font-weight: 600; }
+  .rf-meta tr:last-child th, .rf-meta tr:last-child td { border-bottom-color: var(--line2); }
+  .rf-intro { margin-top: 18px; font-size: 14.5px; line-height: 1.75; }
+  .rf-form { padding: 0; }
+  .rf-sec h2 { margin: 34px 0 14px; font-family: var(--sans); font-size: 20px; letter-spacing: -.02em; }
+  /* 기재 표 → 질문 위, 입력칸 아래 */
+  .rf-table { border-top: 0; }
   .rf-table, .rf-table tbody, .rf-table tr, .rf-table th, .rf-table td { display: block; width: 100%; }
-  .rf-table th { border-right: 0; border-bottom: 0; padding: 10px 10px 4px; }
-  .rf-table td { padding: 2px 10px 10px; background: var(--shade); }
-  /* 좁은 화면: 평가표를 항목마다 세로 선택지로 */
+  .rf-table tr { margin-bottom: 20px; }
+  .rf-table th { padding: 0 0 6px; border: 0; background: none; font-size: 14.5px; font-weight: 600; }
+  .rf-table td { padding: 0; border: 0; background: none; }
+  .rf-table tr:last-child th, .rf-table tr:last-child td { border: 0; }
+  .rf-table input[type="text"], .rf-table input[type="tel"], .rf-table select { height: 46px; font-size: 16px; }
+  .rf-table .ap-choices { gap: 8px 24px; }
+  .rf-stack .ap-field textarea { font-size: 16px; }
+  /* 평가표 → 항목마다 선택지 버튼 */
+  .rf-rate { border-top: 0; }
   .rf-rate thead { display: none; }
   .rf-rate, .rf-rate tbody, .rf-rate tr, .rf-rate th, .rf-rate td { display: block; width: 100%; }
-  .rf-rate tbody tr { padding: 12px 0; border-bottom: 1px solid #cfd4d7; }
+  .rf-rate tbody tr { padding: 0 0 18px; margin-bottom: 18px; border-bottom: 1px solid var(--line2); background: none !important; display: flex; flex-wrap: wrap; gap: 8px; }
   .rf-rate tbody th, .rf-rate td { border: 0 !important; }
-  .rf-rate tbody th { padding: 0 0 6px; }
-  .rf-rate td { display: inline-flex; width: auto; align-items: center; gap: 6px; padding: 4px 14px 4px 0; text-align: left; }
-  .rf-rate td::after { content: attr(data-label); font-size: 13.5px; }
-  .rf-signer { max-width: none; }
+  .rf-rate tbody th { flex-basis: 100%; padding: 0 0 2px; font-weight: 600; font-size: 14.5px; }
+  .rf-rate td { position: relative; width: auto; padding: 0; }
+  .rf-rate td input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .rf-rate td::after { content: attr(data-label); display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border: 1px solid var(--field); border-radius: var(--r); font-size: 14px; }
+  .rf-rate td:has(input:checked)::after { border-color: var(--navy); background: var(--navy); color: #fff; font-weight: 600; }
+  .rf-rate td:has(input:focus-visible)::after { outline: 2px solid rgba(0, 78, 101, .35); outline-offset: 1px; }
+  .rf-rate tr.has-err td::after { border-color: var(--err); }
+  /* 확인 · 서명 */
+  .rf-confirm { margin-top: 36px; padding-top: 20px; border-top: 2px solid var(--rule); text-align: left; font-family: var(--sans); font-size: 15px; }
+  .rf-confirm .rf-date { margin-top: 6px; letter-spacing: 0; color: var(--muted); }
+  .rf-signer { max-width: none; margin-top: 16px; }
+  .rf-signrow { grid-template-columns: 56px minmax(0, 1fr) auto; border: 1px solid var(--field); border-radius: var(--r); padding: 0 12px; }
+  .rf-signrow label, .rf-signrow small { padding-bottom: 0; align-self: center; }
+  .rf-signrow input { font-size: 19px; }
+  .rf-actions { flex-direction: column-reverse; align-items: stretch; text-align: left; }
+  .rf-actions .ap-btn.primary { width: 100%; }
+  .rf-done { padding: 28px 0 8px; text-align: left; }
+  .rf-done h2 { font-family: var(--sans); font-size: 22px; }
+  .rf-foot { padding: 0 16px; text-align: left; }
 }

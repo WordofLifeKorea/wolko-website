@@ -4,7 +4,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var token = new URLSearchParams(location.search).get('t') || '';
   var T = {
-    ko: { title: '추천서', sub: 'Staff Applicant Reference · Confidential', docNo: '문서번호', sent: '발송일', security: '보안', secret: '대외비', loading: '불러오는 중…',
+    ko: { title: '추천서', sub: '스태프 지원자 추천서 · Staff Applicant Reference', docNo: '문서번호', sent: '발송일', security: '열람', secret: '검토 담당자만', loading: '불러오는 중…',
       applicant: '지원자', position: '지원 분야', positionV: '스태프', referee: '추천인', due: '회신 기한',
       intro: '위 지원자가 월코(Word of Life Korea) 스태프로 지원하면서 귀하를 추천인으로 적어 주셨습니다. 월코 스태프는 청소년을 가까이에서 섬기게 되므로, 지원자의 신앙과 인격에 대해 아시는 대로 솔직하게 적어 주시기 바랍니다. 이 추천서는 검토 담당자만 열람하며 지원자에게는 공개되지 않습니다.',
       rateLead: '해당하는 칸에 표시해 주세요.', confirm: '위 내용은 사실과 다름이 없음을 확인합니다.', signLabel: '추천인', signMark: '(서명)', signPh: '성함',
@@ -12,7 +12,7 @@
       errRequired: '이 항목을 적어 주세요.', errStep: '빠진 항목이 있습니다. 표시된 곳을 확인해 주세요.', errNet: '제출하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.',
       invalid: '링크가 올바르지 않거나 기한이 지났습니다. 월코로 문의해 주세요.', already: '이미 제출된 추천서입니다. 감사합니다.',
       doneTitle: '추천서를 잘 받았습니다. 감사합니다.', doneLead: '귀한 시간을 내어 주셔서 감사드립니다. 이 창은 닫으셔도 됩니다.', footNote: '월코 (Word of Life Korea) · 이 문서는 스태프 선발에만 사용됩니다.' },
-    en: { title: 'Reference', sub: 'Staff Applicant Reference · Confidential', docNo: 'Document no.', sent: 'Issued', security: 'Security', secret: 'Confidential', loading: 'Loading…',
+    en: { title: 'Reference', sub: 'Staff Applicant Reference', docNo: 'Document no.', sent: 'Issued', security: 'Viewed by', secret: 'Reviewers only', loading: 'Loading…',
       applicant: 'Applicant', position: 'Position', positionV: 'Staff', referee: 'Referee', due: 'Reply by',
       intro: 'The applicant named above has applied to join the staff of Word of Life Korea and has named you as a reference. Our staff work closely with young people, so we ask you to tell us candidly what you know of the applicant’s faith and character. Only our reviewers will read this reference; it is never shown to the applicant.',
       rateLead: 'Please mark one box for each line.', confirm: 'I confirm that the above is true to the best of my knowledge.', signLabel: 'Referee', signMark: '(signature)', signPh: 'Full name',

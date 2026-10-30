@@ -122,8 +122,8 @@ export function referenceEmailHtml({ refName, applicant, link, due }) {
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border:1px solid #dfe7eb;border-radius:4px;">
 <tr><td style="padding:28px 36px 20px;border-bottom:2px solid #3a3a3c;">
   ${MAIL_LOGO}
-  <div style="font-size:20px;font-weight:700;margin-top:22px;">Confidential Reference Request</div>
-  <div style="font-size:14px;color:#56707b;margin-top:2px;">추천서 요청 (비공개)</div>
+  <div style="font-size:20px;font-weight:700;margin-top:22px;">Reference Request</div>
+  <div style="font-size:14px;color:#56707b;margin-top:2px;">추천서 요청</div>
 </td></tr>
 <tr><td style="padding:26px 36px 8px;font-size:15px;line-height:1.75;">
   <p style="margin:0 0 14px;">${esc(refName) ? `Dear ${esc(refName)},` : 'Dear Referee,'}</p>
