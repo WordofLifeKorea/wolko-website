@@ -173,7 +173,8 @@ test('추천서: 메일 링크로 열고 한 번만 제출, 답변은 암호화 
     assert.equal((await t.call(REF, 'POST', { body: { t: link, answers: ANSWERS } })).status, 200);
     assert.equal((await t.call(REF, 'POST', { body: { t: link, answers: ANSWERS } })).status, 409);
     const again = await t.call(REF, 'GET', { query: `?t=${link}` });
-    assert.equal(again.completedAt != null, true, '다시 열면 이미 제출됨으로 보인다');
+    assert.deepEqual(Object.keys(again), ['status'], '제출 후 링크는 제출 완료만 알려 주고 이름 등은 내주지 않는다');
+    assert.equal(again.status, 200);
 
     const sealed = [...t.store.entries()].find(([k]) => k.startsWith('serve:refans:'))[1];
     assert.ok(!sealed.includes('Faithful'));

@@ -7,6 +7,7 @@ import { REFERENCE_SECTIONS, cleanReferenceAnswers, missingReference, refKey, TO
 import { loadApplication, loadFullApplication, saveApplication, addAudit } from '../../lib/serveApplication.js';
 import { reviewersFor } from '../../lib/serveInquiry.js';
 import { MASTER_EMAILS, normalizeEmail, sendEmail } from '../../lib/hubAccounts.js';
+import { applyRateLimited } from '../../lib/applicantAccount.js';
 
 const H = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };
 const fail = (error, status = 400, extra = {}) => Response.json({ error, ...extra }, { status, headers: H });
@@ -21,10 +22,17 @@ async function lookup(env, token) {
   return { key, record };
 }
 
+const tooMany = () => fail('Too many requests. Please try again later. · 요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.', 429);
+const ipOf = request => request.headers.get('CF-Connecting-IP') || '';
+
 export async function onRequestGet({ env, request }) {
+  const ip = ipOf(request);
+  if (ip && await applyRateLimited(env, `refget:${ip}`, 60)) return tooMany();   // 한 곳에서 링크를 마구 여는 것을 막는다
   const found = await lookup(env, new URL(request.url).searchParams.get('t'));
   if (!found) return fail('This link is invalid or has expired. · 링크가 올바르지 않거나 기한이 지났습니다.', 404);
   const r = found.record;
+  // 제출이 끝난 링크는 이름 등 아무 정보도 내주지 않는다(전달·유출된 링크로 알 수 있는 것이 없게)
+  if (r.status === 'completed') return Response.json({ status: 'completed' }, { headers: H });
   // 추천인이 링크를 처음 연 때를 남긴다(지원자·검토 담당자가 '열어 봄'으로 본다). 페이지 스크립트가 부를 때만이라 메일 보안 검사기는 대개 남지 않는다
   if (r.status === 'sent' && !r.openedAt) {
     r.openedAt = new Date().toISOString();
@@ -37,6 +45,8 @@ export async function onRequestGet({ env, request }) {
 }
 
 export async function onRequestPost({ env, request, waitUntil }) {
+  const ip = ipOf(request);
+  if (ip && await applyRateLimited(env, `refpost:${ip}`, 20)) return tooMany();
   let body;
   try { body = await request.json(); } catch { return fail('잘못된 요청입니다.'); }
   const found = await lookup(env, body?.t);

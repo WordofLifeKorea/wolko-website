@@ -100,8 +100,8 @@
       var res = await fetch('/api/apply/reference?t=' + encodeURIComponent(token), { cache: 'no-store' });
       var body = await res.json().catch(function () { return {}; });
       if (!res.ok) throw new Error(t('invalid'));
+      if (body.status === 'completed') { $('rfStatus').textContent = t('already'); return; }   // 제출 후에는 이름 등 정보를 받지 않는다
       data = body;
-      if (body.status === 'completed') { render(); $('rfStatus').textContent = t('already'); return; }
       $('rfStatus').hidden = true; $('rfBody').hidden = false; render();
     } catch (e) { $('rfStatus').textContent = e.message; $('rfStatus').classList.add('bad'); }
   }
