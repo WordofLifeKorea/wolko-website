@@ -167,6 +167,13 @@ export async function sendOneReference(env, { appId, n, values, origin }) {
   return { n, email, name: refName, status, sentAt: record.sentAt, key };
 }
 export const loadReferenceRecord = (env, key) => (key ? env.CAMP_KV.get(key, 'json') : null);
+/** 신청서에 저장된 추천인 목록에 '링크를 열어 본 때'를 붙인다(토큰 기록의 KV 키는 밖으로 내보내지 않는다) */
+export async function withOpened(env, refs) {
+  return Promise.all((refs || []).map(async ({ key, ...r }) => {
+    const rec = key ? await loadReferenceRecord(env, key) : null;
+    return { ...r, openedAt: rec?.openedAt || r.openedAt || null };
+  }));
+}
 /** 추천인을 바꾸면 예전 링크는 더 이상 열리지 않게 하고, 그 사람이 이미 써 둔 답변도 지운다 */
 export async function cancelReference(env, key, appId, n) {
   if (key) await env.CAMP_KV.delete(key);

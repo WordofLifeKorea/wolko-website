@@ -238,6 +238,12 @@ test('추천인 단계 \'다음\': 바로 요청 메일 · 같은 주소면 다�
     assert.equal((await t.call(REF, 'GET', { query: `?t=${oldLink}` })).status, 404);
     const link = /\/reference\/\?t=([A-Za-z0-9_-]+)/.exec(t.mails.find(m => m.to[0] === 'pastor2@x.com').html)[1];
 
+    assert.equal((await t.call(ACC, 'GET', { token })).account.refs[1].openedAt, null, '아직 링크를 열지 않았다');
+    await t.call(REF, 'GET', { query: `?t=${link}` });
+    const opened = (await t.call(ACC, 'GET', { token })).account.refs[1].openedAt;
+    assert.ok(opened, '링크를 열면 열어 본 때가 남는다');
+    await t.call(REF, 'GET', { query: `?t=${link}` });
+    assert.equal((await t.call(ACC, 'GET', { token })).account.refs[1].openedAt, opened, '처음 연 때만 남긴다');
     // 지원자가 제출하기 전에 추천인이 먼저 제출
     assert.equal((await t.call(REF, 'POST', { body: { t: link, answers: ANSWERS } })).status, 200);
     assert.equal((await t.call(ACC, 'GET', { token })).account.refs[1].status, 'completed');
@@ -253,6 +259,10 @@ test('추천인 단계 \'다음\': 바로 요청 메일 · 같은 주소면 다�
     assert.equal(one.application.values.ref1Status, 'received');
     assert.equal(one.application.referenceAnswers[1].strengths, 'Faithful');
     assert.equal(t.ttl.get(`serve:refans:${id}:1`), undefined, '제출하면 추천서 답변의 임시 기한을 없앤다');
+    assert.ok(one.application.references[0].openedAt, '포탈에서도 열어 본 때가 보인다');
+    assert.ok(!JSON.stringify(one).includes('serve:ref:'), '토큰 기록 키는 내보내지 않는다');
+    const me = await t.call(ACC, 'GET', { token });
+    assert.ok(me.application.references[0].openedAt);
   } finally { t.restore(); }
 });
 

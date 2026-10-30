@@ -8,7 +8,7 @@
  *   DELETE /api/portal/serve-applications?id=        → 삭제(마스터만)
  * 인증: Authorization: Bearer <포탈 세션 토큰>
  */
-import { loadReferenceAnswers, REFERENCE_SECTIONS } from '../../lib/serveReference.js';
+import { loadReferenceAnswers, REFERENCE_SECTIONS, withOpened } from '../../lib/serveReference.js';
 import { portalSession } from '../../lib/hubAccounts.js';
 import { SERVE_INQUIRY_PREFIX, canViewServeInquiry, SERVE_REVIEWER_EMAILS } from '../../lib/serveInquiry.js';
 import { SERVE_APPLICATION_SECTIONS } from '../../lib/serveApplicationSchema.js';
@@ -50,7 +50,7 @@ export async function onRequestGet({ env, request }) {
   // 온라인 지원서의 추천서(암호화 저장) — 검토 권한이 있는 사람에게만
   const referenceAnswers = {};
   for (const n of [1, 2]) { try { const a = await loadReferenceAnswers(env, id, n); if (a) referenceAnswers[n] = a; } catch (error) { referenceAnswers[n] = { error: error.message }; } }
-  return json({ ...meta, referenceSchema: REFERENCE_SECTIONS, application: { ...app, audit: stored.audit, referenceAnswers } });
+  return json({ ...meta, referenceSchema: REFERENCE_SECTIONS, application: { ...app, references: await withOpened(env, app.references), audit: stored.audit, referenceAnswers } });
 }
 
 export async function onRequestPost({ env, request }) {

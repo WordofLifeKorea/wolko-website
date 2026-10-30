@@ -37,11 +37,11 @@
       errRequired: '이 항목을 적어 주세요.', errEmail: '이메일 주소를 다시 확인해 주세요.', errStep: '빠진 항목이 있습니다.', errConsent: '동의해 주셔야 제출할 수 있습니다.', errNet: '연결하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.',
       doneTitle: '지원서가 접수되었습니다', doneLead: function (n) { return (n ? n + ' 님, ' : '') + '지원해 주셔서 감사합니다. 접수 내용은 메일로도 보내 드렸습니다. 이 화면은 다시 로그인하면 언제든 볼 수 있습니다.'; },
       refNo: '접수 번호', submittedAt: '제출 일시', stageNow: '진행 상황', refStatusTitle: '추천서', colRef: '추천인', colSent: '요청 메일', colState: '상태',
-      refRole: function (n) { return n === 1 ? '추천인 1 · 목회자' : '추천인 2 · 동역자'; }, sentOn: function (d) { return d + ' 발송'; }, gotOn: function (d) { return d + ' 도착'; }, waiting: '기다리는 중', failed: '발송 실패 (담당자가 확인합니다)',
+      refRole: function (n) { return n === 1 ? '추천인 1 · 목회자' : '추천인 2 · 동역자'; }, sentOn: function (d) { return d + ' 발송'; }, gotOn: function (d) { return d + ' 도착'; }, waiting: '기다리는 중', openedOn: function (d) { return d + ' 열어 봄 · 작성 기다리는 중'; }, failed: '발송 실패 (담당자가 확인합니다)',
       stage: { refs: function (a, b) { return '추천서를 기다리는 중 (' + b + '통 중 ' + a + '통 도착)'; }, ready: '추천서 도착 · 검토를 기다리는 중', review: '서류 검토 중', closed: '검토가 끝났습니다. 담당자가 연락드립니다.' },
       refHelp: '추천인께 메일함(스팸함 포함)을 한번 확인해 달라고 말씀드리면 더 빨리 진행됩니다. 추천서 내용은 지원자에게 공개되지 않습니다.',
       nextTitle: '앞으로의 진행', nextText: '추천서 두 통이 모두 도착하면 검토 담당자가 지원서를 검토하고, 면담 일정은 이메일이나 전화로 따로 연락드립니다.',
-      refBarTitle: '추천서 요청', rsNone: '아직 보내지 않음', rsSentOn: function (d) { return d + ' 발송 · 답변 기다리는 중'; }, rsDone: function (d) { return d + ' 추천서 도착'; }, rsExpired: '링크 기한 지남 · 다시 보내 주세요',
+      refBarTitle: '추천서 요청', rsNone: '아직 보내지 않음', rsSentOn: function (d) { return d + ' 발송 · 답변 기다리는 중'; }, rsOpened: function (d) { return d + ' 링크 열어 봄 · 작성 기다리는 중'; }, rsDone: function (d) { return d + ' 추천서 도착'; }, rsExpired: '링크 기한 지남 · 다시 보내 주세요',
       sendingRef: '요청 메일 보내는 중…', refSentFlash: function (n, e) { return (n ? n + ' 님' : e) + '께 추천서 요청 메일을 보냈습니다. 진행 상황은 위쪽에서 확인할 수 있습니다.'; },
       refStepSent: function (e, d) { return e + ' 로 ' + d + '에 요청 메일을 보냈습니다.'; }, refStepDone: '이 추천인의 추천서가 도착했습니다.', refChanged: '이메일을 바꾸셨네요. 다음을 누르면 새 주소로 다시 보내고, 예전 링크는 닫힙니다.', resendRef: '다시 보내기',
       refNoteReview: '추천인 단계에서 요청 메일을 보내지 않은 추천인이 있으면 제출할 때 함께 보냅니다.',
@@ -80,11 +80,11 @@
       errRequired: 'Please fill this in.', errEmail: 'Please check this email address.', errStep: 'Some answers are missing.', errConsent: 'Your consent is needed to submit.', errNet: 'Could not connect. Please check your connection and try again.',
       doneTitle: 'Your application has been received', doneLead: function (n) { return (n ? 'Thank you, ' + n + '. ' : 'Thank you for applying. ') + 'We have also emailed you a copy of this receipt. Sign in again at any time to see this page.'; },
       refNo: 'Reference no.', submittedAt: 'Submitted', stageNow: 'Status', refStatusTitle: 'References', colRef: 'Referee', colSent: 'Request', colState: 'Status',
-      refRole: function (n) { return n === 1 ? 'Reference 1 · Pastor' : 'Reference 2 · Co-worker'; }, sentOn: function (d) { return 'Sent ' + d; }, gotOn: function (d) { return 'Received ' + d; }, waiting: 'Waiting', failed: 'Not delivered (we will follow up)',
+      refRole: function (n) { return n === 1 ? 'Reference 1 · Pastor' : 'Reference 2 · Co-worker'; }, sentOn: function (d) { return 'Sent ' + d; }, gotOn: function (d) { return 'Received ' + d; }, waiting: 'Waiting', openedOn: function (d) { return 'Opened ' + d + ' · waiting'; }, failed: 'Not delivered (we will follow up)',
       stage: { refs: function (a, b) { return 'Waiting for references (' + a + ' of ' + b + ' received)'; }, ready: 'References received · awaiting review', review: 'Under review', closed: 'Review complete. We will be in touch.' },
       refHelp: 'Asking your references to check their inbox (and spam folder) will speed things up. Their references are not shared with you.',
       nextTitle: 'What happens next', nextText: 'Once both references arrive, our reviewers will read your application and contact you by email or phone to arrange an interview.',
-      refBarTitle: 'Reference requests', rsNone: 'Not sent yet', rsSentOn: function (d) { return 'Sent ' + d + ' · awaiting reply'; }, rsDone: function (d) { return 'Received ' + d; }, rsExpired: 'Link expired · please resend',
+      refBarTitle: 'Reference requests', rsNone: 'Not sent yet', rsSentOn: function (d) { return 'Sent ' + d + ' · awaiting reply'; }, rsOpened: function (d) { return 'Opened ' + d + ' · awaiting reply'; }, rsDone: function (d) { return 'Received ' + d; }, rsExpired: 'Link expired · please resend',
       sendingRef: 'Sending request…', refSentFlash: function (n, e) { return 'We emailed a reference request to ' + (n || e) + '. You can follow its status at the top of the page.'; },
       refStepSent: function (e, d) { return 'Request sent to ' + e + ' on ' + d + '.'; }, refStepDone: 'This reference has been received.', refChanged: 'You changed the email. When you continue we will send to the new address and close the old link.', resendRef: 'Send again',
       refNoteReview: 'Any reference not yet contacted will be emailed when you submit.',
@@ -330,7 +330,7 @@
 
   /* ───────── 추천서 요청: 추천인 단계에서 '다음'을 누르면 바로 보내고, 위쪽 띠에서 상태를 보여 준다 ───────── */
   function refsOf() { return (account && account.refs) || {}; }
-  function refState(r) { return !r ? ['none', t('rsNone')] : r.status === 'completed' ? ['done', t('rsDone')(fmtShort(r.completedAt || r.sentAt))] : r.status === 'expired' ? ['expired', t('rsExpired')] : ['sent', t('rsSentOn')(fmtShort(r.sentAt))]; }
+  function refState(r) { return !r ? ['none', t('rsNone')] : r.status === 'completed' ? ['done', t('rsDone')(fmtShort(r.completedAt || r.sentAt))] : r.status === 'expired' ? ['expired', t('rsExpired')] : r.openedAt ? ['opened', t('rsOpened')(fmtShort(r.openedAt))] : ['sent', t('rsSentOn')(fmtShort(r.sentAt))]; }
   function renderRefBar() {
     var refs = refsOf(), bar = $('apRefBar');
     if (!refs[1] && !refs[2]) { bar.hidden = true; return; }
@@ -381,7 +381,7 @@
     $('apWhen').textContent = a.submittedAt ? fmtDate(a.submittedAt, true) : '—';
     $('apStage').textContent = a.stage === 'closed' ? st.closed : a.stage === 'review' ? st.review : got < total ? st.refs(got, total) : st.ready;
     $('apRefList').innerHTML = refs.map(function (r) {
-      var state = r.status === 'completed' ? t('gotOn')(fmtShort(r.completedAt || r.sentAt)) : r.status === 'failed' ? t('failed') : t('waiting');
+      var state = r.status === 'completed' ? t('gotOn')(fmtShort(r.completedAt || r.sentAt)) : r.status === 'failed' ? t('failed') : r.openedAt ? t('openedOn')(fmtShort(r.openedAt)) : t('waiting');
       return '<tr><td>' + esc(r.name || '—') + '<small>' + esc(t('refRole')(r.n)) + '</small></td><td>' + (r.sentAt && r.status !== 'failed' ? esc(t('sentOn')(fmtShort(r.sentAt))) : '—') + '</td><td class="is-' + esc(r.status) + '">' + esc(state) + '</td></tr>';
     }).join('');
   }

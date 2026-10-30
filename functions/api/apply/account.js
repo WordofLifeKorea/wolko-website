@@ -10,7 +10,7 @@
  */
 import { APPLICANT_SECTIONS } from '../../lib/serveApplicationSchema.js';
 import { cleanApplicationValues, loadApplication, missingRequired } from '../../lib/serveApplication.js';
-import { sendOneReference, loadReferenceRecord, cancelReference } from '../../lib/serveReference.js';
+import { sendOneReference, loadReferenceRecord, cancelReference, withOpened } from '../../lib/serveReference.js';
 import { isValidEmail, normalizeEmail } from '../../lib/hubAccounts.js';
 import {
   issueTempPassword, loginApplicant, applicantFromRequest, logoutApplicant, saveDraft, loadDraft,
@@ -30,7 +30,7 @@ async function applicationView(env, acct) {
   return {
     refNo: app.refNo, submittedAt: app.submittedAt,
     stage: app.status === 'submitted' ? 'received' : 'review',
-    references: (app.references || []).map(r => ({ n: r.n, name: r.name, status: r.status, sentAt: r.sentAt, completedAt: r.completedAt || null })),
+    references: (await withOpened(env, app.references)).map(r => ({ n: r.n, name: r.name, status: r.status, sentAt: r.sentAt, completedAt: r.completedAt || null, openedAt: r.openedAt })),
   };
 }
 async function draftView(env, acct) {
@@ -42,7 +42,7 @@ async function refsView(env, acct) {
   for (const n of [1, 2]) {
     const r = acct.refs?.[n]; if (!r) continue;
     const rec = await loadReferenceRecord(env, r.key);
-    out[n] = { email: r.email, name: r.name || '', sentAt: r.sentAt, status: rec ? rec.status : 'expired', completedAt: rec?.completedAt || null };
+    out[n] = { email: r.email, name: r.name || '', sentAt: r.sentAt, status: rec ? rec.status : 'expired', completedAt: rec?.completedAt || null, openedAt: rec?.openedAt || null };
   }
   return out;
 }

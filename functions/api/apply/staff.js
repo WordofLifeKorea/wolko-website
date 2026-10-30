@@ -63,12 +63,12 @@ export async function onRequestPost({ env, request, waitUntil }) {
     const rec = prev ? await loadReferenceRecord(env, prev.key) : null;
     if (rec && prev.email === refEmail && rec.appId === id) {
       if (rec.status === 'completed') await keepReferenceAnswers(env, id, n);
-      app.references.push({ n, email: rec.email, name: rec.name, status: rec.status === 'completed' ? 'completed' : 'sent', sentAt: rec.sentAt, completedAt: rec.completedAt || null });
+      app.references.push({ n, email: rec.email, name: rec.name, status: rec.status === 'completed' ? 'completed' : 'sent', sentAt: rec.sentAt, completedAt: rec.completedAt || null, key: prev.key });
       continue;
     }
     if (prev) await cancelReference(env, prev.key, id, n);
-    const { key, ...r } = await sendOneReference(env, { appId: id, n, values, origin });
-    app.references.push(r);
+    const r = await sendOneReference(env, { appId: id, n, values, origin });
+    app.references.push(r.status === 'sent' ? r : { ...r, key: undefined });   // key: 토큰 기록 KV 키(열어 봄 확인용, 밖으로 내보내지 않는다)
   }
   const refStatus = n => { const r = app.references.find(x => x.n === n); return !r ? 'none' : r.status === 'completed' ? 'received' : r.status === 'sent' ? 'contacted' : 'none'; };
   values.ref1Status = refStatus(1);

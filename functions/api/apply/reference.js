@@ -25,6 +25,11 @@ export async function onRequestGet({ env, request }) {
   const found = await lookup(env, new URL(request.url).searchParams.get('t'));
   if (!found) return fail('This link is invalid or has expired. · 링크가 올바르지 않거나 기한이 지났습니다.', 404);
   const r = found.record;
+  // 추천인이 링크를 처음 연 때를 남긴다(지원자·검토 담당자가 '열어 봄'으로 본다). 페이지 스크립트가 부를 때만이라 메일 보안 검사기는 대개 남지 않는다
+  if (r.status === 'sent' && !r.openedAt) {
+    r.openedAt = new Date().toISOString();
+    await env.CAMP_KV.put(found.key, JSON.stringify(r), { expirationTtl: Math.max(60, Math.floor((new Date(r.expiresAt).getTime() - Date.now()) / 1000)) });
+  }
   const app = await loadApplication(env, r.appId);
   const docNo = app?.refNo ? `REF-${app.refNo}-${r.n}` : '';
   const dueAt = new Date(new Date(r.sentAt).getTime() + REPLY_DAYS * 86400000).toISOString();   // 요청 메일에 적은 회신 기한과 같다

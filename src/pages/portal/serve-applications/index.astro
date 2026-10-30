@@ -163,7 +163,7 @@
         box.innerHTML = '<h2>추천서 <span class="meta">References · 지원자에게 보이지 않음</span></h2>' + refs.map(function (r) {
           var ans = (a.referenceAnswers || {})[r.n];
           var head = '<div class="row" style="justify-content:space-between"><strong>추천인 ' + r.n + ' · ' + esc(r.name || '') + ' <span class="meta">' + esc(r.email) + '</span></strong><span class="tag ' + (r.status === 'completed' ? 'approved' : r.status === 'failed' ? 'rejected' : 'submitted') + '">' + esc(REF_STATE[r.status] || r.status) + '</span></div>';
-          if (!ans) return '<div class="card">' + head + '<div class="meta">요청 ' + when(r.sentAt) + '</div></div>';
+          if (!ans) return '<div class="card">' + head + '<div class="meta">요청 ' + when(r.sentAt) + (r.openedAt ? ' · 링크 열어 봄 ' + when(r.openedAt) : ' · 아직 링크를 열지 않음') + '</div></div>';
           if (ans.error) return '<div class="card">' + head + '<p class="msg bad">' + esc(ans.error) + '</p></div>';
           var rows = fields.filter(function (f) { return ans[f.id] !== undefined && ans[f.id] !== ''; }).map(function (f) {
             return '<div class="field" style="grid-column:1/-1"><span class="lbl">' + esc(f.label.ko) + '<small>' + esc(f.label.en) + '</small></span><div style="white-space:pre-wrap">' + esc(label(f, ans[f.id])) + '</div></div>';
