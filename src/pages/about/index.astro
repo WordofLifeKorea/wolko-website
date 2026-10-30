@@ -24,41 +24,47 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   .page-wrap { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
 
-  /* ── HERO — 사진 위 왼쪽 정렬 제목, 아래 숫자 줄 (기업 소개 페이지 형식) ── */
+  /* ── HERO — 아래쪽에 큰 제목 한 줄, 그 아래 구분선 위로 설명 · 숫자 · 버튼이 한 줄 (기업 소개 페이지 형식) ── */
   .ab-hero {
     position: relative; overflow: hidden; color: #fff; word-break: keep-all;
     min-height: clamp(640px, 90vh, 860px); padding-top: 150px; box-sizing: border-box;
     display: flex; flex-direction: column; background: #0b1e27;
   }
-  .ab-hero::before { content: ""; position: absolute; inset: 0; background: url("https://wolko.synology.me/Web_Contents/Photos/Youth_Ministry/Banner%202.png") 50% 38% / cover no-repeat; }
+  .ab-hero::before { content: ""; position: absolute; inset: 0; background: url("https://wolko.synology.me/Web_Contents/Photos/Youth_Ministry/Banner%202.png") 50% 30% / cover no-repeat; }
   .ab-hero::after {
     content: ""; position: absolute; inset: 0; pointer-events: none;
-    background:
-      linear-gradient(0deg, rgba(5,20,28,0.72) 0%, rgba(5,20,28,0) 36%),
-      linear-gradient(90deg, rgba(5,20,28,0.78) 0%, rgba(5,20,28,0.55) 45%, rgba(5,20,28,0.4) 100%);
+    background: linear-gradient(0deg, rgba(5,20,28,0.9) 0%, rgba(5,20,28,0.62) 42%, rgba(5,20,28,0.12) 72%, rgba(5,20,28,0.3) 100%);
   }
-  .hero-inner { position: relative; z-index: 1; flex: 1; width: 100%; max-width: 1248px; margin: 0 auto; padding: 0 24px; box-sizing: border-box; display: flex; flex-direction: column; }
-  /* 왼쪽: 제목 / 오른쪽: 설명과 버튼 — 제목 아래 끝선에 맞춰 화면 양쪽을 고르게 쓴다 */
-  .hero-copy { flex: 1; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 0 64px; align-content: center; align-items: end; padding-bottom: 64px; }
-  .hero-head { min-width: 0; }
-  .hero-side { min-width: 0; padding-bottom: 6px; }
+  .hero-inner { position: relative; z-index: 1; flex: 1; width: 100%; max-width: 1248px; margin: 0 auto; padding: 0 24px 64px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; }
   .hero-eyebrow { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; letter-spacing: 0.02em; color: rgba(255,255,255,0.86); }
   .hero-eyebrow::before { content: ""; width: 28px; height: 1px; background: currentColor; }
-  .hero-inner h1 { margin: 26px 0 0; font-size: clamp(40px, 5.2vw, 64px); line-height: 1.2; font-weight: 700; letter-spacing: -0.035em; color: #fff; text-wrap: balance; }
-  .hero-sub { margin: 0; font-size: 18px; line-height: 1.75; color: rgba(255,255,255,0.84); }
+  .hero-inner h1 { margin: 20px 0 0; font-size: clamp(44px, 5.9vw, 86px); line-height: 1.12; font-weight: 700; letter-spacing: -0.04em; color: #fff; }
+  .hero-inner h1 .wl-ko { white-space: nowrap; }
+  .hero-inner h1 .wl-en { font-size: 0.78em; }
+  .hero-br { display: none; }
+  .hero-bar { margin-top: 40px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,0.3); display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.4fr) auto; gap: 0 56px; align-items: center; }
+  .hero-sub { margin: 0; font-size: 17px; line-height: 1.75; color: rgba(255,255,255,0.84); }
   .hero-cta {
-    display: inline-flex; align-items: center; gap: 14px; margin-top: 32px; height: 54px; padding: 0 26px; box-sizing: border-box;
-    border-radius: 2px; background: #fff; color: var(--primary); font-size: 15px; font-weight: 700; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 14px; height: 52px; padding: 0 24px; box-sizing: border-box;
+    border-radius: 2px; background: #fff; color: var(--primary); font-size: 15px; font-weight: 700; text-decoration: none; white-space: nowrap;
     transition: background-color .18s, color .18s;
   }
   .hero-cta:hover { background: #e8f1f4; color: var(--primary-deep); }
   .hero-cta:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
-  .hero-stats { margin: 0; padding: 26px 0 38px; border-top: 1px solid rgba(255,255,255,0.3); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 48px; }
+  .hero-stats { margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 24px; }
   .hero-stat { display: flex; flex-direction: column-reverse; gap: 6px; }
-  .hero-stat + .hero-stat { padding-left: 48px; border-left: 1px solid rgba(255,255,255,0.18); margin-left: -48px; }
-  .hero-stat-num { margin: 0; font-size: 34px; font-weight: 600; letter-spacing: -0.02em; line-height: 1; color: #fff; }
-  .hero-stat-num small { font-size: 22px; font-weight: 500; margin-left: 2px; }
+  .hero-stat-num { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.02em; line-height: 1; color: #fff; white-space: nowrap; }
+  .hero-stat-num small { font-size: 19px; font-weight: 500; margin-left: 2px; }
   .hero-stat-label { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.74); }
+  /* 좁은 화면: 설명 | 버튼, 그 아래 숫자 */
+  @media (max-width:1100px) {
+    .hero-bar { grid-template-columns: minmax(0, 1fr) auto; }
+    .hero-stats { grid-column: 1 / -1; grid-row: 2; margin-top: 28px; }
+  }
+  @media (max-width:900px) {
+    .hero-inner h1 .wl-ko { white-space: normal; }
+    .hero-br { display: inline; }
+  }
 
   /* ── 움직임 — 자바스크립트가 html 에 .wl-motion 을 붙일 때만 (움직임 줄이기 설정이면 붙이지 않아 처음부터 다 보인다) ── */
   @keyframes abHeroZoom { from { transform: scale(1.08); } to { transform: none; } }
@@ -68,8 +74,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   :global(.wl-motion) .hero-eyebrow { animation: abRise .8s .15s cubic-bezier(.2,.7,.2,1) both; }
   :global(.wl-motion) .hero-eyebrow::before { animation: abLine .7s .35s ease-out both; }
   :global(.wl-motion) .hero-inner h1 { animation: abRise .9s .3s cubic-bezier(.2,.7,.2,1) both; }
-  :global(.wl-motion) .hero-side { animation: abRise .9s .55s cubic-bezier(.2,.7,.2,1) both; }
-  :global(.wl-motion) .hero-stats { animation: abRise .9s .75s cubic-bezier(.2,.7,.2,1) both; }
+  :global(.wl-motion) .hero-bar { animation: abRise .9s .6s cubic-bezier(.2,.7,.2,1) both; }
   /* 스크롤하면 하나씩 떠오른다 — 같은 줄의 카드는 --d 만큼 늦게 */
   :global(.wl-motion) .rv { opacity: 0; transform: translateY(32px); transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1); transition-delay: var(--d, 0s); }
   :global(.wl-motion) .rv.is-in { opacity: 1; transform: none; }
@@ -230,8 +235,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .ministry-grid { grid-template-columns:repeat(2,1fr); }
   }
   @media (max-width:860px) {
-    .hero-copy { grid-template-columns: 1fr; }
-    .hero-side { margin-top: 26px; padding-bottom: 0; }
     .history-grid, .vismis-grid, .commit-grid { grid-template-columns:1fr; }
     .values-grid { grid-template-columns:repeat(2,1fr); }
     .value-card, .value-card:nth-child(n+4) { grid-column:auto; }
@@ -242,12 +245,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .ab-hero { min-height: 0; padding-top: 0; }
     .ab-hero::before { bottom: auto; height: 400px; background-position: 62% 0; }
     .ab-hero::after { background: linear-gradient(180deg, rgba(5,20,28,0.35) 0px, rgba(5,20,28,0) 120px, rgba(5,20,28,0) 230px, #0b1e27 400px); }
-    .hero-copy { padding: 330px 0 32px; }
+    .hero-inner { padding: 330px 20px 28px; }
     .hero-inner h1 { margin-top: 18px; font-size: 36px; line-height: 1.25; }
-    .hero-sub { margin-top: 18px; font-size: 15.5px; }
+    .hero-bar { display: block; margin-top: 24px; padding-top: 22px; }
+    .hero-sub { font-size: 15.5px; }
     .hero-sub br { display: none; }
-    .hero-cta { width: 100%; justify-content: space-between; margin-top: 28px; padding: 0 20px; }
-    .hero-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 12px; padding: 20px 0 28px; }
+    .hero-cta { width: 100%; justify-content: space-between; margin-top: 24px; padding: 0 20px; }
+    .hero-stats { gap: 0 12px; margin-top: 28px; }
     .hero-stat-num { font-size: 24px; }
     .hero-stat-num small { font-size: 17px; }
     .hero-stat-label { font-size: 12px; }
@@ -312,39 +316,35 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <!-- ══ HERO ══ -->
 <section class="ab-hero">
   <div class="hero-inner">
-    <div class="hero-copy">
-      <div class="hero-head">
-        <div class="hero-eyebrow"><span class="wl-ko">월코 소개</span><span class="wl-en">About WOLKO</span></div>
-        <h1>
-          <span class="wl-ko">복음으로<br>다음 세대를 세웁니다</span>
-          <span class="wl-en">Raising the Next Generation<br>Through the Gospel</span>
-        </h1>
-      </div>
-      <div class="hero-side">
-        <p class="hero-sub">
-          <span class="wl-ko">캠프와 학생 사역을 통해 청소년과 다음 세대를 <br>예수 그리스도의 제자로 세워 갑니다.</span>
-          <span class="wl-en">Through camps and student ministry, we raise the next generation <br>as disciples of Jesus Christ.</span>
-        </p>
-        <a href="/ministry" class="hero-cta">
-          <span class="wl-ko">사역 살펴보기</span><span class="wl-en">Explore Our Ministry</span>
-          <svg aria-hidden="true" viewBox="0 0 16 16" width="15" height="15" fill="none"><path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
-        </a>
-      </div>
+    <div class="hero-eyebrow"><span class="wl-ko">월코 소개</span><span class="wl-en">About WOLKO</span></div>
+    <h1>
+      <span class="wl-ko">복음으로 <br class="hero-br">다음 세대를 세웁니다</span>
+      <span class="wl-en">Raising the Next Generation<br>Through the Gospel</span>
+    </h1>
+    <div class="hero-bar">
+      <p class="hero-sub">
+        <span class="wl-ko">캠프와 학생 사역을 통해 청소년과 다음 세대를 <br>예수 그리스도의 제자로 세워 갑니다.</span>
+        <span class="wl-en">Through camps and student ministry, we raise the next generation <br>as disciples of Jesus Christ.</span>
+      </p>
+      <dl class="hero-stats">
+        <div class="hero-stat">
+          <dt class="hero-stat-label"><span class="wl-ko">설립</span><span class="wl-en">Founded</span></dt>
+          <dd class="hero-stat-num"><span data-count-from="1950">1993</span></dd>
+        </div>
+        <div class="hero-stat">
+          <dt class="hero-stat-label"><span class="wl-ko">세계 사역 국가</span><span class="wl-en">Nations Worldwide</span></dt>
+          <dd class="hero-stat-num"><span data-count-from="0">90</span><small>+</small></dd>
+        </div>
+        <div class="hero-stat">
+          <dt class="hero-stat-label"><span class="wl-ko">주요 사역</span><span class="wl-en">Major Ministries</span></dt>
+          <dd class="hero-stat-num"><span data-count-from="0">4</span></dd>
+        </div>
+      </dl>
+      <a href="/ministry" class="hero-cta">
+        <span class="wl-ko">사역 살펴보기</span><span class="wl-en">Explore Our Ministry</span>
+        <svg aria-hidden="true" viewBox="0 0 16 16" width="15" height="15" fill="none"><path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
+      </a>
     </div>
-    <dl class="hero-stats">
-      <div class="hero-stat">
-        <dt class="hero-stat-label"><span class="wl-ko">설립</span><span class="wl-en">Founded</span></dt>
-        <dd class="hero-stat-num"><span data-count-from="1950">1993</span></dd>
-      </div>
-      <div class="hero-stat">
-        <dt class="hero-stat-label"><span class="wl-ko">세계 사역 국가</span><span class="wl-en">Nations Worldwide</span></dt>
-        <dd class="hero-stat-num"><span data-count-from="0">90</span><small>+</small></dd>
-      </div>
-      <div class="hero-stat">
-        <dt class="hero-stat-label"><span class="wl-ko">주요 사역</span><span class="wl-en">Major Ministries</span></dt>
-        <dd class="hero-stat-num"><span data-count-from="0">4</span></dd>
-      </div>
-    </dl>
   </div>
 </section>
 
