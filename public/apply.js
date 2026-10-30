@@ -8,7 +8,7 @@
   var T = {
     ko: {
       title: '스태프 지원서', lead: '월코에서 청소년 사역을 함께할 스태프를 모집합니다. 지원서와 추천서 2부를 받아 검토한 뒤 면담을 진행합니다.',
-      infoTitle: '지원 안내', infoTimeL: '작성 시간', infoTime: '20–30분 정도 걸립니다. 쓰는 동안 자동으로 저장되므로 나눠서 써도 됩니다.',
+      infoTitle: '지원 안내', infoTimeL: '작성 시간', infoTime: '20–30분 정도 걸립니다. 작성한 내용은 자동으로 저장되어 30일 동안 보관되니, 편하실 때 언제든 다시 이어서 작성하시면 됩니다.',
       infoRefL: '추천인', infoRef: '담임목사님(또는 교회 지도자) 한 분과 동역자(또는 친구) 한 분, 모두 두 분의 이름과 이메일이 필요합니다.',
       infoMailL: '추천서', infoMail: '지원서를 제출하면 추천인께 추천서 양식이 이메일로 자동 발송됩니다. 미리 말씀드려 두시면 좋습니다.',
       infoPrivL: '개인정보', infoPriv: '검토 담당자만 열람합니다. 선발되지 않으면 결정 후 12개월이 지나 삭제됩니다.',
@@ -34,7 +34,7 @@
     },
     en: {
       title: 'Staff Application', lead: 'Word of Life Korea is recruiting staff to serve young people with us. We review each application together with two references, then invite applicants to an interview.',
-      infoTitle: 'Before you begin', infoTimeL: 'Time', infoTime: 'About 20–30 minutes. Your answers save as you go, so you can finish in more than one sitting.',
+      infoTitle: 'Before you begin', infoTimeL: 'Time', infoTime: 'About 20–30 minutes. Your answers are saved automatically and kept for 30 days, so you can come back and continue whenever it suits you.',
       infoRefL: 'References', infoRef: 'You will need the names and email addresses of two people: your pastor (or a church leader) and a co-worker (or friend).',
       infoMailL: 'Reference forms', infoMail: 'When you submit, our reference form is emailed to them automatically. It helps to let them know beforehand.',
       infoPrivL: 'Privacy', infoPriv: 'Only our reviewers read your application. If you are not selected, it is deleted 12 months after the decision.',
