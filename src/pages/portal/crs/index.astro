@@ -595,9 +595,11 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .step-desc { color:#5c7078; font-size:.81rem; line-height:1.35; }
   .step-num { color:#9cafb5; font-size:.65rem; }
   .visit-card {
-    margin-bottom:.55rem; padding:.78rem .86rem; border:1px solid #e0e9eb; border-left:3px solid var(--crs-cyan);
+    margin-bottom:.55rem; padding:.78rem .86rem; border:1px solid #e0e9eb;
     border-radius:8px; background:#fff;
   }
+  /* 왼쪽 색 띠 대신 날짜 앞의 작은 점(타임라인 표시)으로 방문 기록임을 보여 준다 */
+  :root:root .visit-card { border-left:1px solid #e0e9eb; }
   .visit-section {
     margin-top:1rem; padding:1rem; border:1px solid #dce7e9; border-radius:10px;
     background:#fff; box-shadow:0 3px 12px rgba(20,52,64,.045);
@@ -615,7 +617,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   }
   .btn-add-visit:hover { border-color:#004658; background:#004658; box-shadow:0 4px 10px rgba(0,86,108,.16); }
   .visit-card-head { display:flex; justify-content:space-between; align-items:center; gap:.6rem; margin-bottom:.34rem; }
-  .visit-card-date { color:var(--crs-brand); font-size:.81rem; font-weight:800; }
+  .visit-card-date { display:inline-flex; align-items:center; gap:.5rem; color:var(--crs-brand); font-size:.81rem; font-weight:800; }
+  .visit-card-date::before { content:''; flex:none; width:8px; height:8px; border-radius:50%; background:var(--crs-cyan); box-shadow:0 0 0 3px rgba(45,159,186,.16); }
   .visit-card-person {
     padding:.14rem .45rem; border-radius:999px; background:#edf5f6; color:#4a707c;
     font-size:.7rem; font-weight:750;
