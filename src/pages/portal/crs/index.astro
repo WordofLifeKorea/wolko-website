@@ -453,6 +453,27 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .btn-add:hover { background:#00475a; }
   /* 옆의 검색칸 · 선택박스(34px)와 높이를 맞춘다 — 공용 버튼 규칙보다 우선 */
   :root:root .btn-add, :root:root .btn-add-visit { height:34px !important; min-height:0 !important; padding:0 .95rem; font-size:.84rem; line-height:1; }
+  /* ── 목록 위 도구 막대: 높이 38px · 모서리 10px 로 통일.
+       1줄: 지역(평택|제주) ··· 교회 추가 / 2줄: 검색 / 3줄: 담당 선교사 · 교단(반씩) / 4줄: 정렬.
+       지역과 정렬은 같은 모양(회색 홈 + 흰 알약)으로, 지역이 주, 정렬이 보조(작게). 숨은 선택칸은 자리를 차지하지 않는다 ── */
+  :root:root .top-bar { display:flex; flex-wrap:wrap; align-items:center; gap:.55rem; }
+  :root:root .top-bar > * { box-sizing:border-box; margin:0; }
+  :root:root .top-bar .campus-seg { order:1; height:38px; padding:3px; border-radius:11px; background:#dfe9ec; }
+  :root:root .top-bar .campus-seg button { padding:0 .9rem; border-radius:8px; font-size:.86rem; font-weight:800; color:#5a737c; }
+  :root:root .top-bar .campus-seg button.on { background:#fff; color:#004f68; box-shadow:0 1px 2px rgba(0,50,66,.12), 0 3px 8px -4px rgba(0,50,66,.35); }
+  :root:root .top-bar .campus-seg button span { display:inline-grid; place-items:center; min-width:1.35rem; height:1.15rem; margin-left:.35rem; padding:0 .3rem; border-radius:999px; background:rgba(0,79,104,.08); color:#5f7882; font-size:.7rem; font-weight:800; }
+  :root:root .top-bar .campus-seg button.on span { background:#004f68; color:#fff; }
+  :root:root .top-bar .btn-add { order:2; margin-left:auto; height:38px !important; padding:0 1rem; border-radius:10px; font-size:.86rem; font-weight:800; letter-spacing:-.01em; box-shadow:0 1px 2px rgba(0,50,66,.15), 0 6px 14px -8px rgba(0,79,104,.6); }
+  :root:root .top-bar .search-input { order:3; flex:1 1 100%; height:38px; padding:0 .9rem 0 2.3rem; border:1px solid #d3e0e4; border-radius:10px; font-size:.86rem;
+    background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%238aa0a8' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='6.5'/%3E%3Cpath d='m16 16 4 4'/%3E%3C/svg%3E") no-repeat .8rem center / 16px 16px; }
+  :root:root .top-bar .filter-select { order:4; flex:1 1 calc(50% - .3rem); min-width:0; height:38px; padding:0 1.9rem 0 .85rem; border:1px solid #d3e0e4; border-radius:10px; font-size:.82rem; font-weight:700; color:#3d5862; box-shadow:none; text-overflow:ellipsis; }
+  :root:root .top-bar .filter-select:hover, :root:root .top-bar .search-input:hover { border-color:#b9ccd2; }
+  :root:root .top-bar .filter-select.is-active { border-color:#004f68; background-color:#eef6f8; color:#004f68; }
+  :root:root .top-bar .sort-seg { order:5; height:32px; padding:3px; border:0; border-radius:9px; background:#dfe9ec; overflow:visible; }
+  :root:root .top-bar .sort-seg button { padding:0 .75rem; border-radius:6px; font-size:.76rem; font-weight:750; color:#5a737c; }
+  :root:root .top-bar .sort-seg button + button { border-left:0; }
+  :root:root .top-bar .sort-seg button.on { background:#fff; color:#004f68; box-shadow:0 1px 2px rgba(0,50,66,.12); }
+  :root:root .top-bar .sort-seg::before { content:attr(aria-label); align-self:center; padding:0 .5rem 0 .4rem; color:#7d939c; font-size:.72rem; font-weight:800; }
   .church-list { gap:.72rem; }
   .church-card {
     position:relative; border:1px solid var(--crs-line); border-radius:10px; background:#fff;
