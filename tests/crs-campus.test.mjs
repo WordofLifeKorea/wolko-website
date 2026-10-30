@@ -29,7 +29,7 @@ test('CRS 평택|제주: 목록 · 지도 · 필터 · 번호 · 새 교회 기�
 test('CRS 상세의 "정보 수정"은 상세를 닫지 않고 그 위에 수정 창을 띄우고, 저장하면 상세를 다시 그린다', async () => {
   const { readFileSync } = await import('node:fs');
   const page = readFileSync(new URL('../src/pages/portal/crs/index.astro', import.meta.url), 'utf8');
-  const handler = page.slice(page.indexOf("getElementById('detailEditBtn').addEventListener"), page.indexOf("getElementById('detailDeleteBtn')"));
+  const handler = page.slice(page.indexOf("getElementById('detailEditBtn').addEventListener"), page.indexOf("getElementById('stepsToggle')"));
   assert.doesNotMatch(handler, /closeDetailModal/, '상세를 닫지 않는다(뒤로 가기도 쓰지 않는다)');
   assert.match(handler, /openEditModal\(church\)/);
   assert.match(page, /if \(fresh\) openDetailModal\(fresh, \{ updateHistory: false \}\)/, '저장 후 상세를 고친 내용으로 다시 그린다');
@@ -50,4 +50,15 @@ test('CRS 홈페이지 주소: http(s)만 저장하고, 앞에 https:// 를 붙�
   assert.equal(websiteLabel('https://www.church.or.kr/'), 'church.or.kr');
   assert.match(page, /id="fWebsite"/); assert.match(page, /website: cleanWebsite\(document\.getElementById\('fWebsite'\)\.value\)/);
   assert.match(page, /target="_blank" rel="noopener noreferrer"/);
+});
+
+test('CRS 교회 삭제: 상세 화면에는 없고, 수정 창에서 교회 이름을 그대로 입력해야 켜지며 비밀번호도 묻는다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const page = readFileSync(new URL('../src/pages/portal/crs/index.astro', import.meta.url), 'utf8');
+  assert.doesNotMatch(page, /detailDeleteBtn/, '상세 화면의 삭제 버튼은 없다');
+  assert.match(page, /<div class="danger-zone" id="dangerZone" hidden>/);
+  assert.match(page, /id="dangerGo" disabled/, '처음엔 꺼져 있다');
+  assert.match(page, /dangerGo'\)\.disabled = !editingChurch \|\| e\.target\.value\.trim\(\) !== String\(editingChurch\.churchName/, '이름이 같아야 켜진다');
+  assert.match(page, /zone\.hidden = !church;/, '새 교회 추가 창에는 없다');
+  assert.match(page, /async function deleteChurch\(church\) \{\s*const pw = prompt\(/, '비밀번호도 한 번 더 묻는다');
 });

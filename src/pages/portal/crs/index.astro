@@ -829,6 +829,13 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .is-dragging { opacity:.5; outline:2px dashed var(--crs-cyan, #2d9fba); outline-offset:2px; }
   .drop-target { outline:2px solid var(--crs-cyan, #2d9fba); outline-offset:2px; background-color:#f4fafb; }
   body.crs-dragging { user-select:none; -webkit-user-select:none; cursor:grabbing; }
+  .danger-zone { margin-top:1.1rem; padding-top:.9rem; border-top:1px dashed #f0d6d6; }
+  :root:root .danger-toggle { min-height:0 !important; height:auto !important; padding:.2rem 0 !important; border:0; background:none; color:#b04848; font-size:.8rem; font-weight:700; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+  .danger-box { margin-top:.7rem; padding:.85rem; border:1px solid #f3c9c9; border-radius:10px; background:#fff7f7; display:grid; gap:.55rem; }
+  .danger-text { margin:0; color:#8f2f2f; font-size:.8rem; line-height:1.5; font-weight:600; }
+  .danger-box input { height:38px; padding:0 .8rem; border:1px solid #e9bcbc; border-radius:8px; font-size:.86rem; background:#fff; }
+  :root:root .danger-go { min-height:0 !important; height:38px !important; border:0; border-radius:8px; background:#c0392b; color:#fff; font-size:.84rem; font-weight:800; cursor:pointer; }
+  :root:root .danger-go:disabled { background:#e9c6c6; cursor:not-allowed; }
   .detail-website { color:#0a6a8f; font-weight:700; text-decoration:none; word-break:break-all; }
   .detail-website:hover { text-decoration:underline; }
   /* 수정 창은 휴대폰에서 화면 전체를 덮는 상세(z-index 1200) 위에 뜬다 */
@@ -1010,7 +1017,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       detail_purpose: '방문목적', detail_notes: '메모', detail_progress: '진행단계',
       done_of: (d,t) => `${d} / ${t} 완료`,
       steps_title: '관계 발전 단계',
-      btn_edit: '정보 수정', btn_delete: '삭제',
+      btn_edit: '정보 수정', btn_delete: '삭제', del_church: '이 교회 삭제', del_forever: '영구 삭제', del_type: n => `되돌릴 수 없어요. 지우려면 교회 이름 "${n}" 을(를) 그대로 입력하세요.`,
       name_required: '교회 이름을 입력해주세요.',
       save_error: '저장 중 오류가 발생했습니다: ',
       step_error: '저장 중 오류: ', delete_error: '삭제 중 오류: ',
@@ -1067,7 +1074,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       detail_purpose: 'Purpose', detail_notes: 'Notes', detail_progress: 'Progress',
       done_of: (d,t) => `${d} / ${t} completed`,
       steps_title: 'Relationship Steps',
-      btn_edit: 'Edit Info', btn_delete: 'Delete',
+      btn_edit: 'Edit Info', btn_delete: 'Delete', del_church: 'Delete this church', del_forever: 'Delete permanently', del_type: n => `This cannot be undone. Type the church name "${n}" to confirm.`,
       name_required: 'Please enter a church name.',
       save_error: 'Error saving: ',
       step_error: 'Save error: ', delete_error: 'Delete error: ',
@@ -1647,6 +1654,15 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
               <button class="btn-cancel" id="editCancelBtn">${t('cancel')}</button>
               <button class="btn-save" id="editSaveBtn">${t('save')}</button>
             </div>
+            <!-- 교회 삭제 — 수정할 때만, 쉽게 지워지지 않도록 교회 이름을 그대로 입력해야 버튼이 켜지고 관리자 비밀번호도 한 번 더 묻는다 -->
+            <div class="danger-zone" id="dangerZone" hidden>
+              <button type="button" class="danger-toggle" id="dangerToggle">${t('del_church')}</button>
+              <div class="danger-box" id="dangerBox" hidden>
+                <p class="danger-text" id="dangerText"></p>
+                <input type="text" id="dangerName" autocomplete="off" spellcheck="false">
+                <button type="button" class="danger-go" id="dangerGo" disabled>${t('del_forever')}</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1718,6 +1734,18 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     });
     document.getElementById('editModalClose').addEventListener('click', closeEditModal);
     document.getElementById('editCancelBtn').addEventListener('click', closeEditModal);
+    document.getElementById('dangerToggle').addEventListener('click', () => {
+      const box = document.getElementById('dangerBox'); box.hidden = !box.hidden;
+      if (!box.hidden) setTimeout(() => document.getElementById('dangerName').focus(), 50);
+    });
+    document.getElementById('dangerName').addEventListener('input', e => {
+      document.getElementById('dangerGo').disabled = !editingChurch || e.target.value.trim() !== String(editingChurch.churchName || '').trim();
+    });
+    document.getElementById('dangerGo').addEventListener('click', async () => {
+      if (!editingChurch || document.getElementById('dangerName').value.trim() !== String(editingChurch.churchName || '').trim()) return;
+      const target = editingChurch;
+      if (await deleteChurch(target)) closeEditModal();
+    });
     document.getElementById('editSaveBtn').addEventListener('click', saveChurch);
     document.getElementById('fAddressSearchBtn').addEventListener('click', searchChurchAddress);
     document.getElementById('fDetailAddress').addEventListener('input', clearSelectedChurchAddress);
@@ -2005,6 +2033,14 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   // ── 교회 추가/수정 모달 ──
   function openEditModal(church) {
     editingChurch = church;
+    const zone = document.getElementById('dangerZone');
+    if (zone) {
+      zone.hidden = !church;
+      document.getElementById('dangerBox').hidden = true;
+      document.getElementById('dangerName').value = '';
+      document.getElementById('dangerGo').disabled = true;
+      if (church) document.getElementById('dangerText').textContent = t('del_type')(church.churchName || '');
+    }
     document.getElementById('editModalTitle').textContent = church ? t('edit_title') : t('add_title');
     document.getElementById('fChurchName').value = church?.churchName || '';
     document.getElementById('fPastorName').value = church?.pastorName || '';
@@ -2472,7 +2508,6 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
       <div class="detail-actions">
         <button class="btn-edit" id="detailEditBtn">${t('btn_edit')}</button>
-        <button class="btn-delete" id="detailDeleteBtn">${t('btn_delete')}</button>
       </div>
       <p class="detail-layout-hint">${isKo ? '카드를 꾹 눌러 끌면 위치를 바꿀 수 있어요.' : 'Press and hold a card, then drag to rearrange.'}<button type="button" class="btn-layout-reset" id="detailLayoutReset" hidden>${isKo ? '배치 초기화' : 'Reset layout'}</button></p>`;
     if (window.WolkoBlockDrag) WolkoBlockDrag.init(document.getElementById('detailBody'), { resetButton: document.getElementById('detailLayoutReset') });
@@ -2486,7 +2521,6 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       // 상세 화면은 닫지 않고 그 위에 수정 창을 띄운다(예전엔 상세를 닫아서 목록으로 '뒤로 나간' 것처럼 보였다). 저장하면 상세에 바로 반영된다
       openEditModal(church);
     });
-    document.getElementById('detailDeleteBtn').addEventListener('click', () => deleteChurch(church));
     document.getElementById('stepsToggle').addEventListener('click', function() {
       const list = document.getElementById('stepsList');
       const collapsed = list.classList.toggle('collapsed');
@@ -2728,18 +2762,20 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         ? `"${church.churchName}" 을(를) 삭제하려면 관리자 비밀번호를 입력하세요.`
         : `Enter admin password to delete "${church.churchName}".`
     );
-    if (pw === null) return; // 취소
+    if (pw === null) return false; // 취소
     if (pw !== '0316') {
       alert(getLang() === 'ko' ? '비밀번호가 올바르지 않습니다.' : 'Incorrect password.');
-      return;
+      return false;
     }
     try {
       await remove(ref(db, `churches/${church.id}`));
       churches = churches.filter(c => c.id !== church.id);
-      closeDetailModal();
+      closeDetailModal({ useHistory: false });
       renderChurchList();
+      return true;
     } catch(e) {
       alert(t('delete_error') + e.message);
+      return false;
     }
   }
 
