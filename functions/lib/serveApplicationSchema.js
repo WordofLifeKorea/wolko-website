@@ -95,3 +95,6 @@ export const SERVE_APPLICATION_SECTIONS = [
 export const SERVE_APPLICATION_FIELDS = SERVE_APPLICATION_SECTIONS.flatMap(s => s.fields.map(f => ({ ...f, section: s.id })));
 export const SENSITIVE_FIELD_IDS = new Set(SERVE_APPLICATION_FIELDS.filter(f => f.sensitive).map(f => f.id));
 export const APPLICATION_STATUSES = ['draft', 'submitted', 'approved', 'hold', 'rejected'];
+
+/** 지원자가 직접 쓰는 비공개 지원서(/apply/…)에 보여 주는 영역 — 내부용(인터뷰·추천인 확인·동의 확인)은 뺀다 */
+export const APPLICANT_SECTIONS = SERVE_APPLICATION_SECTIONS.filter(s => s.id !== 'internal');

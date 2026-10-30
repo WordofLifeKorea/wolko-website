@@ -138,7 +138,7 @@ export async function saveApplication(env, app, fullValues) {
 export function summarize(app) {
   const v = app.values || {};
   const name = [v.firstName, v.lastName].filter(Boolean).join(' ') || v.nameKo || '(이름 없음)';
-  return { id: app.id, inquiryId: app.inquiryId, lang: app.lang, status: app.status, name, nameKo: v.nameKo || '', createdAt: app.createdAt, updatedAt: app.updatedAt, decidedAt: app.decidedAt || null };
+  return { id: app.id, inquiryId: app.inquiryId, source: app.source || 'interview', refNo: app.refNo || '', lang: app.lang, status: app.status, name, nameKo: v.nameKo || '', createdAt: app.createdAt, updatedAt: app.updatedAt, decidedAt: app.decidedAt || null };
 }
 
 export async function deleteApplication(env, id) {

@@ -72,6 +72,7 @@
       <div class="row"><button id="backBtn" type="button">← 목록</button><strong id="fvName"></strong><span id="fvStatus" class="tag"></span><span id="fvLang" class="tag"></span></div>
       <div class="steps" id="steps"></div>
       <section id="stepBody" class="grid"></section>
+      <section id="refsPanel" hidden class="grid"></section>
       <section id="decision" hidden class="grid"></section>
       <details><summary class="meta">열람·수정 기록</summary><div id="audit" class="audit"></div></details>
     </div>
@@ -108,7 +109,7 @@
         location.hash = ''; S.app = null; $('formView').hidden = true; $('bar').hidden = true; $('listView').hidden = false;
         $('list').innerHTML = S.apps.map(function (a) {
           return '<div class="card row" style="justify-content:space-between"><div><strong>' + esc(a.name) + '</strong> ' + esc(a.nameKo && a.name !== a.nameKo ? '(' + a.nameKo + ')' : '') +
-            ' <span class="tag ' + a.status + '">' + STATUS[a.status] + '</span> <span class="tag">' + (a.lang === 'ko' ? '한글' : 'English') + '</span><div class="meta">수정 ' + when(a.updatedAt) + '</div></div>' +
+            ' <span class="tag ' + a.status + '">' + STATUS[a.status] + '</span> <span class="tag">' + (a.lang === 'ko' ? '한글' : 'English') + '</span>' + (a.source === 'online' ? ' <span class="tag">온라인 지원 ' + esc(a.refNo || '') + '</span>' : '') + '<div class="meta">수정 ' + when(a.updatedAt) + '</div></div>' +
             '<button type="button" class="primary" data-open="' + esc(a.id) + '">열기</button></div>';
         }).join('');
         $('listEmpty').hidden = S.apps.length > 0;
@@ -152,9 +153,28 @@
           : '<textarea id="decNote" placeholder="메모(선택)" style="min-height:60px"></textarea><div class="row"><button type="button" class="primary" data-decide="approved">최종 승인</button><button type="button" data-decide="hold">보류</button><button type="button" class="danger" data-decide="rejected">거절</button></div><p class="sub">거절·보류한 신청서는 결정 후 12개월이 지나면 자동 삭제됩니다.</p>');
         $('audit').innerHTML = (a.audit || []).slice().reverse().slice(0, 40).map(function (x) { return '<span>' + when(x.at) + ' · ' + esc(x.by) + ' · ' + esc(x.action) + (x.note ? ' — ' + esc(x.note) : '') + '</span>'; }).join('');
       }
+      /* ── 추천서 (온라인 지원서 — 추천인이 메일 링크로 작성, 암호화 저장) ── */
+      var REF_STATE = { sent: '요청 메일 보냄 · 답변 기다리는 중', failed: '요청 메일 발송 실패', completed: '추천서 도착' };
+      function renderRefs(schema) {
+        var a = S.app, box = $('refsPanel'), refs = a.references || [];
+        box.hidden = !refs.length; if (!refs.length) return;
+        var fields = (schema || []).reduce(function (x, s) { return x.concat(s.fields.map(function (f) { return Object.assign({ sec: s.title.ko }, f); })); }, []);
+        var label = function (f, v) { if (f.type === 'checkbox') return v ? '예' : '아니요'; var o = (f.options || []).filter(function (o) { return o.v === v; })[0]; return o ? o.ko : v; };
+        box.innerHTML = '<h2>추천서 <span class="meta">References · 지원자에게 보이지 않음</span></h2>' + refs.map(function (r) {
+          var ans = (a.referenceAnswers || {})[r.n];
+          var head = '<div class="row" style="justify-content:space-between"><strong>추천인 ' + r.n + ' · ' + esc(r.name || '') + ' <span class="meta">' + esc(r.email) + '</span></strong><span class="tag ' + (r.status === 'completed' ? 'approved' : r.status === 'failed' ? 'rejected' : 'submitted') + '">' + esc(REF_STATE[r.status] || r.status) + '</span></div>';
+          if (!ans) return '<div class="card">' + head + '<div class="meta">요청 ' + when(r.sentAt) + '</div></div>';
+          if (ans.error) return '<div class="card">' + head + '<p class="msg bad">' + esc(ans.error) + '</p></div>';
+          var rows = fields.filter(function (f) { return ans[f.id] !== undefined && ans[f.id] !== ''; }).map(function (f) {
+            return '<div class="field" style="grid-column:1/-1"><span class="lbl">' + esc(f.label.ko) + '<small>' + esc(f.label.en) + '</small></span><div style="white-space:pre-wrap">' + esc(label(f, ans[f.id])) + '</div></div>';
+          }).join('');
+          return '<details class="card" open><summary>' + head + '</summary><div class="meta">제출 ' + when(ans.submittedAt) + '</div><div class="grid">' + rows + '</div></details>';
+        }).join('');
+      }
       async function openApp(id) {
         var data = await api('GET', '?id=' + encodeURIComponent(id));
         S.schema = data.schema; S.app = data.application; S.values = data.application.values || {}; S.step = 0; S.errors = {}; S.dirty = false;
+        renderRefs(data.referenceSchema);
         location.hash = id; $('listView').hidden = true; $('formView').hidden = false; $('bar').hidden = false; $('saveState').textContent = '';
         renderFormChrome(); renderStep();
       }

@@ -1,0 +1,174 @@
+/* 비공개 스태프 지원서(/apply/…)와 추천서(/reference/) — 기업 지원 포털처럼 단정하고 격식 있는 화면 */
+:root { --ink: #13242d; --muted: #5d7480; --line: #dbe4e8; --soft: #f4f7f9; --navy: #0b3a4f; --navy2: #0f5672; --accent: #0f6b8c; --err: #b3261e; --ok: #1d7a4f; --radius: 6px;
+  --sans: 'Inter', 'Noto Sans KR', -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--soft); color: var(--ink); font: 400 15px/1.6 var(--sans); }
+button, input, select, textarea { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+
+/* 상단 바 */
+.ap-top { position: sticky; top: 0; z-index: 20; background: #fff; border-bottom: 1px solid var(--line); }
+.ap-top-in { max-width: 1120px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.ap-brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+.ap-brand img { width: 34px; height: 34px; }
+.ap-brand b { display: block; font-size: 14px; font-weight: 700; letter-spacing: -.01em; }
+.ap-brand small { display: block; font-size: 11.5px; color: var(--muted); }
+.ap-lang { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.ap-lang button { border: 0; background: #fff; padding: 7px 12px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; }
+.ap-lang button + button { border-left: 1px solid var(--line); }
+.ap-lang button.on { background: var(--navy); color: #fff; }
+
+/* 머리 영역 */
+.ap-hero { background: linear-gradient(120deg, var(--navy) 0%, var(--navy2) 100%); color: #fff; }
+.ap-hero-in { max-width: 1120px; margin: 0 auto; padding: 44px 20px 40px; }
+.ap-eyebrow { margin: 0 0 8px; font-size: 12px; font-weight: 700; letter-spacing: .2em; color: #9fd0e2; }
+.ap-hero h1 { margin: 0; font-size: clamp(26px, 3.4vw, 36px); font-weight: 700; letter-spacing: -.02em; }
+.ap-lead { max-width: 640px; margin: 12px 0 0; color: #d6e8ef; font-size: 15.5px; }
+.ap-facts { display: flex; flex-wrap: wrap; gap: 10px 34px; margin: 26px 0 0; padding: 18px 0 0; list-style: none; border-top: 1px solid rgba(255, 255, 255, .18); }
+.ap-facts b { display: block; font-size: 15px; font-weight: 700; }
+.ap-facts span { font-size: 12.5px; color: #b9d7e2; }
+
+/* 본문: 왼쪽 단계 · 오른쪽 입력 카드 */
+.ap-main { max-width: 1120px; margin: 0 auto; padding: 28px 20px 60px; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 28px; align-items: start; }
+.ap-steps { position: sticky; top: 84px; display: grid; gap: 2px; padding: 10px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); }
+.ap-step { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 10px; border: 0; border-radius: 4px; background: transparent; text-align: left; cursor: pointer; color: var(--muted); }
+.ap-step:disabled { cursor: default; }
+.ap-step-n { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border: 1.5px solid #c3d1d7; border-radius: 50%; font-size: 12.5px; font-weight: 700; background: #fff; }
+.ap-step-t { font-size: 13.5px; font-weight: 600; line-height: 1.35; }
+.ap-step.active { background: #eef5f8; color: var(--navy); }
+.ap-step.active .ap-step-n { border-color: var(--navy); background: var(--navy); color: #fff; }
+.ap-step.done { color: var(--ink); }
+.ap-step.done .ap-step-n { border-color: var(--ok); background: var(--ok); color: #fff; }
+.ap-step:not(:disabled):hover { background: #f3f7f9; }
+.ap-progress { display: none; }
+
+.ap-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 30px 34px 24px; box-shadow: 0 1px 2px rgba(16, 40, 52, .04); }
+.ap-sec-head { margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.ap-stepof { margin: 0 0 4px; font-size: 12px; font-weight: 700; letter-spacing: .08em; color: var(--accent); text-transform: uppercase; }
+.ap-sec-head h2 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.015em; }
+.ap-sec-lead { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+.ap-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 20px; }
+.ap-field { min-width: 0; }
+.ap-field.wide { grid-column: 1 / -1; }
+.ap-label { display: block; margin: 0 0 7px; font-size: 13.5px; font-weight: 600; line-height: 1.45; color: var(--ink); }
+.ap-req { margin-left: 3px; color: var(--err); }
+.ap-opt { margin-left: 6px; font-size: 11.5px; font-weight: 500; color: #8a9ea7; }
+.ap-field input[type="text"], .ap-field input[type="email"], .ap-field input[type="tel"], .ap-field input[type="date"], .ap-field select, .ap-field textarea {
+  width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #c9d6dc; border-radius: var(--radius); background: #fff; outline: none; transition: border-color .15s, box-shadow .15s; }
+.ap-field textarea { min-height: 120px; resize: vertical; line-height: 1.6; }
+.ap-field select { -webkit-appearance: none; appearance: none; padding-right: 36px; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20' fill='none' stroke='%235d7480' stroke-width='2'%3E%3Cpolyline points='5 8 10 13 15 8'/%3E%3C/svg%3E") no-repeat right 12px center; }
+.ap-field input:focus, .ap-field select:focus, .ap-field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(15, 107, 140, .14); }
+.ap-choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.ap-choice { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border: 1px solid #c9d6dc; border-radius: var(--radius); background: #fff; cursor: pointer; font-size: 14px; }
+.ap-choice:has(input:checked) { border-color: var(--navy); background: #eef5f8; color: var(--navy); font-weight: 600; }
+.ap-choice input { accent-color: var(--navy); margin: 0; }
+.ap-field.has-err input, .ap-field.has-err select, .ap-field.has-err textarea, .ap-field.has-err .ap-choice { border-color: var(--err); }
+.ap-ferr { margin: 6px 0 0; color: var(--err); font-size: 12.5px; font-weight: 600; }
+.ap-err { margin: 18px 0 0; padding: 11px 14px; border: 1px solid #f0c7c4; border-radius: 4px; background: #fdf3f2; color: var(--err); font-size: 13.5px; font-weight: 600; }
+.ap-honey { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; opacity: 0; }
+
+.ap-actions { display: flex; align-items: center; gap: 12px; margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--line); }
+.ap-saved { flex: 1; font-size: 12px; color: #8a9ea7; text-align: center; }
+.ap-btn { min-height: 44px; padding: 0 22px; border-radius: var(--radius); border: 1px solid var(--line); background: #fff; font-weight: 600; cursor: pointer; }
+.ap-btn.ghost:hover { background: var(--soft); }
+.ap-btn.primary { margin-left: auto; border-color: var(--navy); background: var(--navy); color: #fff; }
+.ap-btn.primary:hover { background: #082d3d; }
+.ap-btn.primary.submit { padding: 0 28px; }
+.ap-btn:disabled { opacity: .6; cursor: progress; }
+
+/* 검토 및 제출 */
+.ap-sum { margin: 0 0 14px; border: 1px solid var(--line); border-radius: var(--radius); }
+.ap-sum-head { display: flex; align-items: center; justify-content: space-between; padding: 11px 16px; background: var(--soft); border-bottom: 1px solid var(--line); }
+.ap-sum h3 { margin: 0; font-size: 14.5px; font-weight: 700; }
+.ap-link { border: 0; background: none; color: var(--accent); font-weight: 600; font-size: 13px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.ap-sum dl { margin: 0; padding: 4px 16px 10px; }
+.ap-sum dl > div { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 14px; padding: 9px 0; border-bottom: 1px solid #edf2f4; }
+.ap-sum dl > div:last-child { border-bottom: 0; }
+.ap-sum dt { color: var(--muted); font-size: 13px; }
+.ap-sum dd { margin: 0; font-size: 13.5px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ap-sum dd.empty { color: #a6b4ba; }
+.ap-consent { margin-top: 20px; padding: 18px 20px; border: 1px solid #cfdde3; border-radius: 4px; background: #f8fbfc; }
+.ap-consent h3 { margin: 0 0 6px; font-size: 14.5px; }
+.ap-consent p { margin: 0 0 12px; color: #3d5560; font-size: 13.5px; }
+.ap-consent.has-err { border-color: #f0c7c4; background: #fdf6f5; }
+.ap-check { display: flex; align-items: flex-start; gap: 10px; font-weight: 600; cursor: pointer; }
+.ap-check input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--navy); }
+.ap-note { margin: 14px 0 0; color: var(--muted); font-size: 13px; }
+
+/* 완료 */
+.ap-done { max-width: 720px; margin: 0 auto; padding: 36px 20px 70px; }
+.ap-done-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 36px 36px 30px; }
+.ap-done-mark { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: #e7f4ed; color: var(--ok); font-size: 26px; font-weight: 700; }
+.ap-done h2 { margin: 18px 0 6px; font-size: 24px; letter-spacing: -.015em; }
+.ap-done p { margin: 0; color: var(--muted); }
+.ap-receipt { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; margin: 22px 0 26px; border: 1px solid var(--line); border-radius: var(--radius); }
+.ap-receipt div { padding: 14px 18px; }
+.ap-receipt div + div { border-left: 1px solid var(--line); }
+.ap-receipt dt { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.ap-receipt dd { margin: 4px 0 0; font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums; }
+.ap-done h3 { margin: 0 0 8px; font-size: 15px; }
+.ap-next { margin: 0; padding-left: 20px; color: #3d5560; font-size: 14px; display: grid; gap: 6px; }
+
+/* 로그인한 지원자 줄 */
+.ap-acct { background: #fff; border-bottom: 1px solid var(--line); }
+.ap-acct-in { max-width: 1120px; margin: 0 auto; padding: 9px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 18px; font-size: 13px; }
+.ap-acct-who { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.ap-acct-who b { font-weight: 600; overflow-wrap: anywhere; }
+.ap-acct-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); flex: none; }
+.ap-acct-exp { color: var(--muted); font-size: 12.5px; }
+.ap-acct .ap-link { margin-left: auto; padding: 4px 0; }
+
+/* 임시 비밀번호 로그인 */
+.ap-gate { max-width: 520px; margin: 0 auto; padding: 32px 20px 64px; }
+.ap-gate-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 0 30px 24px; box-shadow: 0 1px 2px rgba(16, 40, 52, .04); }
+.ap-gate-tabs { display: grid; grid-template-columns: 1fr 1fr; margin: 0 -30px 24px; border-bottom: 1px solid var(--line); }
+.ap-gate-tabs button { padding: 15px 10px 13px; border: 0; border-bottom: 2px solid transparent; background: none; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; }
+.ap-gate-tabs button.on { color: var(--navy); border-bottom-color: var(--navy); }
+.ap-gate h2 { margin: 0; font-size: 20px; letter-spacing: -.01em; }
+.ap-gate-lead { margin: 6px 0 20px; color: var(--muted); font-size: 14px; }
+.ap-gate .ap-field { margin-bottom: 14px; }
+.ap-gate .ap-pw { font-family: Menlo, Consolas, monospace; letter-spacing: .14em; text-transform: uppercase; }
+.ap-btn.block { width: 100%; margin: 6px 0 0; }
+.ap-gate-alt { display: block; margin: 14px auto 0; }
+.ap-gate-msg { margin: 16px 0 0; padding: 11px 14px; border: 1px solid #cfe3d8; border-radius: 4px; background: #f1f8f4; color: #1f5c3e; font-size: 13.5px; }
+.ap-gate-msg.bad { border-color: #f0c7c4; background: #fdf3f2; color: var(--err); font-weight: 600; }
+.ap-gate-note { margin: 20px 0 0; padding-top: 16px; border-top: 1px solid var(--line); color: #7d9099; font-size: 12.5px; }
+.ap-fhint { margin: 6px 0 0; color: #8a9ea7; font-size: 12px; }
+.ap-field input[readonly] { background: var(--soft); color: var(--muted); }
+.ap-saved.bad { color: var(--err); font-weight: 600; }
+
+/* 추천서 진행 상황 */
+.ap-refstat { margin: 0 0 26px; padding: 0; list-style: none; border: 1px solid var(--line); border-radius: var(--radius); }
+.ap-refstat li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 14px; padding: 12px 16px; font-size: 14px; }
+.ap-refstat li + li { border-top: 1px solid var(--line); }
+.ap-rs-who b { margin-right: 8px; font-weight: 700; }
+.ap-rs-state { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; }
+.ap-rs-state::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #c3d1d7; }
+.ap-refstat .is-completed .ap-rs-state { color: var(--ok); font-weight: 600; }
+.ap-refstat .is-completed .ap-rs-state::before { background: var(--ok); }
+.ap-refstat .is-sent .ap-rs-state::before { background: #d9a43a; }
+.ap-refstat .is-failed .ap-rs-state { color: var(--err); }
+.ap-refstat .is-failed .ap-rs-state::before { background: var(--err); }
+.ap-refstat .is-stage { background: var(--soft); }
+.ap-refstat .is-stage .ap-rs-state { color: var(--navy); font-weight: 600; }
+.ap-refstat .is-stage .ap-rs-state::before { background: var(--navy); }
+.ap-done h3 + .ap-refstat { margin-top: 0; }
+
+.ap-foot { max-width: 1120px; margin: 0 auto; padding: 18px 20px 34px; display: flex; flex-wrap: wrap; gap: 6px 24px; justify-content: space-between; color: #8a9ea7; font-size: 12px; }
+
+@media (max-width: 860px) {
+  .ap-main { grid-template-columns: minmax(0, 1fr); gap: 14px; padding-top: 0; }
+  .ap-steps { display: none; }
+  .ap-progress { display: block; position: sticky; top: 59px; z-index: 10; height: 4px; margin: 0 -20px; background: #dfe8ec; }
+  .ap-progress-bar { height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+  .ap-card { padding: 22px 18px 18px; border-radius: 0; border-left: 0; border-right: 0; margin: 0 -20px; }
+  .ap-grid { grid-template-columns: minmax(0, 1fr); }
+  .ap-sum dl > div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .ap-receipt { grid-template-columns: minmax(0, 1fr); }
+  .ap-receipt div + div { border-left: 0; border-top: 1px solid var(--line); }
+  .ap-done-card { padding: 26px 20px; }
+  .ap-gate { padding: 20px 0 48px; }
+  .ap-gate-card { border-radius: 0; border-left: 0; border-right: 0; padding: 0 20px 22px; }
+  .ap-gate-tabs { margin: 0 -20px 22px; }
+}

@@ -1,0 +1,49 @@
+/* 추천서 — 공식 문서(레터헤드 · 기밀 표시 · 평가표 · 서명란) 모양. 공용 입력 모양은 apply.css */
+.rf-main { max-width: 900px; margin: 0 auto; padding: 32px 20px 56px; }
+.rf-doc { background: #fff; border: 1px solid var(--line); border-radius: 4px; padding: 40px 48px 32px; box-shadow: 0 10px 30px -22px rgba(11, 58, 79, .4); }
+.rf-letterhead { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; padding-bottom: 18px; border-bottom: 3px double var(--navy); }
+.rf-org { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .22em; color: var(--navy); }
+.rf-letterhead h1 { margin: 6px 0 2px; font-size: 26px; font-weight: 700; letter-spacing: -.015em; }
+.rf-sub { margin: 0; color: var(--muted); font-size: 13.5px; }
+.rf-stamp { flex: none; padding: 6px 12px; border: 2px solid #a33a3a; border-radius: 3px; color: #a33a3a; font-size: 11.5px; font-weight: 700; letter-spacing: .18em; transform: rotate(-3deg); }
+.rf-status { margin: 26px 0 0; color: var(--muted); }
+.rf-status.bad { color: var(--err); font-weight: 600; }
+.rf-meta { width: 100%; margin: 24px 0 18px; border-collapse: collapse; font-size: 14px; }
+.rf-meta th, .rf-meta td { padding: 10px 14px; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+.rf-meta th { width: 34%; background: var(--soft); color: var(--muted); font-weight: 600; }
+.rf-meta td { font-weight: 600; }
+.rf-intro { padding: 14px 18px; border: 1px solid #dbe6ea; border-radius: 4px; background: #f6f9fa; color: #33505c; font-size: 14px; }
+.rf-sec { margin-top: 30px; }
+.rf-sec h2 { display: flex; align-items: baseline; gap: 10px; margin: 0 0 4px; font-size: 16px; font-weight: 700; color: var(--navy); }
+.rf-sec h2 .rf-num { font-size: 12px; font-weight: 700; color: #fff; background: var(--navy); border-radius: 3px; padding: 2px 7px; }
+.rf-sec > p { margin: 0 0 12px; color: var(--muted); font-size: 13.5px; }
+.rf-sec .ap-grid { margin-top: 14px; }
+.rf-rate { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 8px; }
+.rf-rate th, .rf-rate td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: center; }
+.rf-rate thead th { font-size: 12px; font-weight: 700; color: var(--muted); background: var(--soft); border-top: 1px solid var(--line); }
+.rf-rate tbody th { text-align: left; font-weight: 600; padding-left: 12px; }
+.rf-rate tr.has-err th { color: var(--err); }
+.rf-rate input { width: 18px; height: 18px; accent-color: var(--navy); cursor: pointer; }
+.rf-rate tbody tr:hover { background: #fafcfd; }
+.rf-sign { margin-top: 26px; padding: 18px 20px 14px; border: 1px dashed #c9d6dc; border-radius: 4px; background: #fcfdfd; }
+.rf-sign-line { min-height: 54px; border-bottom: 1.5px solid var(--ink); display: flex; align-items: flex-end; }
+.rf-sign-preview { font-family: 'Dancing Script', 'Brush Script MT', cursive; font-size: 30px; line-height: 1.2; color: #0d2f40; padding: 0 4px 4px; }
+.rf-sign-meta { display: flex; justify-content: space-between; margin-top: 6px; color: var(--muted); font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+.rf-done { padding: 36px 0 8px; text-align: center; }
+.rf-done .ap-done-mark { margin: 0 auto; }
+.rf-done h2 { margin: 18px 0 6px; font-size: 22px; }
+.rf-done p { margin: 0 auto; max-width: 520px; color: var(--muted); }
+@media (max-width: 700px) {
+  .rf-main { padding: 0 0 40px; }
+  .rf-doc { padding: 24px 18px; border-left: 0; border-right: 0; border-radius: 0; }
+  .rf-letterhead h1 { font-size: 21px; }
+  .rf-stamp { display: none; }
+  .rf-meta th { width: 42%; }
+  /* 좁은 화면: 평가표를 항목마다 세로 선택지로 */
+  .rf-rate thead { display: none; }
+  .rf-rate, .rf-rate tbody, .rf-rate tr, .rf-rate th, .rf-rate td { display: block; width: 100%; }
+  .rf-rate tr { padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .rf-rate tbody th { padding: 0 0 6px; border: 0; }
+  .rf-rate td { display: inline-flex; width: auto; align-items: center; gap: 6px; padding: 4px 10px 4px 0; border: 0; text-align: left; }
+  .rf-rate td::after { content: attr(data-label); font-size: 13px; }
+}

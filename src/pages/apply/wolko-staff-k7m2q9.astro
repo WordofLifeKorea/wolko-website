@@ -1,0 +1,115 @@
+---
+// 비공개 스태프(섬김) 지원서 — 링크를 받은 사람만 들어오는 페이지. 홈페이지·포탈 어디에도 연결하지 않고, 검색엔진에도 올리지 않는다.
+// 제출하면 포탈 "섬김 지원 신청서"에 저장되고(functions/api/apply/staff.js), 추천인 1·2 에게 추천서 요청 메일이 간다.
+// 지원자는 메일로 받은 임시 비밀번호로 로그인해 서버에 저장하며 이어 쓴다(functions/api/apply/account.js). 30일 동안 로그인하지 않으면 임시 계정은 자동 삭제.
+// 항목 정의는 서버 검증과 같은 것(serveApplicationSchema.js)을 빌드할 때 넣는다.
+import { APPLICANT_SECTIONS } from '../../../functions/lib/serveApplicationSchema.js';
+const schemaJson = JSON.stringify(APPLICANT_SECTIONS);
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="no-referrer">
+  <title>Staff Application · 스태프 지원서 — Word of Life Korea</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/apply.css?v=2">
+  <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
+</head>
+<body>
+  <header class="ap-top">
+    <div class="ap-top-in">
+      <a class="ap-brand" href="https://wolko.org" target="_blank" rel="noopener"><img src="/images/WOLKO Circle.png" alt=""><span><b>Word of Life Korea</b><small>월코</small></span></a>
+      <div class="ap-lang" role="group" aria-label="Language"><button type="button" data-lang="ko">한국어</button><button type="button" data-lang="en">English</button></div>
+    </div>
+  </header>
+
+  <section class="ap-hero">
+    <div class="ap-hero-in">
+      <p class="ap-eyebrow" data-i="eyebrow">STAFF APPLICATION</p>
+      <h1 data-i="title">스태프 지원서</h1>
+      <p class="ap-lead" data-i="lead">월코와 함께 다음 세대를 섬기는 일에 관심을 가져 주셔서 감사합니다. 아래 지원서를 정확하고 솔직하게 작성해 주세요.</p>
+      <ul class="ap-facts">
+        <li><b data-i="factTime">약 20–30분</b><span data-i="factTimeL">작성 시간</span></li>
+        <li><b data-i="factRef">추천인 2명</b><span data-i="factRefL">목회자 1명 포함</span></li>
+        <li><b data-i="factSafe">비공개 처리</b><span data-i="factSafeL">검토 담당자만 열람</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="ap-acct" id="apAcct" hidden>
+    <div class="ap-acct-in">
+      <span class="ap-acct-who"><span class="ap-acct-dot" aria-hidden="true"></span><b id="apAcctEmail"></b></span>
+      <span class="ap-acct-exp" id="apAcctExp"></span>
+      <button type="button" class="ap-link" id="apLogout" data-i="logout">로그아웃</button>
+    </div>
+  </div>
+
+  <section class="ap-gate" id="apGate" hidden>
+    <div class="ap-gate-card">
+      <div class="ap-gate-tabs" role="tablist">
+        <button type="button" role="tab" data-mode="start" data-i="gateStart">처음 시작하기</button>
+        <button type="button" role="tab" data-mode="login" data-i="gateLogin">이어서 작성하기</button>
+      </div>
+      <form id="apIssueForm" novalidate>
+        <h2 data-i="issueTitle">임시 비밀번호 받기</h2>
+        <p class="ap-gate-lead" data-i="issueLead">이메일로 임시 비밀번호를 보내 드립니다. 로그인하면 작성한 내용이 저장되어 언제든 다른 기기에서도 이어서 쓸 수 있습니다.</p>
+        <div class="ap-field"><label class="ap-label" for="apIssueName" data-i="gateName">이름</label><input id="apIssueName" type="text" autocomplete="name" maxlength="80"></div>
+        <div class="ap-field"><label class="ap-label" for="apIssueEmail" data-i="gateEmail">이메일</label><input id="apIssueEmail" type="email" autocomplete="email" maxlength="120"></div>
+        <input type="text" name="website" id="apHoney" tabindex="-1" autocomplete="off" class="ap-honey" aria-hidden="true">
+        <button type="submit" class="ap-btn primary block" id="apIssueBtn" data-i="issueBtn">임시 비밀번호 받기</button>
+      </form>
+      <form id="apLoginForm" novalidate hidden>
+        <h2 data-i="loginTitle">로그인</h2>
+        <p class="ap-gate-lead" data-i="loginLead">메일로 받은 임시 비밀번호를 입력해 주세요.</p>
+        <div class="ap-field"><label class="ap-label" for="apLoginEmail" data-i="gateEmail">이메일</label><input id="apLoginEmail" type="email" autocomplete="username" maxlength="120"></div>
+        <div class="ap-field"><label class="ap-label" for="apLoginPw" data-i="gatePw">임시 비밀번호</label><input id="apLoginPw" type="text" class="ap-pw" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="XXXX-XXXX"></div>
+        <button type="submit" class="ap-btn primary block" id="apLoginBtn" data-i="loginBtn">로그인</button>
+        <button type="button" class="ap-link ap-gate-alt" data-mode="start" data-i="resend">임시 비밀번호를 다시 받을래요</button>
+      </form>
+      <p class="ap-gate-msg" id="apGateMsg" role="status" hidden></p>
+      <p class="ap-gate-note" data-i="gateNote">임시 계정은 이 지원서에만 쓰입니다. 30일 동안 로그인하지 않으면 계정과 제출하지 않은 작성 내용이 자동으로 삭제됩니다.</p>
+    </div>
+  </section>
+
+  <main class="ap-main" id="apMain" hidden>
+    <nav class="ap-steps" id="apSteps" aria-label="Steps"></nav>
+    <div class="ap-progress" aria-hidden="true"><div class="ap-progress-bar" id="apBar"></div></div>
+    <form class="ap-card" id="apForm" novalidate>
+      <div id="apStep"></div>
+      <p class="ap-err" id="apErr" role="alert" hidden></p>
+      <div class="ap-actions">
+        <button type="button" class="ap-btn ghost" id="apPrev" data-i="prev">이전</button>
+        <span class="ap-saved" id="apSaved"></span>
+        <button type="button" class="ap-btn primary" id="apNext" data-i="next">다음</button>
+      </div>
+    </form>
+  </main>
+
+  <section class="ap-done" id="apDone" hidden>
+    <div class="ap-done-card">
+      <div class="ap-done-mark" aria-hidden="true">✓</div>
+      <h2 data-i="doneTitle">지원서가 접수되었습니다</h2>
+      <p data-i="doneLead">월코에 지원해 주셔서 감사합니다. 접수 확인 메일을 보내 드렸습니다.</p>
+      <dl class="ap-receipt"><div><dt data-i="refNo">접수 번호</dt><dd id="apRefNo">—</dd></div><div><dt data-i="submittedAt">제출 일시</dt><dd id="apWhen">—</dd></div></dl>
+      <h3 data-i="refStatusTitle">추천서 진행 상황</h3>
+      <ul class="ap-refstat" id="apRefList"></ul>
+      <h3 data-i="nextTitle">다음 단계</h3>
+      <ol class="ap-next">
+        <li data-i="next1">작성해 주신 추천인께 추천서 요청 메일이 자동으로 발송되었습니다. 추천인께 미리 알려 주시면 더 빨리 진행됩니다.</li>
+        <li data-i="next2">검토 담당자가 지원서와 추천서를 검토합니다.</li>
+        <li data-i="next3">면담 일정 등은 담당자가 이메일이나 전화로 연락드립니다.</li>
+      </ol>
+    </div>
+  </section>
+
+  <footer class="ap-foot"><span>© Word of Life Korea · 월코</span><span data-i="footNote">이 지원서는 월코 스태프 선발을 위해서만 사용됩니다.</span></footer>
+
+  <script type="application/json" id="apSchema" set:html={schemaJson}></script>
+  <script is:inline src="/apply.js?v=2" defer></script>
+</body>
+</html>
