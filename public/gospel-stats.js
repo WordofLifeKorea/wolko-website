@@ -109,8 +109,11 @@
   var qs = new URLSearchParams(location.search), initMonth = /^\d{4}-\d{2}$/.test(qs.get('month') || '') ? qs.get('month') : '', pendingWrite = qs.get('write') === '1';
   if (initMonth) view = 'month';   // 메일의 보고 링크(?month=…)는 그 달 월별 보기로 연다
   async function load(month) {
+    // 처음이 아니면(달 이동·연간 보기 전환) 불러오는 동안 화면 전체를 흐리게 덮고 '불러오는 중' — 바로 오면 깜빡이지 않게 0.15초 뒤부터
+    var busy = data ? setTimeout(function () { showBusy(true); }, 150) : null;
     try {
       data = view === 'year' ? await fetchYear(month) : await fetchMonth(month || (data && data.reportMonth) || '');
+      clearTimeout(busy); showBusy(false);
       if (view !== 'year' && data.month > data.reportMonth) { return load(data.reportMonth); }   // 아직 끝나지 않은 달은 보지 않는다 — 지난달로
       viewMonth = view === 'year' ? null : data.month;
       if (view !== 'year') lastMonth = data.month;
@@ -118,6 +121,7 @@
       render();
       if (pendingWrite) { pendingWrite = false; openForm(null); }
     } catch (error) {
+      clearTimeout(busy); showBusy(false);
       if (error.auth) { show('login'); return; }
       show('app'); say(error.message);
     }
