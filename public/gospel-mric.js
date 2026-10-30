@@ -68,24 +68,53 @@
     setUrl();
   }
 
+  /* 달 이동: 누르는 즉시 달 이름을 바꾸고 로딩 표시를 띄운다. 한 번 받은 달은 기억해 두었다가 바로 보여 주고, 앞뒤 달은 미리 받아 둔다.
+     빠르게 여러 번 눌러도 마지막으로 고른 달만 그린다. */
+  var cache = {}, inflight = {}, seq = 0, want = '';
+  function fetchMonth(m) {
+    if (cache[m]) return Promise.resolve(cache[m]);
+    if (inflight[m]) return inflight[m];   // 미리 받는 중인 달을 고르면 그 요청을 같이 기다린다
+    return (inflight[m] = fetch(API + (m ? '?month=' + encodeURIComponent(m) : ''), { headers: { Authorization: 'Bearer ' + (sessionStorage.getItem(TOKEN_KEY) || '') }, cache: 'no-store' })
+      .then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (body) {
+          if (res.status === 401) { var e = new Error('login'); e.login = true; throw e; }
+          if (!res.ok) throw new Error(body.error || '불러오지 못했어요.');
+          cache[body.month] = body; return body;
+        });
+      }).finally(function () { delete inflight[m]; }));
+  }
+  function prefetch() {
+    if (!data) return;
+    [shift(data.month, -1), shift(data.month, 1)].forEach(function (m) { if (m >= data.earliest && m <= data.reportMonth && !cache[m]) fetchMonth(m).catch(function () {}); });
+  }
+  function setBusy(on) { $('mricApp').classList.toggle('is-loading', on); $('mricMonth').classList.toggle('is-busy', on); $('mricApp').setAttribute('aria-busy', String(on)); }
   async function load(m) {
-    $('mricStatus').hidden = false; $('mricStatus').textContent = '불러오는 중…';
+    var mine = ++seq;
+    if (data) {   // 처음이 아니면: 화면은 그대로 두고 달 이름만 먼저 바꾼 뒤 로딩 표시
+      want = m; $('mricMonth').textContent = monthParts(m).ko;
+      $('mricPrev').disabled = m <= data.earliest; $('mricNext').disabled = m >= data.reportMonth;
+      if (!cache[m]) setBusy(true);
+    } else { $('mricStatus').hidden = false; $('mricStatus').textContent = '불러오는 중…'; }
     try {
-      var res = await fetch(API + (m ? '?month=' + encodeURIComponent(m) : ''), { headers: { Authorization: 'Bearer ' + (sessionStorage.getItem(TOKEN_KEY) || '') }, cache: 'no-store' });
-      var body = await res.json().catch(function () { return {}; });
-      if (res.status === 401) { $('mricStatus').innerHTML = '로그인이 필요해요. 포탈에서 로그인한 뒤 복음 통계에서 다시 열어 주세요.'; return; }
-      if (!res.ok) throw new Error(body.error || '불러오지 못했어요.');
-      data = body; $('mricStatus').hidden = true; $('mricApp').hidden = false; render();
-    } catch (e) { $('mricStatus').textContent = e.message; }
+      var body = await fetchMonth(m);
+      if (mine !== seq) return;            // 그 사이에 다른 달을 골랐다
+      data = body; want = ''; $('mricStatus').hidden = true; $('mricApp').hidden = false; setBusy(false); render(); prefetch();
+    } catch (e) {
+      if (mine !== seq) return;
+      setBusy(false); want = '';
+      if (e.login) { $('mricStatus').hidden = false; $('mricStatus').innerHTML = '로그인이 필요해요. 포탈에서 로그인한 뒤 복음 통계에서 다시 열어 주세요.'; return; }
+      if (data) render();                  // 실패하면 보던 달로 되돌린다
+      $('mricStatus').hidden = false; $('mricStatus').textContent = e.message;
+    }
   }
 
-  $('mricPrev').addEventListener('click', function () { if (data) load(shift(data.month, -1)); });
+  $('mricPrev').addEventListener('click', function () { if (data) { var from = want || data.month; if (from > data.earliest) load(shift(from, -1)); } });
   /** 연·월 이름을 누르면 연·월 선택기가 열린다 — 일(日)은 고르지 않는다 */
   $('mricMonth').addEventListener('click', function () {
     if (!data || !window.GospelMonthPick) return;
     window.GospelMonthPick.open($('mricMonth'), { mode: 'month', lang: 'ko', value: data.month, min: data.earliest, max: data.reportMonth, onPick: function (v) { if (v !== data.month) load(v); } });
   });
-  $('mricNext').addEventListener('click', function () { if (data && data.month < data.reportMonth) load(shift(data.month, 1)); });
+  $('mricNext').addEventListener('click', function () { if (data) { var from = want || data.month; if (from < data.reportMonth) load(shift(from, 1)); } });
   document.querySelectorAll('[data-place]').forEach(function (b) { b.addEventListener('click', function () { place = b.dataset.place; if (data) render(); }); });
   load(month);
 })();
