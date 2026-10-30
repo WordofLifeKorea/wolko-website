@@ -421,8 +421,24 @@
     $('formError').textContent = '';
     if (!report) { formKey = null; syncExisting(); }     // 같은 달·같은 단위로 이미 낸 보고가 있으면 불러온다
     $('formPanel').hidden = false;
-    $('formPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('formPanel').scrollTop = 0;
+    setTimeout(function () { var h = $('formTitle'); if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); } }, 60);
   }
+  /* 작성 패널 — 넓은 화면은 오른쪽에서 밀려 나오고, 휴대폰은 아래에서 올라오는 전체 화면 시트. 뒤 화면은 흐리게 그대로 둔다.
+     여는 곳·닫는 곳이 여러 군데(formPanel.hidden)라, hidden 이 바뀌는 것을 지켜보다가 뒤 배경과 스크롤 잠금을 함께 맞춘다 */
+  function closeSheet() { $('formPanel').hidden = true; }
+  new MutationObserver(function () {
+    var open = !$('formPanel').hidden;
+    $('formBackdrop').hidden = !open;
+    document.body.classList.toggle('gs-writing', open);
+  }).observe($('formPanel'), { attributes: true, attributeFilter: ['hidden'] });
+  $('formBackdrop').addEventListener('click', closeSheet);
+  $('formClose').addEventListener('click', closeSheet);
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape' || $('formPanel').hidden) return;
+    if (document.querySelector('.gs-mp') || !document.getElementById('gsTip') || !document.getElementById('gsTip').hidden) return;   // 달 선택기·설명 말풍선이 열려 있으면 그것부터 닫는다
+    closeSheet();
+  });
 
   /* 개인 보고와 팀 보고(그리고 달·팀 이름마다)는 서로 다른 보고라서 따로 저장된다.
      폼에서 달·개인/팀·팀 이름을 바꾸면 방금까지 쓰던 내용은 그 단위의 초안으로 잠시 보관하고,
