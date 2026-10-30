@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
 ---
 
 <BaseLayout
@@ -27,44 +28,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     --d:#004f68; --m:#007ea1; --l:#73d1f5;
     --r:#c42a36; --k:#0d1b24; --s:#3d5a6a;
     --bg:#f4f8fb; --line:rgba(0,79,104,0.1);
-  }
-
-  /* ── HERO ── */
-  .ct-hero {
-    background: linear-gradient(135deg, #0a1e2b 0%, #004f68 60%, #006a8a 100%);
-    padding: 140px 24px 100px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .ct-hero::before {
-    content:""; position:absolute; inset:0;
-    background-image: radial-gradient(circle at 20% 50%, rgba(115,209,245,0.07) 0%, transparent 55%),
-                      radial-gradient(circle at 80% 30%, rgba(115,209,245,0.05) 0%, transparent 50%);
-    pointer-events:none;
-  }
-  .ct-hero::after {
-    content:""; position:absolute; inset:0;
-    background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-    background-size: 60px 60px; pointer-events:none;
-  }
-  .ct-hero-inner { position:relative; z-index:2; max-width:720px; margin:0 auto; }
-  .ct-eyebrow {
-    display:inline-flex; align-items:center; gap:8px;
-    padding:6px 16px; border-radius:999px;
-    background:rgba(115,209,245,0.15); border:1px solid rgba(115,209,245,0.3);
-    font-size:11px; font-weight:700; letter-spacing:0.1em; color:var(--l);
-    text-transform:uppercase; margin-bottom:20px;
-  }
-  .ct-hero h1 {
-    font-size: clamp(34px, 5vw, 54px); font-weight:700; line-height:1.15;
-    color:#fff; margin-bottom:16px; letter-spacing:-0.03em;
-  }
-  .ct-hero h1 em { font-style:normal; color:var(--l); }
-  .ct-hero-sub {
-    font-size:17px; line-height:1.85; color:rgba(255,255,255,0.78);
-    max-width:580px; margin:0 auto;
   }
 
   /* ── SECTION ── */
@@ -370,19 +333,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <div id="lang-root">
 
 <!-- HERO -->
-<section class="ct-hero">
-  <div class="ct-hero-inner">
-    <div class="ct-eyebrow"><span class="wl-ko">문의</span><span class="wl-en">Contact</span></div>
-    <h1>
-      <span class="wl-ko">궁금한 점이<br><em>있으신가요?</em></span>
-      <span class="wl-en">Reach Out.<br><em>We're Listening.</em></span>
-    </h1>
-    <p class="ct-hero-sub">
-      <span class="wl-ko">선교 동역, 후원, 기도 제목까지 — 어떤 이유로 연락 주셔도 성심껏 응답하겠습니다.</span>
-      <span class="wl-en">From ministry inquiries and partnership to prayer requests — every message matters to us, and we'll respond with care.</span>
-    </p>
-  </div>
-</section>
+<PageHero variant="band" image="https://wolko.synology.me/Web_Contents/Photos/Camp_Ministry/Union_Camp.jpg" pos="50% 45%">
+  <Fragment slot="eyebrow"><span class="wl-ko">문의</span><span class="wl-en">Contact</span></Fragment>
+  <Fragment slot="title">
+    <span class="wl-ko">궁금한 점이 있으신가요?</span>
+    <span class="wl-en">Reach Out. We're Listening.</span>
+  </Fragment>
+  <Fragment slot="desc">
+    <span class="wl-ko">선교 동역, 후원, 기도 제목까지, 어떤 이유로 연락 주셔도 성심껏 응답하겠습니다.</span>
+    <span class="wl-en">From ministry inquiries and partnership to prayer requests, every message matters to us, and we'll respond with care.</span>
+  </Fragment>
+</PageHero>
 
 <!-- MAIN SECTION -->
 <section class="ct-section">

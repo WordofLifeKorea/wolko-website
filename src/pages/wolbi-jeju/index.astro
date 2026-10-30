@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
 ---
 
 <BaseLayout
@@ -75,48 +76,6 @@ span.wl-en { display: none; }
 .wj-wrap .section-title { font-family: var(--f-serif); font-size: clamp(28px, 4vw, 56px); font-weight: 800; color: var(--c-deep); line-height: 1.1; letter-spacing: -0.035em; }
 .wj-wrap .section-desc { font-size: 16px; line-height: 1.9; color: var(--c-sub); max-width: 600px; }
 .wj-wrap .accent-line { width: 48px; height: 3px; background: linear-gradient(90deg, var(--c-red), var(--c-mid)); border-radius: 2px; margin: var(--sp-md) 0 var(--sp-lg); }
-
-/* ── HERO ── */
-.wj-wrap .hero {
-  position: relative; height: 100vh; min-height: 620px;
-  background: var(--c-deep) url('/images/wolbi-jeju/hero-campus-spring-2026.jpeg') center 45% / cover no-repeat;
-  display: flex; align-items: center; overflow: hidden;
-}
-.wj-wrap .hero::before {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(90deg, rgba(0,25,39,0.92) 0%, rgba(0,35,52,0.76) 38%, rgba(0,35,52,0.28) 68%, rgba(0,20,32,0.16) 100%),
-              linear-gradient(180deg, rgba(0,20,32,0.28) 0%, rgba(0,20,32,0.05) 52%, rgba(0,20,32,0.42) 100%);
-  pointer-events: none;
-}
-.wj-wrap .hero-circle { position: absolute; right: -120px; top: -120px; width: 560px; height: 560px; border-radius: 50%; border: 1px solid rgba(115,209,245,0.15); pointer-events: none; }
-.wj-wrap .hero-circle::after { content: ''; position: absolute; inset: 60px; border-radius: 50%; border: 1px solid rgba(115,209,245,0.08); }
-.wj-wrap .hero-cross { position: absolute; right: 7%; bottom: 12%; opacity: 0.04; font-size: 240px; color: var(--c-white); line-height: 1; user-select: none; pointer-events: none; }
-.wj-wrap .hero-inner { position: relative; z-index: 2; width: 100%; max-width: var(--max-w); margin: 0 auto; padding: 0 var(--pad-h); padding-bottom: 120px; }
-.wj-wrap .hero-badge {
-  display: inline-flex; align-items: center; gap: var(--sp-sm);
-  background: rgba(115,209,245,0.12); border: 1px solid rgba(115,209,245,0.28);
-  color: var(--c-light); font-size: 11px; font-weight: 500; letter-spacing: 0.2em;
-  text-transform: uppercase; padding: 8px 18px; border-radius: 100px; margin-bottom: var(--sp-lg);
-}
-.wj-wrap .hero-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--c-light); }
-.wj-wrap .hero-title { font-family: 'GmarketSans', 'Pretendard Variable', sans-serif; font-size: clamp(36px, 5.8vw, 68px); font-weight: 800; color: var(--c-white); line-height: 1.22; letter-spacing: -0.025em; margin-bottom: var(--sp-sm); }
-.wj-wrap .hero-title em { font-style: italic; color: var(--c-light); }
-.wj-wrap .hero-subtitle { font-size: clamp(14px, 1.8vw, 18px); color: rgba(255,255,255,0.82); font-weight: 400; letter-spacing: 0.03em; margin-bottom: var(--sp-xl); max-width: 600px; }
-.wj-wrap .hero-cta-group { display: flex; gap: var(--sp-sm); flex-wrap: wrap; }
-.wj-wrap .btn-primary { display: inline-flex; align-items: center; gap: var(--sp-sm); background: #c42a36; color: #fff; font-family: var(--f-sans); font-size: 14px; font-weight: 600; letter-spacing: 0.04em; padding: 15px 30px; border-radius: 4px; transition: background 0.25s, transform 0.2s; }
-.wj-wrap .btn-primary:hover { background: #a82330; transform: translateY(-2px); }
-.wj-wrap .btn-secondary { display: inline-flex; align-items: center; gap: var(--sp-sm); background: transparent; color: #fff; font-family: var(--f-sans); font-size: 14px; font-weight: 500; letter-spacing: 0.04em; padding: 15px 30px; border-radius: 4px; border: 1.5px solid rgba(255,255,255,0.55); transition: border-color 0.25s, background 0.25s; }
-.wj-wrap .btn-secondary:hover { border-color: var(--c-light); background: rgba(115,209,245,0.08); }
-.wj-wrap .hero-stats { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,20,32,0.72); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid rgba(115,209,245,0.15); z-index: 3; }
-.wj-wrap .hero-stats-inner { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--pad-h); display: flex; align-items: stretch; }
-.wj-wrap .hero-stat { flex: 1; padding: var(--sp-md) 0; display: flex; flex-direction: column; gap: 4px; border-right: 1px solid rgba(115,209,245,0.12); }
-.wj-wrap .hero-stat:first-child { padding-right: var(--sp-lg); }
-.wj-wrap .hero-stat:not(:first-child) { padding-left: var(--sp-lg); }
-.wj-wrap .hero-stat:last-child { border-right: none; }
-.wj-wrap .hero-stat-num { font-family: var(--f-serif); font-size: 26px; font-weight: 700; color: var(--c-light); line-height: 1; }
-.wj-wrap .hero-stat-label { font-size: 12px; color: rgba(255,255,255,0.72); font-weight: 400; }
-.wj-wrap .hero-scroll { position: absolute; bottom: 88px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: var(--sp-xs); color: rgba(255,255,255,0.35); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; z-index: 2; }
-.wj-wrap .hero-scroll-line { width: 1px; height: 36px; background: linear-gradient(to bottom, rgba(255,255,255,0.35), transparent); animation: wj-pulse 2s ease-in-out infinite; }
 @keyframes wj-pulse { 0%,100%{opacity:.35} 50%{opacity:.85} }
 
 /* ── INTRO ── */
@@ -242,13 +201,6 @@ span.wl-en { display: none; }
 /* ── 반응형 ── */
 @media (max-width: 960px) {
   .wj-wrap { --sp-3xl: 96px; --sp-2xl: 72px; --pad-h: 28px; }
-  .wj-wrap .hero { height: auto; min-height: 100svh; background-position: 58% center; }
-  .wj-wrap .hero::before { background: linear-gradient(90deg, rgba(0,25,39,0.92) 0%, rgba(0,35,52,0.70) 60%, rgba(0,20,32,0.30) 100%), linear-gradient(180deg, rgba(0,20,32,0.24), rgba(0,20,32,0.42)); }
-  .wj-wrap .hero-inner { padding-top: 100px; padding-bottom: 180px; }
-  .wj-wrap .hero-stats-inner { flex-wrap: wrap; }
-  .wj-wrap .hero-stat { flex: 1 1 50%; border-right: none; border-bottom: 1px solid rgba(115,209,245,0.12); padding: var(--sp-sm) var(--sp-md) !important; flex-direction: row; align-items: center; gap: var(--sp-sm); }
-  .wj-wrap .hero-stat:nth-child(3), .wj-wrap .hero-stat:nth-child(4) { border-bottom: none; }
-  .wj-wrap .hero-scroll { display: none; }
   .wj-wrap .intro-grid { grid-template-columns: 1fr; gap: var(--sp-2xl); }
   .wj-wrap .intro-img-wrap { order: -1; max-width: 480px; }
   .wj-wrap .intro-quote { right: -12px; bottom: -16px; }
@@ -268,16 +220,6 @@ span.wl-en { display: none; }
 
 @media (max-width: 600px) {
   .wj-wrap { --sp-3xl: 72px; --sp-2xl: 56px; --sp-xl: 48px; --pad-h: 20px; }
-  .wj-wrap .hero { background-position: 52% center; }
-  .wj-wrap .hero::before { background: linear-gradient(180deg, rgba(0,25,39,0.86) 0%, rgba(0,30,46,0.62) 48%, rgba(0,20,32,0.68) 100%); }
-  .wj-wrap .hero-inner { padding-top: 80px; padding-bottom: 300px; }
-  .wj-wrap .hero-title { font-size: clamp(28px, 8vw, 40px); }
-  .wj-wrap .hero-subtitle { font-size: 14px; margin-bottom: var(--sp-lg); }
-  .wj-wrap .hero-cta-group { flex-direction: column; }
-  .wj-wrap .btn-primary, .wj-wrap .btn-secondary { justify-content: center; width: 100%; }
-  .wj-wrap .hero-stats-inner { flex-direction: column; }
-  .wj-wrap .hero-stat { flex: 1 1 100% !important; border-right: none !important; border-bottom: 1px solid rgba(115,209,245,0.12) !important; padding: var(--sp-sm) var(--sp-md) !important; flex-direction: row; align-items: center; gap: var(--sp-sm); }
-  .wj-wrap .hero-stat:last-child { border-bottom: none !important; }
   .wj-wrap .highlights-grid { grid-template-columns: 1fr 1fr; }
   .wj-wrap .hi-card { padding: var(--sp-md); }
   .wj-wrap .trips-grid { grid-template-columns: 1fr; }
@@ -288,62 +230,33 @@ span.wl-en { display: none; }
 }
 </style>
 
+<PageHero image="/images/wolbi-jeju/hero-campus-spring-2026.jpeg" pos="50% 45%">
+  <Fragment slot="eyebrow"><span class="wl-ko">제주 월비</span><span class="wl-en">WOLBI Jeju</span></Fragment>
+  <Fragment slot="title">
+    <span class="wl-ko">성경을 삶으로 <br class="ph-br">살아내는 1년</span>
+    <span class="wl-en">One Year of Living the Word</span>
+  </Fragment>
+  <Fragment slot="bar">
+    <p class="ph-sub">
+      <span class="wl-ko">대학 수준의 성경 교육과 제자훈련, <br>그리고 세계를 경험하는 11개월.</span>
+      <span class="wl-en">11 months of college-level Bible education, discipleship training, and global experience.</span>
+    </p>
+    <div class="ph-actions">
+      <a href="https://www.wolbijeju.org/?lang=ko" class="ph-cta"><span class="wl-ko">더 알아보기</span><span class="wl-en">Learn More</span><svg aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg></a>
+      <a href="/camp-register/" class="ph-cta ph-cta--ghost"><span class="wl-ko">캠프 참여하기</span><span class="wl-en">Join Camp</span></a>
+    </div>
+    <dl class="ph-stats ph-stats--text">
+      <div class="ph-stat"><dt><span class="wl-ko">집중 성경 커리큘럼</span><span class="wl-en">Intensive Bible Curriculum</span></dt><dd><span class="wl-ko">11개월</span><span class="wl-en">11 Months</span></dd></div>
+      <div class="ph-stat"><dt><span class="wl-ko">세계 10개 캠퍼스 네트워크</span><span class="wl-en">Global Network of 10 Campuses</span></dt><dd><span class="wl-ko">5개 대륙</span><span class="wl-en">5 Continents</span></dd></div>
+      <div class="ph-stat"><dt><span class="wl-ko">미국 공인 기독교 대학 인증</span><span class="wl-en">U.S. Accredited Christian Institution</span></dt><dd>TRACS</dd></div>
+      <div class="ph-stat"><dt><span class="wl-ko">선교 여행 (태국·베트남·이스라엘)</span><span class="wl-en">Mission Trips (Thailand · Vietnam · Israel)</span></dt><dd><span class="wl-ko">3개국</span><span class="wl-en">3 Countries</span></dd></div>
+    </dl>
+  </Fragment>
+</PageHero>
+
 <div class="wj-wrap" id="wl-root">
 
 <!-- HERO -->
-<section class="hero">
-  <div class="hero-circle"></div>
-  <div class="hero-cross">✝</div>
-  <div class="hero-inner">
-    <div class="hero-badge">Word of Life Bible Institute · Jeju Campus</div>
-    <h1 class="hero-title">
-      <span class="wl-ko">성경을 삶으로<br><em>살아내는 1년</em></span>
-      <span class="wl-en">One Year of Living<br><em>the Word</em></span>
-    </h1>
-    <p class="hero-subtitle">
-      <span class="wl-ko">제주 월비 — 대학 수준의 성경 교육과 제자훈련, 그리고 세계를 경험하는 11개월</span>
-      <span class="wl-en">WOLBI Jeju — 11 months of college-level Bible education, discipleship training, and global experience</span>
-    </p>
-    <div class="hero-cta-group">
-      <a href="/camp-register/" class="btn-primary">
-        <span class="wl-ko">캠프 참여하기 →</span>
-        <span class="wl-en">Join Camp →</span>
-      </a>
-      <a href="https://www.wolbijeju.org/?lang=ko" class="btn-secondary">
-        <span class="wl-ko">더 알아보기</span>
-        <span class="wl-en">Learn More</span>
-      </a>
-    </div>
-  </div>
-  <div class="hero-stats">
-    <div class="hero-stats-inner">
-      <div class="hero-stat">
-        <span class="hero-stat-num wl-ko">11개월</span>
-        <span class="hero-stat-num wl-en">11 Months</span>
-        <span class="hero-stat-label wl-ko">집중 성경 커리큘럼</span>
-        <span class="hero-stat-label wl-en">Intensive Bible Curriculum</span>
-      </div>
-      <div class="hero-stat">
-        <span class="hero-stat-num wl-ko">5개 대륙</span>
-        <span class="hero-stat-num wl-en">5 Continents</span>
-        <span class="hero-stat-label wl-ko">세계 10개 캠퍼스 네트워크</span>
-        <span class="hero-stat-label wl-en">Global Network of 10 Campuses</span>
-      </div>
-      <div class="hero-stat">
-        <span class="hero-stat-num">TRACS</span>
-        <span class="hero-stat-label wl-ko">미국 공인 기독교 대학 인증</span>
-        <span class="hero-stat-label wl-en">U.S. Accredited Christian Institution</span>
-      </div>
-      <div class="hero-stat">
-        <span class="hero-stat-num wl-ko">3개국</span>
-        <span class="hero-stat-num wl-en">3 Countries</span>
-        <span class="hero-stat-label wl-ko">선교 여행 (태국·베트남·이스라엘)</span>
-        <span class="hero-stat-label wl-en">Mission Trips (Thailand · Vietnam · Israel)</span>
-      </div>
-    </div>
-  </div>
-  <div class="hero-scroll"><div class="hero-scroll-line"></div>scroll</div>
-</section>
 
 <!-- INTRO -->
 <section class="intro section">

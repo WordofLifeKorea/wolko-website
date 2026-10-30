@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
 ---
 
 <BaseLayout
@@ -8,46 +9,22 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   activeNav="ministry"
 >
   <main class="ministry-hub">
-    <section class="mh-hero">
-      <div class="mh-orbit mh-orbit-one" aria-hidden="true"></div>
-      <div class="mh-orbit mh-orbit-two" aria-hidden="true"></div>
-      <div class="mh-shell mh-hero-inner">
-        <div class="mh-hero-copy">
-          <p class="mh-eyebrow">OUR MINISTRIES</p>
-          <h1>
-            <span class="wl-ko">다음 세대를 세우는<br><em>네 개의 사역</em></span>
-            <span class="wl-en">Four Ministries,<br><em>One Gospel</em></span>
-          </h1>
-          <p class="mh-hero-desc">
-            <span class="wl-ko">캠프의 특별한 만남부터 일상의 제자훈련과 깊이 있는 성경교육까지, 월코는 복음으로 다음 세대의 삶을 연결합니다.</span>
-            <span class="wl-en">From life-changing camps to everyday discipleship and in-depth Bible training, WOLKO connects the next generation with the Gospel.</span>
-          </p>
-          <a class="mh-hero-cta" href="#ministry-overview">
-            <span class="wl-ko">사역 한눈에 보기</span><span class="wl-en">Explore the Ministries</span>
-            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v11m0 0 4-4m-4 4-4-4"/></svg>
-          </a>
+    <PageHero image="https://wolko.synology.me/Web_Contents/Photos/Camp_Ministry/Camp_Group.jpg" pos="50% 45%">
+      <Fragment slot="eyebrow"><span class="wl-ko">월코 사역</span><span class="wl-en">Our Ministries</span></Fragment>
+      <Fragment slot="title">
+        <span class="wl-ko">다음 세대를 세우는 <br class="ph-br">네 개의 사역</span>
+        <span class="wl-en">Four Ministries, One Gospel</span>
+      </Fragment>
+      <Fragment slot="bar">
+        <p class="ph-sub">
+          <span class="wl-ko">캠프의 특별한 만남부터 일상의 제자훈련과 깊이 있는 성경교육까지, 월코는 복음으로 다음 세대의 삶을 연결합니다.</span>
+          <span class="wl-en">From life-changing camps to everyday discipleship and in-depth Bible training, WOLKO connects the next generation with the Gospel.</span>
+        </p>
+        <div class="ph-actions">
+          <a class="ph-cta" href="#ministry-overview"><span class="wl-ko">사역 한눈에 보기</span><span class="wl-en">Explore the Ministries</span><svg aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M8 2v11M4 9l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg></a>
         </div>
-
-        <div class="mh-mosaic" aria-label="월코 주요 사역">
-          <a class="mh-mosaic-item mh-mosaic-camp" href="#camp-ministry">
-            <img src="https://wolko.synology.me/Web_Contents/Photos/Camp_Ministry/WOLKO_Hero.JPG" alt="월코 캠프 현장" loading="eager">
-            <span><small>01</small><strong class="wl-ko">캠프</strong><strong class="wl-en">Camp</strong></span>
-          </a>
-          <a class="mh-mosaic-item mh-mosaic-wolbi" href="#wolbi-ministry">
-            <img src="/images/wolbi-jeju/hero-campus-spring-2026.jpeg" alt="제주월비 학생들" loading="eager">
-            <span><small>02</small><strong class="wl-ko">제주월비</strong><strong class="wl-en">Jeju WOLBI</strong></span>
-          </a>
-          <a class="mh-mosaic-item mh-mosaic-youth" href="#youth-ministry">
-            <img src="https://wolko.synology.me/Web_Contents/Photos/Youth_Ministry/CT.png" alt="월코 청소년 사역" loading="lazy">
-            <span><small>03</small><strong class="wl-ko">청소년 사역</strong><strong class="wl-en">Youth</strong></span>
-          </a>
-          <a class="mh-mosaic-item mh-mosaic-syme" href="#syme-ministry">
-            <img src="/images/syme-community.jpg" alt="SYME 공동체 모임" loading="lazy">
-            <span><small>04</small><strong>SYME</strong></span>
-          </a>
-        </div>
-      </div>
-    </section>
+      </Fragment>
+    </PageHero>
 
     <section class="mh-intro" id="ministry-overview">
       <div class="mh-shell mh-intro-inner">
@@ -211,53 +188,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     }
 
     .mh-shell { width: min(1180px, calc(100% - 48px)); margin-inline: auto; }
-
-    .mh-hero {
-      position: relative;
-      min-height: 690px;
-      padding: 130px 0 72px;
-      display: flex;
-      align-items: center;
-      overflow: hidden;
-      background:
-        radial-gradient(circle at 15% 16%, rgba(115,209,245,.14), transparent 30%),
-        linear-gradient(135deg, #002f41 0%, #004f68 58%, #006a86 100%);
-    }
-    .mh-hero::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      opacity: .18;
-      background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
-      background-size: 64px 64px;
-      mask-image: linear-gradient(90deg, #000, transparent 78%);
-    }
-    .mh-orbit { position: absolute; border: 1px solid rgba(115,209,245,.16); border-radius: 50%; pointer-events: none; }
-    .mh-orbit-one { width: 660px; height: 660px; left: -330px; bottom: -400px; }
-    .mh-orbit-two { width: 430px; height: 430px; left: -215px; bottom: -285px; }
-    .mh-hero-inner { position: relative; z-index: 1; display: grid; grid-template-columns: .88fr 1.12fr; align-items: center; gap: 72px; }
-    .mh-eyebrow, .mh-section-kicker { font-size: 11px; font-weight: 800; letter-spacing: .16em; color: var(--mh-sky); }
-    .mh-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
-    .mh-eyebrow::before { content: ''; width: 28px; height: 2px; background: #d82939; }
-    .mh-hero h1 { max-width: 560px; color: #fff; font-family: var(--ff-serif); font-size: clamp(44px, 5.2vw, 68px); line-height: 1.16; letter-spacing: -.04em; }
-    .mh-hero h1 em { color: #94e1fb; font-style: normal; }
-    .mh-hero-desc { max-width: 530px; margin-top: 24px; color: rgba(255,255,255,.73); font-size: 17px; line-height: 1.85; }
-    .mh-hero-cta { display: inline-flex; align-items: center; gap: 12px; min-height: 50px; margin-top: 34px; padding: 0 22px; border: 1px solid rgba(255,255,255,.28); border-radius: 10px; color: #fff; font-size: 14px; font-weight: 750; text-decoration: none; background: rgba(255,255,255,.09); backdrop-filter: blur(10px); transition: background .22s, transform .22s, border-color .22s; }
-    .mh-hero-cta svg, .mh-card-link svg, .mh-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-    .mh-hero-cta:hover { transform: translateY(-2px); background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.45); }
-
-    .mh-mosaic { height: 476px; display: grid; grid-template-columns: 1.08fr .92fr; grid-template-rows: 1fr 1fr; gap: 12px; transform: rotate(1deg); }
-    .mh-mosaic-item { position: relative; overflow: hidden; border-radius: 15px; border: 1px solid rgba(255,255,255,.17); box-shadow: 0 24px 55px rgba(0,20,30,.24); text-decoration: none; }
-    .mh-mosaic-item::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 48%, rgba(0,27,38,.84)); }
-    .mh-mosaic-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s cubic-bezier(.2,.75,.25,1), filter .3s; }
-    .mh-mosaic-item > span { position: absolute; z-index: 2; left: 18px; right: 18px; bottom: 16px; display: flex; align-items: center; gap: 9px; color: #fff; }
-    .mh-mosaic-item small { font-size: 10px; letter-spacing: .1em; color: var(--mh-sky); }
-    .mh-mosaic-item strong { font-size: 15px; }
-    .mh-mosaic-item:hover img { transform: scale(1.055); filter: saturate(1.08); }
-    .mh-mosaic-camp img { object-position: 47% center; }
-    .mh-mosaic-wolbi img { object-position: center 48%; }
-    .mh-mosaic-youth img { object-position: center 38%; }
-    .mh-mosaic-syme img { object-position: center 44%; }
+    .mh-section-kicker { font-size: 11px; font-weight: 800; letter-spacing: .16em; color: var(--mh-sky); }
+    .mh-card-link svg, .mh-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
     .mh-intro { padding: 96px 0 62px; }
     .mh-intro-inner { display: grid; grid-template-columns: 1fr 1fr; align-items: end; gap: 100px; }
@@ -297,10 +229,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .mh-btn-secondary { color: #fff; border: 1px solid rgba(255,255,255,.26); background: rgba(255,255,255,.07); }
 
     @media (max-width: 980px) {
-      .mh-hero { min-height: auto; padding: 130px 0 78px; }
-      .mh-hero-inner { grid-template-columns: 1fr; gap: 50px; }
-      .mh-hero-copy { max-width: 700px; }
-      .mh-mosaic { height: 410px; transform: none; }
       .mh-intro-inner { gap: 50px; }
       .mh-closing-card { grid-template-columns: 1fr; }
       .mh-closing-actions { justify-content: flex-start; }
@@ -308,13 +236,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     @media (max-width: 740px) {
       .mh-shell { width: min(100% - 36px, 1180px); }
-      .mh-hero { padding: 116px 0 54px; }
-      .mh-hero h1 { font-size: clamp(38px, 12vw, 52px); }
-      .mh-hero-desc { font-size: 15px; }
-      .mh-mosaic { height: 370px; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; }
-      .mh-mosaic-item { border-radius: 11px; }
-      .mh-mosaic-item > span { left: 13px; right: 13px; bottom: 12px; }
-      .mh-mosaic-item strong { font-size: 13px; }
       .mh-intro { padding: 72px 0 44px; }
       .mh-intro-inner { grid-template-columns: 1fr; align-items: start; gap: 24px; }
       .mh-intro-copy { font-size: 15px; }
@@ -337,7 +258,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .mh-jump a:hover { background: var(--mh-deep); border-color: var(--mh-deep); color: #fff; transform: translateY(-2px); }
     .mh-card-media { height: auto; aspect-ratio: 16 / 9; }
     .mh-card:nth-child(4) .mh-card-media img { object-position: center 58%; }
-    .mh-mosaic-syme img { object-position: center 60%; }
     .mh-card-body { padding: 30px 34px 30px; }
     .mh-card-label { display: inline-block; width: fit-content; padding: 5px 10px; border-radius: 999px; background: rgba(0,126,161,.08); letter-spacing: .1em; }
     .mh-card-desc { flex: 1 0 auto; }
@@ -392,12 +312,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     }
 
     @media (hover: none) {
-      .mh-card:hover, .mh-hero-cta:hover, .mh-btn:hover { transform: none; }
+      .mh-card:hover, .mh-btn:hover { transform: none; }
       .mh-card-link svg { transform: translateX(2px); }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .mh-mosaic-item img, .mh-card, .mh-card-media img, .mh-card-link svg, .mh-hero-cta, .mh-btn { transition: none; }
+      .mh-card, .mh-card-media img, .mh-card-link svg, .mh-btn { transition: none; }
     }
   </style>
 </BaseLayout>

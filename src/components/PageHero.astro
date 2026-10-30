@@ -1,0 +1,163 @@
+---
+// 페이지 맨 위 배너(히어로) — 사이트 전체가 같은 규칙을 따르도록 한 곳에서 그린다.
+//   photo : 큰 사진이 화면 높이를 꽉 채우고, 아래쪽에 큰 제목 + 구분선 위로 설명 · 숫자 · 버튼 (소개·사역 같은 대표 페이지)
+//   band  : 짧은 사진 띠 — 작은 표시 · 제목 · 한 줄 설명 (후원·선교보고·문의 같은 안내 페이지)
+//   plain : 사진 없이 옅은 바탕에 제목만 (자료실 같은 도구 페이지)
+// 공통: 앞에 가는 선이 붙은 작은 표시, G마켓 산스 제목, 왼쪽 정렬, 같은 폭, 같은 등장 움직임.
+// 쓰는 쪽에서 넣는 칸: eyebrow, title, desc(설명 한 줄) 또는 bar(설명·숫자·버튼 줄), 기본 칸(빵부스러기 등 덧붙임).
+//   bar 안에서 쓰는 이름: .ph-sub(설명) .ph-stats > .ph-stat > dt/dd(숫자, 글자면 .ph-stats--text) .ph-actions > .ph-cta(.ph-cta--ghost)
+interface Props {
+  variant?: 'photo' | 'band' | 'plain';
+  image?: string;
+  pos?: string;      // 사진 위치 (background-position)
+  mpos?: string;     // 휴대폰에서의 사진 위치
+  id?: string;
+}
+const { variant = 'photo', image, pos = '50% 40%', mpos, id } = Astro.props;
+const style = image ? `--ph-img:url("${image}");--ph-pos:${pos};--ph-mpos:${mpos || pos}` : undefined;
+const hasBar = Astro.slots.has('bar');
+---
+<section class={`ph ph--${variant}`} id={id} style={style}>
+  <div class="ph-inner">
+    <slot name="before" />
+    <div class="ph-eyebrow"><slot name="eyebrow" /></div>
+    <h1 class="ph-title"><slot name="title" /></h1>
+    {hasBar
+      ? <div class="ph-bar"><slot name="bar" /></div>
+      : Astro.slots.has('desc') && <p class="ph-desc"><slot name="desc" /></p>}
+    <slot />
+  </div>
+</section>
+
+<style is:global>
+  .ph { position: relative; overflow: hidden; word-break: keep-all; font-family: var(--ff-sans); display: flex; flex-direction: column; box-sizing: border-box; }
+  .ph-inner { position: relative; z-index: 1; flex: 1; width: 100%; max-width: 1248px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; }
+  .ph-eyebrow { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; letter-spacing: 0.02em; }
+  .ph-eyebrow::before { content: ''; width: 28px; height: 1px; background: currentColor; flex: none; }
+  .ph-eyebrow a { color: inherit; text-decoration: none; }
+  .ph-eyebrow a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .ph-title { margin: 20px 0 0; font-family: var(--ff-serif); font-weight: 700; letter-spacing: -0.04em; }
+  .ph-title em { font-style: normal; color: inherit; }
+  .ph-br { display: none; }   /* 좁은 화면에서만 줄을 바꾸는 자리 */
+  @media (max-width: 900px) { .ph-br { display: inline; } }
+  .ph-desc { margin: 18px 0 0; max-width: 640px; font-size: 17px; line-height: 1.75; }
+
+  /* 사진이 들어가는 두 가지 */
+  .ph--photo, .ph--band { color: #fff; background: #0b1e27; }
+  .ph--photo::before, .ph--band::before { content: ''; position: absolute; inset: 0; background: var(--ph-img) var(--ph-pos, 50% 40%) / cover no-repeat; }
+  .ph--photo::after, .ph--band::after { content: ''; position: absolute; inset: 0; pointer-events: none; }
+  .ph--photo .ph-eyebrow, .ph--band .ph-eyebrow { color: rgba(255,255,255,0.86); }
+  .ph--photo .ph-desc, .ph--band .ph-desc { color: rgba(255,255,255,0.84); }
+  .ph--photo .ph-title, .ph--band .ph-title { color: #fff; }
+
+  /* photo — 해상도와 상관없이 화면 높이를 꽉 채운다 */
+  .ph--photo { min-height: 100vh; min-height: 100svh; padding-top: 150px; }
+  .ph--photo::after { background: linear-gradient(0deg, rgba(5,20,28,0.9) 0%, rgba(5,20,28,0.62) 42%, rgba(5,20,28,0.12) 72%, rgba(5,20,28,0.3) 100%); }
+  .ph--photo .ph-inner { padding: 0 24px 64px; }
+  .ph--photo .ph-title { font-size: clamp(40px, 5.2vw, 74px); line-height: 1.14; }
+  .ph--photo .ph-title .wl-en { font-size: 0.78em; }
+
+  /* band — 짧은 사진 띠 */
+  .ph--band { min-height: 460px; padding-top: 140px; }
+  .ph--band::after { background: linear-gradient(0deg, rgba(5,20,28,0.88) 0%, rgba(5,20,28,0.55) 50%, rgba(5,20,28,0.35) 100%); }
+  .ph--band .ph-inner { padding: 0 24px 56px; }
+  .ph--band .ph-title { font-size: clamp(36px, 4.2vw, 56px); line-height: 1.18; }
+
+  /* plain — 사진 없이 옅은 바탕 */
+  .ph--plain { background: #f3f7f9; color: #0b2430; padding-top: 140px; border-bottom: 1px solid #e0e8ee; }
+  .ph--plain .ph-inner { padding: 0 24px 52px; }
+  .ph--plain .ph-eyebrow { color: #004f68; }
+  .ph--plain .ph-title { font-size: clamp(32px, 3.6vw, 48px); line-height: 1.2; color: #0b2430; }
+  .ph--plain .ph-desc { color: #4a5d66; font-size: 16px; }
+
+  /* 설명 · 숫자 · 버튼 줄 */
+  .ph-bar { margin-top: 40px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,0.3); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 56px; align-items: center; }
+  .ph-bar:has(.ph-stats) { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.4fr) auto; }
+  .ph-sub { margin: 0; font-size: 17px; line-height: 1.75; color: rgba(255,255,255,0.84); }
+  .ph-stats { margin: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0 24px; }
+  .ph-stat { display: flex; flex-direction: column-reverse; gap: 6px; min-width: 0; }
+  .ph-stat dd { margin: 0; font-family: var(--ff-serif); font-size: 28px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; color: #fff; white-space: nowrap; }
+  .ph-stat dd small { font-size: 0.68em; margin-left: 2px; }
+  .ph-stat dt { font-size: 13px; font-weight: 500; line-height: 1.45; color: rgba(255,255,255,0.74); }
+  .ph-stats--text .ph-stat dd { font-size: 19px; letter-spacing: -0.01em; }
+  .ph-stat a { color: inherit; text-decoration: none; }
+  .ph-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+  .ph-cta {
+    display: inline-flex; align-items: center; gap: 14px; height: 52px; padding: 0 24px; box-sizing: border-box;
+    border-radius: 2px; background: #fff; border: 1px solid #fff; color: #004f68; font-size: 15px; font-weight: 700; text-decoration: none; white-space: nowrap;
+    transition: background-color .18s, gap .25s, color .18s;
+  }
+  .ph-cta:hover { background: #e8f1f4; gap: 18px; color: #004f68; }
+  .ph-cta:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  .ph-cta svg { width: 15px; height: 15px; flex: none; }
+  .ph-cta--ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,0.55); }
+  .ph-cta--ghost:hover { background: rgba(255,255,255,0.12); color: #fff; }
+  /* 숫자가 네 개 이상이면 설명 | 버튼, 그 아래 숫자 한 줄 */
+  .ph-bar:has(.ph-stats > :nth-child(4)) { grid-template-columns: minmax(0, 1fr) auto; }
+  .ph-bar:has(.ph-stats > :nth-child(4)) .ph-stats { grid-column: 1 / -1; grid-row: 2; margin-top: 28px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.18); grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  @media (max-width: 1100px) {
+    .ph-bar:has(.ph-stats) { grid-template-columns: minmax(0, 1fr) auto; }
+    .ph-bar .ph-stats { grid-column: 1 / -1; grid-row: 2; margin-top: 28px; }
+  }
+  @media (max-width: 640px) {
+    /* 휴대폰 photo: 화면을 꽉 채우되 위쪽은 사진이 또렷하고, 아래로 남색에 이어진 뒤 글이 놓인다 */
+    .ph--photo { padding-top: 0; }
+    .ph--photo::before { bottom: auto; height: 62%; background-position: var(--ph-mpos, 50% 40%); }
+    .ph--photo::after { background: linear-gradient(180deg, rgba(5,20,28,0.35) 0%, rgba(5,20,28,0) 14%, rgba(5,20,28,0) 32%, #0b1e27 62%); }
+    .ph--photo .ph-inner { padding: 0 20px 28px; }
+    .ph--photo .ph-title { margin-top: 18px; font-size: 34px; line-height: 1.25; }
+    .ph--band { min-height: 380px; padding-top: 120px; }
+    .ph--band::before { background-position: var(--ph-mpos, 50% 40%); }
+    .ph--band .ph-inner, .ph--plain .ph-inner { padding: 0 20px 36px; }
+    .ph--band .ph-title { font-size: 32px; }
+    .ph--plain { padding-top: 116px; }
+    .ph--plain .ph-title { font-size: 30px; }
+    .ph-desc, .ph-sub { font-size: 15.5px; }
+    .ph-desc br, .ph-sub br { display: none; }
+    .ph-bar, .ph-bar:has(.ph-stats), .ph-bar:has(.ph-stats > :nth-child(4)) { display: block; margin-top: 24px; padding-top: 22px; }
+    .ph-bar .ph-stats { margin-top: 26px; gap: 18px 12px; }
+    .ph-bar:has(.ph-stats > :nth-child(4)) .ph-stats { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); padding-top: 0; border-top: 0; }
+    .ph-stat dd { font-size: 24px; }
+    .ph-stats--text .ph-stat dd { font-size: 17px; }
+    .ph-stat dt { font-size: 12px; }
+    .ph-actions { margin-top: 24px; flex-direction: column; }
+    .ph-cta { width: 100%; justify-content: space-between; padding: 0 20px; }
+  }
+
+  /* 움직임 — 자바스크립트가 html 에 .wl-motion 을 붙일 때만 (움직임 줄이기 설정이면 처음부터 다 보인다) */
+  @keyframes phZoom { from { transform: scale(1.08); } to { transform: none; } }
+  @keyframes phRise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+  @keyframes phLine { from { width: 0; } to { width: 28px; } }
+  .wl-motion .ph--photo::before, .wl-motion .ph--band::before { animation: phZoom 3.8s cubic-bezier(.2,.6,.2,1) both; }
+  .wl-motion .ph-eyebrow { animation: phRise 1.2s .25s cubic-bezier(.2,.7,.2,1) both; }
+  .wl-motion .ph-eyebrow::before { animation: phLine 1s .55s ease-out both; }
+  .wl-motion .ph-title { animation: phRise 1.3s .5s cubic-bezier(.2,.7,.2,1) both; }
+  .wl-motion .ph-bar, .wl-motion .ph-desc { animation: phRise 1.3s .95s cubic-bezier(.2,.7,.2,1) both; }
+</style>
+
+<script is:inline>
+  // 배너 움직임: 사진이 천천히 자리 잡고 글이 차례로 떠오르며, [data-count-from] 숫자는 시작값부터 올라간다.
+  (function () {
+    if (!('IntersectionObserver' in window)) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    document.documentElement.classList.add('wl-motion');
+    var counters = [].slice.call(document.querySelectorAll('.ph [data-count-from]'));
+    counters.forEach(function (el) { el.dataset.countTo = el.textContent.trim(); el.textContent = el.dataset.countFrom; });
+    function count(el) {
+      var from = +el.dataset.countFrom, to = +el.dataset.countTo, dur = 2200;
+      setTimeout(function () {
+        var t0 = Date.now();
+        (function step() {
+          var k = Math.min(1, (Date.now() - t0) / dur), e = 1 - Math.pow(1 - k, 4);
+          el.textContent = Math.round(from + (to - from) * e);
+          if (k < 1) setTimeout(step, 30);
+        })();
+      }, 1400);
+    }
+    var cio = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { cio.unobserve(en.target); count(en.target); } });
+    }, { threshold: 0.6 });
+    counters.forEach(function (el) { cio.observe(el); });
+  })();
+</script>

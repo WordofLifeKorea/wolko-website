@@ -36,7 +36,7 @@ test('public ministry entry points lead to the overview hub', async () => {
   assert.match(layout, /class="mobile-parent-link" href="\/ministry"/);
   assert.equal((layout.match(/href="\/ministry"/g) || []).length, 2);
   assert.doesNotMatch(layout, /사역 한눈에 보기|Ministry Overview/);
-  assert.match(about, /<a href="\/ministry" class="hero-cta">/);
+  assert.match(about, /<a href="\/ministry" class="ph-cta">/);
   assert.match(sitemap, /<loc>https:\/\/wolko\.org\/ministry\/<\/loc>/);
 });
 

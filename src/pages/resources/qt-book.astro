@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
 ---
 
 <BaseLayout
@@ -8,28 +9,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   activeNav="resources"
 >
   <script is:inline src="/wolko-session.js?v=2"></script>
-  <section class="qt-hero">
-    <div class="qt-hero-inner">
-      <a href="/resources" class="breadcrumb">
-        <span class="wl-ko">자료실</span>
-        <span class="wl-en">Resources</span>
-      </a>
-      <div class="hero-eyebrow">
-        <span class="hero-eyebrow-dot"></span>
-        <span class="wl-ko">월코 매일묵상집</span>
-        <span class="wl-en">WOLKO Q.T Book</span>
-      </div>
-      <h1>
-        <span class="wl-ko">말씀과 함께하는 <em>매일의 시간</em></span>
-        <span class="wl-en">Daily Time <em>in the Word</em></span>
-      </h1>
-      <p class="hero-sub">
-        <span class="wl-ko">업로드된 매일묵상집 PDF를 책장처럼 둘러보고, 선택한 파일을 페이지 안에서 바로 읽을 수 있습니다.</span>
-        <span class="wl-en">Browse uploaded Q.T book PDFs and read the selected file directly on this page.</span>
-      </p>
-      <button class="admin-toggle" id="adminToggle" type="button">관리 로그인</button>
-    </div>
-  </section>
+  <PageHero variant="plain">
+    <Fragment slot="eyebrow"><a href="/resources"><span class="wl-ko">자료실</span><span class="wl-en">Resources</span></a><span aria-hidden="true">·</span><span class="wl-ko">월코 매일묵상집</span><span class="wl-en">WOLKO Q.T Book</span></Fragment>
+    <Fragment slot="title">
+      <span class="wl-ko">말씀과 함께하는 매일의 시간</span>
+      <span class="wl-en">Daily Time in the Word</span>
+    </Fragment>
+    <Fragment slot="desc">
+      <span class="wl-ko">업로드된 매일묵상집 PDF를 책장처럼 둘러보고, 선택한 파일을 페이지 안에서 바로 읽을 수 있습니다.</span>
+      <span class="wl-en">Browse uploaded Q.T book PDFs and read the selected file directly on this page.</span>
+    </Fragment>
+    <button class="admin-toggle" id="adminToggle" type="button">관리 로그인</button>
+  </PageHero>
 
   <main>
     <section class="admin-shell" id="adminPanel" hidden>
@@ -186,95 +177,23 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     --qt-line: rgba(0,79,104,0.12);
     --qt-radius-xl: 28px;
   }
-
-  .qt-hero {
-    position: relative;
-    overflow: hidden;
-    padding: 88px 24px 64px;
-    text-align: center;
-    background: linear-gradient(135deg, #083d51 0%, var(--qt-deep) 60%, var(--qt-mid) 100%);
-    color: #fff;
-  }
-  .qt-hero::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-    background-size: 60px 60px;
-    pointer-events: none;
-  }
-  .qt-hero-inner {
-    position: relative;
-    z-index: 2;
-    max-width: 760px;
-    margin: 0 auto;
-  }
-  .breadcrumb {
-    position: absolute;
-    top: -44px;
-    left: 0;
-    color: rgba(255,255,255,0.72);
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 700;
-  }
-  .breadcrumb:hover { color: #fff; }
-  .hero-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 16px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.22);
-    color: rgba(255,255,255,0.9);
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.09em;
-    margin-bottom: 22px;
-    text-transform: uppercase;
-  }
-  .hero-eyebrow-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--qt-light);
-  }
-  .qt-hero h1 {
-    margin: 0 0 14px;
-    color: #fff;
-    font-size: clamp(32px, 5vw, 56px);
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    line-height: 1.13;
-  }
-  .qt-hero h1 em {
-    color: #9ae3ff;
-    font-style: normal;
-  }
-  .hero-sub {
-    max-width: 590px;
-    margin: 0 auto;
-    color: rgba(255,255,255,0.8);
-    font-size: 16px;
-    line-height: 1.88;
-  }
+  /* 맨 위 배너 오른쪽 위 — 옅은 바탕 위라 흰 버튼 */
   .admin-toggle {
     position: absolute;
-    top: -48px;
-    right: 0;
+    top: -40px;
+    right: 24px;
     min-height: 38px;
     border-radius: 999px;
     padding: 0 16px;
-    background: rgba(255,255,255,0.13);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.28);
+    background: #fff;
+    color: #004f68;
+    border: 1px solid #cdd7dc;
     font-size: 13px;
     font-weight: 800;
     cursor: pointer;
     white-space: nowrap;
   }
-  .admin-toggle:hover { background: rgba(255,255,255,0.22); }
+  .admin-toggle:hover { background: #eef6f9; }
 
   .admin-shell {
     padding: 32px 24px 0;
@@ -916,16 +835,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .upload-form .primary-btn { grid-column: span 2; }
   }
   @media (max-width: 700px) {
-    .qt-hero { padding: 72px 16px 48px; }
-    .breadcrumb,
     .admin-toggle {
       position: static;
       display: inline-flex;
       margin-bottom: 18px;
     }
     .admin-toggle { margin-top: 22px; margin-bottom: 0; }
-    .hero-eyebrow { margin-bottom: 16px; }
-    .hero-sub { font-size: 15px; }
     .admin-shell,
     .archive-section,
     .flipbook-section {

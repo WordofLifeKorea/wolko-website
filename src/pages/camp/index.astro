@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
 import { getCollection } from 'astro:content';
 import { isCampVisibleOnPublicSite } from '../../utils/campVisibility';
 
@@ -93,47 +94,6 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   transition: transform .28s ease, box-shadow .28s ease, border-color .28s ease, background .28s ease;
   will-change: transform, box-shadow;
 }
-
-/* ── HERO ── */
-.wcp-wrap .hero {
-  position: relative; min-height: 100vh; background: var(--c-deep);
-  display: flex; align-items: center; overflow: hidden;
-  margin-left: calc(-50vw + 50%); margin-right: calc(-50vw + 50%); width: 100vw;
-}
-.wcp-wrap .hero::before {
-  content: ''; position: absolute; inset: 0;
-  background: radial-gradient(ellipse 80% 60% at 70% 40%, rgba(0,126,161,0.40) 0%, transparent 70%),
-              radial-gradient(ellipse 50% 80% at 10% 80%, rgba(115,209,245,0.08) 0%, transparent 60%);
-  pointer-events: none;
-}
-.wcp-wrap .hero-bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.22; }
-.wcp-wrap .hero-circle { position: absolute; right: -120px; top: -120px; width: 560px; height: 560px; border-radius: 50%; border: 1px solid rgba(115,209,245,0.14); pointer-events: none; }
-.wcp-wrap .hero-circle::after { content: ''; position: absolute; inset: 60px; border-radius: 50%; border: 1px solid rgba(115,209,245,0.07); }
-.wcp-wrap .hero-cross { position: absolute; right: 7%; bottom: 12%; opacity: 0.04; font-size: 240px; color: var(--c-white); line-height: 1; user-select: none; pointer-events: none; }
-.wcp-wrap .hero-inner { position: relative; z-index: 2; width: 100%; max-width: var(--max-w); margin: 0 auto; padding: 120px var(--pad-h) 160px; }
-.wcp-wrap .hero-badge {
-  display: inline-flex; align-items: center; gap: var(--sp-sm);
-  background: rgba(115,209,245,0.12); border: 1px solid rgba(115,209,245,0.26);
-  color: var(--c-light); font-size: 11px; font-weight: 500; letter-spacing: 0.2em;
-  text-transform: uppercase; padding: 8px 18px; border-radius: 100px; margin-bottom: var(--sp-lg);
-}
-.wcp-wrap .hero-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--c-light); }
-.wcp-wrap .hero-title { font-family: 'GmarketSans', 'Pretendard Variable', sans-serif; font-size: clamp(36px, 5.8vw, 68px); font-weight: 800; color: var(--c-white); line-height: 1.22; letter-spacing: -0.025em; margin-bottom: var(--sp-sm); word-break: keep-all; }
-.wcp-wrap .hero-title em { font-style: italic; color: var(--c-light); }
-.wcp-wrap .hero-subtitle { font-size: clamp(14px, 1.8vw, 17px); color: rgba(255,255,255,0.80); font-weight: 400; letter-spacing: 0.02em; margin-bottom: var(--sp-xl); word-break: keep-all; max-width: 600px; }
-.wcp-wrap .hero-cta-group { display: flex; gap: var(--sp-sm); flex-wrap: wrap; }
-.wcp-wrap .btn-primary { display: inline-flex; align-items: center; gap: var(--sp-sm); background: var(--c-red); color: #fff; font-family: var(--f-sans); font-size: 14px; font-weight: 600; letter-spacing: 0.04em; padding: 15px 30px; border-radius: 4px; transition: background .25s, transform .2s; }
-.wcp-wrap .btn-primary:hover { background: var(--c-red-dk); transform: translateY(-2px); }
-.wcp-wrap .btn-secondary { display: inline-flex; align-items: center; gap: var(--sp-sm); background: transparent; color: #fff; font-family: var(--f-sans); font-size: 14px; font-weight: 500; letter-spacing: 0.04em; padding: 15px 30px; border-radius: 4px; border: 1.5px solid rgba(255,255,255,0.50); transition: border-color .25s, background .25s; }
-.wcp-wrap .btn-secondary:hover { border-color: var(--c-light); background: rgba(115,209,245,0.08); }
-.wcp-wrap .hero-stats { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,20,32,0.72); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid rgba(115,209,245,0.14); z-index: 3; }
-.wcp-wrap .hero-stats-inner { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--pad-h); display: flex; align-items: stretch; }
-.wcp-wrap .hero-stat { flex: 1; padding: var(--sp-md) 0; display: flex; flex-direction: column; gap: 4px; border-right: 1px solid rgba(115,209,245,0.10); }
-.wcp-wrap .hero-stat:first-child { padding-right: var(--sp-lg); }
-.wcp-wrap .hero-stat:not(:first-child) { padding-left: var(--sp-lg); }
-.wcp-wrap .hero-stat:last-child { border-right: none; }
-.wcp-wrap .hero-stat-num { font-family: var(--f-serif); font-size: 20px; font-weight: 700; color: var(--c-light); line-height: 1; }
-.wcp-wrap .hero-stat-label { font-size: 12px; color: rgba(255,255,255,0.72); font-weight: 400; }
 
 /* ── QUICK PANEL ── */
 .wcp-wrap .quick-section { background: var(--c-white); padding: var(--sp-2xl) var(--pad-h); border-bottom: 1px solid var(--c-border); margin-left: calc(-50vw + 50%); margin-right: calc(-50vw + 50%); width: 100vw; }
@@ -258,10 +218,6 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 /* ══ RESPONSIVE ══ */
 @media (max-width: 960px) {
   .wcp-wrap { --sp-3xl: 96px; --sp-2xl: 72px; --pad-h: 28px; }
-  .wcp-wrap .hero-inner { padding-top: 100px; padding-bottom: 200px; }
-  .wcp-wrap .hero-stats-inner { flex-wrap: wrap; }
-  .wcp-wrap .hero-stat { flex: 1 1 50%; border-right: none; border-bottom: 1px solid rgba(115,209,245,0.10); padding: var(--sp-sm) var(--sp-md) !important; flex-direction: row; align-items: center; gap: var(--sp-sm); }
-  .wcp-wrap .hero-stat:nth-child(3), .wcp-wrap .hero-stat:nth-child(4) { border-bottom: none; }
   .wcp-wrap .quick-grid { grid-template-columns: 1fr; }
   .wcp-wrap .intro-grid { grid-template-columns: 1fr; gap: var(--sp-2xl); }
   .wcp-wrap .intro-img-wrap { order: -1; max-width: 480px; }
@@ -281,14 +237,6 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 
 @media (max-width: 600px) {
   .wcp-wrap { --sp-3xl: 72px; --sp-2xl: 56px; --sp-xl: 48px; --pad-h: 20px; }
-  .wcp-wrap .hero-inner { padding-top: 80px; padding-bottom: 300px; }
-  .wcp-wrap .hero-title { font-size: clamp(28px, 8vw, 40px); }
-  .wcp-wrap .hero-subtitle { font-size: 14px; margin-bottom: var(--sp-lg); }
-  .wcp-wrap .hero-cta-group { flex-direction: column; }
-  .wcp-wrap .btn-primary, .wcp-wrap .btn-secondary { justify-content: center; width: 100%; }
-  .wcp-wrap .hero-stats-inner { flex-direction: column; }
-  .wcp-wrap .hero-stat { flex: 1 1 100% !important; border-right: none !important; border-bottom: 1px solid rgba(115,209,245,0.10) !important; padding: var(--sp-sm) var(--sp-md) !important; flex-direction: row; align-items: center; gap: var(--sp-sm); }
-  .wcp-wrap .hero-stat:last-child { border-bottom: none !important; }
   .wcp-wrap .highlights-grid { grid-template-columns: 1fr 1fr; }
   .wcp-wrap .hi-card { padding: var(--sp-md); }
   .wcp-wrap .programs-grid { grid-template-columns: 1fr; }
@@ -321,66 +269,33 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 
 </style>
 
+<PageHero id="camp-intro" image="https://wolko.synology.me/Web_Contents/Photos/Camp_Ministry/WOLKO_Hero.JPG" pos="50% 40%">
+  <Fragment slot="eyebrow"><span class="wl-ko">캠프 사역</span><span class="wl-en">Camp Ministry</span></Fragment>
+  <Fragment slot="title">
+    <span class="wl-ko">복음을 듣고, <br>삶의 방향을 다시 세우는 월코 캠프</span>
+    <span class="wl-en">Hear the Gospel.<br>Redirect Your Life.</span>
+  </Fragment>
+  <Fragment slot="bar">
+    <p class="ph-sub">
+      <span class="wl-ko">영어라는 도구를 통해 복음을 전하고, 제자훈련을 통해 <br>다음 세대의 삶이 변화되도록 돕는 사역입니다.</span>
+      <span class="wl-en">We share the Gospel through English as a tool, and through discipleship training we help shape the lives of the next generation.</span>
+    </p>
+    <div class="ph-actions">
+      <a href="/camp-register" class="ph-cta"><span class="wl-ko">캠프 신청하기</span><span class="wl-en">Register for Camp</span><svg aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg></a>
+      <a href="#camp-programs" class="ph-cta ph-cta--ghost"><span class="wl-ko">캠프 프로그램 보기</span><span class="wl-en">View Camp Programs</span></a>
+    </div>
+    <dl class="ph-stats ph-stats--text">
+      <div class="ph-stat"><dt><span class="wl-ko">선교사님들의 복음 특화 말씀</span><span class="wl-en">Gospel-focused teaching by missionaries</span></dt><dd><span class="wl-ko">말씀 중심</span><span class="wl-en">Word-Centered</span></dd></div>
+      <div class="ph-stat"><dt><span class="wl-ko">원어민과 함께하는 캠프</span><span class="wl-en">Camps with native English speakers</span></dt><dd><span class="wl-ko">영어 환경</span><span class="wl-en">English Immersion</span></dd></div>
+      <div class="ph-stat"><dt><span class="wl-ko">영어 · 제주 · 연합캠프</span><span class="wl-en">English · Jeju · Union Camp</span></dt><dd><span class="wl-ko">3가지 프로그램</span><span class="wl-en">3 Programs</span></dd></div>
+      <div class="ph-stat"><dt><span class="wl-ko">훈련된 상담자와 함께</span><span class="wl-en">Alongside trained counselors</span></dt><dd><span class="wl-ko">가족 같은 공동체</span><span class="wl-en">Family Atmosphere</span></dd></div>
+    </dl>
+  </Fragment>
+</PageHero>
+
 <div class="wcp-wrap">
 
   <!-- HERO -->
-  <section class="hero" id="camp-intro">
-    <div class="hero-circle"></div>
-    <div class="hero-cross">✝</div>
-    <img class="hero-bg-img" src="https://wolko.synology.me/Web_Contents/Photos/Camp_Ministry/WOLKO_Hero.JPG" alt="월코 캠프">
-    <div class="hero-inner">
-      <div class="hero-badge">
-        <span class="wl-ko">WOLKO Camp Ministry · 다음 세대를 위한 복음 사역</span>
-        <span class="wl-en">WOLKO Camp Ministry · Gospel Ministry for the Next Generation</span>
-      </div>
-      <h1 class="hero-title">
-        <span class="wl-ko">복음을 듣고,<br><em>삶의 방향을 다시 세우는</em><br>월코 캠프</span>
-        <span class="wl-en">Hear the Gospel.<br><em>Redirect Your Life.</em><br>WOLKO Camp</span>
-      </h1>
-      <p class="hero-subtitle">
-        <span class="wl-ko">영어라는 도구를 통해 복음을 전하고, 제자훈련을 통해 다음 세대의 삶이 변화되도록 돕는 사역입니다.</span>
-        <span class="wl-en">We share the Gospel through English as a tool, and through discipleship training we help shape the lives of the next generation.</span>
-      </p>
-      <div class="hero-cta-group">
-        <a href="/camp-register" class="btn-primary">
-          <span class="wl-ko">캠프 신청하기 →</span>
-          <span class="wl-en">Register for Camp →</span>
-        </a>
-        <a href="#camp-programs" class="btn-secondary">
-          <span class="wl-ko">캠프 프로그램 보기</span>
-          <span class="wl-en">View Camp Programs</span>
-        </a>
-      </div>
-    </div>
-    <div class="hero-stats">
-      <div class="hero-stats-inner">
-        <div class="hero-stat">
-          <span class="hero-stat-num wl-ko">말씀 중심</span>
-          <span class="hero-stat-num wl-en">Word-Centered</span>
-          <span class="hero-stat-label wl-ko">선교사님들의 복음 특화 말씀</span>
-          <span class="hero-stat-label wl-en">Gospel-focused teaching by missionaries</span>
-        </div>
-        <div class="hero-stat">
-          <span class="hero-stat-num wl-ko">영어 환경</span>
-          <span class="hero-stat-num wl-en">English Immersion</span>
-          <span class="hero-stat-label wl-ko">원어민과 함께하는 캠프</span>
-          <span class="hero-stat-label wl-en">Camps with native English speakers</span>
-        </div>
-        <div class="hero-stat">
-          <span class="hero-stat-num wl-ko">3가지 프로그램</span>
-          <span class="hero-stat-num wl-en">3 Programs</span>
-          <span class="hero-stat-label wl-ko">영어 · 제주 · 연합캠프</span>
-          <span class="hero-stat-label wl-en">English · Jeju · Union Camp</span>
-        </div>
-        <div class="hero-stat">
-          <span class="hero-stat-num wl-ko">가족 같은 공동체</span>
-          <span class="hero-stat-num wl-en">Family Atmosphere</span>
-          <span class="hero-stat-label wl-ko">훈련된 상담자와 함께</span>
-          <span class="hero-stat-label wl-en">Alongside trained counselors</span>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <!-- QUICK PANEL -->
   <section class="quick-section">

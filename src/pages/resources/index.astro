@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
 ---
 
 <BaseLayout
@@ -7,18 +8,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   description="WOLKO 자료실 — 매일묵상집과 캠프 자료실을 이용할 수 있습니다."
   activeNav="resources"
 >
-  <section class="resources-hero">
-    <div class="resources-hero-inner">
-      <h1>
-        <span class="wl-ko">자료실</span>
-        <span class="wl-en">Resources</span>
-      </h1>
-      <p class="hero-sub">
-        <span class="wl-ko">매일묵상집과 캠프 자료실을 확인하세요.</span>
-        <span class="wl-en">Browse Q.T books and camp resources.</span>
-      </p>
-    </div>
-  </section>
+  <PageHero variant="plain">
+    <Fragment slot="eyebrow"><span class="wl-ko">자료실</span><span class="wl-en">Resources</span></Fragment>
+    <Fragment slot="title">
+      <span class="wl-ko">자료실</span>
+      <span class="wl-en">Resources</span>
+    </Fragment>
+    <Fragment slot="desc">
+      <span class="wl-ko">매일묵상집과 캠프 자료실을 확인하세요.</span>
+      <span class="wl-en">Browse Q.T books and camp resources.</span>
+    </Fragment>
+  </PageHero>
 
   <div class="resources-grid-wrap">
     <div class="resources-grid">
@@ -43,29 +43,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <style>
-  .resources-hero {
-    background: linear-gradient(135deg, #004f68 0%, #007a9a 100%);
-    color: #fff;
-    padding: 64px 24px 48px;
-    text-align: center;
-  }
-  .resources-hero-inner {
-    max-width: 720px;
-    margin: 0 auto;
-  }
-  .resources-hero h1 {
-    font-size: 2.4rem;
-    font-weight: 700;
-    margin: 0 0 16px;
-    letter-spacing: -0.5px;
-  }
-  .hero-sub {
-    font-size: 1.05rem;
-    opacity: 0.88;
-    line-height: 1.6;
-    margin: 0;
-  }
-
   .resources-grid-wrap {
     max-width: 860px;
     margin: 0 auto;
@@ -108,8 +85,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   @media (max-width: 600px) {
-    .resources-hero h1 { font-size: 1.8rem; }
-    .resources-hero { padding: 48px 16px 36px; }
     .resources-grid-wrap { padding: 36px 16px 60px; }
   }
 </style>

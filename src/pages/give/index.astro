@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
 ---
 
 <BaseLayout
@@ -13,23 +14,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <div class="give">
 
   <!-- ═══ HERO ═══ -->
-  <section class="gv-hero">
-    <div class="gv-hero-bg"></div>
-    <div class="gv-hero-inner">
-      <span class="gv-eyebrow">
-        <span class="wl-ko">함께하는 사역</span>
-        <span class="wl-en">Partner With Us</span>
-      </span>
-      <h1 class="gv-hero-title">
-        <span class="wl-ko">사역에<br>동참해 주세요</span>
-        <span class="wl-en">Support<br>the Mission</span>
-      </h1>
-      <p class="gv-hero-sub">
-        <span class="wl-ko">여러분의 후원이 한국의 다음 세대를 복음으로<br>섬기는 월코 사역을 이어가게 합니다.</span>
-        <span class="wl-en">Your generosity empowers Word of Life Korea<br>to reach the next generation with the Gospel.</span>
-      </p>
-    </div>
-  </section>
+<PageHero variant="band" image="https://wolko.synology.me/Web_Contents/Photos/Camp_Ministry/Hero2.jpeg" pos="50% 35%">
+  <Fragment slot="eyebrow"><span class="wl-ko">함께하는 사역</span><span class="wl-en">Partner With Us</span></Fragment>
+  <Fragment slot="title">
+    <span class="wl-ko">사역에 동참해 주세요</span>
+    <span class="wl-en">Support the Mission</span>
+  </Fragment>
+  <Fragment slot="desc">
+    <span class="wl-ko">여러분의 후원이 한국의 다음 세대를 복음으로 섬기는 월코 사역을 이어가게 합니다.</span>
+    <span class="wl-en">Your generosity empowers Word of Life Korea to reach the next generation with the Gospel.</span>
+  </Fragment>
+</PageHero>
 
   <!-- ═══ INVOLVEMENT SECTION ═══ -->
   <section class="gv-involve">
@@ -396,70 +391,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   color: var(--gv-ink);
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
-}
-
-/* ── HERO ── */
-.gv-hero {
-  position: relative;
-  min-height: 55vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 110px 40px 72px;
-  overflow: hidden;
-}
-.gv-hero-bg {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 80% 60% at 50% 40%, rgba(0,126,161,0.18) 0%, transparent 65%),
-    linear-gradient(160deg, #01202f 0%, #02263a 45%, #03334a 100%);
-  z-index: 0;
-}
-.gv-hero-bg::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle, rgba(115,209,245,0.06) 1px, transparent 1px);
-  background-size: 40px 40px;
-}
-.gv-hero-inner {
-  position: relative;
-  z-index: 1;
-  max-width: 720px;
-  margin: 0 auto;
-}
-.gv-eyebrow {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--gv-sky);
-  margin-bottom: 20px;
-}
-.gv-hero-title {
-  font-family: 'GmarketSans', 'Pretendard Variable', sans-serif;
-  font-size: clamp(36px, 5.8vw, 68px);
-  font-weight: 800;
-  line-height: 1.22;
-  color: #fff;
-  letter-spacing: -0.025em;
-  margin-bottom: 28px;
-}
-.gv-hero-sub {
-  font-size: 17px;
-  line-height: 1.75;
-  color: rgba(255,255,255,0.58);
-  max-width: 520px;
-  margin: 0 auto 44px;
-}
-.gv-hero-anchors {
-  display: flex;
-  gap: 14px;
-  justify-content: center;
-  flex-wrap: wrap;
 }
 .gv-anchor-btn {
   padding: 15px 32px;
@@ -911,12 +842,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .gv-intl-desc { max-width: 100%; }
 }
 @media (max-width: 768px) {
-  .gv-hero { padding: 88px 24px 56px; }
   .gv-wrap { padding: 0 24px; }
   .gv-ministry { padding: 80px 0 60px; }
   .gv-missionary { padding: 80px 0; }
   .gv-intl { padding: 60px 0; }
-  .gv-hero-anchors { flex-direction: column; align-items: center; }
   .gv-card { padding: 28px 24px; }
   .gv-give-row { padding: 18px 20px; }
   .gv-give-row:hover { padding-left: 26px; }

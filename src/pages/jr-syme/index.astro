@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
 ---
 <BaseLayout
   title="Jr. SYME — Word of Life Korea"
@@ -29,89 +30,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 .lang-en .jr .wl-en    { display: block !important; }
 .lang-en .jr span.wl-ko { display: none !important; }
 .lang-en .jr span.wl-en { display: inline !important; }
-
-/* ──────────────────────────────
-   HERO
-────────────────────────────── */
-.jr-hero {
-  background:
-    linear-gradient(90deg, rgba(3,51,74,0.74) 0%, rgba(3,51,74,0.48) 45%, rgba(3,51,74,0.1) 100%),
-    linear-gradient(180deg, rgba(3,51,74,0.12) 0%, rgba(3,51,74,0.5) 100%),
-    url('/images/syme-community.jpg') center 42% / cover no-repeat,
-    #03334a;
-  padding: 148px 40px 96px;
-  position: relative;
-  overflow: hidden;
-}
-.jr-hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 80% -10%, rgba(115,209,245,0.18) 0%, transparent 50%);
-  pointer-events: none;
-}
-.jr-hero-inner {
-  max-width: 860px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 1;
-}
-.jr-hero-eyebrow {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  color: var(--jc-light);
-  opacity: 0.8;
-  text-transform: uppercase;
-  margin-bottom: 20px;
-}
-.jr-hero-title {
-  font-family: 'GmarketSans', 'Pretendard Variable', sans-serif;
-  font-size: clamp(36px, 5.8vw, 68px);
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  line-height: 1.22;
-  color: #fff;
-  margin-bottom: 22px;
-  text-shadow: 0 2px 18px rgba(3,40,58,0.55);
-}
-.jr-hero-title em { font-style: normal; color: var(--jc-light); }
-.jr-hero-sub {
-  font-size: clamp(15px, 1.8vw, 17px);
-  line-height: 1.9;
-  color: rgba(255,255,255,0.82);
-  max-width: 500px;
-  text-shadow: 0 1px 12px rgba(3,40,58,0.6);
-}
-
-/* ──────────────────────────────
-   STATS BAR
-────────────────────────────── */
-.jr-statsbar {
-  background: var(--jc-deep);
-}
-.jr-statsbar-inner {
-  max-width: 860px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-}
-.jr-sbar {
-  padding: 28px 32px;
-  border-right: 1px solid rgba(255,255,255,0.1);
-  text-align: center;
-}
-.jr-sbar:last-child { border-right: none; }
-.jr-sbar-num {
-  font-size: 28px;
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  color: #fff;
-  line-height: 1;
-  margin-bottom: 5px;
-}
-.jr-sbar-unit { font-size: 16px; font-weight: 700; }
-.jr-sbar-label { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.5); }
 
 /* ──────────────────────────────
    NOTICE
@@ -306,10 +224,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
 /* ── 반응형 ── */
 @media (max-width: 700px) {
-  .jr-hero { padding: 120px 24px 72px; background-position: center, center, 62% center, center; }
-  .jr-statsbar-inner { grid-template-columns: 1fr; }
-  .jr-sbar { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
-  .jr-sbar:last-child { border-bottom: none; }
   .jr-notice { padding: 14px 24px; }
   .jr-about { padding: 56px 24px; }
   .jr-about-inner { grid-template-columns: 1fr; gap: 40px; }
@@ -318,37 +232,23 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 }
 </style>
 
+<PageHero image="/images/syme-community.jpg" pos="50% 42%">
+  <Fragment slot="eyebrow"><span class="wl-ko">SYME 사역</span><span class="wl-en">Ministry · SYME</span></Fragment>
+  <Fragment slot="title">Jr. SYME</Fragment>
+  <Fragment slot="bar">
+    <p class="ph-sub">
+      <span class="wl-ko">중·고등학생을 위한 영어 제자훈련 집중 프로그램. <br>말씀과 훈련으로 가득한 3주가 다음 세대를 세웁니다.</span>
+      <span class="wl-en">An intensive English discipleship training program for middle &amp; high school students, 3 weeks of God's Word.</span>
+    </p>
+    <dl class="ph-stats ph-stats--text">
+      <div class="ph-stat"><dt><span class="wl-ko">학생 대상</span><span class="wl-en">Students</span></dt><dd><span class="wl-ko">중·고등</span><span class="wl-en">Gr. 7–12</span></dd></div>
+      <div class="ph-stat"><dt><span class="wl-ko">집중 훈련</span><span class="wl-en">Intensive Program</span></dt><dd><span class="wl-ko">3주</span><span class="wl-en">3 wks</span></dd></div>
+      <div class="ph-stat"><dt><span class="wl-ko">여름 · 겨울 각 1회</span><span class="wl-en">Summer &amp; Winter</span></dt><dd><span class="wl-ko">방학</span><span class="wl-en">2×</span></dd></div>
+    </dl>
+  </Fragment>
+</PageHero>
+
 <div class="jr">
-
-  <!-- HERO -->
-  <div class="jr-hero">
-    <div class="jr-hero-inner">
-      <p class="jr-hero-eyebrow">Ministry · SYME</p>
-      <h1 class="jr-hero-title">Jr. <em>SYME</em></h1>
-      <p class="jr-hero-sub">
-        <span class="wl-ko">중·고등학생을 위한 영어 제자훈련 집중 프로그램.<br>말씀과 훈련으로 가득한 3주가 다음 세대를 세웁니다.</span>
-        <span class="wl-en">An intensive English discipleship training program<br>for middle &amp; high school students — 3 weeks of God's Word.</span>
-      </p>
-    </div>
-  </div>
-
-  <!-- STATS BAR -->
-  <div class="jr-statsbar">
-    <div class="jr-statsbar-inner">
-      <div class="jr-sbar">
-        <div class="jr-sbar-num"><span class="wl-ko">중·고등</span><span class="wl-en">Gr. 7–12</span></div>
-        <div class="jr-sbar-label"><span class="wl-ko">학생 대상</span><span class="wl-en">Students</span></div>
-      </div>
-      <div class="jr-sbar">
-        <div class="jr-sbar-num">3<span class="jr-sbar-unit"><span class="wl-ko">주</span><span class="wl-en"> wks</span></span></div>
-        <div class="jr-sbar-label"><span class="wl-ko">집중 훈련</span><span class="wl-en">Intensive Program</span></div>
-      </div>
-      <div class="jr-sbar">
-        <div class="jr-sbar-num"><span class="wl-ko">방학</span><span class="wl-en">2×</span></div>
-        <div class="jr-sbar-label"><span class="wl-ko">여름 · 겨울 각 1회</span><span class="wl-en">Summer &amp; Winter</span></div>
-      </div>
-    </div>
-  </div>
 
   <!-- NOTICE -->
   <div class="jr-notice">
