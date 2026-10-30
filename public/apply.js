@@ -41,6 +41,7 @@
       stage: { refs: function (a, b) { return '추천서를 기다리는 중 (' + b + '통 중 ' + a + '통 도착)'; }, ready: '추천서 도착 · 검토를 기다리는 중', review: '서류 검토 중', closed: '검토가 끝났습니다. 담당자가 연락드립니다.' },
       refHelp: '추천인께 메일함(스팸함 포함)을 한번 확인해 달라고 말씀드리면 더 빨리 진행됩니다. 추천서 내용은 지원자에게 공개되지 않습니다.',
       nextTitle: '앞으로의 진행', nextText: '추천서 두 통이 모두 도착하면 검토 담당자가 지원서를 검토하고, 면담 일정은 이메일이나 전화로 따로 연락드립니다.',
+      checksTitle: '해당되는 항목이 있으면 표시해 주세요',
       refBarTitle: '추천서 요청', rsNone: '아직 보내지 않음', rsSentOn: function (d) { return d + ' 발송 · 답변 기다리는 중'; }, rsOpened: function (d) { return d + ' 링크 열어 봄 · 작성 기다리는 중'; }, rsDone: function (d) { return d + ' 추천서 도착'; }, rsExpired: '링크 기한 지남 · 다시 보내 주세요',
       sendingRef: '요청 메일 보내는 중…', refSentFlash: function (n, e) { return (n ? n + ' 님' : e) + '께 추천서 요청 메일을 보냈습니다. 진행 상황은 위쪽에서 확인할 수 있습니다.'; },
       refStepSent: function (e, d) { return e + ' 로 ' + d + '에 요청 메일을 보냈습니다.'; }, refStepDone: '이 추천인의 추천서가 도착했습니다.', refChanged: '이메일을 바꾸셨네요. 다음을 누르면 새 주소로 다시 보내고, 예전 링크는 닫힙니다.', resendRef: '다시 보내기',
@@ -84,6 +85,7 @@
       stage: { refs: function (a, b) { return 'Waiting for references (' + a + ' of ' + b + ' received)'; }, ready: 'References received · awaiting review', review: 'Under review', closed: 'Review complete. We will be in touch.' },
       refHelp: 'Asking your references to check their inbox (and spam folder) will speed things up. Their references are not shared with you.',
       nextTitle: 'What happens next', nextText: 'Once both references arrive, our reviewers will read your application and contact you by email or phone to arrange an interview.',
+      checksTitle: 'Tick any that apply',
       refBarTitle: 'Reference requests', rsNone: 'Not sent yet', rsSentOn: function (d) { return 'Sent ' + d + ' · awaiting reply'; }, rsOpened: function (d) { return 'Opened ' + d + ' · awaiting reply'; }, rsDone: function (d) { return 'Received ' + d; }, rsExpired: 'Link expired · please resend',
       sendingRef: 'Sending request…', refSentFlash: function (n, e) { return 'We emailed a reference request to ' + (n || e) + '. You can follow its status at the top of the page.'; },
       refStepSent: function (e, d) { return 'Request sent to ' + e + ' on ' + d + '.'; }, refStepDone: 'This reference has been received.', refChanged: 'You changed the email. When you continue we will send to the new address and close the old link.', resendRef: 'Send again',
@@ -251,11 +253,18 @@
   function sectionHtml(s) {
     var nested = {};
     s.fields.forEach(function (f) { subFields(s, f).forEach(function (c) { nested[c.id] = 1; }); });
-    return s.fields.filter(function (f) { return visible(f) && !nested[f.id]; }).map(function (f) {
+    var list = s.fields.filter(function (f) { return visible(f) && !nested[f.id]; }), out = '';
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      if (f.type === 'checkbox') {   // 이어 붙은 체크박스는 '해당되면 표시' 한 묶음으로
+        var run = []; while (i < list.length && list[i].type === 'checkbox') run.push(list[i++]); i--;
+        out += run.length > 1 ? '<fieldset class="ap-field wide ap-checks"><legend>' + esc(t('checksTitle')) + '</legend>' + run.map(fieldHtml).join('') + '</fieldset>' : fieldHtml(f);
+        continue;
+      }
       var html = fieldHtml(f), subs = subFields(s, f);
-      if (!subs.length) return html;
-      return html.replace(/<\/div>$/, '<div class="ap-sub">' + subs.map(fieldHtml).join('') + '</div></div>');
-    }).join('');
+      out += subs.length ? html.replace(/<\/div>$/, '<div class="ap-sub">' + subs.map(fieldHtml).join('') + '</div></div>') : html;
+    }
+    return out;
   }
   function countText(v, max) { return num(String(v || '').length) + ' / ' + num(max) + (lang === 'ko' ? '자' : ''); }
   function fieldHtml(f) {

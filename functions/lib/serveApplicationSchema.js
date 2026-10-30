@@ -55,11 +55,11 @@ export const SERVE_APPLICATION_SECTIONS = [
     intro: L('출석하는 교회와 담임목사님 성함은 선택 사항이지만, 적어 주시면 지원서 심사에 큰 도움이 됩니다.', 'Your church and your pastor’s name are optional, but including them helps us a great deal in reviewing your application.'),
     fields: [
       { id: 'noChurch', type: 'checkbox', label: L('교회를 다니고 있지 않습니다.', 'I do not currently attend a church.') },
+      { id: 'noGospel', type: 'checkbox', label: L('아직 복음을 들어 본 적이 없습니다.', 'I have not yet heard the gospel.') },   // 세 체크박스는 한 묶음으로 보인다. 복음·영접 중 하나면 간증·영적 생활·섬김 경험을, 교회면 교회·담임목사 칸을 건너뛴다
+      { id: 'notSaved', type: 'checkbox', label: L('예수님을 구주로 영접하지 않았습니다.', 'I have not accepted Jesus as my Savior.') },
       { id: 'church', type: 'text', hideIf: 'noChurch', label: L('출석하는 교회', 'Church you attend'), max: 200 },
       { id: 'pastor', type: 'text', hideIf: 'noChurch', label: L('담임목사님 성함', "Pastor's name"), max: 120 },
       { id: 'testimony', type: 'textarea', required: true, requiredUnless: ['noGospel', 'notSaved'], label: L('간증 (구원받기 전, 구원의 경험, 구원받은 후)', 'Testimony (life before salvation, the salvation experience, and life after)'), max: 6000 },
-      { id: 'noGospel', type: 'checkbox', label: L('아직 복음을 들어 본 적이 없습니다.', 'I have not yet heard the gospel.') },   // 둘 중 하나를 표시하면 간증·영적 생활 습관·섬김 경험은 비워도 된다(교회를 다니지 않으면 섬김 경험도)
-      { id: 'notSaved', type: 'checkbox', label: L('예수님을 구주로 영접하지 않았습니다.', 'I have not accepted Jesus as my Savior.') },
       { id: 'spiritualHabits', type: 'textarea', required: true, requiredUnless: ['noGospel', 'notSaved'], label: L('개인의 영적 생활 습관 (성경 공부, 경건의 시간, 기도, 전도 등)', 'Personal spiritual life habits (Bible study, quiet time, prayer, witnessing)'), max: 4000 },
       { id: 'serviceHistory', type: 'textarea', required: true, requiredUnless: ['noGospel', 'notSaved', 'noChurch'], label: L('교회·지역사회에서의 과거와 현재의 섬김', 'Past and current service in church or community'), max: 4000 },
     ],
