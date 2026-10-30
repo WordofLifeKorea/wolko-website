@@ -35,3 +35,19 @@ test('CRS 상세의 "정보 수정"은 상세를 닫지 않고 그 위에 수정
   assert.match(page, /if \(fresh\) openDetailModal\(fresh, \{ updateHistory: false \}\)/, '저장 후 상세를 고친 내용으로 다시 그린다');
   assert.match(page, /#editModal\.modal-backdrop \{ z-index:1300; \}/, '휴대폰에서 상세(1200) 위에 뜬다');
 });
+
+test('CRS 홈페이지 주소: http(s)만 저장하고, 앞에 https:// 를 붙이고, 상세에서는 새 창 링크로 연다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const page = readFileSync(new URL('../src/pages/portal/crs/index.astro', import.meta.url), 'utf8');
+  const src = page.slice(page.indexOf('  function cleanWebsite(raw) {'), page.indexOf('  async function saveChurch() {'));
+  const { cleanWebsite, websiteLabel } = new Function(src + '\nreturn { cleanWebsite, websiteLabel };')();
+  assert.equal(cleanWebsite('www.church.or.kr'), 'https://www.church.or.kr/');
+  assert.equal(cleanWebsite('  http://church.kr/about  '), 'http://church.kr/about');
+  assert.equal(cleanWebsite('javascript:alert(1)'), '', '위험한 주소는 버린다');
+  assert.equal(cleanWebsite('ftp://church.kr'), '');
+  assert.equal(cleanWebsite('그냥 글자'), '');
+  assert.equal(cleanWebsite(''), '');
+  assert.equal(websiteLabel('https://www.church.or.kr/'), 'church.or.kr');
+  assert.match(page, /id="fWebsite"/); assert.match(page, /website: cleanWebsite\(document\.getElementById\('fWebsite'\)\.value\)/);
+  assert.match(page, /target="_blank" rel="noopener noreferrer"/);
+});

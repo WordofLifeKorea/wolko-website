@@ -829,6 +829,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .is-dragging { opacity:.5; outline:2px dashed var(--crs-cyan, #2d9fba); outline-offset:2px; }
   .drop-target { outline:2px solid var(--crs-cyan, #2d9fba); outline-offset:2px; background-color:#f4fafb; }
   body.crs-dragging { user-select:none; -webkit-user-select:none; cursor:grabbing; }
+  .detail-website { color:#0a6a8f; font-weight:700; text-decoration:none; word-break:break-all; }
+  .detail-website:hover { text-decoration:underline; }
   /* 수정 창은 휴대폰에서 화면 전체를 덮는 상세(z-index 1200) 위에 뜬다 */
   #editModal.modal-backdrop { z-index:1300; }
   .crs-drag-chip { position:fixed; z-index:3000; transform:translate(14px, 14px); padding:.38rem .8rem; border-radius:999px; background:#004f68; color:#fff; font-size:.78rem; font-weight:800; box-shadow:0 8px 20px rgba(0,30,44,.28); pointer-events:none; white-space:nowrap; }
@@ -995,7 +997,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       add_title: '교회 추가', edit_title: '교회 정보 수정',
       church_name_label: '교회 이름 *', church_name_ph: '예: 평택중앙교회',
       pastor_label: '담임목사 성함 *', pastor_ph: '예: 홍길동 목사',
-      pastor_phone: '목사님 연락처', pastor_phone_ph: '예: 010-1234-5678',
+      pastor_phone: '목사님 연락처', pastor_phone_ph: '예: 010-1234-5678', website_label: '홈페이지 주소', website_ph: '예: www.church.or.kr',
       denomination_label: '교단', denomination_ph: '교단 선택 또는 입력',
       missionary_label: '담당 선교사', missionary_ph: '담당 선교사 선택 또는 입력',
       filter_all: '전체', campus_wolko: '평택', campus_jeju: '제주', campus_label: '지역', sort_label: '정렬', sort_number: '번호순', sort_visit: '방문 오래된 순', sort_visit_short: '오래된 방문순',
@@ -1052,7 +1054,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       add_title: 'Add Church', edit_title: 'Edit Church',
       church_name_label: 'Church Name *', church_name_ph: 'e.g. Pyeongtaek Central Church',
       pastor_label: 'Senior Pastor *', pastor_ph: 'e.g. Pastor John Kim',
-      pastor_phone: 'Pastor\'s Phone', pastor_phone_ph: 'e.g. 010-1234-5678',
+      pastor_phone: 'Pastor\'s Phone', pastor_phone_ph: 'e.g. 010-1234-5678', website_label: 'Website', website_ph: 'e.g. www.church.or.kr',
       denomination_label: 'Denomination', denomination_ph: 'Select or type a denomination',
       missionary_label: 'Assigned Missionary', missionary_ph: 'Select or type a missionary',
       filter_all: 'All', campus_wolko: 'Pyeongtaek', campus_jeju: 'Jeju', campus_label: 'Area', sort_label: 'Sort', sort_number: 'By number', sort_visit: 'Longest since visit', sort_visit_short: 'Oldest visit',
@@ -1607,6 +1609,10 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
                 <datalist id="missionaryOptions"></datalist>
               </div>
             </div>
+            <div class="form-group">
+              <label>${t('website_label')}</label>
+              <input type="url" id="fWebsite" inputmode="url" autocomplete="url" maxlength="300" placeholder="${t('website_ph')}">
+            </div>
             <div class="form-row">
               <div class="form-group">
                 <label>${t('location')}</label>
@@ -2003,6 +2009,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     document.getElementById('fChurchName').value = church?.churchName || '';
     document.getElementById('fPastorName').value = church?.pastorName || '';
     document.getElementById('fPastorPhone').value = church?.pastorPhone || '';
+    document.getElementById('fWebsite').value = church?.website || '';
     populateFieldDatalists();
     const denominationSelect = document.getElementById('fDenomination');
     const savedDenomination = church?.denomination || '';
@@ -2137,6 +2144,14 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     }
   }
 
+  /** 홈페이지 주소 — 앞에 http(s):// 가 없으면 https:// 를 붙이고, http/https 가 아닌 주소(javascript: 등)는 버린다 */
+  function cleanWebsite(raw) {
+    let v = String(raw || '').trim();
+    if (!v) return '';
+    if (!/^[a-z][a-z0-9+.-]*:/i.test(v)) v = 'https://' + v.replace(/^\/+/, '');
+    try { const u = new URL(v); return /^https?:$/.test(u.protocol) && u.hostname.includes('.') ? u.href : ''; } catch { return ''; }
+  }
+  function websiteLabel(url) { try { const u = new URL(url); return (u.hostname.replace(/^www\./, '') + (u.pathname !== '/' ? u.pathname : '')).replace(/\/$/, ''); } catch { return url; } }
   async function saveChurch() {
     const churchName = document.getElementById('fChurchName').value.trim();
     const pastorName = document.getElementById('fPastorName').value.trim();
@@ -2162,6 +2177,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     const data = {
       churchName, pastorName,
       pastorPhone: document.getElementById('fPastorPhone').value.trim(),
+      website: cleanWebsite(document.getElementById('fWebsite').value),
       denomination: document.getElementById('fDenomination').value.trim(),
       assignedMissionary: document.getElementById('fMissionary').value.trim(),
       region, district, detailAddress,
@@ -2372,6 +2388,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       <div class="detail-info" data-block="info" data-title="${isKo ? '교회 정보' : 'Church info'}">
         <div class="detail-info-row"><strong>${t('detail_pastor')}</strong> ${esc(trText(church, 'pastorName') || t('not_entered'))}${church.pastorPhone ? ` &nbsp;${esc(church.pastorPhone)}` : ''}</div>
         ${church.location ? `<div class="detail-info-row"><strong>${t('detail_location')}</strong> ${esc(church.location)}</div>` : ''}
+        ${cleanWebsite(church.website) ? `<div class="detail-info-row"><strong>${t('website_label')}</strong> <a class="detail-website" href="${esc(cleanWebsite(church.website))}" target="_blank" rel="noopener noreferrer">${esc(websiteLabel(cleanWebsite(church.website)))} ↗</a></div>` : ''}
         ${church.notes ? `<div class="detail-info-row"><strong>${t('detail_notes')}</strong> ${esc(trText(church, 'notes'))}</div>` : ''}
         <div class="detail-info-row" style="margin-top:.3rem">
           <strong>${t('detail_progress')}</strong>
