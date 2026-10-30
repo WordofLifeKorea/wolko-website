@@ -7,12 +7,22 @@ import PageHero from '../../components/PageHero.astro';
 <style is:global>
 @import url('https://cdn.jsdelivr.net/npm/pretendard@latest/dist/web/variable/pretendardvariable-dynamic-subset.css');
 
+/* 추천사 — 사역 페이지와 같은 회사 소개서 톤.
+   카드·그림자·왼쪽 색 줄 없이, 가는 선으로 나눈 인용 목록. 인용문은 똑바로 선 진한 글씨. */
+
 /* ── 스코프 ── */
 .wr-wrap {
-  font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif;
-  color: #17303c;
+  --wr-deep: #004f68;
+  --wr-navy: #0b2430;
+  --wr-ink: #10252e;
+  --wr-text: #4a5d66;
+  --wr-line: #d6dee2;
+  --wr-fill: #f3f7f9;
+  font-family: var(--ff-sans, 'Pretendard Variable', Pretendard, -apple-system, sans-serif);
+  color: var(--wr-ink);
   background: #fff;
   width: 100%;
+  word-break: keep-all;
 }
 
 /* ── 언어 레이어 (wr-root 스코프) ── */
@@ -21,145 +31,97 @@ import PageHero from '../../components/PageHero.astro';
 .wr-wrap.lang-en span.wl-ko     { display: none          !important; }
 .wr-wrap.lang-en span.wl-en     { display: inline        !important; }
 
-/* ── DIVIDER ── */
-.wr-divider {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 40px;
-  border: none;
-  border-top: 1px solid #e2ecf0;
-  position: relative;
-}
-.wr-divider::after {
-  content: '';
-  position: absolute;
-  left: 50%; top: -1px;
-  transform: translateX(-50%);
-  width: 60px; height: 2px;
-  background: linear-gradient(90deg, #73d1f5, #004f68);
-  border-radius: 2px;
-}
+/* ── DIVIDER — 맨 위 배너 바로 아래라 따로 줄을 긋지 않는다 ── */
+.wr-divider { display: none; }
 
-/* ── 카드 그리드 ── */
+/* ── 추천사 목록 ── */
 .wr-grid-section {
-  padding: 72px 40px 96px;
-  max-width: 1100px;
+  width: min(1200px, calc(100% - 48px));
   margin: 0 auto;
+  padding: 112px 0 120px;
 }
+/* 작은 표시 — 앞에 가는 선 */
 .wr-section-label {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #007ea1;
-  margin-bottom: 40px;
-  padding-left: 4px;
+  display: flex; align-items: center; gap: 12px;
+  color: var(--wr-deep);
+  font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  font-family: inherit; line-height: 1.4;
+  margin: 0 0 28px;
 }
-.wr-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
+.wr-section-label::before { content: ''; width: 28px; height: 1px; background: currentColor; flex: none; }
 
-/* ── 추천사 카드 ── */
+.wr-grid { border-top: 2px solid var(--wr-navy); }
+
+/* ── 추천사 한 줄: 왼쪽 추천인, 오른쪽 인용문 ── */
 .wr-card {
-  background: linear-gradient(160deg, #ffffff 60%, #f3f9fc 100%);
-  border: 1px solid #dde8ed;
-  border-radius: 20px;
-  padding: 32px;
-  position: relative;
-  overflow: hidden;
-  transition: box-shadow .3s, transform .3s, border-color .3s, background .3s;
-  opacity: 0;
-  transform: translateY(24px);
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  column-gap: 80px;
+  padding: 56px 0;
+  border-bottom: 1px solid var(--wr-line);
 }
-.wr-card.wr-visible {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.55s ease, transform 0.55s ease, box-shadow .3s, border-color .3s, background .3s;
-}
-.wr-card::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 28px; bottom: 28px;
-  width: 3px;
-  background: linear-gradient(180deg, #73d1f5 0%, #004f68 100%);
-  border-radius: 0 2px 2px 0;
-}
-.wr-card::after {
-  content: '';
-  position: absolute;
-  right: -40px; bottom: -40px;
-  width: 140px; height: 140px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(0,79,104,0.05) 0%, transparent 70%);
-  pointer-events: none;
-  transition: transform .3s;
-}
-.wr-card:hover {
-  box-shadow: 0 12px 40px rgba(0,79,104,.11), 0 2px 8px rgba(0,79,104,.06);
-  transform: translateY(-3px);
-  border-color: rgba(0,79,104,0.22);
-  background: linear-gradient(160deg, #eef6fb 0%, #e4f1f8 100%);
-}
-.wr-card:hover::before {
-  width: 4px;
-  background: linear-gradient(180deg, #004f68 0%, #73d1f5 100%);
-}
-.wr-card:hover::after { transform: scale(1.3); }
-
-.wr-card-wide { grid-column: span 2; }
-.wr-card-wide .wr-quote-text { font-size: 16px; }
-
-.wr-quote-icon {
-  width: 38px; height: 38px;
-  background: linear-gradient(135deg, #004f68, #0a5b76);
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 20px;
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(0,79,104,0.18);
-}
-.wr-quote-icon svg { display: block; }
-
+.wr-quote-icon { grid-column: 2; grid-row: 1; margin-bottom: 20px; line-height: 0; }
+.wr-quote-icon svg { width: 26px; height: 20px; display: block; }
+.wr-quote-icon svg path { fill: var(--wr-deep); fill-opacity: 1; }
 .wr-quote-text {
-  font-size: 15px;
-  line-height: 1.95;
-  color: #3a4f58;
-  margin-bottom: 24px;
-  font-weight: 400;
+  grid-column: 2; grid-row: 2;
+  font-size: 17px; line-height: 1.9; font-weight: 400; font-style: normal;
+  color: var(--wr-ink);
+  max-width: 760px;
+}
+/* 첫 추천사는 조금 크게 */
+.wr-card-wide .wr-quote-text {
+  font-size: 21px; line-height: 1.8; font-weight: 500; letter-spacing: -.01em;
+  color: var(--wr-navy);
 }
 
 .wr-person {
-  display: flex; align-items: center; gap: 14px;
-  padding-top: 20px;
-  border-top: 1px solid #e2ecf0;
+  grid-column: 1; grid-row: 1 / span 2; align-self: start;
+  display: flex; align-items: center; gap: 18px;
 }
 .wr-avatar {
-  width: 52px; height: 52px;
+  width: 64px; height: 64px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  background: #e8f0f3;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-  border: 2px solid rgba(0,79,104,0.10);
+  background: var(--wr-fill);
 }
+.wr-person-info { min-width: 0; }
 .wr-person-name {
-  font-size: 15px; font-weight: 800;
-  color: #152028; line-height: 1.3; margin-bottom: 3px;
+  font-family: var(--ff-serif, inherit);
+  font-size: 19px; font-weight: 700; letter-spacing: -.02em;
+  color: var(--wr-navy); line-height: 1.35;
 }
 .wr-person-title {
-  font-size: 12px; font-weight: 600;
-  color: #7a9aaa; line-height: 1.4;
+  margin-top: 6px;
+  font-size: 14px; font-weight: 500;
+  color: var(--wr-text); line-height: 1.55;
 }
 
+/* 스크롤하면 떠오르기 — 스크립트가 .wr-rv 를 붙일 때만 */
+.wr-rv { opacity: 0; transform: translateY(24px); transition: opacity 1s cubic-bezier(.2,.7,.2,1) var(--d, 0s), transform 1s cubic-bezier(.2,.7,.2,1) var(--d, 0s); }
+.wr-rv.wr-visible { opacity: 1; transform: none; }
+
+/* ── 태블릿 ── */
+@media (max-width: 980px) {
+  .wr-card { grid-template-columns: minmax(0, 1fr); padding: 44px 0; }
+  .wr-quote-icon { grid-column: 1; grid-row: 1; }
+  .wr-quote-text { grid-column: 1; grid-row: 2; max-width: none; }
+  .wr-person { grid-column: 1; grid-row: 3; margin-top: 28px; }
+}
 /* ── 모바일 ── */
-@media (max-width: 768px) {
-  .wr-divider { padding: 0 20px; }
-  .wr-grid-section { padding: 48px 20px 72px; }
-  .wr-grid { grid-template-columns: 1fr; gap: 16px; }
-  .wr-card-wide { grid-column: span 1; }
-  .wr-card { padding: 24px; }
+@media (max-width: 740px) {
+  .wr-grid-section { width: calc(100% - 40px); padding: 64px 0 80px; }
+  .wr-section-label { margin-bottom: 20px; }
+  .wr-card { padding: 36px 0; }
+  .wr-quote-icon { margin-bottom: 16px; }
+  .wr-quote-icon svg { width: 22px; height: 17px; }
+  .wr-quote-text { font-size: 16px; line-height: 1.85; }
+  .wr-card-wide .wr-quote-text { font-size: 18px; line-height: 1.75; }
+  .wr-person { margin-top: 24px; gap: 14px; }
+  .wr-avatar { width: 52px; height: 52px; }
+  .wr-person-name { font-size: 17px; }
+  .wr-person-title { margin-top: 4px; font-size: 13.5px; }
 }
 </style>
 
@@ -184,17 +146,17 @@ import PageHero from '../../components/PageHero.astro';
   <!-- 카드 그리드 -->
   <section class="wr-grid-section">
 
-    <div class="wr-section-label">
+    <h2 class="wr-section-label">
       <span class="wl-ko">목회자 추천사</span>
       <span class="wl-en">Pastor Endorsements</span>
-    </div>
+    </h2>
 
     <div class="wr-grid">
 
       <!-- 카드 1 — 이동원 목사 (와이드) -->
       <div class="wr-card wr-card-wide">
         <div class="wr-quote-icon">
-          <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="none" aria-hidden="true">
             <path d="M0 14V8.4C0 6.13333 0.6 4.06667 1.8 2.2C3 0.333333 4.73333 0 7 0L7.8 1.4C6.33333 1.8 5.13333 2.53333 4.2 3.6C3.26667 4.66667 2.8 5.86667 2.8 7.2H5.6V14H0ZM10.4 14V8.4C10.4 6.13333 11 4.06667 12.2 2.2C13.4 0.333333 15.1333 0 17.4 0L18 1.4C16.5333 1.8 15.3333 2.53333 14.4 3.6C13.4667 4.66667 13 5.86667 13 7.2H16V14H10.4Z" fill="white" fill-opacity="0.9"/>
           </svg>
         </div>
@@ -214,7 +176,7 @@ import PageHero from '../../components/PageHero.astro';
       <!-- 카드 2 — 배국순 목사 -->
       <div class="wr-card">
         <div class="wr-quote-icon">
-          <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="none" aria-hidden="true">
             <path d="M0 14V8.4C0 6.13333 0.6 4.06667 1.8 2.2C3 0.333333 4.73333 0 7 0L7.8 1.4C6.33333 1.8 5.13333 2.53333 4.2 3.6C3.26667 4.66667 2.8 5.86667 2.8 7.2H5.6V14H0ZM10.4 14V8.4C10.4 6.13333 11 4.06667 12.2 2.2C13.4 0.333333 15.1333 0 17.4 0L18 1.4C16.5333 1.8 15.3333 2.53333 14.4 3.6C13.4667 4.66667 13 5.86667 13 7.2H16V14H10.4Z" fill="white" fill-opacity="0.9"/>
           </svg>
         </div>
@@ -234,7 +196,7 @@ import PageHero from '../../components/PageHero.astro';
       <!-- 카드 3 — 이명규 목사 -->
       <div class="wr-card">
         <div class="wr-quote-icon">
-          <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="none" aria-hidden="true">
             <path d="M0 14V8.4C0 6.13333 0.6 4.06667 1.8 2.2C3 0.333333 4.73333 0 7 0L7.8 1.4C6.33333 1.8 5.13333 2.53333 4.2 3.6C3.26667 4.66667 2.8 5.86667 2.8 7.2H5.6V14H0ZM10.4 14V8.4C10.4 6.13333 11 4.06667 12.2 2.2C13.4 0.333333 15.1333 0 17.4 0L18 1.4C16.5333 1.8 15.3333 2.53333 14.4 3.6C13.4667 4.66667 13 5.86667 13 7.2H16V14H10.4Z" fill="white" fill-opacity="0.9"/>
           </svg>
         </div>
@@ -254,7 +216,7 @@ import PageHero from '../../components/PageHero.astro';
       <!-- 카드 4 — 서종식 목사 -->
       <div class="wr-card">
         <div class="wr-quote-icon">
-          <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="none" aria-hidden="true">
             <path d="M0 14V8.4C0 6.13333 0.6 4.06667 1.8 2.2C3 0.333333 4.73333 0 7 0L7.8 1.4C6.33333 1.8 5.13333 2.53333 4.2 3.6C3.26667 4.66667 2.8 5.86667 2.8 7.2H5.6V14H0ZM10.4 14V8.4C10.4 6.13333 11 4.06667 12.2 2.2C13.4 0.333333 15.1333 0 17.4 0L18 1.4C16.5333 1.8 15.3333 2.53333 14.4 3.6C13.4667 4.66667 13 5.86667 13 7.2H16V14H10.4Z" fill="white" fill-opacity="0.9"/>
           </svg>
         </div>
@@ -274,7 +236,7 @@ import PageHero from '../../components/PageHero.astro';
       <!-- 카드 5 — 김정서 목사 -->
       <div class="wr-card">
         <div class="wr-quote-icon">
-          <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="none" aria-hidden="true">
             <path d="M0 14V8.4C0 6.13333 0.6 4.06667 1.8 2.2C3 0.333333 4.73333 0 7 0L7.8 1.4C6.33333 1.8 5.13333 2.53333 4.2 3.6C3.26667 4.66667 2.8 5.86667 2.8 7.2H5.6V14H0ZM10.4 14V8.4C10.4 6.13333 11 4.06667 12.2 2.2C13.4 0.333333 15.1333 0 17.4 0L18 1.4C16.5333 1.8 15.3333 2.53333 14.4 3.6C13.4667 4.66667 13 5.86667 13 7.2H16V14H10.4Z" fill="white" fill-opacity="0.9"/>
           </svg>
         </div>
@@ -298,28 +260,21 @@ import PageHero from '../../components/PageHero.astro';
 
 <script is:inline>
 (function () {
-
-  // 카드 스크롤 reveal
-  var cards = document.querySelectorAll('.wr-card');
-  if ('IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          var el = entry.target;
-          var delay = (parseInt(el.dataset.wrDelay) || 0) * 100;
-          setTimeout(function() { el.classList.add('wr-visible'); }, delay);
-          io.unobserve(el);
-        }
-      });
-    }, { threshold: 0.08 });
-    cards.forEach(function(card, i) {
-      card.dataset.wrDelay = i;
-      io.observe(card);
+  // 추천사 움직임: 스크롤하면 한 줄씩 아래에서 떠오른다.
+  // 움직임 줄이기 설정이거나 IntersectionObserver 가 없으면 아무것도 하지 않는다 — 처음부터 그대로 다 보인다.
+  if (!('IntersectionObserver' in window)) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var items = [].slice.call(document.querySelectorAll('.wr-section-label, .wr-card'));
+  items.forEach(function (el, i) {
+    el.style.setProperty('--d', (i < 3 ? i : 0) * 0.08 + 's');
+    el.classList.add('wr-rv');
+  });
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) { entry.target.classList.add('wr-visible'); io.unobserve(entry.target); }
     });
-  } else {
-    cards.forEach(function(c) { c.classList.add('wr-visible'); });
-  }
-
+  }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+  items.forEach(function (el) { io.observe(el); });
 })();
 </script>
 </BaseLayout>
