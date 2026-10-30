@@ -162,16 +162,24 @@ test('추천서: 메일 링크로 열고 한 번만 제출, 답변은 암호화 
     const link = /\/reference\/\?t=([A-Za-z0-9_-]+)/.exec(t.mails.find(m => m.to[0] === 'pastor@x.com').html)[1];
 
     assert.equal((await t.call(REF, 'GET', { query: '?t=nope' })).status, 404);
-    const form = await t.call(REF, 'GET', { query: `?t=${link}` });
+    const gate = await t.call(REF, 'GET', { query: `?t=${link}` });
+    assert.equal(gate.needVerify, true);
+    assert.equal(gate.emailHint, 'pa•••@x.com');
+    assert.equal(gate.applicant, undefined, '본인 확인 전에는 이름을 내주지 않는다');
+    assert.equal((await t.call(REF, 'POST', { body: { t: link, answers: ANSWERS } })).status, 401, '본인 확인 없이는 제출할 수 없다');
+    assert.equal((await t.call(REF, 'POST', { body: { t: link, action: 'verify', email: 'someone@x.com' } })).status, 403);
+    const form = await t.call(REF, 'POST', { body: { t: link, action: 'verify', email: ' Pastor@X.com ' } });
+    const v = form.v;
+    assert.ok(v);
     assert.equal(form.status, 200);
     assert.match(form.applicant, /Anna Lee/);
     assert.equal(form.n, 1);
     assert.ok(form.sections.some(s => s.fields.some(f => f.type === 'rating')));
 
-    const missing = await t.call(REF, 'POST', { body: { t: link, answers: { ...ANSWERS, certify: false } } });
+    const missing = await t.call(REF, 'POST', { body: { t: link, v, answers: { ...ANSWERS, certify: false } } });
     assert.ok(missing.missing.includes('certify'));
-    assert.equal((await t.call(REF, 'POST', { body: { t: link, answers: ANSWERS } })).status, 200);
-    assert.equal((await t.call(REF, 'POST', { body: { t: link, answers: ANSWERS } })).status, 409);
+    assert.equal((await t.call(REF, 'POST', { body: { t: link, v, answers: ANSWERS } })).status, 200);
+    assert.equal((await t.call(REF, 'POST', { body: { t: link, v, answers: ANSWERS } })).status, 409);
     const again = await t.call(REF, 'GET', { query: `?t=${link}` });
     assert.deepEqual(Object.keys(again), ['status'], '제출 후 링크는 제출 완료만 알려 주고 이름 등은 내주지 않는다');
     assert.equal(again.status, 200);
@@ -246,7 +254,8 @@ test('추천인 단계 \'다음\': 바로 요청 메일 · 같은 주소면 다�
     await t.call(REF, 'GET', { query: `?t=${link}` });
     assert.equal((await t.call(ACC, 'GET', { token })).account.refs[1].openedAt, opened, '처음 연 때만 남긴다');
     // 지원자가 제출하기 전에 추천인이 먼저 제출
-    assert.equal((await t.call(REF, 'POST', { body: { t: link, answers: ANSWERS } })).status, 200);
+    const { v } = await t.call(REF, 'POST', { body: { t: link, action: 'verify', email: 'pastor2@x.com' } });
+    assert.equal((await t.call(REF, 'POST', { body: { t: link, v, answers: ANSWERS } })).status, 200);
     assert.equal((await t.call(ACC, 'GET', { token })).account.refs[1].status, 'completed');
     assert.equal((await send(1, moved, { resend: true })).sent, false, '이미 받은 추천서는 다시 요청하지 않는다');
 
@@ -279,6 +288,21 @@ test('추천서 요청 메일: 한국어 이름이 있으면 한국어 제목 ·
     assert.ok(!/Confidential|비공개\)/.test(m.subject + m.html), '스팸처럼 보이는 표현을 쓰지 않는다');
     assert.match(m.text, /추천서 작성하기: https:\/\/wolko\.org\/reference\/\?t=/);
     assert.match(t.mails.find(x => x.to[0] === 'anna@x.com').from, /^월코 Word of Life Korea </, '임시 비밀번호 메일도 단체 이름');
+  } finally { t.restore(); }
+});
+
+test('추천서 본인 확인: 틀린 이메일 5번이면 15분 잠금 · 다른 링크의 확인표로는 제출할 수 없다', async () => {
+  const t = setup();
+  try {
+    const { token } = await t.signIn();
+    await t.call(ACC, 'POST', { token, body: { action: 'sendReference', n: 1, values: FULL, step: 4 } });
+    await t.call(ACC, 'POST', { token, body: { action: 'sendReference', n: 2, values: FULL, step: 5 } });
+    const linkOf = to => /\/reference\/\?t=([A-Za-z0-9_-]+)/.exec(t.mails.find(m => m.to[0] === to).html)[1];
+    const l1 = linkOf('pastor@x.com'), l2 = linkOf('mary@x.com');
+    for (let i = 0; i < 5; i++) assert.equal((await t.call(REF, 'POST', { body: { t: l1, action: 'verify', email: 'x@x.com' } })).status, 403);
+    assert.equal((await t.call(REF, 'POST', { body: { t: l1, action: 'verify', email: 'pastor@x.com' } })).status, 429, '잠긴 동안은 맞는 이메일도 거절');
+    const { v: v2 } = await t.call(REF, 'POST', { body: { t: l2, action: 'verify', email: 'mary@x.com' } });
+    assert.equal((await t.call(REF, 'POST', { body: { t: l1, v: v2, answers: ANSWERS } })).status, 401, '다른 링크의 확인표는 쓸 수 없다');
   } finally { t.restore(); }
 });
 

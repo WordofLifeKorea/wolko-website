@@ -1,7 +1,9 @@
 /**
  * 추천서 작성 — 메일로 받은 개인 링크(/reference/?t=…)가 부르는 공개 API. 포탈 로그인 없음, 토큰이 곧 권한.
- *   GET  /api/apply/reference?t=TOKEN   지원자 이름 · 추천인 이름 · 상태 · 질문
- *   POST /api/apply/reference { t, answers }   추천서 제출(한 번만) → 암호화 저장 · 신청서의 추천인 상태 '답변 받음' · 담당자 알림
+ *   GET  /api/apply/reference?t=TOKEN                    상태와 이메일 힌트(pa•••@x.com)만 — 이름·질문은 본인 확인 뒤에
+ *   POST /api/apply/reference { t, action:'verify', email } 요청을 받은 이메일 주소를 맞게 적으면 확인표(v, 3시간)와 지원자·추천인 이름·질문
+ *   POST /api/apply/reference { t, v, answers }           추천서 제출(한 번만, 확인표 필요) → 암호화 저장 · 신청서의 추천인 상태 '답변 받음' · 담당자 알림
+ * 링크가 다른 사람에게 전달돼도 요청을 받은 이메일을 모르면 열어 볼 수도, 대신 써 낼 수도 없다.
  */
 import { REFERENCE_SECTIONS, cleanReferenceAnswers, missingReference, refKey, TOKEN_RE, saveReferenceAnswers } from '../../lib/serveReference.js';
 import { loadApplication, loadFullApplication, saveApplication, addAudit } from '../../lib/serveApplication.js';
@@ -22,6 +24,24 @@ async function lookup(env, token) {
   return { key, record };
 }
 
+const VERIFY_HOURS = 3;
+const MAX_WRONG = 5;   // 틀린 이메일 5번이면 그 링크는 15분 잠금
+const sha = async text => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)))].map(b => b.toString(16).padStart(2, '0')).join('');
+const randomV = () => btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(24)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+/** 이메일 힌트: 앞 두 글자와 도메인만 */
+const emailHint = email => { const [u, d] = String(email).split('@'); return `${u.slice(0, u.length > 2 ? 2 : 1)}•••@${d}`; };
+async function verified(env, key, v) {
+  if (!/^[A-Za-z0-9_-]{20,64}$/.test(String(v || ''))) return false;
+  const rec = await env.CAMP_KV.get(`serve:refv:${await sha(v)}`, 'json');
+  return rec?.key === key;
+}
+async function formData(env, r) {
+  const app = await loadApplication(env, r.appId);
+  const docNo = app?.refNo ? `REF-${app.refNo}-${r.n}` : '';
+  const dueAt = new Date(new Date(r.sentAt).getTime() + REPLY_DAYS * 86400000).toISOString();   // 요청 메일에 적은 회신 기한과 같다
+  return { applicant: r.applicant, referee: r.name, refereeKo: r.nameKo, n: r.n, status: r.status, expiresAt: r.expiresAt, sentAt: r.sentAt, dueAt, docNo, sections: REFERENCE_SECTIONS };
+}
+
 const tooMany = () => fail('Too many requests. Please try again later. · 요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.', 429);
 const ipOf = request => request.headers.get('CF-Connecting-IP') || '';
 
@@ -38,10 +58,7 @@ export async function onRequestGet({ env, request }) {
     r.openedAt = new Date().toISOString();
     await env.CAMP_KV.put(found.key, JSON.stringify(r), { expirationTtl: Math.max(60, Math.floor((new Date(r.expiresAt).getTime() - Date.now()) / 1000)) });
   }
-  const app = await loadApplication(env, r.appId);
-  const docNo = app?.refNo ? `REF-${app.refNo}-${r.n}` : '';
-  const dueAt = new Date(new Date(r.sentAt).getTime() + REPLY_DAYS * 86400000).toISOString();   // 요청 메일에 적은 회신 기한과 같다
-  return Response.json({ applicant: r.applicant, referee: r.name, refereeKo: r.nameKo, n: r.n, status: r.status, completedAt: r.completedAt || null, expiresAt: r.expiresAt, sentAt: r.sentAt, dueAt, docNo, sections: REFERENCE_SECTIONS }, { headers: H });
+  return Response.json({ status: r.status, needVerify: true, emailHint: emailHint(r.email) }, { headers: H });
 }
 
 export async function onRequestPost({ env, request, waitUntil }) {
@@ -53,6 +70,22 @@ export async function onRequestPost({ env, request, waitUntil }) {
   if (!found) return fail('This link is invalid or has expired. · 링크가 올바르지 않거나 기한이 지났습니다.', 404);
   const { key, record } = found;
   if (record.status === 'completed') return fail('This reference has already been submitted. · 이미 제출된 추천서입니다.', 409);
+
+  if (body?.action === 'verify') {
+    const failKey = `serve:refvfail:${key}`;
+    const wrong = parseInt(await env.CAMP_KV.get(failKey), 10) || 0;
+    if (wrong >= MAX_WRONG) return fail('Too many wrong attempts. Please try again in 15 minutes. · 여러 번 틀려 15분 동안 잠겼습니다. 잠시 후 다시 시도해 주세요.', 429);
+    if (normalizeEmail(body.email) !== record.email) {
+      await env.CAMP_KV.put(failKey, String(wrong + 1), { expirationTtl: 15 * 60 });
+      return fail('This email does not match the one we sent the request to. · 요청을 보낸 이메일 주소와 다릅니다.', 403);
+    }
+    await env.CAMP_KV.delete(failKey);
+    const v = randomV();
+    await env.CAMP_KV.put(`serve:refv:${await sha(v)}`, JSON.stringify({ key }), { expirationTtl: VERIFY_HOURS * 3600 });
+    return Response.json({ ok: true, v, ...(await formData(env, record)) }, { headers: H });
+  }
+
+  if (!(await verified(env, key, body?.v))) return fail('Please confirm your email first. · 먼저 이메일로 본인 확인을 해 주세요.', 401, { needVerify: true });
   const answers = cleanReferenceAnswers(body?.answers);
   const missing = missingReference(answers);
   if (missing.length) return fail('Please complete all required fields. · 필수 항목을 모두 작성해 주세요.', 400, { missing });

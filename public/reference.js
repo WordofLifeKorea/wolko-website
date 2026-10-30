@@ -11,6 +11,7 @@
       secure: '제출하면 수정할 수 없습니다. 내용은 암호화하여 보관됩니다.', submit: '추천서 제출', submitting: '제출하는 중…', optional: '선택', select: '선택',
       errRequired: '이 항목을 적어 주세요.', errStep: '빠진 항목이 있습니다. 표시된 곳을 확인해 주세요.', errNet: '제출하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.',
       invalid: '링크가 올바르지 않거나 기한이 지났습니다. 월코로 문의해 주세요.', already: '이미 제출된 추천서입니다. 감사합니다.',
+      vTitle: '본인 확인', vLead: function (h) { return '추천서 요청 메일을 받으신 이메일 주소를 입력해 주세요. (' + h + ')'; }, vLabel: '이메일 주소', vBtn: '확인', vChecking: '확인하는 중…', vNote: '요청 메일을 받으신 분만 추천서를 작성하실 수 있도록 한 번 확인합니다.', vWrong: '요청 메일을 보낸 이메일 주소와 다릅니다. 다시 확인해 주세요.', vLocked: '여러 번 틀려 15분 동안 잠겼습니다. 잠시 후 다시 시도해 주세요.', vAgain: '확인한 지 시간이 지나 다시 확인이 필요합니다. 적어 주신 내용은 그대로 있습니다.',
       doneTitle: '추천서를 잘 받았습니다. 감사합니다.', doneLead: '귀한 시간을 내어 주셔서 감사드립니다. 이 창은 닫으셔도 됩니다.', footNote: '월코 (Word of Life Korea) · 이 문서는 스태프 선발에만 사용됩니다.' },
     en: { title: 'Reference', sub: 'Staff Applicant Reference', docNo: 'Document no.', sent: 'Issued', security: 'Viewed by', secret: 'Reviewers only', loading: 'Loading…',
       applicant: 'Applicant', position: 'Position', positionV: 'Staff', referee: 'Referee', due: 'Reply by',
@@ -19,6 +20,7 @@
       secure: 'Once submitted, this reference cannot be changed. It is stored encrypted.', submit: 'Submit reference', submitting: 'Submitting…', optional: 'Optional', select: 'Select',
       errRequired: 'Please fill this in.', errStep: 'Some answers are missing. Please check the marked items.', errNet: 'Could not submit. Please check your connection and try again.',
       invalid: 'This link is invalid or has expired. Please contact Word of Life Korea.', already: 'This reference has already been submitted. Thank you.',
+      vTitle: 'Confirm your email', vLead: function (h) { return 'Please enter the email address where you received our request (' + h + ').'; }, vLabel: 'Email address', vBtn: 'Continue', vChecking: 'Checking…', vNote: 'We ask this so that only the person who received our request can write this reference.', vWrong: 'This is not the address we sent the request to. Please check and try again.', vLocked: 'Too many wrong attempts. Please try again in 15 minutes.', vAgain: 'Please confirm your email again. Your answers are kept.',
       doneTitle: 'Thank you. Your reference has been received.', doneLead: 'We are grateful for the time you have given. You may close this page.', footNote: 'Word of Life Korea · This document is used only for staff selection.' },
   };
   var lang = (function () { try { var v = localStorage.getItem('wolko-ref-lang'); if (v === 'ko' || v === 'en') return v; } catch (e) {} return /^ko/i.test(navigator.language || '') ? 'ko' : 'en'; })();
@@ -26,7 +28,8 @@
   var tx = function (o) { return (o && (o[lang] || o.en)) || ''; };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var fmt = function (iso) { return new Date(iso).toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', lang === 'ko' ? { year: 'numeric', month: 'long', day: 'numeric' } : { dateStyle: 'long' }); };
-  var data = null, values = {}, errors = {};
+  var data = null, values = {}, errors = {}, gate = null, verifyV = '';
+  var VKEY = 'wolko-ref-ok:' + token;   // 같은 창에서 새로 고쳐도 다시 묻지 않게(창을 닫으면 사라진다)
   var visible = function (f) { return !f.showIf || values[f.showIf.field] === f.showIf.equals; };
   var req = function (f) { return f.required ? '<span class="ap-req" aria-hidden="true">*</span>' : '<span class="ap-opt">' + esc(t('optional')) + '</span>'; };
 
@@ -101,10 +104,36 @@
       var body = await res.json().catch(function () { return {}; });
       if (!res.ok) throw new Error(t('invalid'));
       if (body.status === 'completed') { $('rfStatus').textContent = t('already'); return; }   // 제출 후에는 이름 등 정보를 받지 않는다
-      data = body;
-      $('rfStatus').hidden = true; $('rfBody').hidden = false; render();
+      gate = body;
+      var saved = ''; try { saved = sessionStorage.getItem(VKEY) || ''; } catch (e) {}
+      if (saved && await verify(saved, true)) return;
+      showVerify();
     } catch (e) { $('rfStatus').textContent = e.message; $('rfStatus').classList.add('bad'); }
   }
+
+  /* 본인 확인: 요청 메일을 받은 주소를 적어야 이름·질문이 보이고 제출할 수 있다 */
+  function showVerify(msg) {
+    $('rfStatus').hidden = true; $('rfBody').hidden = true; $('rfVerify').hidden = false;
+    $('rfVerifyLead').textContent = t('vLead')(gate ? gate.emailHint : '');
+    $('rfVerifyErr').hidden = !msg; $('rfVerifyErr').textContent = msg || '';
+  }
+  async function verify(email, quiet) {
+    var btn = $('rfVerifyBtn'); btn.disabled = true; btn.textContent = t('vChecking');
+    try {
+      var res = await fetch('/api/apply/reference', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ t: token, action: 'verify', email: email }) });
+      var body = await res.json().catch(function () { return {}; });
+      if (!res.ok) throw new Error(res.status === 403 ? t('vWrong') : res.status === 429 ? t('vLocked') : res.status === 404 ? t('invalid') : (body.error || t('errNet')));
+      verifyV = body.v; data = body;
+      try { sessionStorage.setItem(VKEY, email); } catch (e) {}
+      $('rfVerify').hidden = true; $('rfStatus').hidden = true; $('rfBody').hidden = false; render();
+      return true;
+    } catch (err) {
+      try { sessionStorage.removeItem(VKEY); } catch (e) {}
+      if (!quiet) showVerify(err.message);
+      return false;
+    } finally { btn.disabled = false; btn.textContent = t('vBtn'); }
+  }
+  $('rfVerify').addEventListener('submit', function (e) { e.preventDefault(); var v = $('rfVerifyEmail').value.trim(); if (!v) { $('rfVerifyEmail').focus(); return; } verify(v); });
 
   $('rfForm').addEventListener('input', function (e) {
     var f = e.target.getAttribute('data-f'); if (!f) return;
@@ -121,12 +150,13 @@
     if (Object.keys(errors).length) { rerender(); showErr(t('errStep')); var el = document.querySelector('.has-err'); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
     var btn = $('rfSubmit'); btn.disabled = true; btn.textContent = t('submitting'); showErr('');
     try {
-      var res = await fetch('/api/apply/reference', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ t: token, answers: values }) });
+      var res = await fetch('/api/apply/reference', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ t: token, v: verifyV, answers: values }) });
       var body = await res.json().catch(function () { return {}; });
+      if (res.status === 401 && body.needVerify) { btn.disabled = false; btn.textContent = t('submit'); showVerify(t('vAgain')); window.scrollTo({ top: 0 }); return; }   // 확인 시간이 지나면 다시 확인(적은 내용은 그대로)
       if (!res.ok) throw new Error(body.error || t('errNet'));
       $('rfBody').hidden = true; $('rfDone').hidden = false; window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) { showErr(err.message || t('errNet')); btn.disabled = false; btn.textContent = t('submit'); }
   });
-  document.querySelectorAll('.ap-lang button').forEach(function (b) { b.addEventListener('click', function () { lang = b.dataset.lang; try { localStorage.setItem('wolko-ref-lang', lang); } catch (e) {} if (data) rerender(); else render(); }); });
+  document.querySelectorAll('.ap-lang button').forEach(function (b) { b.addEventListener('click', function () { lang = b.dataset.lang; try { localStorage.setItem('wolko-ref-lang', lang); } catch (e) {} if (data) rerender(); else render(); if (gate && !$('rfVerify').hidden) $('rfVerifyLead').textContent = t('vLead')(gate.emailHint); }); });
   render(); load();
 })();
