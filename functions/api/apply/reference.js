@@ -56,7 +56,7 @@ export async function onRequestPost({ env, request, waitUntil }) {
     const notify = async () => {
       if (!env.RESEND_API_KEY) return;
       const to = [...new Set([...reviewersFor(lang), ...MASTER_EMAILS.map(normalizeEmail)])];
-      await sendEmail(env, { to, subject: lang === 'en' ? '[WOLKO] A reference was submitted' : '[WOLKO] 추천서가 도착했습니다', html: `<div style="font-family:'Apple SD Gothic Neo',Arial,sans-serif;font-size:15px;line-height:1.7;color:#0d1b24;"><p>${lang === 'en' ? `Reference ${record.n} has been submitted for application ${app.refNo || ''}.` : `신청서 ${app.refNo || ''}의 추천인 ${record.n} 추천서가 도착했습니다.`}</p><p><a href="${PAGE_URL}">${PAGE_URL}</a></p></div>` }).catch(e => console.error('reference notify failed:', e.message));
+      await sendEmail(env, { to, subject: lang === 'en' ? '[WOLKO] A reference was submitted' : '[WOLKO] 추천서가 도착했습니다', html: `<div style="word-break:keep-all;font-family:'Apple SD Gothic Neo',Arial,sans-serif;font-size:15px;line-height:1.7;color:#0d1b24;"><p>${lang === 'en' ? `Reference ${record.n} has been submitted for application ${app.refNo || ''}.` : `신청서 ${app.refNo || ''}의 추천인 ${record.n} 추천서가 도착했습니다.`}</p><p><a href="${PAGE_URL}">${PAGE_URL}</a></p></div>` }).catch(e => console.error('reference notify failed:', e.message));
     };
     if (waitUntil) waitUntil(notify()); else await notify();
   }

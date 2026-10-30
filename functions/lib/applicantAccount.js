@@ -68,7 +68,7 @@ export async function issueTempPassword(env, { email, name, lang, origin }) {
 }
 
 export function tempPasswordEmailHtml({ name, password, ko, link }) {
-  return `<div style="font-family:'Apple SD Gothic Neo',Arial,sans-serif;font-size:15px;line-height:1.75;color:#13242d;max-width:560px;">
+  return `<div style="word-break:keep-all;font-family:'Apple SD Gothic Neo',Arial,sans-serif;font-size:15px;line-height:1.75;color:#13242d;max-width:560px;">
 <div style="padding-bottom:16px;border-bottom:2px solid #3a3a3c;">${MAIL_LOGO}</div>
 <h2 style="margin:22px 0 14px;font-size:20px;">${ko ? '스태프 지원서 임시 비밀번호' : 'Your temporary password'}</h2>
 <p>${ko ? `${esc(name) || '지원자'}님, 아래 임시 비밀번호로 로그인하면 지원서를 저장하며 이어서 작성할 수 있습니다.` : `Dear ${esc(name) || 'applicant'}, sign in with the temporary password below to save your application and continue it at any time.`}</p>

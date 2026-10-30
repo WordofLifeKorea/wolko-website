@@ -117,7 +117,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 /** 공식 추천서 요청 메일 — 레터헤드 · 요청 내용 · 버튼 · 기한 · 비밀 유지 안내 (한·영 함께) */
 export function referenceEmailHtml({ refName, applicant, link, due }) {
   return `<!doctype html><html><body style="margin:0;padding:0;background:#f2f5f7;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f5f7;padding:32px 12px;font-family:'Apple SD Gothic Neo','Malgun Gothic',Arial,sans-serif;color:#13242d;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f5f7;padding:32px 12px;word-break:keep-all;font-family:'Apple SD Gothic Neo','Malgun Gothic',Arial,sans-serif;color:#13242d;">
 <tr><td align="center">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border:1px solid #dfe7eb;border-radius:4px;">
 <tr><td style="padding:28px 36px 20px;border-bottom:2px solid #3a3a3c;">

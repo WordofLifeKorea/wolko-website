@@ -6,6 +6,11 @@
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: #fff; color: var(--ink); font: 400 15px/1.65 var(--sans); }
+/* 한국어 줄바꿈: 단어 중간에서 끊지 않고(keep-all), 마지막 줄에 한 단어만 남지 않게(pretty). 긴 이메일·주소만 예외로 끊는다 */
+body { word-break: keep-all; overflow-wrap: break-word; }
+p, dd, li, td, th, label, legend, .ap-label, .ap-fhint, .ap-ferr { text-wrap: pretty; }
+h1, h2, h3 { text-wrap: balance; }
+.ap-acct-who, .ap-sum dd, .rf-meta td { overflow-wrap: anywhere; }
 button, input, select, textarea { font: inherit; color: inherit; }
 [hidden] { display: none !important; }
 a { color: var(--navy); }
