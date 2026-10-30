@@ -1,5 +1,21 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// 주요 사역 — 왼쪽 목록과 오른쪽 큰 사진이 같은 목록을 쓴다
+const ministries = [
+  { href: '/camp', img: '/images/ministries/camp.jpg', tag: 'CAMP MINISTRY',
+    ko: '캠프 사역', en: 'Camp Ministry',
+    descKo: '복음을 집중적으로 경험하는 월코의 핵심 사역입니다.', descEn: "WOLKO's signature ministry where youth encounter the Gospel in a focused setting." },
+  { href: '/youth', img: '/images/ministries/youth.jpg', tag: 'STUDENT MINISTRY',
+    ko: '청소년 사역 & 코어 트레이닝', en: 'Youth Ministry & Core Training',
+    descKo: '교회와 일상 속에서 지속적인 신앙 성장을 돕고 복음 리더로 세웁니다.', descEn: 'Helping students grow in faith and equipping them as Gospel-centered leaders.' },
+  { href: '/jr-syme', img: '/images/ministries/syme.jpg', tag: 'DISCIPLESHIP',
+    ko: 'Jr. SYME', en: 'Jr. SYME',
+    descKo: '중·고등학생 대상 여름·겨울방학 3주 영어 제자훈련 프로그램입니다.', descEn: 'A 3-week English discipleship training program for middle and high school students each vacation.' },
+  { href: '/wolbi-jeju', img: '/images/ministries/wolbi.jpg', tag: 'BIBLE INSTITUTE',
+    ko: '제주월비 (WOLBI)', en: 'WOLBI Jeju',
+    descKo: '제주에서 이루어지는 깊이 있는 성경학교 훈련입니다.', descEn: 'A deep Bible training ministry in Jeju where students are grounded through the Word of God.' },
+];
 ---
 
 <BaseLayout
@@ -69,7 +85,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   /* ── 글꼴 — 홈 화면과 같게: 제목·숫자는 G마켓 산스, 본문은 Pretendard (편지 카드의 손글씨 느낌 글꼴은 그대로) ── */
   .ab-hero, .section { font-family: var(--ff-sans); }
   .hero-inner h1, .hero-stat-num, .section-title, .history-year, .history-card h3, .vismis-card h3,
-  .value-title, .value-num, .commit-card h4, .commit-num, .ministry-card h4 { font-family: var(--ff-serif); }
+  .value-title, .value-num, .commit-card h4, .commit-num, .mi-title, .ms-title { font-family: var(--ff-serif); }
 
   /* ── 움직임 — 자바스크립트가 html 에 .wl-motion 을 붙일 때만 (움직임 줄이기 설정이면 붙이지 않아 처음부터 다 보인다) ── */
   @keyframes abHeroZoom { from { transform: scale(1.08); } to { transform: none; } }
@@ -210,34 +226,71 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .commit-card:hover h4 { color:#fff; }
   .commit-card:hover p { color:rgba(255,255,255,0.84); }
 
-  /* ── MINISTRIES ── */
-  .ministry-inner { max-width:1240px; margin:0 auto; }
-  .ministry-head { max-width:760px; margin:0 auto 56px; text-align:center; }
-  .ministry-grid { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:18px; }
-  .ministry-card {
-    --photo: none;
-    position:relative; overflow:hidden; isolation:isolate; min-height:430px;
-    display:flex; flex-direction:column; justify-content:flex-end; gap:12px;
-    padding:30px 26px; border-radius:var(--r-lg); border:1px solid rgba(255,255,255,0.14);
-    background:#0b2c3a; color:#fff; text-decoration:none;
-    box-shadow:0 14px 34px rgba(0,50,70,0.16);
-    transition:transform .25s, box-shadow .25s;
-  }
-  /* 사진 — 마우스를 올리면 천천히 확대 */
-  .ministry-card::before { content:""; position:absolute; inset:0; z-index:-2; background:var(--photo) center/cover no-repeat; transform:scale(1.02); transition:transform .8s cubic-bezier(.2,.7,.2,1); }
-  /* 글자가 잘 읽히도록 아래쪽을 어둡게 */
-  .ministry-card::after { content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(180deg, rgba(3,26,36,0.18) 0%, rgba(3,26,36,0.42) 38%, rgba(3,24,33,0.88) 78%, rgba(3,22,31,0.95) 100%); transition:opacity .3s; }
-  .ministry-card:hover { transform:translateY(-6px); box-shadow:0 26px 54px rgba(0,50,70,0.28); }
-  .ministry-card:hover::before { transform:scale(1.09); }
-  .ministry-card-tag { font-size:11px; font-weight:800; letter-spacing:0.08em; color:#8fe3f7; }
-  .ministry-card h4 { font-size:21px; font-weight:800; letter-spacing:-0.02em; color:#fff; line-height:1.3; text-shadow:0 2px 12px rgba(0,0,0,0.35); }
-  .ministry-card p { font-size:14px; line-height:1.8; color:rgba(255,255,255,0.86); }
-  .ministry-card-arrow { padding-top:8px; font-size:13px; font-weight:800; color:#fff; display:flex; align-items:center; gap:6px; opacity:.9; transition:gap .2s, opacity .2s; }
-  .ministry-card:hover .ministry-card-arrow { opacity:1; gap:10px; }
+  /* ── MINISTRIES: 왼쪽 목록에서 고르면 오른쪽 큰 사진이 그 사역으로 바뀐다 ── */
+  .ministry-inner { max-width:1240px; margin:0 auto; display:grid; grid-template-columns:minmax(0,5fr) minmax(0,7fr); gap:72px; }
+  .ministry-side { display:flex; flex-direction:column; }
+  .ministry-head .section-badge { margin-left:0; }
+  .ministry-head .section-title, .ministry-head .section-desc { text-align:left; margin-left:0; }
+  .ministry-head .section-desc { font-size:16px; line-height:1.8; }
+  .ministry-list { list-style:none; margin:40px 0 0; padding:0; border-top:1px solid #cdd7dc; }
+  .ministry-list li { position:relative; border-bottom:1px solid #cdd7dc; }
+  /* 지금 보이는 사역의 밑줄 — 저절로 넘어가는 동안은 천천히 차오르고, 다 차면 다음 사역으로 */
+  .ministry-list li::after { content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--primary); transform:scaleX(0); transform-origin:left; }
+  .ministry-list li.is-active::after { transform:scaleX(1); }
+  .ministry-list.is-auto li.is-active::after { animation:miFill 6s linear both; }
+  @keyframes miFill { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+  .mi { display:grid; grid-template-columns:44px minmax(0,1fr) 18px; gap:0 8px; align-items:center; padding:22px 0; color:#3c4f58; text-decoration:none; transition:color .3s; }
+  .mi-num { font:700 14px/1 var(--ff-serif); color:#8a9aa2; transition:color .3s; }
+  .mi-title { font-size:21px; font-weight:700; letter-spacing:-0.02em; line-height:1.35; }
+  .mi-arrow { width:16px; height:16px; color:var(--primary); opacity:0; transform:translateX(-8px); transition:opacity .3s, transform .3s; }
+  .mi:hover, .is-active .mi { color:var(--primary); }
+  .is-active .mi-num { color:var(--primary); }
+  .is-active .mi-arrow { opacity:1; transform:none; }
+  .mi-thumb, .mi-tag, .mi-desc { display:none; }   /* 모바일 목록에서만 쓴다 */
+
+  .ministry-stage { position:relative; min-height:560px; overflow:hidden; background:#0b1e27; }
+  .ms { position:absolute; inset:0; opacity:0; visibility:hidden; transition:opacity .9s, visibility 0s .9s; }
+  .ms.is-active { opacity:1; visibility:visible; transition:opacity .9s; }
+  .ms img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+  .ms::after { content:""; position:absolute; left:0; right:0; bottom:0; height:62%; background:linear-gradient(0deg, rgba(5,20,28,0.86) 0%, rgba(5,20,28,0) 100%); }
+  .ms-cap { position:absolute; left:44px; right:44px; bottom:40px; z-index:1; display:flex; justify-content:space-between; align-items:flex-end; gap:40px; color:#fff; }
+  .ms-tag { font-size:12px; font-weight:700; letter-spacing:0.14em; color:rgba(255,255,255,0.78); }
+  .ms-title { margin-top:10px; font-size:30px; font-weight:700; letter-spacing:-0.02em; line-height:1.3; color:#fff; }
+  .ms-desc { margin-top:12px; max-width:420px; font-size:15.5px; line-height:1.75; color:rgba(255,255,255,0.86); }
+  .ms-more { flex:none; height:48px; padding:0 20px; display:inline-flex; align-items:center; gap:12px; background:#fff; color:var(--primary); border-radius:2px; font-size:14px; font-weight:700; text-decoration:none; transition:gap .25s, background .25s; }
+  .ms-more:hover { gap:16px; background:#eef6f9; color:var(--primary); }
+  .ms-more svg { width:14px; height:14px; }
+  /* 사진이 바뀔 때 — 사진은 살짝 당겨지며 자리 잡고, 글은 아래에서 차례로 올라온다 */
+  :global(.wl-motion) .ms img { transform:scale(1.07); transition:transform 2.6s cubic-bezier(.2,.7,.2,1); }
+  :global(.wl-motion) .ms.is-active img { transform:none; }
+  :global(.wl-motion) .ms-cap > * > *, :global(.wl-motion) .ms-more { opacity:0; transform:translateY(18px); transition:opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1), gap .25s, background .25s; }
+  :global(.wl-motion) .ms.is-active .ms-cap > * > *, :global(.wl-motion) .ms.is-active .ms-more { opacity:1; transform:none; }
+  :global(.wl-motion) .ms.is-active .ms-tag { transition-delay:.25s; }
+  :global(.wl-motion) .ms.is-active .ms-title { transition-delay:.4s; }
+  :global(.wl-motion) .ms.is-active .ms-desc { transition-delay:.55s; }
+  :global(.wl-motion) .ms.is-active .ms-more { transition-delay:.7s, .7s, 0s, 0s; }
 
   /* ── 반응형 ── */
   @media (max-width:1050px) {
-    .ministry-grid { grid-template-columns:repeat(2,1fr); }
+    .ministry-inner { gap:44px; grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+    .ministry-stage { min-height:500px; }
+    .ms-cap { left:30px; right:30px; bottom:30px; flex-direction:column; align-items:flex-start; gap:22px; }
+    .ms-title { font-size:26px; }
+  }
+  /* 좁은 화면: 큰 사진을 걷어내고 사진 + 글이 한 줄씩 내려가는 목록으로 */
+  @media (max-width:860px) {
+    .ministry-inner { grid-template-columns:1fr; gap:0; }
+    .ministry-stage { display:none; }
+    .ministry-list { margin-top:30px; }
+    .ministry-list li::after { display:none; }
+    .mi { grid-template-columns:96px minmax(0,1fr); gap:0 18px; align-items:start; padding:20px 0; color:#102028; }
+    .mi:hover, .is-active .mi { color:#102028; }
+    .mi-num, .mi-arrow { display:none; }
+    .mi-thumb { display:block; width:96px; height:96px; background:var(--photo) center/cover no-repeat; }
+    .mi-body { display:flex; flex-direction:column; gap:5px; }
+    .mi-tag { display:block; font-size:11.5px; font-weight:700; letter-spacing:0.12em; color:#5a7380; }
+    .mi-title { font-size:18px; }
+    .mi-desc { display:block; font-size:14px; line-height:1.7; color:#587383; }
   }
   @media (max-width:860px) {
     .history-grid, .vismis-grid, .commit-grid { grid-template-columns:1fr; }
@@ -263,7 +316,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .section-title { font-size:30px; }
     .values-grid { grid-template-columns:1fr; }
     .value-card:nth-child(5) { grid-column:auto; }
-    .ministry-grid { grid-template-columns:1fr; }
     .history-card, .vismis-card { padding:34px 26px; }
     .intro-card { padding:64px 26px 40px; transform:none; }
     .intro-card::before { inset:9px; }
@@ -288,7 +340,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .history-card h3, .vismis-card h3 { color:#0a3f52; font-size:23px; }
     .history-card p, .vismis-card p { color:#4a626d; font-size:15px; line-height:1.9; }
 
-    .values-grid, .commit-grid, .ministry-grid { display:block; margin-top:30px; }
+    .values-grid, .commit-grid { display:block; margin-top:30px; }
     .value-card, .value-card:nth-child(n+4), .value-card:nth-child(5), .commit-card {
       display:grid; grid-template-columns:42px minmax(0,1fr); column-gap:14px; row-gap:3px; align-content:start;
       padding:18px 2px 20px; background:none; border:0; border-top:1px solid rgba(0,79,104,.14); border-radius:0; box-shadow:none; transform:none;
@@ -304,17 +356,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .value-card:hover .value-num { color:var(--primary); transform:none; }
     .commit-card:hover .commit-num { -webkit-text-fill-color:transparent; background:linear-gradient(160deg, var(--primary) 0%, #4cc1e6 100%); -webkit-background-clip:text; background-clip:text; transform:none; }
 
-    /* 사역 카드: 큰 사진 카드 대신 작은 사진 + 글 */
-    .ministry-head { margin-bottom:26px; }
-    .ministry-card { display:grid; grid-template-columns:64px minmax(0,1fr); column-gap:14px; row-gap:3px; align-content:start; min-height:0; padding:16px 2px 18px; background:none; border:0; border-top:1px solid rgba(0,79,104,.14); border-radius:0; box-shadow:none; color:#102028; }
-    .ministry-card::before { content:""; position:static; grid-row:1 / span 4; width:64px; height:64px; border-radius:14px; background:var(--photo) center/cover no-repeat; transform:none; z-index:auto; }
-    .ministry-card::after { display:none; }
-    .ministry-card:hover { transform:none; box-shadow:none; }
-    .ministry-card:hover::before { transform:none; }
-    .ministry-card-tag { color:#0a6a8f; }
-    .ministry-card h4 { color:#102028; text-shadow:none; font-size:18px; }
-    .ministry-card p { color:#587383; font-size:14px; line-height:1.7; }
-    .ministry-card-arrow { padding-top:2px; color:#006f90; }
+    /* 사역 목록: 사진을 조금 줄인다 */
+    .mi { grid-template-columns:76px minmax(0,1fr); gap:0 14px; padding:18px 0; }
+    .mi-thumb { width:76px; height:76px; }
+    .mi-title { font-size:17px; }
   }
 </style>
 
@@ -529,39 +574,49 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <!-- ══ MAJOR MINISTRIES ══ -->
 <section class="section section--bg">
   <div class="ministry-inner page-wrap">
-    <div class="ministry-head">
-      <span class="section-badge">MINISTRIES</span>
-      <h2 class="section-title"><span class="wl-ko">월코의 주요 사역</span><span class="wl-en">Major Ministries of WOLKO</span></h2>
-      <p class="section-desc">
-        <span class="wl-ko">캠프부터 훈련까지, 다음 세대가 그리스도의 제자로 세워지는 모든 현장에 월코가 함께합니다.</span>
-        <span class="wl-en">From camps to training, WOLKO serves in every place where the next generation is raised as disciples of Christ.</span>
-      </p>
+    <div class="ministry-side">
+      <div class="ministry-head">
+        <span class="section-badge">MINISTRIES</span>
+        <h2 class="section-title"><span class="wl-ko">월코의 주요 사역</span><span class="wl-en">Major Ministries of WOLKO</span></h2>
+        <p class="section-desc">
+          <span class="wl-ko">캠프부터 훈련까지, 다음 세대가 그리스도의 제자로 세워지는 모든 현장에 월코가 함께합니다.</span>
+          <span class="wl-en">From camps to training, WOLKO serves in every place where the next generation is raised as disciples of Christ.</span>
+        </p>
+      </div>
+      <ol class="ministry-list">
+        {ministries.map((m, i) => (
+          <li class:list={[{ 'is-active': i === 0 }]}>
+            <a href={m.href} class="mi">
+              <span class="mi-thumb" style={`--photo:url('${m.img}')`} aria-hidden="true"></span>
+              <span class="mi-num">{String(i + 1).padStart(2, '0')}</span>
+              <span class="mi-body">
+                <span class="mi-tag">{m.tag}</span>
+                <span class="mi-title"><span class="wl-ko">{m.ko}</span><span class="wl-en">{m.en}</span></span>
+                <span class="mi-desc"><span class="wl-ko">{m.descKo}</span><span class="wl-en">{m.descEn}</span></span>
+              </span>
+              <svg class="mi-arrow" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
+            </a>
+          </li>
+        ))}
+      </ol>
     </div>
-    <div class="ministry-grid">
-      <a href="/camp" class="ministry-card" style="--photo:url('/images/ministries/camp.jpg')">
-        <span class="ministry-card-tag">CAMP MINISTRY</span>
-        <h4><span class="wl-ko">캠프 사역</span><span class="wl-en">Camp Ministry</span></h4>
-        <p><span class="wl-ko">복음을 집중적으로 경험하는 월코의 핵심 사역입니다.</span><span class="wl-en">WOLKO's signature ministry where youth encounter the Gospel in a focused setting.</span></p>
-        <span class="ministry-card-arrow"><span class="wl-ko">자세히 보기 →</span><span class="wl-en">Learn More →</span></span>
-      </a>
-      <a href="/youth" class="ministry-card" style="--photo:url('/images/ministries/youth.jpg')">
-        <span class="ministry-card-tag">STUDENT MINISTRY</span>
-        <h4><span class="wl-ko">청소년 사역 & 코어 트레이닝</span><span class="wl-en">Youth Ministry & Core Training</span></h4>
-        <p><span class="wl-ko">교회와 일상 속에서 지속적인 신앙 성장을 돕고 복음 리더로 세웁니다.</span><span class="wl-en">Helping students grow in faith and equipping them as Gospel-centered leaders.</span></p>
-        <span class="ministry-card-arrow"><span class="wl-ko">자세히 보기 →</span><span class="wl-en">Learn More →</span></span>
-      </a>
-      <a href="/jr-syme" class="ministry-card" style="--photo:url('/images/ministries/syme.jpg')">
-        <span class="ministry-card-tag">DISCIPLESHIP</span>
-        <h4><span class="wl-ko">Jr. SYME</span><span class="wl-en">Jr. SYME</span></h4>
-        <p><span class="wl-ko">중·고등학생 대상 여름·겨울방학 3주 영어 제자훈련 프로그램입니다.</span><span class="wl-en">A 3-week English discipleship training program for middle and high school students each vacation.</span></p>
-        <span class="ministry-card-arrow"><span class="wl-ko">자세히 보기 →</span><span class="wl-en">Learn More →</span></span>
-      </a>
-      <a href="/wolbi-jeju" class="ministry-card" style="--photo:url('/images/ministries/wolbi.jpg')">
-        <span class="ministry-card-tag">BIBLE INSTITUTE</span>
-        <h4><span class="wl-ko">제주월비 (WOLBI)</span><span class="wl-en">WOLBI Jeju</span></h4>
-        <p><span class="wl-ko">제주에서 이루어지는 깊이 있는 성경학교 훈련입니다.</span><span class="wl-en">A deep Bible training ministry in Jeju where students are grounded through the Word of God.</span></p>
-        <span class="ministry-card-arrow"><span class="wl-ko">자세히 보기 →</span><span class="wl-en">Learn More →</span></span>
-      </a>
+    <div class="ministry-stage">
+      {ministries.map((m, i) => (
+        <figure class:list={['ms', { 'is-active': i === 0 }]} aria-hidden={i === 0 ? 'false' : 'true'}>
+          <img src={m.img} alt="" loading="lazy" decoding="async">
+          <figcaption class="ms-cap">
+            <div>
+              <div class="ms-tag">{m.tag}</div>
+              <h3 class="ms-title"><span class="wl-ko">{m.ko}</span><span class="wl-en">{m.en}</span></h3>
+              <p class="ms-desc"><span class="wl-ko">{m.descKo}</span><span class="wl-en">{m.descEn}</span></p>
+            </div>
+            <a href={m.href} class="ms-more" tabindex="-1">
+              <span class="wl-ko">자세히 보기</span><span class="wl-en">Learn More</span>
+              <svg aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
+            </a>
+          </figcaption>
+        </figure>
+      ))}
     </div>
   </div>
 </section>
@@ -599,8 +654,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     counters.forEach(function (el) { cio.observe(el); });
 
     // 섹션 떠오르기 — 편지(봉투)는 따로 움직이니 뺀다
-    var groups = ['.history-grid', '.values-grid', '.vismis-grid', '.commit-grid', '.ministry-grid'];
-    var items = [].slice.call(document.querySelectorAll('.section .section-badge, .section .section-title, .section .section-desc, .who-title-rule'));
+    var groups = ['.history-grid', '.values-grid', '.vismis-grid', '.commit-grid', '.ministry-list'];
+    var items = [].slice.call(document.querySelectorAll('.section .section-badge, .section .section-title, .section .section-desc, .who-title-rule, .ministry-stage'));
     groups.forEach(function (g) {
       [].slice.call(document.querySelectorAll(g + ' > *')).forEach(function (el, i) { el.style.setProperty('--d', (i % 4) * 0.18 + 's'); items.push(el); });
     });
@@ -615,6 +670,46 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         el.removeEventListener('transitionend', done); el.classList.remove('rv', 'is-in'); el.style.removeProperty('--d');
       });
     });
+  })();
+
+  // 월코소개 주요 사역: 왼쪽 목록에 마우스를 올리면(터치는 한 번 누르면) 오른쪽 큰 사진이 그 사역으로 바뀐다. 한 번 더 누르면 그 사역 페이지로.
+  // 화면에 보이는 동안은 6초마다 다음 사역으로 넘어가고, 목록이나 사진 위에 마우스가 있으면 멈춘다. 움직임 줄이기 설정이면 저절로 넘기지 않는다.
+  (function () {
+    var box = document.querySelector('.ministry-inner'), stage = document.querySelector('.ministry-stage'), list = document.querySelector('.ministry-list');
+    if (!box || !stage || !list) return;
+    var rows = [].slice.call(list.children), slides = [].slice.call(stage.children);
+    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var cur = 0, timer = 0, inView = false, held = false, touch = false;
+    var wide = function () { return getComputedStyle(stage).display !== 'none'; };
+    function show(i) {
+      cur = i;
+      rows.forEach(function (r, k) { r.classList.toggle('is-active', k === i); });
+      slides.forEach(function (s, k) { s.classList.toggle('is-active', k === i); s.setAttribute('aria-hidden', k === i ? 'false' : 'true'); });
+    }
+    function stop() { clearTimeout(timer); list.classList.remove('is-auto'); }
+    function play() {
+      stop();
+      if (still || !inView || held || !wide()) return;
+      void list.offsetWidth;                                // 밑줄 차오르기를 처음부터 다시
+      list.classList.add('is-auto');
+      timer = setTimeout(function () { show((cur + 1) % rows.length); play(); }, 6000);
+    }
+    rows.forEach(function (r, i) {
+      var a = r.querySelector('a');
+      a.addEventListener('pointerdown', function (e) { touch = e.pointerType !== 'mouse'; });
+      a.addEventListener('mouseenter', function () { if (!touch) show(i); });
+      a.addEventListener('focus', function () { if (!touch) show(i); });
+      a.addEventListener('click', function (e) {
+        if (touch && cur !== i && wide()) { e.preventDefault(); show(i); play(); }
+      });
+    });
+    box.addEventListener('mouseenter', function () { if (!touch) { held = true; stop(); } });
+    box.addEventListener('mouseleave', function () { held = false; play(); });
+    box.addEventListener('focusin', function () { held = true; stop(); });
+    box.addEventListener('focusout', function (e) { if (!box.contains(e.relatedTarget)) { held = false; play(); } });
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) { inView = entries[0].isIntersecting; inView ? play() : stop(); }, { threshold: 0.35 }).observe(stage);
+    }
   })();
 
   // 월코소개 편지: 스크롤하면 봉투가 열리고 편지가 쓰윽 올라온다. 움직임 줄이기 설정이거나 자바스크립트가 꺼져 있으면 그냥 편지만 보인다.
