@@ -1,6 +1,50 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
+
+// 국내 사역 후원 — 두 기금이 같은 모양(번호 · 제목 · 설명 · 정기/일시 버튼)으로 나란히 놓인다
+const funds = [
+  {
+    num: '01',
+    ko: '월코 전체사역 후원', en: 'WOLKO Ministry Fund',
+    dKo: '캠프·제자훈련·전도 등 월코의 모든 국내 사역을 지원합니다.',
+    dEn: "Supports all of WOLKO's camp, discipleship, and outreach programs.",
+    monthly: 'https://online.mrm.or.kr/djPo2CH',
+    once: 'https://online.mrm.or.kr/6eeXkHF',
+  },
+  {
+    num: '02',
+    ko: '제주월비 후원', en: 'Jeju WOLBI Fund',
+    dKo: '제주도 캠프 시설 건축과 사역 확장을 위한 후원입니다.',
+    dEn: 'Supports the Jeju camp facility construction and ministry expansion.',
+    monthly: 'https://online.mrm.or.kr/djPo2CH',
+    once: 'https://online.mrm.or.kr/6eeXkHF',
+  },
+];
+
+// 계좌 후원 — 비어 있으면 계좌 묶음 자체가 화면에 나오지 않는다. 실제 후원 계좌를 받으면 그대로 채운다.
+// 모양: { bankKo: '농협', bankEn: 'NH Bank', number: '000-0000-0000-00', holderKo: '예금주 이름', holderEn: 'Account holder' }
+// number 는 화면에 보이는 그대로(하이픈 포함) 복사된다.
+const giveAccounts: { bankKo: string; bankEn: string; number: string; holderKo: string; holderEn: string }[] = [];
+
+// 사역 참여 — 마무리 남색 띠 안에 세 갈래로 놓인다
+const involve = [
+  {
+    num: '01', ko: '캠프 스태프', en: 'Camp Staff',
+    dKo: '매년 진행되는 청소년 및 영어 캠프에서 스태프로 섬겨주세요. 다음 세대를 복음으로 만나는 현장에 함께합니다.',
+    dEn: 'Serve as a staff member at our annual youth and English camps. Join us on the frontlines of reaching the next generation with the Gospel.',
+  },
+  {
+    num: '02', ko: '해외 단기 선교', en: 'Short-Term Mission',
+    dKo: '베트남 등 해외 단기 선교에 참여할 수 있습니다.',
+    dEn: 'Join short-term mission trips to Vietnam and beyond.',
+  },
+  {
+    num: '03', ko: '다양한 사역에 참여', en: 'Ministry Volunteering',
+    dKo: 'IT, 미디어, 마케팅, 커리큘럼 개발, 번역, 통역, 주방 사역, 영어 교육, 전도 사역, 한국어 교육 등 다양한 분야에 도움이 필요합니다.',
+    dEn: 'We need help across many areas — IT, media, marketing, curriculum development, translation, interpretation, kitchen ministry, English education, evangelism, Korean language education, and more.',
+  },
+];
 ---
 
 <BaseLayout
@@ -26,275 +70,155 @@ import PageHero from '../../components/PageHero.astro';
   </Fragment>
 </PageHero>
 
-  <!-- ═══ INVOLVEMENT SECTION ═══ -->
-  <section class="gv-involve">
-    <div class="gv-wrap">
-      <div class="gv-involve-head">
-        <span class="gv-tag">
-          <span class="wl-ko">사역 참여</span>
-          <span class="wl-en">Get Involved</span>
-        </span>
-        <h2 class="gv-section-title">
-          <span class="wl-ko">함께 사역할 수 있는<br>다양한 방법이 있습니다</span>
-          <span class="wl-en">There Are Many Ways<br>to Serve With Us</span>
-        </h2>
-      </div>
-      <div class="gv-involve-grid">
-
-        <div class="gv-involve-card">
-          <div class="gv-involve-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          </div>
-          <h3 class="gv-involve-title">
-            <span class="wl-ko">캠프 스태프</span>
-            <span class="wl-en">Camp Staff</span>
-          </h3>
-          <p class="gv-involve-desc">
-            <span class="wl-ko">매년 진행되는 청소년 및 영어 캠프에서 스태프로 섬겨주세요. 다음 세대를 복음으로 만나는 현장에 함께합니다.</span>
-            <span class="wl-en">Serve as a staff member at our annual youth and English camps. Join us on the frontlines of reaching the next generation with the Gospel.</span>
-          </p>
-        </div>
-
-        <div class="gv-involve-card">
-          <div class="gv-involve-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
-              <path d="M2 12h20"/>
-            </svg>
-          </div>
-          <h3 class="gv-involve-title">
-            <span class="wl-ko">해외 단기 선교</span>
-            <span class="wl-en">Short-Term Mission</span>
-          </h3>
-          <p class="gv-involve-desc">
-            <span class="wl-ko">베트남 등 해외 단기 선교에 참여할 수 있습니다.</span>
-            <span class="wl-en">Join short-term mission trips to Vietnam and beyond.</span>
-          </p>
-        </div>
-
-        <div class="gv-involve-card">
-          <div class="gv-involve-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M11 14h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 16"/>
-              <path d="m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/>
-              <path d="m2 15 6 6"/>
-              <path d="M19.5 8.5c.7-.7 1.5-1.6 1.5-2.7A2.73 2.73 0 0 0 16 4a2.78 2.78 0 0 0-5 1.8c0 1.2.8 2 1.5 2.8L16 12Z"/>
-            </svg>
-          </div>
-          <h3 class="gv-involve-title">
-            <span class="wl-ko">다양한 사역에 참여</span>
-            <span class="wl-en">Ministry Volunteering</span>
-          </h3>
-          <p class="gv-involve-desc">
-            <span class="wl-ko">IT, 미디어, 마케팅, 커리큘럼 개발, 번역, 통역, 주방 사역, 영어 교육, 전도 사역, 한국어 교육 등 다양한 분야에 도움이 필요합니다.</span>
-            <span class="wl-en">We need help across many areas — IT, media, marketing, curriculum development, translation, interpretation, kitchen ministry, English education, evangelism, Korean language education, and more.</span>
-          </p>
-        </div>
-
-      </div>
-      <div class="gv-involve-cta">
-        <a href="/contact" class="gv-involve-btn">
-          <span class="wl-ko">참여 문의하기</span>
-          <span class="wl-en">Get in Touch</span>
-          <svg viewBox="0 0 20 20" fill="none"><path d="M4 10h12M12 4l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </a>
-      </div>
-    </div>
-  </section>
-
   <!-- ═══ SECTION 1 : 사역 후원 ═══ -->
   <section class="gv-ministry" id="ministry-give">
-    <div class="gv-wrap">
-
-      <div class="gv-section-head">
-        <span class="gv-tag">
-          <span class="wl-ko">사역 후원</span>
-          <span class="wl-en">Ministry Support</span>
-        </span>
-        <h2 class="gv-section-title">
-          <span class="wl-ko">월코 사역을<br>함께 세워가요</span>
-          <span class="wl-en">Build the Ministry<br>Together</span>
-        </h2>
-        <p class="gv-section-desc">
+    <div class="gv-shell">
+      <div class="gv-head">
+        <div>
+          <p class="gv-eyebrow"><span class="wl-ko">사역 후원</span><span class="wl-en">Ministry Support</span></p>
+          <h2 class="gv-title">
+            <span class="wl-ko">월코 사역을<br>함께 세워가요</span>
+            <span class="wl-en">Build the Ministry<br>Together</span>
+          </h2>
+        </div>
+        <p class="gv-lead">
           <span class="wl-ko">월코 본부 사역과 제주 캠프 건축, 그리고 베트남 선교를 위한 후원입니다.<br>여러분의 헌신이 복음의 다음 장을 씁니다.</span>
           <span class="wl-en">Support WOLKO's headquarters ministry, Jeju camp expansion, and Vietnam mission.<br>Your commitment writes the next chapter of the Gospel.</span>
         </p>
       </div>
 
       <!-- 국내사역 그룹 : 월코 + 제주 -->
-      <div class="gv-domestic-group">
-        <div class="gv-group-label-bar">
-          <span class="wl-ko">국내 사역 후원</span>
-          <span class="wl-en">Domestic Ministry</span>
-        </div>
-        <div class="gv-domestic-cards">
-
-          <!-- Card: 월코 전체사역 -->
-          <div class="gv-card gv-card-wolko">
-            <div class="gv-card-top">
-              <div class="gv-card-icon">
-                <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="22" cy="22" r="20" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
-                  <path d="M14 22l5 5 11-11" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+      <div class="gv-funds">
+        <p class="gv-group-label"><span class="wl-ko">국내 사역 후원</span><span class="wl-en">Domestic Ministry</span></p>
+        <div class="gv-fund-grid">
+          {funds.map((f) => (
+            <article class="gv-fund">
+              <span class="gv-fund-num">{f.num}</span>
+              <h3 class="gv-fund-title"><span class="wl-ko">{f.ko}</span><span class="wl-en">{f.en}</span></h3>
+              <p class="gv-fund-desc"><span class="wl-ko">{f.dKo}</span><span class="wl-en">{f.dEn}</span></p>
+              <div class="gv-fund-btns">
+                <a href={f.monthly} target="_blank" rel="noopener" class="gv-btn gv-btn-primary">
+                  <span><span class="wl-ko">정기후원</span><span class="wl-en">Monthly</span></span>
+                  <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+                </a>
+                <a href={f.once} target="_blank" rel="noopener" class="gv-btn gv-btn-secondary">
+                  <span><span class="wl-ko">일시후원</span><span class="wl-en">One-time</span></span>
+                  <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+                </a>
               </div>
-              <div>
-                <h3 class="gv-card-title">
-                  <span class="wl-ko">월코 전체사역 후원</span>
-                  <span class="wl-en">WOLKO Ministry Fund</span>
-                </h3>
-                <p class="gv-card-desc">
-                  <span class="wl-ko">캠프·제자훈련·전도 등 월코의 모든 국내 사역을 지원합니다.</span>
-                  <span class="wl-en">Supports all of WOLKO's camp, discipleship, and outreach programs.</span>
-                </p>
-              </div>
-            </div>
-            <div class="gv-card-btns">
-              <a href="https://online.mrm.or.kr/djPo2CH" target="_blank" rel="noopener" class="gv-cbtn gv-cbtn-solid">
-                <span class="wl-ko">정기후원</span>
-                <span class="wl-en">Monthly</span>
-              </a>
-              <a href="https://online.mrm.or.kr/6eeXkHF" target="_blank" rel="noopener" class="gv-cbtn gv-cbtn-ghost">
-                <span class="wl-ko">일시후원</span>
-                <span class="wl-en">One-time</span>
-              </a>
-            </div>
-          </div>
-
-          <!-- Card: 제주월비 -->
-          <div class="gv-card gv-card-jeju">
-            <div class="gv-card-top">
-              <div class="gv-card-icon">
-                <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="22" cy="22" r="20" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
-                  <path d="M8 30l7-9 5 6 4-5 12 8H8z" fill="rgba(255,255,255,0.75)"/>
-                  <circle cx="32" cy="16" r="3" fill="rgba(255,255,255,0.45)"/>
-                </svg>
-              </div>
-              <div>
-                <h3 class="gv-card-title">
-                  <span class="wl-ko">제주월비 후원</span>
-                  <span class="wl-en">Jeju WOLBI Fund</span>
-                </h3>
-                <p class="gv-card-desc">
-                  <span class="wl-ko">제주도 캠프 시설 건축과 사역 확장을 위한 후원입니다.</span>
-                  <span class="wl-en">Supports the Jeju camp facility construction and ministry expansion.</span>
-                </p>
-              </div>
-            </div>
-            <div class="gv-card-btns">
-              <a href="https://online.mrm.or.kr/djPo2CH" target="_blank" rel="noopener" class="gv-cbtn gv-cbtn-solid">
-                <span class="wl-ko">정기후원</span>
-                <span class="wl-en">Monthly</span>
-              </a>
-              <a href="https://online.mrm.or.kr/6eeXkHF" target="_blank" rel="noopener" class="gv-cbtn gv-cbtn-ghost">
-                <span class="wl-ko">일시후원</span>
-                <span class="wl-en">One-time</span>
-              </a>
-            </div>
-          </div>
-
+            </article>
+          ))}
         </div>
       </div>
 
+      {giveAccounts.length > 0 && (
+        <div class="gv-accounts">
+          <p class="gv-group-label"><span class="wl-ko">계좌 후원</span><span class="wl-en">Bank Transfer</span></p>
+          <div class="gv-acct-list">
+            {giveAccounts.map((a) => (
+              <div class="gv-acct">
+                <dl class="gv-acct-meta">
+                  <div>
+                    <dt><span class="wl-ko">은행</span><span class="wl-en">Bank</span></dt>
+                    <dd><span class="wl-ko">{a.bankKo}</span><span class="wl-en">{a.bankEn}</span></dd>
+                  </div>
+                  <div>
+                    <dt><span class="wl-ko">예금주</span><span class="wl-en">Account holder</span></dt>
+                    <dd><span class="wl-ko">{a.holderKo}</span><span class="wl-en">{a.holderEn}</span></dd>
+                  </div>
+                </dl>
+                <button type="button" class="gv-acct-num" data-copy={a.number}
+                  data-label-ko={`${a.bankKo} 계좌번호 ${a.number} 복사`} data-label-en={`Copy ${a.bankEn} account number ${a.number}`}
+                  aria-label={`${a.bankKo} 계좌번호 ${a.number} 복사`}>
+                  <span class="gv-sr">{a.number}</span>
+                  <span class="gv-acct-digits" aria-hidden="true">
+                    {[...a.number].map((ch) => (
+                      <span class:list={['gv-dg', { 'gv-dg-sep': !/\d/.test(ch) }]} data-ch={ch}>{ch}</span>
+                    ))}
+                  </span>
+                </button>
+                <button type="button" class="gv-btn gv-btn-primary gv-acct-copy" data-copy={a.number}
+                  data-label-ko={`${a.bankKo} 계좌번호 복사`} data-label-en={`Copy ${a.bankEn} account number`}
+                  aria-label={`${a.bankKo} 계좌번호 복사`}>
+                  <span class="gv-copy-idle"><span class="wl-ko">복사</span><span class="wl-en">Copy</span></span>
+                  <span class="gv-copy-done"><span class="wl-ko">복사됐어요</span><span class="wl-en">Copied</span></span>
+                </button>
+              </div>
+            ))}
+          </div>
+          <p class="gv-sr" id="gv-copy-live" aria-live="polite"></p>
+          <div class="gv-toast" id="gv-copy-toast" aria-hidden="true">
+            <span class="wl-ko">계좌번호를 복사했어요</span><span class="wl-en">Account number copied</span>
+          </div>
+        </div>
+      )}
     </div>
   </section>
 
-  <!-- ═══ GRADIENT DIVIDER ═══ -->
-  <div class="gv-gradient-divider" aria-hidden="true"></div>
-
   <!-- ═══ SECTION 2 : 선교사 개인 후원 ═══ -->
   <section class="gv-missionary" id="missionary-give">
-    <div class="gv-wrap">
-      <div class="gv-mission-layout">
+    <div class="gv-shell gv-mission-layout">
 
-        <!-- Left: Text -->
-        <div class="gv-mission-text">
-          <span class="gv-tag gv-tag-light">
-            <span class="wl-ko">선교사 개인 후원</span>
-            <span class="wl-en">Missionary Support</span>
-          </span>
-          <h2 class="gv-section-title gv-section-title-light">
-            <span class="wl-ko">한 사람의 선교사를<br>함께 세워가요</span>
-            <span class="wl-en">Invest in a<br>Missionary's Life</span>
-          </h2>
-          <p class="gv-mission-body">
-            <span class="wl-ko">월코 선교사들은 복음전파와 제자훈련을 위해 한국 전역과 해외 현장에서 헌신하고 있습니다. 선교사 개인 후원을 통해 한 사람의 사역과 삶을 직접 지원해 주세요.</span>
-            <span class="wl-en">WOLKO missionaries are committed to Gospel proclamation and discipleship across Korea and beyond. Through personal missionary support, you directly invest in a specific missionary's life and ministry.</span>
-          </p>
-          <div class="gv-mission-note">
-            <svg class="gv-note-icon" viewBox="0 0 20 20" fill="none">
-              <circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M10 9v5M10 6.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            <div>
-              <span class="wl-ko">후원을 시작하시면 담당 선교사가 감사 인사와 함께 정기적으로 사역 소식을 전해 드립니다.</span>
-              <span class="wl-en">When you begin supporting a missionary, they will personally reach out and share regular updates from the field.</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right: Give card -->
-        <div class="gv-mission-give">
-          <div class="gv-give-card">
-            <div class="gv-give-card-label">
-              <span class="wl-ko">후원 방법 선택</span>
-              <span class="wl-en">Choose Your Gift Type</span>
-            </div>
-
-            <a href="https://online.mrm.or.kr/KoUtWvX" target="_blank" rel="noopener" class="gv-give-row gv-give-row-regular">
-              <div class="gv-give-row-info">
-                <span class="gv-give-row-title wl-ko">정기후원</span>
-                <span class="gv-give-row-title wl-en">Monthly Support</span>
-                <span class="gv-give-row-sub wl-ko">매월 안정적으로 선교사를 돕습니다</span>
-                <span class="gv-give-row-sub wl-en">Consistent monthly support for the missionary</span>
-              </div>
-              <svg class="gv-give-row-arrow" viewBox="0 0 24 24" fill="none">
-                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </a>
-
-            <a href="https://online.mrm.or.kr/qE1NHEc" target="_blank" rel="noopener" class="gv-give-row gv-give-row-once">
-              <div class="gv-give-row-info">
-                <span class="gv-give-row-title wl-ko">일시후원</span>
-                <span class="gv-give-row-title wl-en">One-time Gift</span>
-                <span class="gv-give-row-sub wl-ko">한 번의 특별한 헌신으로 함께합니다</span>
-                <span class="gv-give-row-sub wl-en">Make a special one-time contribution</span>
-              </div>
-              <svg class="gv-give-row-arrow" viewBox="0 0 24 24" fill="none">
-                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </a>
-
-            <div class="gv-give-card-divider"></div>
-
-            <div class="gv-give-card-contact">
-              <p class="gv-contact-label wl-ko">궁금한 점이 있으신가요?</p>
-              <p class="gv-contact-label wl-en">Have questions?</p>
-              <div class="gv-contact-btns">
-                <a href="http://pf.kakao.com/_Rxidxkxj" target="_blank" rel="noopener" class="gv-kakao-btn">
-                  <svg viewBox="0 0 24 24" fill="none" class="gv-kakao-icon">
-                    <path d="M12 3C6.48 3 2 6.69 2 11.25c0 2.9 1.9 5.45 4.77 6.89l-1.18 4.32a.4.4 0 0 0 .58.46L11.2 19.7A11 11 0 0 0 12 19.5c5.52 0 10-3.69 10-8.25S17.52 3 12 3z" fill="currentColor"/>
-                  </svg>
-                  <span class="wl-ko">카카오톡 문의</span>
-                  <span class="wl-en">KakaoTalk</span>
-                </a>
-                <a href="/contact" class="gv-contact-link">
-                  <span class="wl-ko">이메일 문의 →</span>
-                  <span class="wl-en">Contact us →</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
+      <!-- Left: Text -->
+      <div class="gv-mission-text">
+        <p class="gv-eyebrow"><span class="wl-ko">선교사 개인 후원</span><span class="wl-en">Missionary Support</span></p>
+        <h2 class="gv-title">
+          <span class="wl-ko">한 사람의 선교사를<br>함께 세워가요</span>
+          <span class="wl-en">Invest in a<br>Missionary's Life</span>
+        </h2>
+        <p class="gv-body">
+          <span class="wl-ko">월코 선교사들은 복음전파와 제자훈련을 위해 한국 전역과 해외 현장에서 헌신하고 있습니다. 선교사 개인 후원을 통해 한 사람의 사역과 삶을 직접 지원해 주세요.</span>
+          <span class="wl-en">WOLKO missionaries are committed to Gospel proclamation and discipleship across Korea and beyond. Through personal missionary support, you directly invest in a specific missionary's life and ministry.</span>
+        </p>
+        <p class="gv-note">
+          <span class="wl-ko">후원을 시작하시면 담당 선교사가 감사 인사와 함께 정기적으로 사역 소식을 전해 드립니다.</span>
+          <span class="wl-en">When you begin supporting a missionary, they will personally reach out and share regular updates from the field.</span>
+        </p>
       </div>
+
+      <!-- Right: 후원 방법 -->
+      <div class="gv-mission-give">
+        <p class="gv-give-label"><span class="wl-ko">후원 방법 선택</span><span class="wl-en">Choose Your Gift Type</span></p>
+        <ul class="gv-give-list">
+          <li>
+            <a href="https://online.mrm.or.kr/KoUtWvX" target="_blank" rel="noopener" class="gv-give-row">
+              <span class="gv-give-row-info">
+                <strong class="gv-give-row-title"><span class="wl-ko">정기후원</span><span class="wl-en">Monthly Support</span></strong>
+                <span class="gv-give-row-sub"><span class="wl-ko">매월 안정적으로 선교사를 돕습니다</span><span class="wl-en">Consistent monthly support for the missionary</span></span>
+              </span>
+              <svg class="gv-give-row-arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://online.mrm.or.kr/qE1NHEc" target="_blank" rel="noopener" class="gv-give-row">
+              <span class="gv-give-row-info">
+                <strong class="gv-give-row-title"><span class="wl-ko">일시후원</span><span class="wl-en">One-time Gift</span></strong>
+                <span class="gv-give-row-sub"><span class="wl-ko">한 번의 특별한 헌신으로 함께합니다</span><span class="wl-en">Make a special one-time contribution</span></span>
+              </span>
+              <svg class="gv-give-row-arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+            </a>
+          </li>
+        </ul>
+
+        <div class="gv-ask">
+          <p class="gv-ask-label"><span class="wl-ko">궁금한 점이 있으신가요?</span><span class="wl-en">Have questions?</span></p>
+          <div class="gv-ask-btns">
+            <a href="http://pf.kakao.com/_Rxidxkxj" target="_blank" rel="noopener" class="gv-btn gv-btn-kakao">
+              <span class="gv-kakao-in">
+                <svg viewBox="0 0 24 24" class="gv-kakao-icon" aria-hidden="true">
+                  <path d="M12 3C6.48 3 2 6.69 2 11.25c0 2.9 1.9 5.45 4.77 6.89l-1.18 4.32a.4.4 0 0 0 .58.46L11.2 19.7A11 11 0 0 0 12 19.5c5.52 0 10-3.69 10-8.25S17.52 3 12 3z"/>
+                </svg>
+                <span><span class="wl-ko">카카오톡 문의</span><span class="wl-en">KakaoTalk</span></span>
+              </span>
+            </a>
+            <a href="/contact" class="gv-btn gv-btn-secondary">
+              <span><span class="wl-ko">이메일 문의</span><span class="wl-en">Contact us</span></span>
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -341,516 +265,339 @@ import PageHero from '../../components/PageHero.astro';
       </div>
     </div>
   </section>
+  */}
 
   <!-- ═══ SECTION 4 : 해외 후원 ═══ -->
-  */}
   <section class="gv-intl">
-    <div class="gv-wrap">
-      <div class="gv-intl-card">
-        <div class="gv-intl-text">
-          <span class="gv-tag">
-            <span class="wl-ko">해외 거주자 후원</span>
-            <span class="wl-en">International Giving</span>
-          </span>
-          <h3 class="gv-intl-title">
-            <span class="wl-ko">해외에서 후원하시나요?</span>
-            <span class="wl-en">Giving from Outside Korea?</span>
-          </h3>
-          <p class="gv-intl-desc">
-            <span class="wl-ko">미국 및 해외 거주자분들께서는 Word of Life 국제 후원 페이지를 통해 한국 사역을 지원하실 수 있습니다.</span>
-            <span class="wl-en">Donors based in the US or abroad can support Word of Life Korea through the international giving portal hosted by Word of Life International.</span>
-          </p>
-        </div>
-        <a href="https://give.wol.org/location/southkorea" target="_blank" rel="noopener" class="gv-intl-btn">
-          <span class="wl-ko">국제 후원 페이지</span>
-          <span class="wl-en">Give Internationally</span>
-          <svg viewBox="0 0 20 20" fill="none" class="gv-intl-btn-icon">
-            <path d="M4 10h12M12 4l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+    <div class="gv-shell gv-intl-inner">
+      <div class="gv-intl-text">
+        <p class="gv-eyebrow"><span class="wl-ko">해외 거주자 후원</span><span class="wl-en">International Giving</span></p>
+        <h2 class="gv-intl-title">
+          <span class="wl-ko">해외에서 후원하시나요?</span>
+          <span class="wl-en">Giving from Outside Korea?</span>
+        </h2>
+        <p class="gv-intl-desc">
+          <span class="wl-ko">미국 및 해외 거주자분들께서는 Word of Life 국제 후원 페이지를 통해 한국 사역을 지원하실 수 있습니다.</span>
+          <span class="wl-en">Donors based in the US or abroad can support Word of Life Korea through the international giving portal hosted by Word of Life International.</span>
+        </p>
+      </div>
+      <a href="https://give.wol.org/location/southkorea" target="_blank" rel="noopener" class="gv-btn gv-btn-primary gv-intl-btn">
+        <span><span class="wl-ko">국제 후원 페이지</span><span class="wl-en">Give Internationally</span></span>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- ═══ 사역 참여 — 마무리 남색 띠 ═══ -->
+  <section class="gv-involve">
+    <div class="gv-shell">
+      <div class="gv-involve-head">
+        <p class="gv-eyebrow"><span class="wl-ko">사역 참여</span><span class="wl-en">Get Involved</span></p>
+        <h2 class="gv-title">
+          <span class="wl-ko">함께 사역할 수 있는<br>다양한 방법이 있습니다</span>
+          <span class="wl-en">There Are Many Ways<br>to Serve With Us</span>
+        </h2>
+      </div>
+      <ol class="gv-involve-grid">
+        {involve.map((v) => (
+          <li class="gv-involve-item">
+            <span class="gv-involve-num">{v.num}</span>
+            <h3 class="gv-involve-title"><span class="wl-ko">{v.ko}</span><span class="wl-en">{v.en}</span></h3>
+            <p class="gv-involve-desc"><span class="wl-ko">{v.dKo}</span><span class="wl-en">{v.dEn}</span></p>
+          </li>
+        ))}
+      </ol>
+      <div class="gv-involve-cta">
+        <a href="/contact" class="gv-btn gv-btn-light">
+          <span><span class="wl-ko">참여 문의하기</span><span class="wl-en">Get in Touch</span></span>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
         </a>
       </div>
     </div>
   </section>
 
 </div>
+
+<script is:inline>
+  // 후원 페이지 움직임: 스크롤하면 글과 항목이 아래에서 차례로 떠오른다.
+  // 움직임 줄이기 설정이거나 IntersectionObserver 가 없으면 아무것도 하지 않는다 — 처음부터 그대로 다 보인다.
+  (function () {
+    if (!('IntersectionObserver' in window)) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var items = [].slice.call(document.querySelectorAll('.give .gv-head > *, .give .gv-fund, .give .gv-mission-layout > *, .give .gv-intl-inner > *, .give .gv-involve-head, .give .gv-involve-item, .give .gv-involve-cta'));
+    items.forEach(function (el) {
+      var sib = el.parentNode.children, i = [].indexOf.call(sib, el);
+      el.style.setProperty('--d', Math.min(i, 6) * 0.08 + 's');
+      el.classList.add('gv-rv');
+    });
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); } });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    items.forEach(function (el) { io.observe(el); });
+  })();
+
+  // 계좌번호 복사 — 번호를 누르거나 "복사" 버튼을 누르면 화면에 보이는 그대로(하이픈 포함) 복사한다.
+  (function () {
+    var accts = [].slice.call(document.querySelectorAll('.gv-acct'));
+    if (!accts.length) return;
+    var live = document.getElementById('gv-copy-live');
+    var toast = document.getElementById('gv-copy-toast');
+    var isEn = function () { return document.documentElement.classList.contains('lang-en'); };
+    var T = function (ko, en) { return isEn() ? en : ko; };
+
+    // 화면 읽기 프로그램용 버튼 이름도 지금 언어에 맞춘다
+    function syncLabels() {
+      var en = isEn();
+      document.querySelectorAll('.gv-acct [data-label-ko]').forEach(function (b) { b.setAttribute('aria-label', en ? b.dataset.labelEn : b.dataset.labelKo); });
+    }
+    syncLabels();
+    new MutationObserver(syncLabels).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    function fallbackCopy(text) {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;';
+      document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+      return ok;
+    }
+    function copy(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text).then(function () { return true; }, function () { return fallbackCopy(text); });
+      }
+      return Promise.resolve(fallbackCopy(text));
+    }
+
+    var toastTimer;
+    accts.forEach(function (acct) {
+      var timer;
+      acct.querySelectorAll('[data-copy]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var text = btn.dataset.copy;
+          copy(text).then(function (ok) {
+            if (live) live.textContent = '';
+            if (!ok) {
+              if (live) live.textContent = T('복사하지 못했어요. 번호를 직접 선택해 주세요.', 'Could not copy. Please select the number manually.');
+              return;
+            }
+            acct.classList.add('is-copied');
+            if (live) live.textContent = T('계좌번호를 복사했어요', 'Account number copied') + ' ' + text;
+            if (toast) {
+              toast.classList.add('is-on');
+              clearTimeout(toastTimer);
+              toastTimer = setTimeout(function () { toast.classList.remove('is-on'); }, 2000);
+            }
+            clearTimeout(timer);
+            timer = setTimeout(function () { acct.classList.remove('is-copied'); }, 2000);
+          });
+        });
+      });
+    });
+
+    // 번호가 화면에 들어오면 숫자가 왼쪽부터 차례로 돌다가 제자리에 멈춘다(보이는 모양만 — 실제 번호는 따로 늘 그대로 있다).
+    if (!('IntersectionObserver' in window)) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    function roll(box) {
+      var digits = [].slice.call(box.querySelectorAll('.gv-dg'));
+      var n = 0;
+      digits.forEach(function (d) {
+        var real = d.dataset.ch;
+        if (!/\d/.test(real)) return;
+        var stopAt = 260 + n * 55; n++;
+        var start = performance.now();
+        d.classList.add('is-rolling');
+        (function tick(now) {
+          if (now - start >= stopAt) { d.textContent = real; d.classList.remove('is-rolling'); d.classList.add('is-set'); return; }
+          d.textContent = String(Math.floor(Math.random() * 10));
+          setTimeout(function () { requestAnimationFrame(tick); }, 45);
+        })(start);
+      });
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { roll(en.target); io.unobserve(en.target); } });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.gv-acct-digits').forEach(function (el) { el.classList.add('is-armed'); io.observe(el); });
+  })();
+</script>
 </BaseLayout>
 
 <style>
-/* ── CSS variables on wrapper class, NOT :root ── */
+/* ── 색·글꼴은 감싸는 클래스에 둔다 (:root 아님) — 사역 페이지와 같은 값 ── */
 .give {
-  --gv-deep:  #02263a;
-  --gv-navy:  #004f68;
-  --gv-mid:   #007ea1;
-  --gv-sky:   #73d1f5;
-  --gv-ink:   #12303c;
-  --gv-muted: #5a6f79;
-  --gv-line:  #dde6ea;
-  --gv-bg:    #f4f7f9;
-  --gv-red:   #c42a36;
-  font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif;
+  --gv-deep:  #004f68;
+  --gv-navy:  #0b2430;
+  --gv-ink:   #10252e;
+  --gv-text:  #4a5d66;
+  --gv-muted: #587383;
+  --gv-label: #5a7380;
+  --gv-line:  #d6dee2;
+  --gv-soft:  #f6f9fb;
+  --gv-fill:  #f3f7f9;
+  font-family: var(--ff-sans);
   color: var(--gv-ink);
+  background: #fff;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
-}
-.gv-anchor-btn {
-  padding: 15px 32px;
-  border-radius: 999px;
-  font-size: 15px;
-  font-weight: 700;
-  text-decoration: none;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-.gv-anchor-primary {
-  background: var(--gv-sky);
-  color: var(--gv-deep);
-}
-.gv-anchor-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(115,209,245,0.35);
-}
-.gv-anchor-ghost {
-  background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.85);
-  border: 1.5px solid rgba(255,255,255,0.2);
-}
-.gv-anchor-ghost:hover {
-  background: rgba(255,255,255,0.13);
-  border-color: rgba(255,255,255,0.35);
-}
-.gv-scroll-hint {
-  position: absolute;
-  bottom: 36px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1;
-}
-.gv-scroll-dot {
-  width: 6px;
-  height: 6px;
-  background: rgba(255,255,255,0.35);
-  border-radius: 50%;
-  animation: gv-scroll-bounce 1.8s ease-in-out infinite;
-}
-@keyframes gv-scroll-bounce {
-  0%, 100% { transform: translateY(0); opacity: 0.4; }
-  50%       { transform: translateY(8px); opacity: 1; }
-}
-
-/* ── INVOLVEMENT SECTION ── */
-.gv-involve {
-  background: #fff;
-  padding: 96px 0 80px;
-  border-bottom: 1px solid var(--gv-line);
-}
-.gv-involve-head {
-  text-align: center;
-  max-width: 640px;
-  margin: 0 auto 56px;
-}
-.gv-involve-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  margin-bottom: 48px;
-}
-@media (max-width: 768px) { .gv-involve-grid { grid-template-columns: 1fr; } }
-.gv-involve-card {
-  background: var(--gv-bg);
-  border: 1.5px solid var(--gv-line);
-  border-radius: 20px;
-  padding: 36px 28px 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.gv-involve-icon {
-  width: 56px; height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 16px;
-  background: linear-gradient(140deg, rgba(0,126,161,0.14), rgba(0,79,104,0.06));
-  border: 1px solid rgba(0,79,104,0.08);
-  color: var(--gv-navy);
-  margin-bottom: 6px;
-}
-.gv-involve-icon svg { width: 26px; height: 26px; }
-.gv-involve-title {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--gv-ink);
-  letter-spacing: -0.02em;
-  line-height: 1.3;
-}
-.gv-involve-desc {
-  font-size: 14px;
-  line-height: 1.8;
-  color: var(--gv-muted);
-}
-.gv-involve-cta {
-  text-align: center;
-}
-.gv-involve-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 32px;
-  border-radius: 999px;
-  background: var(--gv-navy);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
-  text-decoration: none;
-  transition: background 0.2s, transform 0.2s;
-}
-.gv-involve-btn svg { width: 18px; height: 18px; }
-.gv-involve-btn:hover { background: var(--gv-mid); transform: translateY(-2px); }
-
-/* ── SHARED ── */
-.gv-wrap {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 0 40px;
-}
-.gv-tag {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color: var(--gv-mid);
-  background: rgba(0,126,161,0.08);
-  padding: 5px 14px;
-  border-radius: 999px;
-  margin-bottom: 18px;
-}
-.gv-tag-light {
-  color: var(--gv-sky);
-  background: rgba(115,209,245,0.12);
-}
-.gv-section-head {
-  text-align: center;
-  max-width: 660px;
-  margin: 0 auto 64px;
-}
-.gv-section-title {
-  font-family: 'GmarketSans', 'Pretendard Variable', sans-serif;
-  font-size: clamp(28px, 4vw, 42px);
-  font-weight: 800;
-  line-height: 1.2;
-  color: var(--gv-ink);
-  letter-spacing: -0.02em;
-  margin-bottom: 16px;
-}
-.gv-section-title-light { color: #fff; }
-.gv-section-desc {
-  font-size: 16px;
-  line-height: 1.8;
-  color: var(--gv-muted);
-}
-
-/* ── MINISTRY SECTION ── */
-.gv-ministry {
-  background: #fff;
-  padding: 108px 0 80px;
-}
-.gv-group-label-bar {
-  display: inline-flex;
-  align-items: center;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--gv-muted);
-  margin-bottom: 20px;
-}
-.gv-group-label-bar--vn { color: var(--gv-red); }
-.gv-domestic-group { margin-bottom: 48px; }
-.gv-domestic-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-/* Card base */
-.gv-card {
-  border-radius: 24px;
-  padding: 36px 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.28s ease, box-shadow 0.28s ease;
-}
-.gv-card::before {
-  content: '';
-  position: absolute;
-  top: -50px; right: -50px;
-  width: 180px; height: 180px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.04);
-  pointer-events: none;
-}
-.gv-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 24px 56px rgba(0,0,0,0.2);
-}
-.gv-card-wolko { background: linear-gradient(145deg, #004f68 0%, #01344a 100%); }
-.gv-card-jeju  { background: linear-gradient(145deg, #007ea1 0%, #005874 100%); }
-.gv-card-vietnam { background: linear-gradient(145deg, #c42a36 0%, #8e1e28 100%); }
-.gv-card-wide { max-width: 100%; }
-
-.gv-card-top {
-  display: flex;
-  gap: 18px;
-  align-items: flex-start;
-}
-.gv-card-icon { flex-shrink: 0; width: 44px; height: 44px; }
-.gv-card-icon svg { width: 100%; height: 100%; }
-.gv-card-title {
-  font-family: 'GmarketSans', 'Pretendard Variable', sans-serif;
-  font-size: 19px;
-  font-weight: 800;
-  color: #fff;
-  line-height: 1.3;
-  margin-bottom: 8px;
-  letter-spacing: -0.01em;
-}
-.gv-card-desc {
-  font-size: 14px;
-  line-height: 1.7;
-  color: rgba(255,255,255,0.6);
-}
-.gv-card-btns {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: auto;
-}
-.gv-cbtn {
-  padding: 10px 22px;
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 700;
-  text-decoration: none;
-  transition: background 0.2s ease, transform 0.15s ease;
-}
-.gv-cbtn:hover { transform: translateY(-1px); }
-.gv-cbtn-solid { background: rgba(255,255,255,0.92); color: var(--gv-navy); }
-.gv-cbtn-solid:hover { background: #fff; }
-.gv-cbtn-ghost {
-  background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.82);
-  border: 1.5px solid rgba(255,255,255,0.18);
-}
-.gv-cbtn-ghost:hover { background: rgba(255,255,255,0.14); }
-.gv-cbtn-vn { color: var(--gv-red); }
-
-/* ── GRADIENT DIVIDER ── */
-.gv-gradient-divider {
-  height: 5px;
-  background: linear-gradient(90deg, var(--gv-sky) 0%, var(--gv-mid) 40%, var(--gv-navy) 100%);
-}
-
-/* ── MISSIONARY SECTION ── */
-.gv-missionary {
-  background: linear-gradient(160deg, #02263a 0%, #03334a 60%, #043e58 100%);
-  padding: 108px 0;
-}
-.gv-mission-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  align-items: center;
-}
-.gv-mission-body {
-  font-size: 16px;
-  line-height: 1.85;
-  color: rgba(255,255,255,0.55);
-  margin-bottom: 28px;
-}
-.gv-mission-note {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  background: rgba(115,209,245,0.07);
-  border: 1px solid rgba(115,209,245,0.15);
-  border-radius: 14px;
-  padding: 16px 20px;
-  font-size: 13.5px;
-  line-height: 1.7;
-  color: rgba(115,209,245,0.8);
-}
-.gv-note-icon {
-  flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  color: var(--gv-sky);
-  margin-top: 2px;
-}
-
-/* Give card */
-.gv-give-card {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 28px;
   overflow: hidden;
 }
-.gv-give-card-label {
-  padding: 18px 28px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.35);
-  border-bottom: 1px solid rgba(255,255,255,0.07);
-}
-.gv-give-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 22px 28px;
-  text-decoration: none;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  transition: background 0.2s ease, padding-left 0.2s ease;
-}
-.gv-give-row:hover { padding-left: 36px; }
-.gv-give-row-regular { background: rgba(115,209,245,0.07); }
-.gv-give-row-regular:hover { background: rgba(115,209,245,0.13); }
-.gv-give-row-once { background: rgba(255,255,255,0.02); }
-.gv-give-row-once:hover { background: rgba(255,255,255,0.06); }
-.gv-give-row-info { display: flex; flex-direction: column; gap: 4px; }
-.gv-give-row-title {
-  font-size: 18px;
-  font-weight: 800;
-  line-height: 1.2;
-}
-.gv-give-row-regular .gv-give-row-title { color: var(--gv-sky); }
-.gv-give-row-once .gv-give-row-title { color: rgba(255,255,255,0.8); }
-.gv-give-row-sub { font-size: 13px; color: rgba(255,255,255,0.4); }
-.gv-give-row-arrow {
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-  color: rgba(255,255,255,0.28);
-  transition: transform 0.2s ease, color 0.2s ease;
-}
-.gv-give-row:hover .gv-give-row-arrow { transform: translateX(4px); color: rgba(255,255,255,0.6); }
-.gv-give-row-regular:hover .gv-give-row-arrow { color: var(--gv-sky); }
-.gv-give-card-divider { height: 1px; background: rgba(255,255,255,0.07); }
-.gv-give-card-contact {
-  padding: 22px 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.gv-contact-label { font-size: 13px; color: rgba(255,255,255,0.65); }
-.gv-contact-btns {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-.gv-kakao-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: #FEE500;
-  color: #391b1b;
-  padding: 10px 20px;
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 700;
-  text-decoration: none;
-  transition: opacity 0.2s ease, transform 0.15s ease;
-}
-.gv-kakao-btn:hover { opacity: 0.88; transform: translateY(-1px); }
-.gv-kakao-icon { width: 16px; height: 16px; color: #391b1b; }
-.gv-contact-link {
-  font-size: 14px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.4);
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-.gv-contact-link:hover { color: var(--gv-sky); }
+.gv-shell { width: min(1200px, calc(100% - 48px)); margin-inline: auto; }
+.give svg { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: square; }
 
-/* ── INTERNATIONAL SECTION ── */
-.gv-intl {
-  background: var(--gv-bg);
-  padding: 80px 0;
+/* 작은 표시 — 앞에 가는 선 */
+.gv-eyebrow { display: flex; align-items: center; gap: 12px; color: var(--gv-deep); font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.gv-eyebrow::before { content: ''; width: 28px; height: 1px; background: currentColor; }
+.gv-title { margin-top: 20px; font-family: var(--ff-serif); font-size: clamp(30px, 3.4vw, 46px); font-weight: 700; line-height: 1.22; letter-spacing: -.03em; color: var(--gv-navy); }
+
+/* 버튼 — 각진 모서리, 화살표 */
+.gv-btn {
+  height: 52px; padding: 0 22px; display: inline-flex; align-items: center; justify-content: space-between; gap: 14px;
+  border-radius: 2px; font-size: 15px; font-weight: 700; text-decoration: none; white-space: nowrap;
+  transition: background-color .2s, border-color .2s, color .2s, gap .25s;
 }
-.gv-intl-card {
-  background: #fff;
-  border: 1px solid var(--gv-line);
-  border-radius: 28px;
-  padding: 52px 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 48px;
-  box-shadow: 0 4px 28px rgba(0,79,104,0.05);
+.gv-btn-primary { background: var(--gv-deep); color: #fff; }
+.gv-btn-primary:hover { background: #00384a; color: #fff; gap: 18px; }
+.gv-btn-secondary { border: 1px solid #b9c7ce; color: var(--gv-navy); background: #fff; }
+.gv-btn-secondary:hover { border-color: var(--gv-deep); color: var(--gv-deep); gap: 18px; }
+.gv-btn-light { background: #fff; color: var(--gv-deep); }
+.gv-btn-light:hover { background: #e8f1f4; color: var(--gv-deep); gap: 18px; }
+.gv-btn-kakao { background: #FEE500; color: #391b1b; justify-content: center; }
+.gv-btn-kakao:hover { background: #f5dc00; color: #391b1b; }
+.gv-kakao-in { display: inline-flex; align-items: center; gap: 10px; }
+.give .gv-kakao-icon { width: 17px; height: 17px; fill: currentColor; stroke: none; }
+
+/* ── 1. 사역 후원 ── */
+.gv-ministry { padding: 120px 0 112px; scroll-margin-top: 40px; }
+.gv-head { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 80px; align-items: end; }
+.gv-lead { color: #3e535d; font-size: 18px; line-height: 1.85; }
+.gv-funds { margin-top: 72px; }
+.gv-group-label { color: var(--gv-label); font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 16px; }
+.gv-fund-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 48px; border-top: 2px solid var(--gv-navy); }
+.gv-fund { padding: 32px 0 8px; display: flex; flex-direction: column; }
+.gv-fund-num { font-family: var(--ff-serif); font-size: 15px; color: var(--gv-deep); }
+.gv-fund-title { margin-top: 14px; font-family: var(--ff-serif); font-size: clamp(24px, 2.2vw, 30px); font-weight: 700; line-height: 1.25; letter-spacing: -.03em; color: var(--gv-navy); }
+.gv-fund-desc { margin-top: 12px; font-size: 15.5px; line-height: 1.85; color: var(--gv-text); }
+.gv-fund-btns { margin-top: auto; padding-top: 28px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+
+/* 계좌 후원 — 큰 번호, 누르면 복사 */
+.gv-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.gv-accounts { margin-top: 72px; }
+.gv-acct-list { border-top: 2px solid var(--gv-navy); }
+.gv-acct {
+  display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 6fr) auto; align-items: center; gap: 24px 40px;
+  padding: 28px 0; border-bottom: 1px solid var(--gv-line);
 }
-.gv-intl-title {
-  font-family: 'GmarketSans', 'Pretendard Variable', sans-serif;
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--gv-ink);
-  letter-spacing: -0.02em;
-  margin-bottom: 10px;
+.gv-acct-meta { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding: 16px 20px; background: var(--gv-fill); }
+.gv-acct-meta dt { font-size: 12px; font-weight: 700; color: var(--gv-label); }
+.gv-acct-meta dd { margin: 6px 0 0; font-size: 15px; font-weight: 600; line-height: 1.5; color: var(--gv-ink); }
+.gv-acct-num {
+  justify-self: start; padding: 6px 0; border: 0; background: none; cursor: copy; text-align: left;
+  font-family: var(--ff-serif); font-size: clamp(30px, 3.2vw, 44px); font-weight: 700; letter-spacing: -.01em; line-height: 1.15;
+  font-variant-numeric: tabular-nums; color: var(--gv-navy);
 }
-.gv-intl-desc {
-  font-size: 15px;
-  line-height: 1.75;
-  color: var(--gv-muted);
-  max-width: 520px;
+.gv-acct-num:hover .gv-acct-digits { color: var(--gv-deep); text-decoration: underline; text-underline-offset: 8px; text-decoration-thickness: 1px; }
+.gv-acct-num:focus-visible, .gv-acct-copy:focus-visible { outline: 2px solid var(--gv-deep); outline-offset: 4px; }
+.gv-acct-digits { display: inline-flex; white-space: nowrap; user-select: none; -webkit-user-select: none; }
+.gv-dg { display: inline-block; min-width: .62em; text-align: center; }
+.gv-dg-sep { min-width: .42em; color: var(--gv-label); }
+.gv-acct-digits.is-armed .gv-dg:not(.gv-dg-sep) { opacity: .16; }
+.gv-acct-digits.is-armed .gv-dg.is-rolling { opacity: .5; }
+.gv-acct-digits.is-armed .gv-dg.is-set { opacity: 1; animation: gv-digit-in .42s cubic-bezier(.2,.7,.2,1); }
+@keyframes gv-digit-in { from { transform: translateY(45%); opacity: 0; } to { transform: none; opacity: 1; } }
+.gv-acct-copy { min-width: 132px; cursor: pointer; border: 0; font-family: inherit; justify-content: center; }
+.gv-copy-done { display: none; }
+.gv-acct.is-copied .gv-copy-idle { display: none; }
+.gv-acct.is-copied .gv-copy-done { display: inline; }
+.gv-acct.is-copied .gv-acct-copy { background: var(--gv-navy); }
+.gv-toast {
+  position: fixed; left: 50%; bottom: 28px; z-index: 1200; transform: translate(-50%, 16px);
+  padding: 14px 22px; border-radius: 2px; background: var(--gv-navy); color: #fff;
+  font-size: 14px; font-weight: 700; opacity: 0; pointer-events: none;
+  transition: opacity .25s, transform .25s;
 }
-.gv-intl-btn {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--gv-navy);
-  color: #fff;
-  padding: 15px 28px;
-  border-radius: 14px;
-  font-size: 15px;
-  font-weight: 700;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-.gv-intl-btn:hover { background: var(--gv-mid); transform: translateY(-2px); }
-.gv-intl-btn-icon {
-  width: 18px;
-  height: 18px;
-  transition: transform 0.2s ease;
-}
-.gv-intl-btn:hover .gv-intl-btn-icon { transform: translateX(3px); }
+.gv-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+
+/* ── 2. 선교사 개인 후원 ── */
+.gv-missionary { background: var(--gv-soft); padding: 112px 0; scroll-margin-top: 40px; }
+.gv-mission-layout { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); gap: 80px; align-items: start; }
+.gv-body { margin-top: 24px; font-size: 16px; line-height: 1.85; color: var(--gv-text); }
+.gv-note { margin-top: 28px; padding: 18px 20px; background: #fff; border: 1px solid var(--gv-line); border-radius: 2px; font-size: 14.5px; font-weight: 600; line-height: 1.75; color: var(--gv-ink); }
+.gv-mission-give { padding-top: 6px; }
+.gv-give-label { color: var(--gv-label); font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 16px; }
+.gv-give-list { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--gv-navy); }
+.gv-give-list li { border-bottom: 1px solid var(--gv-line); }
+.gv-give-row { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 26px 4px; color: var(--gv-ink); text-decoration: none; }
+.gv-give-row-info { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.gv-give-row-title { font-family: var(--ff-serif); font-size: 22px; font-weight: 700; letter-spacing: -.02em; color: var(--gv-navy); transition: color .2s; }
+.gv-give-row-sub { font-size: 14.5px; line-height: 1.6; color: var(--gv-muted); }
+.give .gv-give-row-arrow { width: 18px; height: 18px; color: var(--gv-deep); transition: transform .25s; }
+.gv-give-row:hover .gv-give-row-title { color: var(--gv-deep); text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 1px; }
+.gv-give-row:hover .gv-give-row-arrow { transform: translateX(4px); }
+.gv-ask { margin-top: 32px; padding: 22px 24px; background: #fff; border: 1px solid var(--gv-line); border-radius: 2px; }
+.gv-ask-label { font-size: 15px; font-weight: 700; color: var(--gv-navy); }
+.gv-ask-btns { margin-top: 14px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.gv-ask-btns .gv-btn { height: 48px; }
+
+/* ── 3. 해외 후원 ── */
+.gv-intl { padding: 104px 0; }
+.gv-intl-inner { display: flex; align-items: flex-end; justify-content: space-between; gap: 60px; padding-top: 40px; border-top: 1px solid var(--gv-line); }
+.gv-intl-title { margin-top: 18px; font-family: var(--ff-serif); font-size: clamp(26px, 2.6vw, 34px); font-weight: 700; line-height: 1.25; letter-spacing: -.03em; color: var(--gv-navy); }
+.gv-intl-desc { margin-top: 14px; max-width: 620px; font-size: 15.5px; line-height: 1.85; color: var(--gv-text); }
+.gv-intl-btn { flex-shrink: 0; }
+
+/* ── 4. 사역 참여 — 남색 띠 ── */
+.gv-involve { padding: 112px 0 104px; background: var(--gv-navy); color: #fff; }
+.gv-involve .gv-eyebrow { color: rgba(255,255,255,.78); }
+.gv-involve .gv-title { color: #fff; font-size: clamp(28px, 3vw, 40px); line-height: 1.25; }
+.gv-involve-grid { list-style: none; margin: 56px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 40px; }
+.gv-involve-item { padding-top: 22px; border-top: 1px solid rgba(255,255,255,.28); }
+.gv-involve-num { font-family: var(--ff-serif); font-size: 14px; color: rgba(255,255,255,.7); }
+.gv-involve-title { margin-top: 12px; font-family: var(--ff-serif); font-size: 21px; font-weight: 700; letter-spacing: -.02em; line-height: 1.3; color: #fff; }
+.gv-involve-desc { margin-top: 10px; font-size: 15px; line-height: 1.8; color: rgba(255,255,255,.76); }
+.gv-involve-cta { margin-top: 56px; }
+
+/* 스크롤하면 떠오르기 — 스크립트가 .gv-rv 를 붙일 때만 */
+.gv-rv { opacity: 0; transform: translateY(28px); transition: opacity 1.1s cubic-bezier(.2,.7,.2,1) var(--d, 0s), transform 1.1s cubic-bezier(.2,.7,.2,1) var(--d, 0s); }
+.gv-rv.is-in { opacity: 1; transform: none; }
 
 /* ── RESPONSIVE ── */
-@media (max-width: 960px) {
-  .gv-domestic-cards { grid-template-columns: 1fr; }
-  .gv-mission-layout { grid-template-columns: 1fr; gap: 48px; }
-  .gv-intl-card {
-    flex-direction: column;
-    padding: 40px 32px;
-    text-align: center;
-    gap: 28px;
-  }
-  .gv-intl-desc { max-width: 100%; }
+@media (max-width: 980px) {
+  .gv-head { grid-template-columns: 1fr; gap: 24px; align-items: start; }
+  .gv-mission-layout { grid-template-columns: 1fr; gap: 56px; }
+  .gv-intl-inner { flex-direction: column; align-items: flex-start; gap: 28px; }
+  .gv-involve-grid { grid-template-columns: 1fr; gap: 28px; }
 }
-@media (max-width: 768px) {
-  .gv-wrap { padding: 0 24px; }
-  .gv-ministry { padding: 80px 0 60px; }
-  .gv-missionary { padding: 80px 0; }
-  .gv-intl { padding: 60px 0; }
-  .gv-card { padding: 28px 24px; }
-  .gv-give-row { padding: 18px 20px; }
-  .gv-give-row:hover { padding-left: 26px; }
-  .gv-give-card-label,
-  .gv-give-card-contact { padding: 16px 20px; }
-  .gv-intl-card { padding: 32px 24px; }
+@media (max-width: 740px) {
+  .gv-shell { width: calc(100% - 40px); }
+  .gv-ministry { padding: 72px 0 64px; }
+  .gv-lead { font-size: 15.5px; }
+  .gv-funds { margin-top: 48px; }
+  .gv-fund-grid { grid-template-columns: 1fr; }
+  .gv-fund + .gv-fund { margin-top: 24px; border-top: 1px solid var(--gv-line); }
+  .gv-fund-btns, .gv-ask-btns { grid-template-columns: 1fr; }
+  .gv-missionary { padding: 64px 0; }
+  .gv-body { font-size: 15px; }
+  .gv-give-row { padding: 22px 0; }
+  .gv-give-row-title { font-size: 20px; }
+  .gv-ask { padding: 20px; }
+  .gv-intl { padding: 64px 0; }
+  .gv-intl-btn { width: 100%; }
+  .gv-involve { padding: 64px 0; }
+  .gv-involve-grid { margin-top: 40px; }
+  .gv-involve-cta { margin-top: 40px; }
+  .gv-involve-cta .gv-btn { width: 100%; }
+  .gv-accounts { margin-top: 48px; }
+  .gv-acct { grid-template-columns: 1fr; gap: 16px; padding: 24px 0; }
+  .gv-acct-meta { grid-template-columns: 1fr 1fr; padding: 14px 16px; }
+  .gv-acct-num { font-size: clamp(26px, 8vw, 34px); }
+  .gv-acct-copy { width: 100%; }
+}
+@media (max-width: 980px) and (min-width: 741px) {
+  .gv-acct { grid-template-columns: minmax(0, 1fr) auto; }
+  .gv-acct-meta { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gv-btn, .give .gv-give-row-arrow, .gv-give-row-title, .gv-toast { transition: none; }
 }
 </style>
