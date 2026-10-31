@@ -950,6 +950,10 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
 .staff-name-line .staff-name-cell {
   flex: 0 1 auto;
 }
+/* 크루 · 동의 · 수락 뱃지가 붙으면 이름이 0폭으로 눌리지 않도록 뱃지를 다음 줄로 넘긴다 */
+.staff-name-line:has(.staff-status-chip) { flex-wrap: wrap; row-gap: 4px; }
+.staff-name-line:has(.staff-status-chip) .staff-name-cell { flex: 0 0 auto; max-width: 100%; }
+.staff-name-line .staff-status-chip { flex: none; }
 .staff-name-line .gender-badge {
   flex: 0 0 auto;
 }
@@ -1257,6 +1261,7 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 8px;
   grid-column: 1 / -1;
   padding: 12px 18px;
   background: #f8fbfc;
@@ -1717,7 +1722,8 @@ tbody tr.camp-tint.is-dedicated:hover td {
 .badge-group { background: #fef3e2; color: #c47a00; }
 
 .btn-del,
-.btn-confirm {
+.btn-confirm,
+.btn-staff-secondary {
   border-radius: 999px;
   cursor: pointer;
   font-family: var(--f-body);
@@ -1749,6 +1755,15 @@ tbody tr.camp-tint.is-dedicated:hover td {
   border-color: rgba(22,163,74,0.34);
   box-shadow: 0 2px 8px rgba(22,163,74,0.10);
 }
+/* 크루 수락: 보호자 동의 전에는 누를 수 없다 */
+.btn-confirm:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+/* 스태프 수락 줄의 보조 버튼(수락 취소 · 동의 링크 다시 보내기) — 옆 버튼과 같은 크기 */
+.btn-staff-secondary {
+  background: rgba(100,116,139,0.08);
+  border: 1px solid rgba(100,116,139,0.24);
+  color: #475569;
+}
+.btn-staff-secondary:hover { background: rgba(100,116,139,0.14); border-color: rgba(100,116,139,0.36); }
 .btn-deposit {
   background: rgba(59,130,246,0.10);
   border-color: rgba(59,130,246,0.22);

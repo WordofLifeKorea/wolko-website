@@ -8,6 +8,7 @@ import { ACCOUNTANT_EMAILS, pickName } from '../../lib/expenses.js';
 import { CAMPUS_OVERRIDES } from '../../../src/lib/expense-config.js';
 import { normalizePhone } from '../../lib/phone.js';
 import { allowedTools } from '../../lib/portalAccess.js';
+import { isCampRegistrationEditor } from '../../lib/campRegistrationAccess.js';
 
 const H = { 'Cache-Control': 'no-store', 'Content-Type': 'application/json' };
 const fail = (error, status) => Response.json({ error }, { status, headers: H });
@@ -33,6 +34,8 @@ const view = (email, account, session) => ({
   tools: allowedTools({ role: session.role, campus: CAMPUS_OVERRIDES[email] || account?.campus || 'wolko', email }),
   mustChangePassword: !!account?.mustChangePassword,
   isAccountant: ACCOUNTANT_EMAILS.includes(email),
+  // 캠프 스태프 · 크루 지원서 수락(functions/api/admin/staff-accept.js)과 같은 범위
+  canAcceptStaff: session.role === 'admin' || session.role === 'master' || isCampRegistrationEditor(email),
 });
 
 export async function onRequestGet({ env, request }) {

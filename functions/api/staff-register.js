@@ -2,10 +2,12 @@
  * POST /api/staff-register
  * Staff / volunteer application handler.
  * Stored in KV with registrationType: 'staff', no capacity limit.
+ * role: 'staff'(고등학교 졸업 성인) | 'crew'(미성년자 — 보호자 동의 링크를 보내고, 동의가 끝나야 관리자가 수락할 수 있다)
  */
 import { appendRow } from '../lib/googleSheets.js';
 import { sendAlimtalk } from '../lib/solapi.js';
 import { normalizePhone } from '../lib/phone.js';
+import { STAFF_ROLES, ROLE_LABEL, GUARDIAN_RELATIONS, newConsentToken, consentKey, consentAppKey, sendConsentRequest, updateApplicationRegs } from '../lib/staffCrew.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -58,10 +60,11 @@ function buildStaffEmailHtml(reg) {
   <div style="max-width:600px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,79,104,0.08);">
     <div style="background:linear-gradient(135deg,#0f766e 0%,#0d9488 100%);padding:32px 36px;">
       <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(167,243,208,0.9);margin-bottom:8px;">WOLKO Camp Staff Application</div>
-      <div style="font-size:22px;font-weight:700;color:#fff;">새 스태프 지원이 접수되었습니다</div>
+      <div style="font-size:22px;font-weight:700;color:#fff;">새 ${reg.role === 'crew' ? '크루' : '스태프'} 지원이 접수되었습니다</div>
     </div>
     <div style="padding:32px 36px;">
       <table role="presentation" width="100%" style="width:100%;border-collapse:collapse;table-layout:auto;">
+        ${row('지원 구분', reg.role === 'crew' ? '캠프 크루 (미성년자 · 보호자 동의 필요)' : '캠프 스태프 (성인)')}
         ${row('지원한 캠프', escHtml(reg.campTitleKo || reg.campId))}
         ${row('2주 참여 동의', reg.commitment ? '예' : '—')}
         ${reg.trainingException ? row('캠프 트레이닝', '<span style="color:#c2410c;">개인 사정으로 불참 (참고 사항 확인)</span>') : ''}
@@ -71,6 +74,10 @@ function buildStaffEmailHtml(reg) {
         ${row('성별', reg.gender === 'male' ? '남' : reg.gender === 'female' ? '여' : '—')}
         ${row('연락처', escHtml(reg.phone))}
         ${row('이메일', `<a href="mailto:${escHtml(reg.email)}" style="color:#0d9488;text-decoration:none;">${escHtml(reg.email)}</a>`)}
+        ${reg.role === 'crew' ? `${divider}
+        ${row('보호자', `${escHtml(reg.guardianName)} (${escHtml(reg.guardianRelation)})`)}
+        ${row('보호자 연락처', escHtml([reg.guardianPhone, reg.guardianEmail].filter(Boolean).join(' · ')))}
+        ${row('보호자 동의', '동의 링크를 보냈습니다 — 동의가 끝나야 수락할 수 있습니다')}` : ''}
         ${divider}
         ${row('출석 교회', escHtml(reg.church || '—'))}
         ${row('교회 홈페이지', escHtml(reg.churchWebsite || '—'))}
@@ -100,7 +107,7 @@ function buildStaffEmailHtml(reg) {
 
 async function sendStaffEmail(env, reg) {
   if (!env.RESEND_API_KEY) return;
-  const subject = `[스태프 지원] ${reg.name} · ${reg.campTitleKo || reg.campId}`;
+  const subject = `[${reg.role === 'crew' ? '크루' : '스태프'} 지원] ${reg.name} · ${reg.campTitleKo || reg.campId}`;
   await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -122,12 +129,12 @@ async function syncStaffToSheet(env, reg) {
   await appendRow({
     serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
     sheetId: env.GOOGLE_SHEET_ID,
-    range: '시트1!A:AI',
+    range: '시트1!A:AK',
     row: [
       reg.registeredAt,       // A 신청일시
       reg.regId,              // B 신청ID
       reg.campId,             // C 캠프ID
-      '스태프',               // D 유형
+      ROLE_LABEL[reg.role] || '스태프', // D 유형 (스태프 / 크루)
       reg.name,               // E 이름
       reg.email,              // F 이메일
       reg.phone,              // G 연락처
@@ -159,6 +166,8 @@ async function syncStaffToSheet(env, reg) {
       reg.notes || '',         // AG 참고 사항
       reg.pastorName || '',    // AH 담임 목사님 성함
       reg.trainingException ? '트레이닝 불참' : (reg.commitment ? '2주 참여 동의' : ''), // AI 캠프 트레이닝 참여
+      reg.role === 'crew' ? `${reg.guardianName} (${reg.guardianRelation}) ${[reg.guardianPhone, reg.guardianEmail].filter(Boolean).join(' · ')}` : '', // AJ 보호자
+      reg.role === 'crew' ? '동의 대기' : '',  // AK 보호자 동의
     ],
   });
 }
@@ -168,6 +177,7 @@ export async function onRequestPost(context) {
 
   try {
     const data = await request.json();
+    const role = STAFF_ROLES.includes(data.role) ? data.role : 'staff';
     const name = clean(data.name, 60);
     const phone = normalizePhone(clean(data.phone, 30));
     const email = clean(data.email, 120).toLowerCase();
@@ -196,6 +206,11 @@ export async function onRequestPost(context) {
     const notes = clean(data.notes, 2000);
     const commitment = data.commitment === true;
     const trainingException = data.trainingException === true;
+    // 크루(미성년자)는 보호자 이름 · 관계와 연락처(휴대폰 또는 이메일 중 하나 이상)가 있어야 한다
+    const guardianName = role === 'crew' ? clean(data.guardianName, 60) : '';
+    const guardianRelation = role === 'crew' && GUARDIAN_RELATIONS.includes(data.guardianRelation) ? data.guardianRelation : '';
+    const guardianPhone = role === 'crew' ? normalizePhone(clean(data.guardianPhone, 30)) : '';
+    const guardianEmail = role === 'crew' ? clean(data.guardianEmail, 120).toLowerCase() : '';
 
     const required = [name, phone, email, gender, birthDate, introduction, faithStory, church,
       cultHistory, englishAbility, mediaTech, previousCamp, team1];
@@ -207,6 +222,20 @@ export async function onRequestPost(context) {
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return Response.json({ error: '이메일 주소 형식이 올바르지 않습니다.' }, { status: 400, headers: CORS });
+    }
+    if (role === 'crew') {
+      if (!guardianName || !guardianRelation || (!guardianPhone && !guardianEmail)) {
+        return Response.json({ error: '보호자 이름·관계와 보호자 휴대폰 번호 또는 이메일을 입력해주세요.' }, { status: 400, headers: CORS });
+      }
+      if (guardianEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guardianEmail)) {
+        return Response.json({ error: '보호자 이메일 주소 형식이 올바르지 않습니다.' }, { status: 400, headers: CORS });
+      }
+      if (guardianPhone && guardianPhone === phone) {
+        return Response.json({ error: '보호자 휴대폰 번호는 지원자 번호와 달라야 합니다.' }, { status: 400, headers: CORS });
+      }
+      if (guardianEmail && guardianEmail === email) {
+        return Response.json({ error: '보호자 이메일은 지원자 이메일과 달라야 합니다.' }, { status: 400, headers: CORS });
+      }
     }
 
     // 선택한 캠프마다 한 건씩 저장해서 캠프별 관리자 목록에 모두 보이게 한다.
@@ -226,6 +255,7 @@ export async function onRequestPost(context) {
     const base = {
       applicationId,
       registrationType: 'staff',
+      role,
       name, phone, email, gender, birthDate,
       introduction, faithStory,
       church, churchWebsite, pastorName, pastorContact,
@@ -241,6 +271,12 @@ export async function onRequestPost(context) {
       registeredAt,
       confirmed: false,
       confirmedAt: null,
+      accepted: false,
+      acceptedAt: null,
+      ...(role === 'crew' ? {
+        guardianName, guardianRelation, guardianPhone, guardianEmail,
+        parentConsent: { status: 'pending', requestedAt: registeredAt, sentVia: [] },
+      } : {}),
     };
 
     const regs = newCampIdx.map(i => ({
@@ -253,6 +289,22 @@ export async function onRequestPost(context) {
       env.CAMP_KV.put(`camp:${reg.campId}:reg:${reg.regId}`, JSON.stringify(reg)),
       env.CAMP_KV.put(`camp:${reg.campId}:staff:email:${email}`, reg.regId),
     ]));
+
+    // 크루: 보호자 동의 링크(토큰)를 만들어 두고 문자·이메일로 보낸다. 보낸 경로는 각 지원 건에 적어 관리자 화면에 보여 준다.
+    let consentSent = [];
+    if (role === 'crew') {
+      const token = newConsentToken();
+      const regRefs = regs.map(r => ({ campId: r.campId, regId: r.regId }));
+      const campNames = regs.map(r => r.campTitleKo).join(', ');
+      await Promise.all([
+        env.CAMP_KV.put(consentKey(token), JSON.stringify({ applicationId, regs: regRefs, applicantName: name, campNames, guardianName, createdAt: registeredAt })),
+        env.CAMP_KV.put(consentAppKey(applicationId), token),
+      ]);
+      consentSent = await sendConsentRequest(env, { token, applicantName: name, campNames, guardianName, guardianPhone, guardianEmail });
+      if (consentSent.length) {
+        await updateApplicationRegs(env, regRefs, reg => ({ ...reg, parentConsent: { ...reg.parentConsent, sentVia: consentSent, lastSentAt: new Date().toISOString() } }));
+      }
+    }
 
     // 알림은 지원서 한 장당 한 번만
     const summary = { ...base, regId: applicationId, campId: regs.map(r => r.campId).join(', '), campTitleKo: regs.map(r => r.campTitleKo).join(', ') };
@@ -267,7 +319,7 @@ export async function onRequestPost(context) {
       ])
     );
 
-    return Response.json({ success: true }, { headers: CORS });
+    return Response.json({ success: true, role, consentSent }, { headers: CORS });
 
   } catch (e) {
     console.error('staff-register error:', e);

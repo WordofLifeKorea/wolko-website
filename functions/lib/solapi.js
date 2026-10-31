@@ -65,12 +65,14 @@ export async function sendAlimtalk(env, phone, templateId, variables) {
  * @param {object} env - Cloudflare env (SOLAPI_API_KEY, SOLAPI_API_SECRET, SOLAPI_SENDER_PHONE 필요)
  * @param {string} phone - 수신자 전화번호 (하이픈 포함 가능)
  * @param {string} text - 메시지 본문
+ * @param {{from?: string}} [options] - from: 기본 발신번호(SOLAPI_SENDER_PHONE) 대신 쓸 번호 (솔라피에 발신번호로 등록돼 있어야 한다)
  */
-export async function sendSms(env, phone, text) {
-  if (!env.SOLAPI_API_KEY || !env.SOLAPI_API_SECRET || !env.SOLAPI_SENDER_PHONE) return;
+export async function sendSms(env, phone, text, options = {}) {
+  const sender = options.from || env.SOLAPI_SENDER_PHONE;
+  if (!env.SOLAPI_API_KEY || !env.SOLAPI_API_SECRET || !sender) return;
 
   const to = toSolapiNumber(phone);
-  const from = env.SOLAPI_SENDER_PHONE.replace(/[^0-9]/g, '');
+  const from = String(sender).replace(/[^0-9]/g, '');
   if (!to || to.length < 10) return;
 
   const authorization = await buildSolapiAuth(env.SOLAPI_API_KEY, env.SOLAPI_API_SECRET);

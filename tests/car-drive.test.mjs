@@ -89,7 +89,7 @@ test('/api/hub/me 는 로그인한 계정의 이름과 이메일을 돌려준다
   const token = await addAccount(env, 'a@wol.org', '김환규');
   const ok = await onRequestGet({ env, request: req('GET', '/api/hub/me', token) });
   assert.equal(ok.status, 200);
-  assert.deepEqual(await ok.json(), { name: '김환규', email: 'a@wol.org', role: 'counselor', phone: '010-1234-5678', campus: 'wolko', tools: null, mustChangePassword: false, isAccountant: false });
+  assert.deepEqual(await ok.json(), { name: '김환규', email: 'a@wol.org', role: 'counselor', phone: '010-1234-5678', campus: 'wolko', tools: null, mustChangePassword: false, isAccountant: false, canAcceptStaff: false });
   assert.equal((await onRequestGet({ env, request: req('GET', '/api/hub/me', 'bad') })).status, 401);
 });
 

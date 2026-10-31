@@ -20,7 +20,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=91">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=92">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=24">
   <link rel="stylesheet" href="/wolko-header.css?v=15">
@@ -392,7 +392,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         thEmergency:'비상연락처', thNotes:'메모', thDate:'신청일시', thDelete:'삭제',
         staffRegTitle:'스태프 · 봉사자 지원 목록', thTeam:'팀', thApplicantMemo:'신청자 메모',
         thBirthDate:'생년월일', thPreviousCamp:'캠프 경험', thTestimony:'자기소개·간증',
-        thChurchWebsite:'교회 홈페이지', thPastorName:'담임 목사님 성함', thTraining:'캠프 트레이닝', trainingExceptionLabel:'개인 사정으로 불참 (메모 확인)', trainingCommitLabel:'2주 참여 동의', thPastorContact:'목사님·교회 연락처', thCultHistory:'하나님의 교회·신천지 참여', thEnglish:'일상 생활 영어', thMediaTech:'미디어·테크', thInstruments:'악기', thAvailableCamps:'섬길 수 있는 캠프', thIntroduction:'자기소개', thPreviousCampDetail:'캠프 봉사 경험 상세', thFaithStory:'예수님을 믿게 된 이야기',
+        thChurchWebsite:'교회 홈페이지', thPastorName:'담임 목사님 성함', thTraining:'캠프 트레이닝', roleCrew:'크루', roleStaff:'스태프', staffAccepted:'수락됨', consentPending:'보호자 동의 대기', consentAgreed:'보호자 동의 완료', guardianSection:'보호자 동의', thGuardian:'보호자', thGuardianContact:'보호자 연락처', thConsent:'동의 상태', consentSentVia:'발송', consentAgreedBy:'서명', acceptBtn:'수락', unacceptBtn:'수락 취소', resendConsentBtn:'동의 링크 다시 보내기', acceptNeedsConsent:'보호자 동의가 끝나야 수락할 수 있어요', acceptConfirmMsg:'이 지원서를 수락할까요?', unacceptConfirmMsg:'수락을 취소할까요?', acceptDone:'수락했습니다.', unacceptDone:'수락을 취소했습니다.', resendDone:'동의 링크를 다시 보냈습니다.', trainingExceptionLabel:'개인 사정으로 불참 (메모 확인)', trainingCommitLabel:'2주 참여 동의', thPastorContact:'목사님·교회 연락처', thCultHistory:'하나님의 교회·신천지 참여', thEnglish:'일상 생활 영어', thMediaTech:'미디어·테크', thInstruments:'악기', thAvailableCamps:'섬길 수 있는 캠프', thIntroduction:'자기소개', thPreviousCampDetail:'캠프 봉사 경험 상세', thFaithStory:'예수님을 믿게 된 이야기',
         thPayMethod:'결제 방식', payOnSiteLabel:'현금·현장 결제 (환불 계좌 없음)',
         deleteConfirm:'이 신청을 휴지통으로 이동하시겠습니까?\n30일 동안 보관되며 관리자가 복원할 수 있습니다.',
         trashBtn:'휴지통', trashTitle:'휴지통', trashDesc:'삭제한 신청은 30일 동안 보관되며, 관리자만 복원할 수 있습니다.',
@@ -499,7 +499,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         thEmergency:'Emergency', thNotes:'Notes', thDate:'Registered', thDelete:'Delete',
         staffRegTitle:'Staff & Volunteer Applications', thTeam:'Team', thApplicantMemo:'Applicant Note',
         thBirthDate:'Birth Date', thPreviousCamp:'Camp Exp.', thTestimony:'Intro/Testimony',
-        thChurchWebsite:'Church Website', thPastorName:'Senior Pastor', thTraining:'Camp Training', trainingExceptionLabel:'Cannot attend (see notes)', trainingCommitLabel:'Agreed to 2 weeks', thPastorContact:'Pastor/Church Contact', thCultHistory:'WMSCOG/Shincheonji', thEnglish:'Everyday English', thMediaTech:'Media/Tech', thInstruments:'Instruments', thAvailableCamps:'Available Camps', thIntroduction:'Introduction', thPreviousCampDetail:'Camp Service Details', thFaithStory:'Faith Story',
+        thChurchWebsite:'Church Website', thPastorName:'Senior Pastor', thTraining:'Camp Training', roleCrew:'Crew', roleStaff:'Staff', staffAccepted:'Accepted', consentPending:'Awaiting guardian', consentAgreed:'Guardian agreed', guardianSection:'Guardian Consent', thGuardian:'Guardian', thGuardianContact:'Guardian contact', thConsent:'Consent', consentSentVia:'Sent via', consentAgreedBy:'Signed by', acceptBtn:'Accept', unacceptBtn:'Undo accept', resendConsentBtn:'Resend consent link', acceptNeedsConsent:'Guardian consent is required before accepting', acceptConfirmMsg:'Accept this application?', unacceptConfirmMsg:'Undo acceptance?', acceptDone:'Accepted.', unacceptDone:'Acceptance undone.', resendDone:'Consent link resent.', trainingExceptionLabel:'Cannot attend (see notes)', trainingCommitLabel:'Agreed to 2 weeks', thPastorContact:'Pastor/Church Contact', thCultHistory:'WMSCOG/Shincheonji', thEnglish:'Everyday English', thMediaTech:'Media/Tech', thInstruments:'Instruments', thAvailableCamps:'Available Camps', thIntroduction:'Introduction', thPreviousCampDetail:'Camp Service Details', thFaithStory:'Faith Story',
         thPayMethod:'Payment', payOnSiteLabel:'Cash / on-site (no refund account)',
         deleteConfirm:'Move this registration to the trash?\nIt is kept for 30 days and an admin can restore it.',
         trashBtn:'Trash', trashTitle:'Trash', trashDesc:'Deleted registrations are kept for 30 days. Only admins can restore them.',
@@ -2070,6 +2070,53 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
       document.getElementById('campCountPending').textContent   = tt('tableCountFn', pendingRegs.length);
     }
 
+    // ── 스태프 · 크루: 역할/상태 뱃지, 보호자 동의, 수락 ──
+    function staffChip(label, tone) {
+      const tones = { crew: ['rgba(124,58,237,0.10)', '#6d28d9'], wait: ['rgba(234,88,12,0.10)', '#c2410c'], ok: ['rgba(13,148,136,0.12)', '#0f766e'], done: ['rgba(0,79,104,0.10)', '#004f68'] };
+      const [bg, fg] = tones[tone] || tones.done;
+      return `<span class="staff-status-chip" style="display:inline-block;padding:2px 10px;border-radius:100px;background:${bg};color:${fg};font-size:11px;font-weight:700;white-space:nowrap;">${esc(label)}</span>`;
+    }
+    function staffStatusBadges(r) {
+      let html = '';
+      if (r.role === 'crew') {
+        html += staffChip(t('roleCrew'), 'crew');
+        if (!r.accepted) html += r.parentConsent?.status === 'agreed' ? staffChip(t('consentAgreed'), 'ok') : staffChip(t('consentPending'), 'wait');
+      }
+      if (r.accepted) html += staffChip(t('staffAccepted'), 'done');
+      return html;
+    }
+    function staffConsentText(r) {
+      const c = r.parentConsent || {};
+      const fmt = iso => { try { return new Date(iso).toLocaleString(adminLang === 'en' ? 'en-US' : 'ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
+      if (c.status === 'agreed') return `${staffChip(t('consentAgreed'), 'ok')} ${esc(fmt(c.agreedAt))}${c.signerName ? ` · ${t('consentAgreedBy')} ${esc(c.signerName)}` : ''}`;
+      const via = (c.sentVia || []).map(v => v === 'sms' ? (adminLang === 'en' ? 'text' : '문자') : (adminLang === 'en' ? 'email' : '이메일')).join(' · ');
+      return `${staffChip(t('consentPending'), 'wait')}${via ? ` ${t('consentSentVia')}: ${esc(via)}${c.lastSentAt ? ` (${esc(fmt(c.lastSentAt))})` : ''}` : ''}`;
+    }
+    function staffAcceptButtons(r) {
+      if (!canAcceptStaff) return '';
+      const id = `'${r.regId}','${r.campId}'`;
+      if (r.accepted) return `<button class="btn-staff-secondary" onclick="staffAcceptAction(${id},'unaccept')">${t('unacceptBtn')}</button>`;
+      const needsConsent = r.role === 'crew' && r.parentConsent?.status !== 'agreed';
+      const resend = needsConsent ? `<button class="btn-staff-secondary" onclick="staffAcceptAction(${id},'resend-consent')">${t('resendConsentBtn')}</button>` : '';
+      return `${resend}<button class="btn-confirm" ${needsConsent ? `disabled title="${esc(t('acceptNeedsConsent'))}"` : ''} onclick="staffAcceptAction(${id},'accept')">${t('acceptBtn')}</button>`;
+    }
+    async function staffAcceptAction(regId, campId, action) {
+      if (action === 'accept' && !confirm(t('acceptConfirmMsg'))) return;
+      if (action === 'unaccept' && !confirm(t('unacceptConfirmMsg'))) return;
+      try {
+        const res = await fetch('/api/admin/staff-accept', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action, regId, campId }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t('processFail'));
+        const i = allRegs.findIndex(x => x.regId === regId && x.campId === campId);
+        if (i !== -1 && data.reg) allRegs[i] = data.reg;
+        renderStaffTable();
+        showToast(t(action === 'accept' ? 'acceptDone' : action === 'unaccept' ? 'unacceptDone' : 'resendDone'), 'success');
+      } catch (e) {
+        showToast(t('errorPrefix') + e.message, 'error');
+      }
+    }
+    window.staffAcceptAction = staffAcceptAction;
+
     function renderStaffTable() {
       const regs = sortedRegs(filteredRegs().filter(r => r.registrationType === 'staff'));
       const tbody = document.getElementById('staffRegBody');
@@ -2153,7 +2200,16 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
                       ${staffDetailItem(r.faithStory ? t('thFaithStory') : t('thTestimony'), testimonyCell, true)}
                     </div>
                   </div>
+                  ${r.role === 'crew' ? `<div class="registration-detail-section">
+                    <div class="registration-detail-section-title">${t('guardianSection')}</div>
+                    <div class="registration-detail-grid">
+                      ${staffDetailItem(t('thGuardian'), esc(`${r.guardianName || '—'}${r.guardianRelation ? ` (${r.guardianRelation})` : ''}`))}
+                      ${staffDetailItem(t('thGuardianContact'), esc([r.guardianPhone, r.guardianEmail].filter(Boolean).join(' · ') || '—'))}
+                      ${staffDetailItem(t('thConsent'), staffConsentText(r), true)}
+                    </div>
+                  </div>` : ''}
                   <div class="registration-detail-actions">
+                    ${staffAcceptButtons(r)}
                     <button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">${t('thDelete')}</button>
                   </div>
                 </div>
@@ -2163,7 +2219,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
 
         return `<tr class="staff-summary-row camp-tint${isExpanded ? ' is-expanded' : ''}" style="${rowStyle}" tabindex="0" aria-expanded="${isExpanded}" onclick="toggleStaffDetailFromRow(event,'${r.regId}')" onkeydown="handleStaffDetailKey(event,'${r.regId}')">
           <td data-label="${t('thName')}">
-            <span class="staff-name-line"><span class="staff-name-cell">${esc(r.name || t('unset'))}</span>${genderBadge}</span>
+            <span class="staff-name-line"><span class="staff-name-cell">${esc(r.name || t('unset'))}</span>${genderBadge}${staffStatusBadges(r)}</span>
           </td>
           <td data-label="${t('thTeam')}">${teamCell}</td>
           <td data-label="${t('thPhone')}" style="white-space:nowrap">${phoneCell}</td>
@@ -3212,6 +3268,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
     // ── 예약금 수납 ──
     // 예약금 수납 · 최종 확정 · 되돌리기는 관리자/마스터 또는 회계 담당자만 (일반 멤버는 버튼이 보이지 않는다)
     let canProcess = false;
+    let canAcceptStaff = false; // 스태프 · 크루 수락: 관리자/마스터 + 신청자 목록 담당 (loadMe가 켠다)
     function setCanProcess(v) { if (canProcess !== v) { canProcess = v; try { renderTable(); } catch (e) {} } }
     async function loadMe() {
       try {
@@ -3219,6 +3276,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         if (!res.ok) return;
         const me = await res.json();
         setCanProcess(!!me.isAccountant);
+        if (canAcceptStaff !== !!me.canAcceptStaff) { canAcceptStaff = !!me.canAcceptStaff; try { renderStaffTable(); } catch (e) {} }
       } catch (e) {}
     }
     async function depositReg(regId, campId) {

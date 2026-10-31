@@ -1,0 +1,147 @@
+---
+// 캠프 크루(미성년자) 보호자 동의 — 지원할 때 보호자에게 문자·이메일로 보낸 링크(?t=토큰)로 들어온다.
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="보호자 동의 — 월코 캠프 크루" description="월코 캠프 크루(미성년자) 참여 보호자 동의" whiteNav languageOnlyNav>
+  <meta slot="head" name="robots" content="noindex, nofollow">
+
+<style>
+  .cs {
+    --c-deep:#004f68; --c-deep-dk:#003d52; --c-navy:#0b2430; --c-ink:#10252e; --c-body:#3e535d;
+    --c-sub:#4a5d66; --c-muted:#587383; --c-label:#5a7380; --c-line:#d6dee2; --c-field:#cdd7dc;
+    --c-rule:#e3e9ec; --c-soft:#f6f9fb; --c-fill:#f3f7f9; --c-error:#a3262f;
+    --f-serif: var(--ff-serif, 'GmarketSans', 'Pretendard Variable', Pretendard, sans-serif);
+    --f-sans: var(--ff-sans, 'Pretendard Variable', Pretendard, -apple-system, sans-serif);
+    min-height: 100vh; padding: 140px 20px 96px; background: var(--c-soft);
+    font-family: var(--f-sans); color: var(--c-ink); word-break: keep-all;
+  }
+  .cs-card { width: min(640px, 100%); margin: 0 auto; background: #fff; border: 1px solid var(--c-line); }
+  .cs-head { padding: 28px 36px 22px; border-bottom: 2px solid var(--c-navy); }
+  .cs-badge { font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--c-label); }
+  .cs-title { margin: 10px 0 0; font-family: var(--f-serif); font-size: clamp(22px, 3vw, 28px); font-weight: 700; color: var(--c-navy); letter-spacing: -.03em; line-height: 1.3; }
+  .cs-body { padding: 24px 36px 32px; }
+  .cs-lead { margin: 0 0 20px; font-size: 15px; line-height: 1.8; color: var(--c-body); }
+  .cs-facts { margin: 0 0 24px; }
+  .cs-fact { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 11px 0; border-top: 1px solid var(--c-rule); }
+  .cs-fact:last-child { border-bottom: 1px solid var(--c-rule); }
+  .cs-fact dt { font-size: 13px; font-weight: 600; color: var(--c-label); }
+  .cs-fact dd { margin: 0; font-size: 15px; font-weight: 600; color: var(--c-ink); line-height: 1.6; }
+  .cs-terms { margin: 0 0 20px; padding: 16px 18px; background: var(--c-fill); border: 1px solid var(--c-line); font-size: 13.5px; line-height: 1.75; color: var(--c-body); }
+  .cs-terms ul { margin: 6px 0 0; padding-left: 18px; }
+  .cs-field { display: grid; gap: 8px; margin-bottom: 16px; }
+  .cs-field label { font-size: 14px; font-weight: 600; color: var(--c-ink); }
+  .cs-field input { height: 48px !important; min-height: 48px !important; padding: 0 14px; border: 1px solid var(--c-field); border-radius: 2px; font: 500 15px var(--f-sans); color: var(--c-ink); box-sizing: border-box; width: 100%; }
+  .cs-field input:focus { outline: none; border-color: var(--c-deep); box-shadow: 0 0 0 1px var(--c-deep); }
+  .cs-check { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border: 1px solid var(--c-line); margin-bottom: 20px; cursor: pointer; font-size: 14px; line-height: 1.65; color: var(--c-ink); }
+  .cs-check input { width: 18px; height: 18px; min-height: 0 !important; margin: 2px 0 0; flex: none; accent-color: var(--c-deep); }
+  .cs-submit { display: flex; align-items: center; justify-content: center; width: 100%; height: 52px; min-height: 52px !important; border: 1px solid var(--c-deep); border-radius: 2px; background: var(--c-deep); color: #fff; font: 700 15px var(--f-sans); cursor: pointer; transition: background-color .2s; }
+  .cs-submit:hover:not(:disabled) { background: var(--c-deep-dk); }
+  .cs-submit:disabled { opacity: .6; cursor: default; }
+  .cs-error { margin: 0 0 14px; padding: 12px 14px; border: 1px solid var(--c-error); color: var(--c-error); font-size: 13.5px; line-height: 1.6; }
+  .cs-done-icon { width: 48px; height: 48px; border: 1px solid var(--c-deep); color: var(--c-deep); display: flex; align-items: center; justify-content: center; margin: 0 0 18px; }
+  .cs-foot { padding: 16px 36px; background: var(--c-fill); border-top: 1px solid var(--c-rule); font-size: 12.5px; line-height: 1.6; color: var(--c-muted); }
+  [hidden] { display: none !important; }
+  @media (max-width: 640px) {
+    .cs { padding: 104px 16px 72px; }
+    .cs-head, .cs-body, .cs-foot { padding-left: 20px; padding-right: 20px; }
+    .cs-fact { grid-template-columns: 80px minmax(0, 1fr); }
+  }
+</style>
+
+<main class="cs">
+  <div class="cs-card">
+    <div class="cs-head">
+      <div class="cs-badge">Word of Life Korea · <span class="wl-ko">보호자 동의서</span><span class="wl-en">Guardian Consent</span></div>
+      <h1 class="cs-title"><span class="wl-ko">캠프 크루 참여 동의</span><span class="wl-en">Camp Crew Participation Consent</span></h1>
+    </div>
+
+    <div class="cs-body" id="csLoading"><p class="cs-lead"><span class="wl-ko">불러오는 중…</span><span class="wl-en">Loading…</span></p></div>
+
+    <div class="cs-body" id="csInvalid" hidden>
+      <p class="cs-lead"><span class="wl-ko">유효하지 않거나 만료된 링크입니다. 받으신 문자나 이메일의 링크를 다시 열어 주시고, 계속 열리지 않으면 아래 연락처로 문의해 주세요.</span><span class="wl-en">This link is invalid or has expired. Please open the link from your text or email again, or contact us below.</span></p>
+    </div>
+
+    <div class="cs-body" id="csForm" hidden>
+      <p class="cs-lead">
+        <span class="wl-ko"><b id="csApplicantKo"></b> 님이 월코 캠프 <b>크루(봉사자)</b>로 지원했습니다. 미성년자가 캠프 봉사에 참여하려면 보호자의 동의가 필요합니다.</span>
+        <span class="wl-en"><b id="csApplicantEn"></b> has applied to serve as <b>camp crew</b> (volunteer) at WOLKO Camp. Because the applicant is a minor, guardian consent is required.</span>
+      </p>
+      <dl class="cs-facts">
+        <div class="cs-fact"><dt><span class="wl-ko">지원자</span><span class="wl-en">Applicant</span></dt><dd id="csApplicant"></dd></div>
+        <div class="cs-fact"><dt><span class="wl-ko">지원한 캠프</span><span class="wl-en">Camp(s)</span></dt><dd id="csCamps"></dd></div>
+        <div class="cs-fact"><dt><span class="wl-ko">보호자</span><span class="wl-en">Guardian</span></dt><dd id="csGuardian"></dd></div>
+      </dl>
+      <div class="cs-terms">
+        <span class="wl-ko">동의하시면 아래 내용에 동의하시는 것으로 봅니다.</span>
+        <span class="wl-en">By agreeing, you confirm the following.</span>
+        <ul>
+          <li><span class="wl-ko">위 지원자가 월코 캠프 기간 동안 크루(봉사자)로 참여하는 것에 동의합니다.</span><span class="wl-en">I consent to the applicant serving as camp crew during WOLKO Camp.</span></li>
+          <li><span class="wl-ko">캠프 운영을 위해 지원서에 적힌 정보를 월코가 수집·이용하는 것에 동의합니다.</span><span class="wl-en">I consent to WOLKO collecting and using the information in the application to run the camp.</span></li>
+          <li><span class="wl-ko">최종 참여 여부는 월코 캠프 담당자의 검토 후 개별적으로 안내됩니다.</span><span class="wl-en">Final participation is confirmed individually after review by the WOLKO camp team.</span></li>
+        </ul>
+      </div>
+      <div class="cs-field">
+        <label for="csSigner"><span class="wl-ko">보호자 성함 (서명)</span><span class="wl-en">Guardian name (signature)</span></label>
+        <input id="csSigner" maxlength="60" autocomplete="name">
+      </div>
+      <label class="cs-check"><input type="checkbox" id="csAgree"><span><span class="wl-ko">위 내용을 확인했으며 동의합니다.</span><span class="wl-en">I have read the above and agree.</span></span></label>
+      <p class="cs-error" id="csError" hidden></p>
+      <button type="button" class="cs-submit" id="csSubmit"><span class="wl-ko">동의합니다</span><span class="wl-en">I Agree</span></button>
+    </div>
+
+    <div class="cs-body" id="csDone" hidden>
+      <div class="cs-done-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"><polyline points="20 6 9.5 16.5 4 11"/></svg></div>
+      <p class="cs-lead"><span class="wl-ko">동의가 완료되었습니다. 감사합니다! 월코 캠프 담당자가 지원서를 검토한 뒤 지원자에게 개별적으로 연락드립니다.</span><span class="wl-en">Thank you — your consent has been recorded. The WOLKO camp team will review the application and contact the applicant.</span></p>
+      <p class="cs-lead" id="csDoneAt" style="font-size:13px;color:var(--c-muted);margin:0;"></p>
+    </div>
+
+    <div class="cs-foot"><span class="wl-ko">문의</span><span class="wl-en">Contact</span>: 월코 캠프 010-7310-9216 · wolkorea1@gmail.com</div>
+  </div>
+</main>
+
+<script is:inline>
+(function () {
+  var token = new URLSearchParams(location.search).get('t') || '';
+  var $ = function (id) { return document.getElementById(id); };
+  var isEn = function () { return (document.getElementById('lang-root') || document.body).classList.contains('lang-en'); };
+  function show(id) { ['csLoading', 'csInvalid', 'csForm', 'csDone'].forEach(function (k) { $(k).hidden = k !== id; }); }
+  function doneAt(iso) {
+    if (!iso) return;
+    try { $('csDoneAt').textContent = new Date(iso).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', dateStyle: 'medium', timeStyle: 'short' }); } catch (e) {}
+  }
+  function fill(d) {
+    ['csApplicant', 'csApplicantKo', 'csApplicantEn'].forEach(function (id) { $(id).textContent = d.applicantName || ''; });
+    $('csCamps').textContent = d.campNames || '—';
+    $('csGuardian').textContent = d.guardianName || '—';
+    if (d.guardianName && !$('csSigner').value) $('csSigner').value = d.guardianName;
+  }
+  if (!/^[0-9a-f]{48}$/.test(token)) { show('csInvalid'); return; }
+  fetch('/api/staff-consent?t=' + encodeURIComponent(token))
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      if (!d) { show('csInvalid'); return; }
+      fill(d);
+      if (d.status === 'agreed') { doneAt(d.agreedAt); show('csDone'); } else show('csForm');
+    })
+    .catch(function () { show('csInvalid'); });
+
+  $('csSubmit').addEventListener('click', function () {
+    var signer = $('csSigner').value.trim();
+    var err = $('csError');
+    err.hidden = true;
+    if (!signer) { err.textContent = isEn() ? 'Please enter the guardian name.' : '보호자 성함을 입력해 주세요.'; err.hidden = false; $('csSigner').focus(); return; }
+    if (!$('csAgree').checked) { err.textContent = isEn() ? 'Please check the box to agree.' : '동의 항목에 체크해 주세요.'; err.hidden = false; return; }
+    var btn = $('csSubmit'); btn.disabled = true;
+    fetch('/api/staff-consent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ t: token, signerName: signer, agree: true }) })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (x) {
+        if (x.ok && x.d.status === 'agreed') { doneAt(x.d.agreedAt); show('csDone'); return; }
+        err.textContent = (x.d && x.d.error) || (isEn() ? 'Something went wrong. Please try again.' : '오류가 발생했습니다. 다시 시도해 주세요.');
+        err.hidden = false; btn.disabled = false;
+      })
+      .catch(function () { err.textContent = isEn() ? 'Network error. Please try again.' : '네트워크 오류가 발생했습니다. 다시 시도해 주세요.'; err.hidden = false; btn.disabled = false; });
+  });
+})();
+</script>
+</BaseLayout>

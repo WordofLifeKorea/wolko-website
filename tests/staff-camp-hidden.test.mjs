@@ -40,11 +40,13 @@ test('시흥중앙성결교회 초등영어캠프는 스태프 선택지에만 �
   assert.match(reg, /partner: \['교회 및 학교 캠프'/);
 });
 
-test('스태프 지원서: 섹션마다 옅은 배경, 한 줄 입력칸은 아래 선만, 서술형(textarea)만 박스', () => {
+test('스태프 지원서: 입력칸·선택칸은 캠프 신청서와 같은 모양(흰 바탕, 테두리 48px) — 회색 섹션 상자·밑줄 칸 없음', () => {
   const reg = read('src/pages/camp-register/index.astro');
-  assert.match(reg, /#staffForm \.crp-form-grid \{ background: #f6f9fb; border-radius: 2px;/);
-  assert.match(reg, /#staffForm \.crp-field select\s*\{\s*border: 0; border-bottom: 1\.5px solid #d3e0e7;/);
-  assert.match(reg, /#staffForm \.crp-field textarea \{ background: #fff; \}/);
+  assert.doesNotMatch(reg, /#staffForm \.crp-form-grid \{ background: #f6f9fb;/);
+  assert.doesNotMatch(reg, /border-bottom: 1\.5px solid #d3e0e7/);
+  assert.match(reg, /#crpModal \.crp-field select, #staffModal \.crp-field select \{/);
+  assert.match(reg, /#staffModal \.ip-cc \{ height: 48px !important; min-height: 48px !important; \}/);
+  assert.match(reg, /#crpModal \.crp-modal-card, #staffModal \.crp-modal-card \{ max-width: 760px; \}/);
 });
 
 test('스태프 지원서 첫 섹션: 이름 | 성별 / 생년월일 전체 / 전화번호 | 이메일, 칸은 열 폭을 채운다', () => {
