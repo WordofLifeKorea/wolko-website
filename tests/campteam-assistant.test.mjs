@@ -74,3 +74,33 @@ test('화면 안내 모음: 서버의 안내 번호와 같고, 모든 단계에 
   assert.ok(G.starters.length === 6 && G.starters.every((s) => ids.includes(s)));
   for (const id of ids) { const g = G.guides[id]; assert.ok(g.title.ko && g.title.en, id); assert.ok(g.steps.length >= 1, id); for (const s of g.steps) { assert.ok(typeof s.sel === 'string' && s.sel.length, id); assert.ok(s.text.ko && s.text.en, id); if (s.path) assert.ok(G.nav[s.path], id + ' nav'); } }
 });
+
+test('루미의 단계형 고정 질문: 모든 질문·답에 한·영이 있고, 가리키는 하위 질문·화면 안내가 실제로 있고, 처음부터 모두 도달할 수 있다', () => {
+  const ctx = { window: {} }; ctx.globalThis = ctx; vm.createContext(ctx);
+  for (const f of ['assistant-guides.js', 'assistant-faq.js']) vm.runInContext(readFileSync(new URL('../public/portal/campteam/' + f, import.meta.url), 'utf8'), ctx);
+  const G = ctx.window.CTGuides, F = ctx.window.CTFaq, ids = Object.keys(F.nodes);
+  assert.ok(F.root.length >= 5 && F.root.every((id) => F.nodes[id]), '맨 위 질문');
+  const seen = new Set(), walk = (id) => { if (seen.has(id)) return; seen.add(id); F.nodes[id].next.forEach(walk); }; F.root.forEach(walk);
+  for (const id of ids) {
+    const n = F.nodes[id];
+    for (const k of ['q', 'a']) { assert.ok(n[k].ko && n[k].ko.length > 3 && n[k].en && n[k].en.length > 3, id + ' ' + k + ' 한·영'); }
+    for (const nx of n.next) assert.ok(F.nodes[nx], id + ' → 없는 하위 질문 ' + nx);
+    if (n.guide) assert.ok(G.guides[n.guide], id + ' → 없는 화면 안내 ' + n.guide);
+    assert.ok(seen.has(id), id + ' 은(는) 처음부터 도달할 수 없다');
+  }
+  assert.ok(ids.length >= 30, 'AI 기능·올리기·찾기·업무·캠프·화면 질문이 충분히 있다');
+  assert.ok(F.nodes.ai.next.length >= 8, 'AI 기능 아래에 하위 질문이 여럿');
+});
+
+test('루미 그림: 챗이 쓰는 모든 표정이 라이트·다크 두 벌로 포털에 들어 있다', () => {
+  const src = readFileSync(new URL('../public/portal/campteam/assistant.js', import.meta.url), 'utf8');
+  const states = JSON.parse(/var LUMI_STATES = (\[[^\]]*\])/.exec(src)[1].replace(/'/g, '"'));
+  assert.ok(states.includes('idle') && states.includes('blink') && states.includes('portrait') && states.length >= 10);
+  for (const st of states) for (const mode of ['light', 'dark']) { const f = new URL(`../public/portal/campteam/lumi/lumi-${st}-${mode}.png`, import.meta.url); assert.ok(readFileSync(f).subarray(0, 4).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47])), st + mode + ' PNG'); }
+  assert.ok(!/MASCOT/.test(src), '옛 임시 캐릭터가 남아 있지 않다');
+});
+
+test('서버의 AI 인격은 루미이고, AI 기능 안내서가 들어 있다', () => {
+  const sys = buildAssistSystem({ lang: 'ko', path: '/x' });
+  assert.ok(sys.includes('Lumi') && sys.includes('루미') && sys.includes('in-app helper') && sys.includes('파일 내용을 읽고 정리하기') && sys.includes('한글/영어 짝'));
+});

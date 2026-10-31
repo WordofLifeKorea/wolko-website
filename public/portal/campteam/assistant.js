@@ -1,16 +1,16 @@
-/* 캠프 도우미 — 오른쪽 아래 캐릭터를 누르면 작은 챗이 열린다.
-   · 자주 묻는 질문(고정)은 미리 만든 「화면 안내」를 바로 시작한다 (AI 를 쓰지 않아 즉시·무료·정확)
+/* 루미(캠프팀 AI 도우미) — 오른쪽 아래 루미를 누르면 작은 챗이 열린다. 루미는 상태(인사·듣는 중·답변 중·찾는 중·완료·모름…)에 따라 표정이 바뀐다.
+   · 고정 질문(assistant-faq.js)은 루미가 인사한 뒤 단계별로 이어서 보여 준다 — 질문을 고르면 답과 함께 하위 질문이 나오고, 화면 안내가 있으면 바로 시작한다 (AI 를 쓰지 않아 즉시·무료·정확)
    · 그 밖의 질문은 서버의 AI 가 사용법으로 답하고, 맞는 화면 안내가 있으면 버튼으로 권한다
    · 화면 안내: 화면이 살짝 어두워지고 눌러야 할 곳이 밝게 빛나며 화살표가 나온다. 화면(페이지)이 바뀌어도 대화와 안내 진행을 저장해 두었다가 이어서 보여 준다
    포털의 자료는 읽지 않는다(1단계). 대화는 이 브라우저 탭(sessionStorage)에만 둔다. */
 (function () {
-  var CT = window.CT, G = window.CTGuides; if (!CT || !G || document.getElementById('ctAsst')) return;
+  var CT = window.CT, G = window.CTGuides, F = window.CTFaq; if (!CT || !G || !F || document.getElementById('ctAsst')) return;
   CT.addDict({
-    ko: { asstName: '캠프 도우미', asstHello: '안녕하세요! 캠프팀 도우미예요. 아래에서 고르거나, 궁금한 걸 그냥 물어보세요.', asstFreq: '자주 묻는 질문', asstPh: '궁금한 걸 물어보세요', asstSend: '보내기', asstNew: '새 대화', asstClose: '닫기',
+    ko: { asstName: '루미', asstHello: '안녕하세요, 루미예요! 캠프팀 포털을 안내해 드려요. 궁금한 걸 골라 주세요. 직접 물어보셔도 돼요.', asstRoot: '↩ 처음 질문으로', asstMore: '이어서 궁금한 게 있나요?', asstPh: '궁금한 걸 물어보세요', asstSend: '보내기', asstNew: '새 대화', asstClose: '닫기',
       asstThinking: '생각하는 중…', asstShow: '👉 화면에서 보여 드릴게요', asstNext: '다음', asstStop: '그만하기', asstDone: '다 끝났어요! 더 궁금한 게 있으면 물어보세요.', asstStopped: '안내를 멈췄어요. 필요하면 다시 눌러 주세요.',
       asstMenu: '먼저 이 메뉴 버튼을 눌러 메뉴를 열어요', asstMissing: '이 버튼이 화면에 안 보여요. 이 계정에 권한이 없거나 화면이 아직 열리는 중일 수 있어요. 위 설명대로 해 보시고, 안 되면 「다음」을 눌러 주세요.',
       asstStarting: '화면에서 보여 드릴게요.', asstFail: '지금은 답을 드리지 못했어요. 잠시 뒤 다시 물어봐 주세요.', asstOff: 'AI 도우미가 아직 켜지지 않았어요. 위의 자주 묻는 질문은 쓸 수 있어요.', asstStep: function (i, n) { return i + ' / ' + n; } },
-    en: { asstName: 'Camp helper', asstHello: "Hi! I'm the Camp Team helper. Pick a question below or just ask.", asstFreq: 'Common questions', asstPh: 'Ask anything', asstSend: 'Send', asstNew: 'New chat', asstClose: 'Close',
+    en: { asstName: 'Lumi', asstHello: "Hi, I'm Lumi! I'll guide you around the Camp Team portal. Pick a question, or just ask me.", asstRoot: '↩ Back to the start', asstMore: 'Anything else?', asstPh: 'Ask anything', asstSend: 'Send', asstNew: 'New chat', asstClose: 'Close',
       asstThinking: 'Thinking…', asstShow: '👉 Show me on screen', asstNext: 'Next', asstStop: 'Stop', asstDone: 'All done! Ask me if you have more questions.', asstStopped: 'Guide stopped. Tap it again any time.',
       asstMenu: 'First click this menu button to open the menu', asstMissing: "I can't see this button on screen. Your account may not have permission, or the page is still loading. Follow the description above, or click Next.",
       asstStarting: "I'll show you on screen.", asstFail: "I couldn't answer right now. Please try again in a moment.", asstOff: 'The AI helper is not turned on yet. The common questions above still work.', asstStep: function (i, n) { return i + ' / ' + n; } }
@@ -24,34 +24,62 @@
   var norm = function (p) { return String(p || '').replace(/\/+$/, '') || '/'; };
 
   /* ---------- 화면 틀 ---------- */
-  var MASCOT = '<svg viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="31" r="22" fill="#fff"/><circle cx="28" cy="31" r="20" fill="#1f8fa6"/><path d="M28 3 46 22H10z" fill="#f6c453" stroke="#c89a1c" stroke-width="1.6" stroke-linejoin="round"/><path d="M28 3v19" stroke="#c89a1c" stroke-width="1.2" opacity=".5"/><circle cx="21" cy="32" r="3.2" fill="#fff"/><circle cx="35" cy="32" r="3.2" fill="#fff"/><circle cx="21.8" cy="32.7" r="1.5" fill="#0b2430"/><circle cx="35.8" cy="32.7" r="1.5" fill="#0b2430"/><path d="M22 39q6 5 12 0" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>';
+  /* 루미 픽셀 그림: /portal/campteam/lumi/lumi-<상태>-<light|dark>.png (확대하지 않고 image-rendering: pixelated). 밝은 바탕(떠 있는 버튼)은 light, 어두운 머리글은 dark */
+  var LUMI_STATES = ['idle', 'blink', 'hello', 'listen', 'talk', 'explain', 'search', 'found', 'unknown', 'success', 'error', 'sleep', 'portrait'];
+  var lumiSrc = function (state, mode) { return '/portal/campteam/lumi/lumi-' + state + '-' + (mode || 'light') + '.png'; };
+  var lumiImg = function (state, mode, cls) { return '<img class="lumi ' + (cls || '') + '" data-lumi="' + state + '" data-mode="' + (mode || 'light') + '" src="' + lumiSrc(state, mode) + '" alt="" width="64" height="64" draggable="false">'; };
+  /** 밝은 낮에는 light, 어두운 밤(메뉴 색·하늘 배경이 어두워질 때)에는 dark — 포털의 하루 색(--ws-night: 0 낮 ~ 1 깊은 밤, rail-sky.js 가 해 시각으로 계산)을 그대로 따른다 */
+  var nightMode = function () { var v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ws-night')); return v >= 0.5 ? 'dark' : 'light'; };
+  var mood = 'idle', moodTimer = 0, blinkTimer = 0, reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   var root = document.createElement('div'); root.id = 'ctAsst'; root.hidden = true;
-  root.innerHTML = '<button type="button" class="asst-fab" id="asstFab" aria-expanded="false">' + MASCOT + '</button>' +
-    '<section class="asst-panel" id="asstPanel" role="dialog" aria-modal="false" hidden><header><span class="asst-av">' + MASCOT + '</span><b id="asstTitle"></b><span class="sp"></span><button type="button" id="asstNew" class="asst-hb"></button><button type="button" id="asstX" class="asst-hb" aria-label="close">✕</button></header>' +
+  root.innerHTML = '<button type="button" class="asst-fab" id="asstFab" aria-expanded="false"><span class="asst-fab-lb" id="asstLb"></span>' + lumiImg('idle', nightMode(), 'fab-img') + '</button>' +
+    '<section class="asst-panel" id="asstPanel" role="dialog" aria-modal="false" hidden><header><span class="asst-av">' + lumiImg('portrait', 'dark', 'av-img') + '</span><b id="asstTitle"></b><span class="sp"></span><button type="button" id="asstNew" class="asst-hb"></button><button type="button" id="asstX" class="asst-hb" aria-label="close">✕</button></header>' +
     '<div class="asst-body" id="asstBody"></div><form class="asst-form" id="asstForm"><input id="asstIn" maxlength="300" autocomplete="off"><button type="submit" id="asstSend"></button></form></section>';
   document.body.appendChild(root);
   var fab = $('#asstFab'), panel = $('#asstPanel'), body = $('#asstBody'), input = $('#asstIn');
 
-  function paintStatic() { fab.setAttribute('aria-label', CT.t('asstName')); fab.title = CT.t('asstName'); $('#asstTitle').textContent = CT.t('asstName'); $('#asstNew').textContent = CT.t('asstNew'); $('#asstX').title = CT.t('asstClose'); input.placeholder = CT.t('asstPh'); $('#asstSend').textContent = CT.t('asstSend'); }
-  function bubble(m) { return '<div class="asst-msg ' + (m.r === 'u' ? 'u' : 'a') + '">' + esc(m.t).replace(/\n/g, '<br>') + (m.g && G.guides[m.g] ? '<button type="button" class="asst-go" data-g="' + esc(m.g) + '">' + esc(CT.t('asstShow')) + '</button>' : '') + '</div>'; }
-  function starters() { return '<div class="asst-st"><small>' + esc(CT.t('asstFreq')) + '</small><div>' + G.starters.map(function (id) { return '<button type="button" class="asst-chip" data-g="' + id + '">' + esc(tr(G.guides[id].title)) + '</button>'; }).join('') + '</div></div>'; }
+  function paintStatic() { $('#asstLb').textContent = CT.t('asstName'); fab.setAttribute('aria-label', CT.t('asstName')); fab.title = CT.t('asstName'); $('#asstTitle').textContent = CT.t('asstName'); $('#asstNew').textContent = CT.t('asstNew'); $('#asstX').title = CT.t('asstClose'); input.placeholder = CT.t('asstPh'); $('#asstSend').textContent = CT.t('asstSend'); }
+  function bubble(m, last) {
+    var txt = '<div class="asst-b">' + esc(m.t).replace(/\n/g, '<br>') + (m.g && G.guides[m.g] ? '<button type="button" class="asst-go" data-g="' + esc(m.g) + '">' + esc(CT.t('asstShow')) + '</button>' : '') + '</div>';
+    if (m.r === 'u') return '<div class="asst-msg u">' + txt + '</div>';
+    return '<div class="asst-msg a"><span class="asst-mav">' + lumiImg(m.s || 'explain', 'light', 'mav-img') + '</span>' + txt + '</div>' + (last && m.o && m.o.length ? chips(m.o) : '');
+  }
+  /** 고정 질문 칩들(루미가 보여 주는 다음 질문) — 맨 마지막 루미 말풍선 아래에만 보인다 */
+  function chips(ids) { return '<div class="asst-st">' + ids.filter(function (id) { return id === 'root' || F.nodes[id]; }).map(function (id) { return id === 'root' ? '<button type="button" class="asst-chip home" data-faq="root">' + esc(CT.t('asstRoot')) + '</button>' : '<button type="button" class="asst-chip" data-faq="' + id + '">' + esc(tr(F.nodes[id].q)) + '</button>'; }).join('') + '</div>'; }
   function render() {
     paintStatic(); panel.hidden = !st.open; fab.setAttribute('aria-expanded', st.open ? 'true' : 'false'); root.classList.toggle('guiding', !!st.guide);
-    body.innerHTML = '<div class="asst-msg a">' + esc(CT.t('asstHello')) + '</div>' + starters() + st.msgs.map(bubble).join('') + (busy ? '<div class="asst-msg a asst-typing">' + esc(CT.t('asstThinking')) + '</div>' : '') + (cfg.configured ? '' : '<div class="asst-note">' + esc(CT.t('asstOff')) + '</div>');
+    if (!st.msgs.length) greet();
+    var lastA = -1; st.msgs.forEach(function (m, i) { if (m.r === 'a') lastA = i; });
+    body.innerHTML = st.msgs.map(function (m, i) { return bubble(m, i === lastA && !busy); }).join('') + (busy ? '<div class="asst-msg a asst-typing"><span class="asst-mav">' + lumiImg('talk', 'light', 'mav-img') + '</span><div class="asst-b">' + esc(CT.t('asstThinking')) + '</div></div>' : '') + (cfg.configured ? '' : '<div class="asst-note">' + esc(CT.t('asstOff')) + '</div>');
     $('#asstForm').classList.toggle('off', !cfg.configured); input.disabled = !cfg.configured || busy;
     body.scrollTop = body.scrollHeight;
   }
-  function add(r, t, g) { st.msgs.push({ r: r, t: String(t || ''), g: g || '' }); if (st.msgs.length > 24) st.msgs.shift(); save(); }
-  function setOpen(v) { st.open = !!v; save(); render(); if (st.open && cfg.configured) setTimeout(function () { input.focus(); }, 50); }
+  function add(r, t, g, o, state) { st.msgs.push({ r: r, t: String(t || ''), g: g || '', o: o || null, s: state || '' }); if (st.msgs.length > 40) st.msgs.shift(); save(); }
+  /** 루미가 먼저 인사하고 맨 위 질문들을 보여 준다 */
+  function greet() { st.msgs.push({ r: 'a', t: CT.t('asstHello'), g: '', o: F.root.slice(), s: 'hello' }); save(); }
+  /** 고정 질문 하나를 고르면: 질문(내 말풍선) → 루미의 답 + 하위 질문(없으면 형제 질문) 이 자동으로 이어진다 */
+  function pickFaq(id) {
+    if (id === 'root') { add('u', CT.t('asstRoot')); st.msgs.push({ r: 'a', t: CT.t('asstHello'), g: '', o: F.root.slice(), s: 'hello' }); save(); setMood('hello', 2200); render(); return; }
+    var nd = F.nodes[id]; if (!nd) return;
+    var next = nd.next.length ? nd.next.slice() : siblings(id);
+    add('u', tr(nd.q)); add('a', tr(nd.a), nd.guide || '', next.concat(['root']), nd.guide ? 'found' : 'explain'); setMood(nd.guide ? 'found' : 'explain', 2600); render();
+  }
+  function siblings(id) { var out = null; Object.keys(F.nodes).concat(['__root']).some(function (k) { var list = k === '__root' ? F.root : F.nodes[k].next; if (list.indexOf(id) >= 0) { out = list.filter(function (x) { return x !== id; }); return true; } return false; }); return out || []; }
+  /* 루미 표정: 상태를 잠깐 바꿨다가 기본(idle)으로 돌아온다. idle 일 때는 3~6초마다 눈을 깜빡인다 */
+  function setMood(m, ms) { mood = LUMI_STATES.indexOf(m) >= 0 ? m : 'idle'; paintMood(); clearTimeout(moodTimer); if (ms && mood !== 'idle') moodTimer = setTimeout(function () { mood = baseMood(); paintMood(); }, ms); }
+  function baseMood() { return !cfg.configured ? 'sleep' : st.guide ? 'search' : busy ? 'talk' : 'idle'; }
+  function paintMood() { var im = $('.fab-img', root); if (!im) return; var want = lumiSrc(mood, nightMode()); if (im.getAttribute('src') !== want) { im.dataset.lumi = mood; im.dataset.mode = nightMode(); im.src = want; } root.dataset.mode = nightMode(); }
+  function blinkLoop() { clearTimeout(blinkTimer); blinkTimer = setTimeout(function () { if (!reduce && mood === 'idle') { var im = $('.fab-img', root); if (im) { im.src = lumiSrc('blink', nightMode()); setTimeout(function () { if (mood === 'idle') im.src = lumiSrc('idle', nightMode()); }, 130); } } blinkLoop(); }, 3000 + Math.random() * 3000); }
+  function setOpen(v) { st.open = !!v; save(); render(); if (st.open) setMood('hello', 2200); else setMood(baseMood()); if (st.open && cfg.configured) setTimeout(function () { input.focus(); }, 50); }
 
   /* ---------- 질문하기 (AI) ---------- */
   async function ask(q) {
-    q = String(q || '').trim(); if (!q || busy) return; add('u', q); busy = true; render();
+    q = String(q || '').trim(); if (!q || busy) return; add('u', q); busy = true; setMood('talk'); render();
     var msgs = st.msgs.filter(function (m) { return m.t; }).slice(-8).map(function (m) { return { role: m.r === 'u' ? 'user' : 'assistant', content: m.t }; });
     try {
       var r = await CT.api('/api/campteam/assistant', { method: 'POST', body: { messages: msgs, path: location.pathname, lang: CT.lang() } });
-      add('a', r.reply, r.guide);
-    } catch (e) { add('a', (e && e.message) || CT.t('asstFail')); }
+      busy = false; add('a', r.reply, r.guide, ['root'], r.guide ? 'found' : 'explain'); setMood(r.guide ? 'found' : 'explain', 2800);
+    } catch (e) { busy = false; add('a', (e && e.message) || CT.t('asstFail'), '', ['root'], 'error'); setMood('error', 2800); }
     busy = false; render();
   }
 
@@ -66,13 +94,13 @@
   function advance() { if (!st.guide) return; st.guide.i++; st.guide.at = Date.now(); since = Date.now(); save(); if (!currentStep()) endGuide(true); else { clearLayer(); update(); } }
   function onTargetClick() { var i = st.guide && st.guide.i; setTimeout(function () { if (st.guide && st.guide.i === i) advance(); }, 350); }
   function startGuide(id, i) {
-    if (!G.guides[id]) return; stopLoop(); st.guide = { id: id, i: i || 0, at: Date.now() }; st.open = false; save(); render(); since = Date.now(); begin();
+    if (!G.guides[id]) return; stopLoop(); setMood('search'); st.guide = { id: id, i: i || 0, at: Date.now() }; st.open = false; save(); render(); since = Date.now(); begin();
   }
   function begin() {
     document.addEventListener('keydown', onKey, true); tick = setInterval(update, 250); update();
     (function frame() { place(); raf = requestAnimationFrame(frame); })();
   }
-  function endGuide(done) { stopLoop(); var had = !!st.guide; st.guide = null; if (had) add('a', CT.t(done ? 'asstDone' : 'asstStopped')); st.open = had; save(); render(); }
+  function endGuide(done) { stopLoop(); var had = !!st.guide; st.guide = null; setMood(done ? 'success' : baseMood(), 3000); if (had) add('a', CT.t(done ? 'asstDone' : 'asstStopped')); st.open = had; save(); render(); }
   /** 지금 단계에서 가리킬 곳과 설명을 정한다: 다른 화면이면 왼쪽 메뉴, 메뉴가 닫힌 폰이면 메뉴 버튼 */
   function resolve(step) {
     var onPage = !step.path || norm(location.pathname) === norm(step.path);
@@ -81,7 +109,7 @@
     if (!el && /\.nav |\.gsearch|\.lang/.test(step.sel)) { var m2 = findVisible('#menuBtn'); if (m2 && !findVisible('#drawer.open')) return { el: m2, text: CT.t('asstMenu'), mode: 'menu' }; }
     return { el: el, text: tr(step.text), mode: 'target' };
   }
-  function mount(h) { if (layer && host === h) return; if (layer && layer.parentNode) layer.parentNode.removeChild(layer); host = h; layer = document.createElement('div'); layer.className = 'asst-layer'; layer.innerHTML = '<div class="asst-hl"></div><div class="asst-tip" role="status" aria-live="polite"><i class="asst-arrow"></i><p></p><div class="asst-tb"><span class="asst-cnt"></span><span class="sp"></span><button type="button" class="asst-tb-stop"></button><button type="button" class="asst-tb-next"></button></div></div>'; host.appendChild(layer); hl = layer.querySelector('.asst-hl'); tip = layer.querySelector('.asst-tip'); arrow = layer.querySelector('.asst-arrow');
+  function mount(h) { if (layer && host === h) return; if (layer && layer.parentNode) layer.parentNode.removeChild(layer); host = h; layer = document.createElement('div'); layer.className = 'asst-layer'; layer.innerHTML = '<div class="asst-hl"></div><div class="asst-tip" role="status" aria-live="polite"><i class="asst-arrow"></i><div class="asst-tipbody"><span class="asst-tl">' + lumiImg('found', 'light', 'tl-img') + '</span><p></p></div><div class="asst-tb"><span class="asst-cnt"></span><span class="sp"></span><button type="button" class="asst-tb-stop"></button><button type="button" class="asst-tb-next"></button></div></div>'; host.appendChild(layer); hl = layer.querySelector('.asst-hl'); tip = layer.querySelector('.asst-tip'); arrow = layer.querySelector('.asst-arrow');
     tip.querySelector('.asst-tb-stop').onclick = function () { endGuide(false); }; tip.querySelector('.asst-tb-next').onclick = function () { advance(); }; }
   function update() {
     var step = currentStep(); if (!step) { if (st.guide) endGuide(true); return; }
@@ -114,11 +142,12 @@
   /* ---------- 이벤트 ---------- */
   fab.onclick = function () { setOpen(!st.open); };
   $('#asstX').onclick = function () { setOpen(false); };
-  $('#asstNew').onclick = function () { st.msgs = []; save(); render(); };
+  $('#asstNew').onclick = function () { st.msgs = []; save(); render(); setMood('hello', 2200); };
+  input.addEventListener('focus', function () { if (!busy) setMood('listen'); }); input.addEventListener('blur', function () { if (mood === 'listen') setMood(baseMood()); });
   $('#asstForm').onsubmit = function (e) { e.preventDefault(); var q = input.value; input.value = ''; ask(q); };
   body.addEventListener('click', function (e) {
+    var q = e.target.closest('[data-faq]'); if (q) { pickFaq(q.dataset.faq); return; }
     var b = e.target.closest('[data-g]'); if (!b) return; var id = b.dataset.g; if (!G.guides[id]) return;
-    if (b.classList.contains('asst-chip')) { add('u', tr(G.guides[id].title)); add('a', CT.t('asstStarting'), ''); }
     startGuide(id, 0);
   });
   document.addEventListener('ct-lang', function () { render(); lastSig = ''; });
@@ -127,7 +156,7 @@
   render();
   CT.api('/api/campteam/assistant').then(function (r) {
     cfg = { member: !!r.member, configured: !!r.configured }; if (!cfg.member) return;
-    root.hidden = false; render();
+    root.hidden = false; setMood(baseMood()); render(); blinkLoop(); setInterval(paintMood, 60000); document.addEventListener('visibilitychange', function () { if (!document.hidden) paintMood(); });
     if (st.guide) { since = Date.now(); begin(); }
   }).catch(function () {});
 })();

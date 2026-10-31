@@ -7,11 +7,33 @@ import { nowIso } from './campteamDb.js';
 export const LANGS = ['ko', 'en', 'both'];
 const clip = (s, n) => String(s ?? '').normalize('NFC').replace(/[\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n);
 
-/** 태그: 문자열(쉼표·#·줄바꿈로 나뉨) 또는 배열 → 「a,b,c」 (중복 제거·최대 6개·각 24자·쉼표 없음) */
+/* 태그는 「한글/영어」 짝으로 저장한다(예: 기도/prayer). 화면은 언어에 맞는 쪽을 보여 주고, 검색은 어느 쪽 글자로도 찾아진다.
+   AI 는 처음부터 짝으로 만들어 주고, 사람이 한쪽만 쓴 흔한 태그는 아래 사전으로 짝을 채운다(사전에 없으면 쓴 그대로). */
+export const TAG_PAIRS = [['구원', 'salvation'], ['복음', 'gospel'], ['기도', 'prayer'], ['찬양', 'worship'], ['예배', 'worship service'], ['게임', 'game'], ['활동', 'activity'], ['수업', 'class'],
+  ['설교', 'sermon'], ['메시지', 'message'], ['말씀', 'Bible study'], ['성경공부', 'Bible study'], ['큐티', 'devotion'], ['리더십', 'leadership'], ['영어', 'English'], ['학생', 'students'], ['청소년', 'youth'],
+  ['스태프', 'staff'], ['크루', 'crew'], ['자원봉사', 'volunteer'], ['안전', 'safety'], ['예산', 'budget'], ['홍보', 'promotion'], ['포스터', 'poster'], ['일정', 'schedule'], ['시간표', 'timetable'],
+  ['준비물', 'supplies'], ['평가', 'evaluation'], ['회의', 'meeting'], ['체크리스트', 'checklist'], ['캠프', 'camp'], ['스킷', 'skit'], ['간증', 'testimony'], ['전도', 'evangelism'], ['제자훈련', 'discipleship'],
+  ['교육', 'education'], ['훈련', 'training'], ['영상', 'video'], ['사진', 'photo'], ['악보', 'sheet music'], ['가사', 'lyrics'], ['차량', 'vehicle'], ['식사', 'meals'], ['숙소', 'lodging'], ['교회', 'church'], ['학교', 'school'],
+  ['한국문화', 'Korean culture'], ['레크리에이션', 'recreation'], ['소그룹', 'small group'], ['결단', 'commitment'], ['감사', 'thanks'], ['보고서', 'report'], ['안내문', 'notice']];
+const PAIR_BY = new Map(); for (const [k, e] of TAG_PAIRS) { PAIR_BY.set(k.toLowerCase(), `${k}/${e}`); PAIR_BY.set(e.toLowerCase(), `${k}/${e}`); }
+const tagKey = (t) => t.toLowerCase();
+/** 태그 하나 정리: 「한글/영어」가 이미 있으면 그대로, 한쪽만 있으면 사전에서 짝을 채운다 */
+export function cleanTag(raw) {
+  let x = clip(raw, 44).replace(/,/g, ' ').trim(); if (!x) return '';
+  const parts = x.split('/').map((p) => p.trim()).filter(Boolean).slice(0, 2);
+  if (parts.length === 2) return `${clip(parts[0], 20)}/${clip(parts[1], 22)}`;
+  const one = clip(parts[0] || '', 24); if (!one) return '';
+  return PAIR_BY.get(one.toLowerCase()) || one;
+}
+/** 태그 목록: 문자열(쉼표·#·줄바꿈) · 배열(글자 또는 {ko,en}) → 「a/b,c」 (중복 제거·최대 6개) */
 export function cleanTags(v) {
   const list = Array.isArray(v) ? v : String(v ?? '').split(/[,\n#;、，]+/);
   const seen = new Set(), out = [];
-  for (const t of list) { const x = clip(t, 24).replace(/,/g, ' ').trim(); const k = x.toLowerCase(); if (x && !seen.has(k)) { seen.add(k); out.push(x); } if (out.length >= 6) break; }
+  for (const t of list) {
+    const raw = t && typeof t === 'object' ? [t.ko, t.en].filter(Boolean).join('/') : t;
+    const x = cleanTag(raw), k = x && tagKey(x); if (x && !seen.has(k)) { seen.add(k); out.push(x); }
+    if (out.length >= 6) break;
+  }
   return out.join(',');
 }
 export const cleanLang = (v) => (LANGS.includes(v) ? v : '');

@@ -15,7 +15,9 @@ const B = { get: async (env, who) => (await Batches.onRequestGet({ env, request:
 const BID = 'batch-0001-aaaa';
 
 test('태그·언어·본문·묶음 번호 정리: 중복·길이·잘못된 값은 걸러진다', () => {
-  assert.equal(cleanTags('구원, 기도 , #Prayer,기도,,Prayer\n게임'), '구원,기도,Prayer,게임'); assert.equal(cleanTags(['a', 'A', 'b'.repeat(40)]).split(',').length, 2);
+  assert.equal(cleanTags('구원, 기도 , #Prayer,기도,,Prayer\n게임'), '구원/salvation,기도/prayer,게임/game', '한쪽만 쓴 흔한 태그는 한글/영어 짝으로 채워지고, 같은 뜻은 한 번만');
+  assert.equal(cleanTags('팀빌딩, Leadership'), '팀빌딩,리더십/leadership', '사전에 없는 태그는 쓴 그대로'); assert.equal(cleanTags([{ ko: '기도', en: 'prayer' }, '새태그/new tag']), '기도/prayer,새태그/new tag');
+  assert.equal(cleanTags(['a', 'A', 'b'.repeat(40)]).split(',').length, 2);
   assert.equal(cleanTags('1,2,3,4,5,6,7,8').split(',').length, 6, '최대 6개');
   assert.equal(cleanLang('both'), 'both'); assert.equal(cleanLang('fr'), ''); assert.equal(cleanScripture('  요한복음   3:16 '), '요한복음 3:16');
   assert.equal(cleanBatchId('batch-0001-aaaa'), 'batch-0001-aaaa'); assert.equal(cleanBatchId("x'; DROP"), ''); assert.equal(cleanBatchId('short'), '');
@@ -26,12 +28,13 @@ test('올릴 때 태그·언어·성경 본문·설교자가 저장되고, 목�
   const r = await up(env, U.mem, '?title=' + encodeURIComponent('요한복음 3장 메시지') + '&category=program&tags=' + encodeURIComponent('구원,복음') + '&lang=ko&scripture=' + encodeURIComponent('요한복음 3:16-21') + '&speaker=' + encodeURIComponent('홍길동') + '&batchId=' + BID);
   assert.equal(r.status, 201);
   const d = await list(env, U.mem), it = d.items.find((x) => x.title === '요한복음 3장 메시지');
-  assert.equal(it.tags, '구원,복음'); assert.equal(it.lang, 'ko'); assert.equal(it.scripture, '요한복음 3:16-21'); assert.equal(it.speaker, '홍길동');
-  assert.ok(d.tagStats.some((t) => t.tag === '구원' && t.n === 1));
+  assert.equal(it.tags, '구원/salvation,복음/gospel'); assert.equal(it.lang, 'ko'); assert.equal(it.scripture, '요한복음 3:16-21'); assert.equal(it.speaker, '홍길동');
+  assert.ok(d.tagStats.some((t) => t.tag === '구원/salvation' && t.n === 1));
+  assert.equal((await list(env, U.mem, '?q=gospel')).items.some((x) => x.id === it.id), true, '영어로도 찾아진다(태그가 한글/영어 짝이라서)'); assert.equal((await list(env, U.mem, '?q=salvation')).items.length >= 1, true);
   assert.equal((await list(env, U.mem, '?q=' + encodeURIComponent('3:16'))).items.length, 1, '성경 본문으로 찾기');
   assert.equal((await list(env, U.mem, '?q=' + encodeURIComponent('홍길동'))).items.length, 1, '설교자로 찾기');
   assert.equal((await list(env, U.mem, '?q=' + encodeURIComponent('복음'))).items.some((x) => x.id === it.id), true, '태그 글자로도 찾기');
-  assert.deepEqual((await list(env, U.mem, '?tag=' + encodeURIComponent('구원'))).items.map((x) => x.id), [it.id], '태그 하나로 거르기');
+  assert.deepEqual((await list(env, U.mem, '?tag=' + encodeURIComponent('구원/salvation'))).items.map((x) => x.id), [it.id], '태그 하나로 거르기');
   assert.equal((await list(env, U.mem, '?tag=' + encodeURIComponent('구'))).items.length, 0, '태그는 통째로 맞아야 한다');
 });
 
@@ -75,9 +78,9 @@ test('0024 가 아직 없는 DB: 목록·올리기는 그대로 된다', async (
 });
 
 test('AI 추천: 태그·언어·성경 본문·설교자도 제안하고(글에 있을 때만), 기존 태그를 먼저 고르게 한다', () => {
-  const s = parseFileSuggestion(JSON.stringify({ titles: [{ ko: '제목', en: 'T' }], tags: ['구원', '복음', '구원', '', 'x'.repeat(50)], lang: 'both', scripture: '요한복음 3:16', speaker: '홍길동' }), []);
-  assert.equal(s.tags, '구원,복음,' + 'x'.repeat(24)); assert.equal(s.lang, 'both'); assert.equal(s.scripture, '요한복음 3:16'); assert.equal(s.speaker, '홍길동');
+  const s = parseFileSuggestion(JSON.stringify({ titles: [{ ko: '제목', en: 'T' }], tags: [{ ko: '구원', en: 'salvation' }, '복음', '구원', '', 'x'.repeat(50)], lang: 'both', scripture: '요한복음 3:16', speaker: '홍길동' }), []);
+  assert.equal(s.tags, '구원/salvation,복음/gospel,' + 'x'.repeat(24)); assert.equal(s.lang, 'both'); assert.equal(s.scripture, '요한복음 3:16'); assert.equal(s.speaker, '홍길동');
   const none = parseFileSuggestion(JSON.stringify({ titles: [{ ko: 'a', en: '' }], lang: 'xx' }), []); assert.equal(none.tags, ''); assert.equal(none.lang, ''); assert.equal(none.scripture, '');
-  const p = buildFilePrompt({ name: 'a.docx', kind: 'none', tags: ['구원', '기도'] });
-  assert.ok(p.system.includes('구원, 기도') && p.system.includes('Never guess'), '기존 태그 목록과 「지어내지 말라」 규칙');
+  const p = buildFilePrompt({ name: 'a.docx', kind: 'none', tags: ['구원/salvation', '기도/prayer'] });
+  assert.ok(p.system.includes('구원/salvation, 기도/prayer') && p.system.includes('Never guess') && p.system.includes('BOTH languages'), '기존 태그 목록과 「지어내지 말라」 규칙');
 });

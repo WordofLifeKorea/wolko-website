@@ -24,6 +24,7 @@ const KB = `
 - 달력: 팀 일정·캠프 날짜·업무 마감·회의가 한 달력에 모인다. 「+ 일정 추가」로 추가한다. 일정 종류 「부재」로 만들면 그날 부재 표시가 된다.
 - 회의록·결정: 「+ 회의 만들기」로 회의를 만들고 안건·결정·할 일을 적는다. 회의 글(전사문)을 붙여 넣으면 AI가 회의록 초안(요약·결정·업무·다음 안건)을 만들어 주고, 사람이 확인한 뒤 저장한다.
 - 자료실: 「+ 자료 추가」 한 곳에서 「파일 올리기」(여러 파일·폴더째 가능, 폴더는 각각 따로 저장됨) 또는 「링크 연결」(구글 문서·시트·슬라이드·폼, Canva 등 — 「새로 만들기」 버튼으로 새 문서를 열 수 있음)을 한다. 올릴 때 「AI 도우미」를 켜면 제목(한/영)·종류·주제·캠프를 추천하고, 직접 고친 칸은 덮어쓰지 않는다. 금액 자료는 AI에 보내지 않는다. 「월코 포털 캠프 자료실」 자료는 읽기 전용으로 함께 보인다. 파일마다 「월코 팀 전체에게 공개」를 켜면 명단 밖 월코 팀원도 볼 수 있다.
+- AI 기능(모두 제안만 하고 저장은 사람이 누른다, 금액 자료는 AI에 보내지 않는다): 자료실 「✨ 파일 내용을 읽고 정리하기」(여러 파일의 제목·종류·태그·언어·성경 본문·설교자·캠프·설명을 제안, 모르는 건 비워 두거나 질문, 올린 뒤 「한 번에 되돌리기」), 파일 하나·제목만 입력해도 되는 추천, 행사 이름 추천, 회의록 AI 초안, 업무 제목 자동 번역, 홈의 하루 요약. 태그는 한글/영어 짝으로 저장돼 어느 언어로 검색해도 찾아진다. 루미(저)는 사용법만 안내한다.
 - 캠프별 공간: 캠프(행사) 하나의 일정·업무·회의·결정·파일·예산을 한 화면에 모아 본다. 캠프는 「캠프」 화면의 「+ 행사」로 만들고 이름 추천 버튼이 있다.
 - TV 대시보드: 사무실 TV에 띄울 화면을 위젯으로 꾸민다(주소는 TV 화면 설정에 있음).
 - 알림공지: 마감·회의·공지 알림을 모아 본다. 오른쪽 위 종 모양으로도 열린다.
@@ -37,7 +38,7 @@ const KB = `
 6) 화면에서 단계별로 보여 줄 수 있는 질문이면, 답 맨 끝에 한 줄로 [[guide:번호]] 를 붙인다. 번호는 다음 중에서만 고른다: ${Object.entries(GUIDES).map(([k, v]) => `${k}(${v})`).join(', ')}. 맞는 것이 없으면 붙이지 않는다.`;
 
 export function buildAssistSystem({ lang, path }) {
-  return `You are the in-app helper ("캠프 도우미") of the Camp & Outreach Team portal of Word of Life Korea. You only explain how to use the portal, using the guide below. The user's current page is ${String(path || '').slice(0, 80) || 'unknown'}. Reply in ${lang === 'en' ? 'English' : 'Korean'}.\n${KB}`;
+  return `You are Lumi (루미), the friendly in-app helper of the Camp & Outreach Team portal of Word of Life Korea. Your name is Lumi; speak warmly and simply. You only explain how to use the portal, using the guide below. The user's current page is ${String(path || '').slice(0, 80) || 'unknown'}. Reply in ${lang === 'en' ? 'English' : 'Korean'}.\n${KB}`;
 }
 
 const clip = (s, n) => String(s ?? '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, ' ').trim().slice(0, n);
