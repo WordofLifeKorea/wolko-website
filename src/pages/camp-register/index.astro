@@ -1148,9 +1148,10 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
 /* ── 스태프 지원서 — 입력칸·선택칸·섹션 모양은 캠프 신청서와 같다 (흰 바탕, 테두리 48px 칸) ── */
 #staffForm .staff-applicant-grid { container-type: inline-size; }
 .staff-applicant-top { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 20px 12px; }
-/* 좁은 폭(폰): 이름 | 성별, 생년월일은 다음 줄 전체 — 테두리 칸(화살표 자리 포함)이 세 칸 한 줄에 들어가지 않는다 */
+/* 좁은 폭: 이름 | 성별, 생년월일은 다음 줄 전체 — 테두리 칸(화살표 자리 포함) 다섯 개가 한 줄에 들어가려면 폭이 600px은 돼야 한다
+   (그보다 좁으면 '년도'가 '년5'로 잘리고 '월'·'일' 글자가 사라졌다) */
 .staff-applicant-birth { grid-column: 1 / -1; }
-@container (min-width: 420px) {
+@container (min-width: 600px) {
   .staff-applicant-top {
     grid-template-columns: minmax(112px, 1fr) minmax(80px, .6fr) minmax(144px, 1.4fr);
     gap: 24px;
