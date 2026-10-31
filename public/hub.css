@@ -1165,3 +1165,54 @@ body.hub-modal-open { overflow: hidden; }
   .hub-topbar .btn-logout { height: 36px; padding: 0 14px; font-size: 13px; cursor: pointer; white-space: nowrap; }
   :root:root:root:root:root .hub-sidebar-foot :is(.hub-lang-toggle, .hub-foot-logout) { display: none !important; }   /* 공용 토글 규칙(wolko-site.css)보다 강하게 */
 }
+
+/* ── 키친 · 차량 카드 아래 장면 (Claude Design 시안) — 하늘 배너와 같은 해 시각 · 날씨를 따른다(portal.astro applyCardScene) ── */
+:root:root .hub-dcard.hub-dcard-kitchen, :root:root .hub-dcard.hub-dcard-car { padding-bottom: 120px !important; }
+.hk-scene { height: 112px; }
+.hk-scene svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hub-dash :is(.kc-sun, .kc-night, .kc-lamps, .kc-beam, .kc-rain, .kc-snow) { display: none; }
+.hub-dash[data-kc-sun="1"] .kc-sun, .hub-dash[data-kc-night="1"] .kc-night, .hub-dash[data-kc-lamps="1"] .kc-lamps,
+.hub-dash[data-kc-beam="1"] .kc-beam, .hub-dash[data-kc-rain="1"] .kc-rain, .hub-dash[data-kc-snow="1"] .kc-snow { display: inline; }
+.hk-scene :is(rect, path, circle, g) { transition: fill 2s ease, opacity 2s ease, stop-color 2s ease; }
+.hk-spin { transform-box: fill-box; transform-origin: 50% 50%; animation: hk-spin .7s linear infinite; }
+.hk-bob { animation: hk-bob .5s ease-in-out infinite alternate; }
+.hk-lid { transform-box: fill-box; transform-origin: 50% 100%; animation: hk-lid .9s ease-in-out infinite; }
+.hk-steam { opacity: 0; animation: hk-steam 2.4s ease-out infinite; }
+.hk-steam.s2 { animation-delay: .8s; } .hk-steam.s3 { animation-delay: 1.6s; }
+.hk-flame { transform-box: fill-box; transform-origin: 50% 100%; animation: hk-flame .35s ease-in-out infinite alternate; }
+.hk-far { animation: hk-scroll 18s linear infinite; } .hk-near { animation: hk-scroll 7s linear infinite; }
+.hk-dash { animation: hk-dash .5s linear infinite; }
+.hk-rain { animation: hk-rain .55s linear infinite; } .hk-rain.r2 { animation-delay: -.2s; } .hk-rain.r3 { animation-delay: -.38s; }
+.hk-snow { animation: hk-snow 3.6s linear infinite; } .hk-snow.f2 { animation-delay: -1.2s; } .hk-snow.f3 { animation-delay: -2.4s; }
+.hk-tw { animation: hk-tw 2.8s ease-in-out infinite; } .hk-tw.t2 { animation-delay: -1s; } .hk-tw.t3 { animation-delay: -1.9s; }
+.hk-glow { animation: hk-glow 3.2s ease-in-out infinite; }
+.hk-beam { animation: hk-beam 2.2s ease-in-out infinite; }
+.hk-lamp { transform-box: fill-box; transform-origin: 50% 0%; animation: hk-swing 4s ease-in-out infinite; }
+/* 프라이팬: 팬을 휙 들면 야채가 제각각(--dx · --dy · --r) 튀어 올랐다가 팬에 떨어져 통 튄 뒤 가라앉는다 */
+.hk-pan { transform-box: view-box; transform-origin: 8px 72px; animation: hk-pan 1.8s ease-in-out infinite; }
+.hk-toss { transform-box: fill-box; transform-origin: 50% 50%; animation: hk-toss 1.8s linear infinite; }
+.hk-sizzle { opacity: 0; animation: hk-sizzle .9s ease-out infinite; }
+@keyframes hk-spin { to { transform: rotate(360deg); } }
+@keyframes hk-bob { from { transform: translateY(0); } to { transform: translateY(-1.2px); } }
+@keyframes hk-lid { 0%, 100% { transform: translateY(0) rotate(0); } 30% { transform: translateY(-2.5px) rotate(-4deg); } 60% { transform: translateY(-.5px) rotate(2deg); } }
+@keyframes hk-steam { 0% { opacity: 0; transform: translateY(6px) scaleY(.6); } 25% { opacity: .8; } 100% { opacity: 0; transform: translate(3px, -18px) scaleY(1.3); } }
+@keyframes hk-flame { from { transform: scaleY(.8); } to { transform: scaleY(1.15); } }
+@keyframes hk-scroll { to { transform: translateX(-320px); } }
+@keyframes hk-dash { to { transform: translateX(-28px); } }
+@keyframes hk-rain { from { transform: translate(0, -30px); } to { transform: translate(-8px, 100px); } }
+@keyframes hk-snow { from { transform: translate(0, -20px); } 50% { transform: translate(5px, 40px); } to { transform: translate(-3px, 100px); } }
+@keyframes hk-tw { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+@keyframes hk-glow { 0%, 100% { opacity: .75; } 50% { opacity: 1; } }
+@keyframes hk-beam { 0%, 100% { opacity: .55; } 50% { opacity: .8; } }
+@keyframes hk-swing { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+@keyframes hk-pan { 0%, 58%, 100% { transform: none; } 8% { transform: rotate(2deg) translateX(-2px); } 15% { transform: rotate(-9deg) translate(4px, -3px); } 26% { transform: rotate(-3deg) translate(1px, -1px); } 40% { transform: rotate(2.5deg) translateY(1.2px); } 48% { transform: rotate(-.8deg); } }
+@keyframes hk-toss {
+  0%, 13% { transform: none; animation-timing-function: cubic-bezier(.2, .7, .4, 1); }
+  27% { transform: translate(calc(var(--dx) * .6), var(--dy)) rotate(calc(var(--r) * .45)); animation-timing-function: cubic-bezier(.55, 0, .8, .4); }
+  41% { transform: translate(var(--dx), 0) rotate(var(--r)); animation-timing-function: ease-out; }
+  45% { transform: translate(calc(var(--dx) * .7), -1.6px) rotate(var(--r)); animation-timing-function: ease-in; }
+  50% { transform: translate(calc(var(--dx) * .4), 0) rotate(var(--r)); }
+  70%, 100% { transform: translate(0, 0) rotate(var(--r)); }
+}
+@keyframes hk-sizzle { 0% { opacity: 0; transform: none; } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(-8px); } }
+@media (prefers-reduced-motion: reduce) { .hk-scene * { animation: none !important; } .hk-steam, .hk-sizzle { opacity: .6; } }

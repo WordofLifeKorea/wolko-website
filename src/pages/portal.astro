@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=82">
+  <link rel="stylesheet" href="/hub.css?v=83">
   <link rel="stylesheet" href="/hub-sky.css?v=13">
   <script src="/hub-sky.js?v=6" defer></script>
   <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
@@ -628,28 +628,113 @@
     }
     /** 카드 맨 아래에 쭉 깔리는 작은 장면 — 키친: 도마 위에서 당근을 써는 칼 + 김이 나는 냄비, 차량: 나무와 집이 스쳐 지나가는 길 위를 달리는 차.
      *  CSS 애니메이션만 쓰고, 움직임 줄이기 설정이면 멈춘다 */
-    const POT_SVG = '<span class="hub-deco hub-deco-pot"><i></i><i></i><i></i><svg width="84" height="58" viewBox="0 0 84 58" fill="none" stroke-linecap="round" stroke-linejoin="round">'
-      + '<rect x="3" y="48" width="78" height="10" rx="4" fill="#dfe5ea" stroke="#9aa7b1" stroke-width="1.8"/><circle cx="14" cy="53" r="2.6" fill="#f08a96" stroke="#c4586a" stroke-width="1.2"/><circle cx="70" cy="53" r="2.6" fill="#f08a96" stroke="#c4586a" stroke-width="1.2"/>'
-      + '<path d="M18 46h8M58 46h8" stroke="#6f7c86" stroke-width="3"/>'
-      + '<g class="hub-flames"><path class="hub-flame f1" d="M30 47c-3-3-3-6 0-9 1 2 3 3 3 5 0 2-1 3-3 4z" fill="#54a8ff" stroke="#2f7fd8" stroke-width="1"/><path class="hub-flame f2" d="M42 47c-3-3-3-7 0-11 1 3 3 4 3 6 0 2-1 4-3 5z" fill="#54a8ff" stroke="#2f7fd8" stroke-width="1"/><path class="hub-flame f3" d="M54 47c-3-3-3-6 0-9 1 2 3 3 3 5 0 2-1 3-3 4z" fill="#54a8ff" stroke="#2f7fd8" stroke-width="1"/></g>'
-      + '<rect x="9" y="22" width="9" height="6" rx="3" fill="#8a5a2b" stroke="#6b4320" stroke-width="1.5"/><rect x="66" y="22" width="9" height="6" rx="3" fill="#8a5a2b" stroke="#6b4320" stroke-width="1.5"/>'
-      + '<path d="M16 17h52v15a9 9 0 0 1-9 9H25a9 9 0 0 1-9-9z" fill="#f6a04d" stroke="#c9701f" stroke-width="2.2"/><path d="M22 23v8" stroke="#fff" stroke-opacity=".55" stroke-width="2.4"/>'
-      + '<g class="hub-face"><circle cx="32" cy="30" r="2" fill="#5b3a1a"/><circle cx="52" cy="30" r="2" fill="#5b3a1a"/><path d="M37 33.500c2.500 3 7.500 3 10 0" stroke="#5b3a1a" stroke-width="1.8"/><ellipse cx="26.500" cy="34" rx="3" ry="1.8" fill="#ff9aa8" fill-opacity=".7"/><ellipse cx="57.500" cy="34" rx="3" ry="1.8" fill="#ff9aa8" fill-opacity=".7"/></g>'
-      + '<g class="hub-bubbles" fill="#fff" stroke="#f0b87a" stroke-width="1.4"><circle class="b1" cx="30" cy="14" r="3"/><circle class="b2" cx="44" cy="12" r="2.4"/><circle class="b3" cx="56" cy="14" r="3.2"/><circle class="b4" cx="38" cy="13" r="2"/></g>'
-      + '<g class="hub-pot-lid"><path d="M20 17c0-6 9-9 22-9s22 3 22 9z" fill="#fbc27e" stroke="#c9701f" stroke-width="2.2"/><circle cx="42" cy="6" r="3" fill="#8a5a2b" stroke="#6b4320" stroke-width="1.5"/></g></svg></span>';
-    const BOARD_SVG = '<svg class="hub-sc-board" width="124" height="50" viewBox="0 0 124 50" fill="none" stroke-linecap="round" stroke-linejoin="round">'
-      + '<rect x="3" y="32" width="118" height="14" rx="6" fill="#efd3a4" stroke="#c98f3f" stroke-width="2"/><circle cx="111" cy="39" r="2.4" fill="#fff" stroke="#c98f3f" stroke-width="1.5"/>'
-      + '<g class="hub-carrot"><rect x="14" y="23" width="50" height="9" rx="4.5" fill="#f59a3c" stroke="#d9751a" stroke-width="1.5"/><path d="M14 27.5 8 24M14 27.5 7 28M14 27.5 8 31.5" stroke="#4fae7b" stroke-width="2"/></g>'
-      + '<g class="hub-slices" fill="#f8b061" stroke="#d9751a" stroke-width="1.2"><ellipse class="s1" cx="74" cy="29" rx="2.4" ry="4"/><ellipse class="s2" cx="81" cy="29" rx="2.4" ry="4"/><ellipse class="s3" cx="88" cy="29" rx="2.4" ry="4"/><ellipse class="s4" cx="95" cy="29" rx="2.4" ry="4"/></g>'
-      + '<g class="hub-knife-pos"><g class="hub-knife"><path d="M62 14h13v17c-7 0-13-2-13-5z" fill="#eef3f6" stroke="#7d8e98" stroke-width="1.6"/><rect x="63" y="3" width="11" height="11" rx="3.5" fill="#8a5a2b" stroke="#6b4320" stroke-width="1.4"/></g></g></svg>';
-    const KITCHEN_DECO = '<span class="hub-scene hub-scene-kitchen" aria-hidden="true"><span class="hub-counter"></span>' + BOARD_SVG + POT_SVG + '</span>';
-    const CAR_SVG = '<span class="hub-deco hub-deco-car"><b class="sm s1"></b><b class="sm s2"></b><b class="sm s3"></b><svg width="64" height="42" viewBox="0 0 64 42" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="hub-car-body">'
-      + '<path d="M4 29v-7a4 4 0 0 1 3-3.9l7.5-2 6-8.2A4 4 0 0 1 24.7 6h14.6a4 4 0 0 1 3.3 1.7l5 7.4 9 2.6A4 4 0 0 1 59.500 21.600V29a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" fill="#c585ec" stroke="#8a35a0" stroke-width="2.2"/>'
-      + '<path d="M19 17.500l4.200-6h14.300l4.300 6z" fill="#e4f4ff" stroke="#8a35a0" stroke-width="2"/><path d="M31 11.500v6" stroke="#8a35a0" stroke-width="1.6"/>'
-      + '<rect x="52" y="22" width="5" height="4" rx="2" fill="#ffe27a" stroke="#d6a516" stroke-width="1.4"/><path d="M45 25.500c1.400 1.400 3.200 1.400 4.600 0" stroke="#5a2370" stroke-width="1.8"/>'
-      + '<g transform="translate(16 32)"><g class="hub-wheel"><circle r="6" fill="#3d3550" stroke="#2a2438" stroke-width="1.6"/><circle r="2.200" fill="#dcd6ee"/><path d="M0-4v8M-4 0h8" stroke="#dcd6ee" stroke-width="1.200"/></g></g>'
-      + '<g transform="translate(47.500 32)"><g class="hub-wheel"><circle r="6" fill="#3d3550" stroke="#2a2438" stroke-width="1.6"/><circle r="2.200" fill="#dcd6ee"/><path d="M0-4v8M-4 0h8" stroke="#dcd6ee" stroke-width="1.200"/></g></g></g></svg></span>';
-    const CAR_DECO = '<span class="hub-scene hub-scene-car" aria-hidden="true"><span class="hub-sc-far"></span><span class="hub-sc-near"></span><span class="hub-road"></span>' + CAR_SVG + '</span>';
+    /* 키친 · 차량 카드 아래 장면 — Claude Design 시안(WOLKO 키친·차량 카드)을 옮긴 것.
+       색과 보이는 것(해 · 달 · 별 · 비 · 눈 · 등 · 전조등)은 applyCardScene() 이 #hubDash 의 CSS 변수와 data-kc-* 로 정한다. */
+    const VEG = [
+      ['c', 42, 69, 2.3, '#f08a2c', '#c7621a', '-2px', '-11px', '360deg', '.02s'], ['r', 47, 67.6, 5, 3, '#4caf50', '#2f7d34', '1px', '-14px', '-180deg', '.05s'],
+      ['c', 56, 69, 2.3, '#f08a2c', '#c7621a', '2px', '-12px', '-360deg', '0s'], ['r', 60, 67.4, 4.6, 3.2, '#e8443a', '#a82820', '-1px', '-16px', '180deg', '.04s'],
+      ['o', 'M66 69.5 q3 -4.5 6.5 -1', '3px', '-13px', '-180deg', '.07s'], ['r', 74, 67.6, 4.6, 3, '#f2c230', '#b88a10', '-3px', '-10px', '360deg', '.03s'],
+      ['c', 81, 68.6, 2.1, '#4caf50', '#2f7d34', '1px', '-12px', '180deg', '.06s'], ['r', 44, 64.8, 5, 3, '#e8443a', '#a82820', '4px', '-22px', '-360deg', '.01s'],
+      ['c', 52, 65.6, 2.3, '#f08a2c', '#c7621a', '-3px', '-24px', '360deg', '.04s'], ['o', 'M57 66 q2.5 -4 6 -1', '2px', '-26px', '180deg', '.02s'],
+      ['b', '-2px', '-20px', '-180deg', '.06s'], ['r', 72, 65.2, 5, 3, '#4caf50', '#2f7d34', '5px', '-18px', '180deg', '.03s'],
+      ['c', 79, 66, 2.2, '#f08a2c', '#c7621a', '-1px', '-21px', '-360deg', '.08s'],
+    ].map(v => {
+      const st = (dx, dy, r, d) => ' style="--dx:' + dx + ';--dy:' + dy + ';--r:' + r + ';animation-delay:' + d + '"';
+      if (v[0] === 'c') return '<circle class="hk-toss"' + st(v[6], v[7], v[8], v[9]) + ' cx="' + v[1] + '" cy="' + v[2] + '" r="' + v[3] + '" fill="' + v[4] + '" stroke="' + v[5] + '" stroke-width=".7"/>';
+      if (v[0] === 'r') return '<rect class="hk-toss"' + st(v[7], v[8], v[9], v[10]) + ' x="' + v[1] + '" y="' + v[2] + '" width="' + v[3] + '" height="' + v[4] + '" rx="1.2" fill="' + v[5] + '" stroke="' + v[6] + '" stroke-width=".7"/>';
+      if (v[0] === 'o') return '<path class="hk-toss"' + st(v[2], v[3], v[4], v[5]) + ' d="' + v[1] + '" fill="none" stroke="#efe1bf" stroke-width="2" stroke-linecap="round"/>';
+      return '<g class="hk-toss"' + st(v[1], v[2], v[3], v[4]) + '><circle cx="66" cy="65.4" r="2" fill="#3f9b55"/><circle cx="68.6" cy="64.6" r="2.1" fill="#4caf50"/><circle cx="68" cy="66.8" r="1.8" fill="#3f9b55"/><path d="M67.5 67.5v2.2" stroke="#7fbf6a" stroke-width="1.4"/></g>';
+    }).join('');
+    const FLAMES = x => '<g class="hk-flame"><path d="M' + x + ' 84q-3-5 1-9q0 4 3 5q1-4 4-6q-1 5 2 10z" fill="#ff8a2a"/><path d="M' + (x + 14) + ' 84q-3-6 1-11q0 5 3 6q1-5 4-7q-1 6 2 12z" fill="#ff8a2a"/><path d="M' + (x + 28) + ' 84q-3-5 1-9q0 4 3 5q1-4 4-6q-1 5 2 10z" fill="#ff8a2a"/></g>'
+      + '<g class="hk-flame" style="animation-delay:-.17s"><path d="M' + (x + 3) + ' 84q-1-3 1-5q1 2 2 5zM' + (x + 17) + ' 84q-1-4 1-6q1 3 2 6zM' + (x + 31) + ' 84q-1-3 1-5q1 2 2 5z" fill="#ffd45a"/></g>';
+    const KITCHEN_DECO = '<span class="hub-scene hk-scene" aria-hidden="true"><svg viewBox="0 0 300 112" preserveAspectRatio="xMidYMax slice">'
+      + '<defs><linearGradient id="hkWin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--kc-sky-a)"/><stop offset="1" style="stop-color:var(--kc-sky-b)"/></linearGradient>'
+      + '<radialGradient id="hkLamp" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd58a" stop-opacity=".85"/><stop offset="1" stop-color="#ffd58a" stop-opacity="0"/></radialGradient>'
+      + '<clipPath id="hkClip"><rect x="104" y="10" width="92" height="58" rx="6"/></clipPath></defs>'
+      + '<rect width="300" height="112" style="fill:var(--kc-wall)"/>'
+      + '<g clip-path="url(#hkClip)"><rect x="104" y="10" width="92" height="58" fill="url(#hkWin)"/>'
+      + '<g class="kc-sun" style="transform:translate(var(--kc-ksun-x),var(--kc-ksun-y))"><circle r="15" style="fill:var(--kc-sun-color)" opacity=".25" class="hk-glow"/><circle r="8" style="fill:var(--kc-sun-color)"/></g>'
+      + '<g class="kc-night"><circle cx="176" cy="26" r="7" fill="#f4f1de"/><circle cx="179" cy="23" r="6" style="fill:var(--kc-sky-a)"/><circle cx="122" cy="22" r="1.2" fill="#fff" class="hk-tw"/><circle cx="148" cy="16" r="1" fill="#fff" class="hk-tw t2"/><circle cx="138" cy="36" r="1.1" fill="#fff" class="hk-tw t3"/></g>'
+      + '<path d="M104 62Q130 50 150 58T196 54V68H104Z" style="fill:var(--kc-hill)"/>'
+      + '<g class="kc-rain" stroke="#e6eef5" stroke-width="1.2" stroke-linecap="round" opacity=".8"><path class="hk-rain" d="M118 10l-3 9"/><path class="hk-rain r2" d="M140 4l-3 9"/><path class="hk-rain r3" d="M162 8l-3 9"/><path class="hk-rain" d="M184 2l-3 9"/><path class="hk-rain r2" d="M128-6l-3 9"/><path class="hk-rain r3" d="M172-10l-3 9"/></g>'
+      + '<g class="kc-snow" fill="#fff"><circle class="hk-snow" cx="116" cy="6" r="1.8"/><circle class="hk-snow f2" cx="138" cy="0" r="1.4"/><circle class="hk-snow f3" cx="160" cy="4" r="2"/><circle class="hk-snow" cx="182" cy="-4" r="1.5"/><circle class="hk-snow f2" cx="128" cy="-10" r="1.6"/></g></g>'
+      + '<rect x="102" y="8" width="96" height="62" rx="7" fill="none" stroke="#c9a77a" stroke-width="3"/><path d="M150 9V69M103 39H197" stroke="#c9a77a" stroke-width="2"/>'
+      + '<path class="kc-snow" d="M102 9q8-4 16 0q10-4 20 0q12-4 22 0q10-4 20 0q9-4 18 0" fill="#fff" stroke="#e3eaf0" stroke-width=".8"/>'
+      + '<g class="hk-lamp"><path d="M246 0V20" stroke="#5b4a3a" stroke-width="1.5"/><circle cx="246" cy="36" r="13" fill="url(#hkLamp)" style="opacity:var(--kc-lamp)" class="hk-glow"/><path d="M234 30Q246 16 258 30Z" fill="#2f5d6e"/><circle cx="246" cy="31" r="3" style="fill:var(--kc-bulb)"/></g>'
+      + '<rect y="92" width="300" height="20" fill="#efd3a4"/><rect y="90" width="300" height="3" fill="#d9b57a"/>'
+      + '<rect x="28" y="84" width="64" height="7" rx="2" fill="#44515a"/>' + FLAMES(44)
+      + '<g class="hk-pan"><path d="M6 70.5L36 72L36 75L6 74Q3 72.2 6 70.5Z" fill="#5b4a3a"/><path d="M34 70H88Q86 78 78 79.5H44Q36 78 34 70Z" fill="#3a3f47" stroke="#22262c" stroke-width="1.2"/><path d="M36 70.2H86" stroke="#8a929c" stroke-width="1.6" stroke-linecap="round"/></g>'
+      + '<g class="hk-pan">' + VEG + '</g>'
+      + '<g class="hk-sizzle" fill="#fff4d6"><circle cx="40" cy="64" r="1"/><circle cx="84" cy="62" r=".9"/><circle cx="62" cy="58" r=".8"/></g>'
+      + '<rect x="170" y="84" width="72" height="7" rx="2" fill="#44515a"/>' + FLAMES(188)
+      + '<g transform="translate(0 -8)"><path d="M180 62h52v18a6 6 0 0 1-6 6h-40a6 6 0 0 1-6-6z" fill="#e8913a" stroke="#b5651c" stroke-width="1.6"/><path d="M176 66h4M232 66h4" stroke="#b5651c" stroke-width="3" stroke-linecap="round"/>'
+      + '<g class="hk-lid"><path d="M178 62q28-12 56 0z" fill="#f3a75a" stroke="#b5651c" stroke-width="1.6"/><circle cx="206" cy="54" r="2.4" fill="#b5651c"/></g>'
+      + ['196 46', '206 44', '216 46'].map((xy, i) => '<path class="hk-steam s' + (i + 1) + '" d="M' + xy + 'q-4-6 0-12q4-6 0-12" style="stroke:var(--kc-steam)" stroke-width="2.4" fill="none" stroke-linecap="round"/>').join('') + '</g>'
+      + '<rect width="300" height="112" fill="#1a2440" style="opacity:var(--kc-dim)"/><circle cx="246" cy="60" r="70" fill="url(#hkLamp)" style="opacity:var(--kc-lamp-wash)"/>'
+      + '</svg></span>';
+    const LAMPS = [70, 230, 370, 530].map(x => '<path d="M' + x + ' 92V66h8" stroke="#3a4656" stroke-width="2" fill="none"/><circle cx="' + (x + 8) + '" cy="68" r="16" fill="url(#hcLight)" class="hk-glow"/><circle cx="' + (x + 8) + '" cy="68" r="2.4" fill="#fff4c8"/>').join('');
+    const WHEEL = x => '<g transform="translate(' + x + ' 34)"><g class="hk-spin"><circle r="6" fill="#3d3550" stroke="#2a2438" stroke-width="1.6"/><circle r="2.2" fill="#dcd6ee"/><path d="M0-4v8M-4 0h8" stroke="#dcd6ee" stroke-width="1.2"/></g></g>';
+    /* 도시: 먼 빌딩 줄과 가까운 빌딩 줄(창문은 밤에 불이 켜진다). 320px 무늬를 두 번 이어 붙여 끊김 없이 흘러간다 */
+    const CITY = (list, base) => [0, 320].map(off => { let x = off; return list.map(([w, h]) => { const r = '<rect x="' + x + '" y="' + (base - h) + '" width="' + (w - 2) + '" height="' + (h + 4) + '" rx="1.5"/>'; x += w; return r; }).join(''); }).join('');
+    const FAR_B = [[26, 30], [18, 22], [32, 40], [22, 26], [28, 34], [20, 18], [34, 44], [24, 28], [30, 36], [22, 24], [26, 32], [38, 42]];
+    const NEAR_B = [[34, 26], [26, 18], [40, 32], [30, 22], [36, 28], [28, 16], [44, 30], [32, 20], [50, 24]];
+    const CITY_FAR = CITY(FAR_B, 92);
+    const CITY_NEAR = CITY(NEAR_B, 96);
+    const CITY_WIN = [0, 320].map(off => { let x = off, out = ''; NEAR_B.forEach(([w, h], i) => { for (let wy = 96 - h + 5; wy < 90; wy += 7) for (let wx = x + 5; wx < x + w - 7; wx += 8) if ((wx * 7 + wy * 3 + i) % 5) out += '<rect x="' + wx + '" y="' + wy + '" width="3.5" height="3.5" rx=".6"/>'; x += w; }); return out; }).join('');
+    const CAR_DECO = '<span class="hub-scene hk-scene" aria-hidden="true"><svg viewBox="0 0 300 112" preserveAspectRatio="xMidYMax slice">'
+      + '<defs><linearGradient id="hcSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--kc-sky-a)"/><stop offset="1" style="stop-color:var(--kc-sky-b)"/></linearGradient>'
+      + '<linearGradient id="hcBeam" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff3c4" stop-opacity=".9"/><stop offset="1" stop-color="#fff3c4" stop-opacity="0"/></linearGradient>'
+      + '<radialGradient id="hcLight" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffe29a" stop-opacity=".9"/><stop offset="1" stop-color="#ffe29a" stop-opacity="0"/></radialGradient></defs>'
+      + '<rect width="300" height="112" fill="url(#hcSky)"/>'
+      + '<g class="kc-sun" style="transform:translate(var(--kc-csun-x),var(--kc-csun-y))"><circle r="22" style="fill:var(--kc-sun-color)" opacity=".22" class="hk-glow"/><circle r="10" style="fill:var(--kc-sun-color)"/></g>'
+      + '<g class="kc-night"><circle cx="232" cy="24" r="9" fill="#f4f1de"/><circle cx="236" cy="20" r="8" style="fill:var(--kc-sky-a)"/><circle cx="40" cy="18" r="1.2" fill="#fff" class="hk-tw"/><circle cx="96" cy="10" r="1" fill="#fff" class="hk-tw t2"/><circle cx="150" cy="26" r="1.2" fill="#fff" class="hk-tw t3"/><circle cx="190" cy="12" r="1" fill="#fff" class="hk-tw"/><circle cx="276" cy="40" r="1.1" fill="#fff" class="hk-tw t2"/></g>'
+      + '<g class="hk-far" style="fill:var(--kc-hill-far)">' + CITY_FAR + '</g>'
+      + '<g class="hk-near"><g style="fill:var(--kc-hill-near)">' + CITY_NEAR + '</g><g style="fill:var(--kc-win)">' + CITY_WIN + '</g>'
+      + '<g class="kc-lamps">' + LAMPS + '</g></g>'
+      + '<rect y="94" width="300" height="18" style="fill:var(--kc-road)"/><g class="hk-dash"><path d="M0 103H330" style="stroke:var(--kc-road-line)" stroke-width="2" stroke-dasharray="14 14"/></g>'
+      + '<path class="kc-snow" d="M0 94H300" stroke="#fff" stroke-width="3"/>'
+      + '<path class="kc-beam hk-beam" d="M180 72L264 62L264 98Z" fill="url(#hcBeam)"/>'
+      /* 차: 카니발 같은 미니밴 — 길고 높은 몸체, 옆 미닫이문, 창 세 칸(상표는 넣지 않는다) */
+      + '<g transform="translate(108 52)"><g class="hk-bob">'
+      + '<path d="M4 31V9Q4 4 9 4H50Q54 4 56 7L62 15L68 17Q72 18 72 22V31Q72 34 69 34H7Q4 34 4 31Z" style="fill:var(--car-body);stroke:var(--car-line)" stroke-width="2"/>'
+      + '<g style="fill:var(--kc-glass);stroke:var(--car-line)" stroke-width="1.4"><rect x="8" y="8" width="12" height="8" rx="1.5"/><rect x="23" y="8" width="14" height="8" rx="1.5"/><rect x="40" y="8" width="13" height="8" rx="1.5"/><path d="M55.5 8.5L60.5 16H55.5Z"/></g>'
+      + '<path d="M38 18V31M21 18V31" style="stroke:var(--car-line)" stroke-width="1" opacity=".5"/><path d="M22 18.5H37" style="stroke:var(--car-line)" stroke-width="1.2" opacity=".55"/><path d="M6 23H70" style="stroke:var(--car-line)" stroke-width="1" opacity=".3"/>'
+      + '<rect x="33" y="21" width="3" height="1.4" rx=".7" style="fill:var(--car-line)" opacity=".6"/>'
+      + '<rect x="66" y="19" width="5" height="3.4" rx="1.6" style="fill:var(--kc-headlight)" stroke="#d6a516" stroke-width="1.2"/><rect x="3.5" y="17" width="2.4" height="5" rx="1" fill="#e2463b"/>'
+      + '<path class="kc-snow" d="M9 4.5q21-4 41 0l-1 1.5h-39z" fill="#fff" stroke="#e3eaf0" stroke-width=".8"/>' + WHEEL(17) + WHEEL(58) + '</g></g>'
+      + '<g class="kc-rain" stroke="#dfe8f0" stroke-width="1.2" stroke-linecap="round" opacity=".85">' + [[20, 0], [60, -8], [100, 4], [140, -4], [180, 2], [220, -10], [260, 0], [290, -6]].map((p, i) => '<path class="hk-rain r' + (i % 3 + 1) + '" d="M' + p[0] + ' ' + p[1] + 'l-4 10"/>').join('') + '</g>'
+      + '<g class="kc-snow" fill="#fff">' + [[24, 0, 2], [70, -6, 1.6], [118, 2, 2.2], [166, -10, 1.7], [214, -2, 2], [262, -8, 1.6]].map((p, i) => '<circle class="hk-snow f' + (i % 3 + 1) + '" cx="' + p[0] + '" cy="' + p[1] + '" r="' + p[2] + '"/>').join('') + '</g>'
+      + '</svg></span>';
+    /* 하늘 배너와 같은 해 시각 · 날씨로 카드 장면의 색과 보이는 것을 정한다. 차 색은 날마다 무채색 여섯 가지 중 하나 */
+    const KC_BASE = { sun: 1, night: 0, lamps: 0, beam: 0, '--kc-lamp': 0, '--kc-lamp-wash': 0, '--kc-dim': 0, '--kc-bulb': '#f3e6c8', '--kc-steam': '#ffffff', '--kc-headlight': '#ffe27a', '--kc-glass': '#e4f4ff', '--kc-road': '#e3e8ec', '--kc-road-line': '#ffffff', '--kc-tree': '#6aa56a' };
+    const KC_STATES = {
+      am: { '--kc-sky-a': '#3f73c4', '--kc-sky-b': '#f6b48a', '--kc-sun-color': '#ffd08a', '--kc-ksun-x': '122px', '--kc-ksun-y': '56px', '--kc-csun-x': '40px', '--kc-csun-y': '70px', '--kc-wall': '#fcf2e3', '--kc-hill': '#7fae86', '--kc-hill-far': '#c9c3cf', '--kc-hill-near': '#9aa3b4', '--kc-win': '#e9e2d6' },
+      day: { '--kc-sky-a': '#1f7fe2', '--kc-sky-b': '#74c6f8', '--kc-sun-color': '#fff3b0', '--kc-ksun-x': '150px', '--kc-ksun-y': '24px', '--kc-csun-x': '150px', '--kc-csun-y': '22px', '--kc-wall': '#fbf3e6', '--kc-hill': '#6fae6f', '--kc-hill-far': '#b9cad8', '--kc-hill-near': '#8fa6b8', '--kc-win': '#d7e6f0' },
+      dusk: { '--kc-sky-a': '#3d4a92', '--kc-sky-b': '#ff8e5a', '--kc-sun-color': '#ff9a4a', '--kc-ksun-x': '180px', '--kc-ksun-y': '62px', '--kc-csun-x': '262px', '--kc-csun-y': '74px', '--kc-wall': '#f6dfc8', '--kc-hill': '#6a5a7e', '--kc-hill-far': '#7e6a8e', '--kc-hill-near': '#5a4f72', '--kc-win': '#ffd39a', '--kc-tree': '#4b4466', '--kc-lamp': .55, '--kc-lamp-wash': .2, '--kc-bulb': '#ffe7a8', '--kc-headlight': '#fff1b0', beam: 1, '--kc-glass': '#ffd9c2' },
+      night: { sun: 0, night: 1, lamps: 1, beam: 1, '--kc-sky-a': '#0e1c3e', '--kc-sky-b': '#2a3f78', '--kc-wall': '#efdcc0', '--kc-hill': '#1d2b4a', '--kc-hill-far': '#22304f', '--kc-hill-near': '#18233c', '--kc-win': '#ffd98a', '--kc-tree': '#121c33', '--kc-lamp': 1, '--kc-lamp-wash': .45, '--kc-dim': .28, '--kc-bulb': '#fff1c4', '--kc-headlight': '#fff6c8', '--kc-glass': '#3a4a78', '--kc-road': '#3a4252', '--kc-road-line': '#c9d2dc', '--kc-steam': '#f5ead8' },
+      rain: { sun: 0, beam: 1, '--kc-sky-a': '#5b6b7a', '--kc-sky-b': '#9aa8b4', '--kc-wall': '#efe9e1', '--kc-hill': '#6c8478', '--kc-hill-far': '#98a5b0', '--kc-hill-near': '#7a8894', '--kc-win': '#c3cdd5', '--kc-tree': '#56705f', '--kc-lamp': .6, '--kc-lamp-wash': .15, '--kc-bulb': '#ffe7a8', '--kc-headlight': '#fff1b0', '--kc-glass': '#c9d6e0', '--kc-road': '#9aa4ad', '--kc-road-line': '#e7edf2' },
+      snow: { sun: 0, '--kc-sky-a': '#8fa3b8', '--kc-sky-b': '#dfe7ee', '--kc-wall': '#f4efe8', '--kc-hill': '#e9eff4', '--kc-hill-far': '#c6d1db', '--kc-hill-near': '#a9b7c4', '--kc-win': '#d9e2ea', '--kc-tree': '#7f9a8c', '--kc-lamp': .45, '--kc-lamp-wash': .1, '--kc-bulb': '#ffe7a8', '--kc-glass': '#e6eef5', '--kc-road': '#cfd8df', '--kc-road-line': '#ffffff' },
+    };
+    const KC_CAR = [['#f4f6f8', '#7d8a94'], ['#c9d0d6', '#6a757f'], ['#8f979e', '#4b535a'], ['#5a6168', '#2c3237'], ['#2b2f34', '#121417'], ['#ece9e2', '#8a8478']];
+    function cardSceneState(ms) {
+      const T = window.WolkoSkyTime, now = ((ms / 60000) + 540) % 1440;
+      const sun = T ? T.sunTimes(ms) : { rise: 400, set: 1060 };
+      const kind = hubWeather && hubWeather.kind;
+      const time = now < sun.rise - 30 || now > sun.set + 40 ? 'night' : now >= sun.set - 60 ? 'dusk' : now < sun.rise + 120 ? 'am' : 'day';
+      const wx = kind === 'rain' || kind === 'storm' ? 'rain' : kind === 'snow' ? 'snow' : '';
+      return { time, wx, look: wx && time !== 'night' ? wx : time };
+    }
+    function applyCardScene() {
+      const el = $('hubDash'); if (!el) return;
+      const ms = window.WolkoSkyTime ? window.WolkoSkyTime.nowMs() : Date.now();
+      const st = cardSceneState(ms), v = Object.assign({}, KC_BASE, KC_STATES.day, KC_STATES[st.look]);
+      Object.keys(v).forEach(k => { if (k.startsWith('--')) el.style.setProperty(k, String(v[k])); });
+      const car = KC_CAR[Math.floor((ms + 9 * 3600000) / 86400000) % KC_CAR.length];   // 한국 날짜가 바뀌면 다른 색
+      el.style.setProperty('--car-body', car[0]); el.style.setProperty('--car-line', car[1]);
+      el.dataset.kcSun = v.sun ? '1' : '0'; el.dataset.kcNight = v.night ? '1' : '0'; el.dataset.kcLamps = v.lamps ? '1' : '0'; el.dataset.kcBeam = v.beam ? '1' : '0';
+      el.dataset.kcRain = st.wx === 'rain' ? '1' : '0'; el.dataset.kcSnow = st.wx === 'snow' ? '1' : '0';
+    }
+    setInterval(() => { if (!document.hidden) applyCardScene(); }, window.WolkoSkyTime && window.WolkoSkyTime.demo ? 500 : 60000);
     function renderKitchen(d) {
       if ((d.hidden || []).includes('kitchen')) return '';   // 평택 캠퍼스의 도구 — 제주에서는 보이지 않는다
       let body;
@@ -895,6 +980,7 @@
       if (!bellPanel().hidden) { fillBellPanel(); placeBellPanel(); }
       el.dataset.notice = el.querySelector('.hub-dcard-notice') ? '1' : '0';   // 공지 칸이 없으면(제주에서 내용이 없을 때) 기도제목이 한 줄을 다 쓴다
       renderWx();
+      applyCardScene();
       if ($('prayerText')) { $('prayerTitle').value = keepPrayer.title; $('prayerText').value = keepPrayer.text; $('prayerAnon').checked = keepPrayer.anon; if (keepPrayer.open) el.querySelector('.hub-prayer-form').open = true; }
       if ($('noticeTitle')) { $('noticeTitle').value = keep.title; $('noticeBody').value = keep.body; if ($('noticeDue')) $('noticeDue').value = keep.due; if (keep.open) el.querySelector('.hub-notice-form').open = true; }
     }
