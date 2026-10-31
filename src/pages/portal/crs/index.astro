@@ -2040,7 +2040,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       document.getElementById('dangerBox').hidden = true;
       document.getElementById('dangerName').value = '';
       document.getElementById('dangerGo').disabled = true;
-      if (church) document.getElementById('dangerText').textContent = t('del_type')(church.churchName || '');
+      if (church) document.getElementById('dangerText').textContent = t('del_type', church.churchName || '');   // t()가 문구 함수를 이름과 함께 불러 준다 — 결과는 글자
     }
     document.getElementById('editModalTitle').textContent = church ? t('edit_title') : t('add_title');
     document.getElementById('fChurchName').value = church?.churchName || '';
@@ -2253,6 +2253,13 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   }
 
   // ── 교회 상세 모달 ──
+  // 상세의 '정보 수정' 단추 — 지금 보고 있는 교회의 수정 창을 상세 위에 띄운다(상세는 닫지 않고, 저장하면 상세에 바로 반영).
+  // 상세는 번역 채우기 · 언어 바꾸기 · 저장 때마다 다시 그려지므로, 단추마다 걸지 않고 문서에 한 번만 건다
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest || !e.target.closest('#detailEditBtn') || !viewingChurch) return;
+    openEditModal(viewingChurch);
+  });
+
   function openDetailModal(church, { updateHistory = true } = {}) {
     viewingChurch = church;
     const done = STEPS.filter((_,i) => (church.steps||{})[i+1]).length;
@@ -2517,10 +2524,6 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     bindHqSection(church);
     document.querySelectorAll('.step-item').forEach(item => {
       item.addEventListener('click', () => openStepModal(church, parseInt(item.dataset.step)));
-    });
-    document.getElementById('detailEditBtn').addEventListener('click', () => {
-      // 상세 화면은 닫지 않고 그 위에 수정 창을 띄운다(예전엔 상세를 닫아서 목록으로 '뒤로 나간' 것처럼 보였다). 저장하면 상세에 바로 반영된다
-      openEditModal(church);
     });
     document.getElementById('stepsToggle').addEventListener('click', function() {
       const list = document.getElementById('stepsList');

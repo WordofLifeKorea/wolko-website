@@ -29,9 +29,11 @@ test('CRS 평택|제주: 목록 · 지도 · 필터 · 번호 · 새 교회 기�
 test('CRS 상세의 "정보 수정"은 상세를 닫지 않고 그 위에 수정 창을 띄우고, 저장하면 상세를 다시 그린다', async () => {
   const { readFileSync } = await import('node:fs');
   const page = readFileSync(new URL('../src/pages/portal/crs/index.astro', import.meta.url), 'utf8');
-  const handler = page.slice(page.indexOf("getElementById('detailEditBtn').addEventListener"), page.indexOf("getElementById('stepsToggle')"));
+  const start = page.indexOf("e.target.closest('#detailEditBtn')");
+  const handler = page.slice(start, page.indexOf('});', start));
+  assert.ok(start > 0, '정보 수정 단추는 문서에 한 번 건 클릭으로 처리한다');
   assert.doesNotMatch(handler, /closeDetailModal/, '상세를 닫지 않는다(뒤로 가기도 쓰지 않는다)');
-  assert.match(handler, /openEditModal\(church\)/);
+  assert.match(handler, /openEditModal\(viewingChurch\)/);
   assert.match(page, /if \(fresh\) openDetailModal\(fresh, \{ updateHistory: false \}\)/, '저장 후 상세를 고친 내용으로 다시 그린다');
   assert.match(page, /#editModal\.modal-backdrop \{ z-index:1300; \}/, '휴대폰에서 상세(1200) 위에 뜬다');
 });
