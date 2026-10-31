@@ -1,6 +1,6 @@
 ---
 // 섬기는이 — Claude Design 'A · 갤러리형' 시안을 옮긴 페이지.
-// 남색 첫 화면(큰 제목 · 숫자 · 얼굴이 천천히 흐르는 줄) → 거르기 막대(사역 거점 · 역할, 화면을 내려도 따라온다)
+// 남색 첫 화면(큰 제목 · 숫자) → 거르기 막대(사역 거점 · 역할, 화면을 내려도 따라온다)
 // → 두 거점의 대표 → 거점별 사진 카드 → 함께 섬기기 띠.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
@@ -31,8 +31,6 @@ const counts = {
   missionary: allTeam.filter(p => p.data.category === 'missionary').length,
   stw: allTeam.filter(p => p.data.category === 'stw').length,
 };
-// 첫 화면에서 흐르는 얼굴 줄 — 사진이 있는 사람만, 끊김 없이 돌도록 두 번 이어 붙인다
-const strip = allTeam.filter(p => p.data.photo_url).sort(byOrder);
 ---
 
 <BaseLayout title="섬기는이 — WOLKO 월코" activeNav="about">
@@ -53,13 +51,6 @@ const strip = allTeam.filter(p => p.data.photo_url).sort(byOrder);
           <div><dt><span class="wl-ko">단기 사역자</span><span class="wl-en">Short-term</span></dt><dd>{counts.stw}</dd></div>
           <div><dt><span class="wl-ko">사역 거점</span><span class="wl-en">Locations</span></dt><dd>2</dd></div>
         </dl>
-      </div>
-      <div class="pp-strip-wrap" aria-hidden="true">
-        <div class="pp-strip">
-          {[...strip, ...strip].map((p) => (
-            <img src={p.data.photo_url} alt="" loading="lazy" style={p.data.photo_position ? `object-position: ${p.data.photo_position}` : undefined} />
-          ))}
-        </div>
       </div>
     </header>
 
@@ -177,7 +168,7 @@ const strip = allTeam.filter(p => p.data.photo_url).sort(byOrder);
 
     /* 첫 화면 */
     .pp-hero { background: var(--pp-navy); color: #fff; padding-top: 168px; }
-    .pp-hero-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 56px; align-items: end; padding-bottom: 56px; }
+    .pp-hero-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 56px; align-items: end; padding-bottom: 72px; }
     .pp-hero-text { display: flex; flex-direction: column; gap: 22px; }
     .pp-eyebrow { display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 800; letter-spacing: .16em; color: #8fd0e4; }
     .pp-eyebrow::before { content: ''; width: 28px; height: 1px; background: currentColor; }
@@ -188,11 +179,6 @@ const strip = allTeam.filter(p => p.data.photo_url).sort(byOrder);
     .pp-stats > div:first-child { padding-left: 0; border-left: 0; }
     .pp-stats dt { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.6); }
     .pp-stats dd { margin: 8px 0 0; font-family: var(--ff-serif); font-size: 44px; font-weight: 900; line-height: 1; }
-    .pp-strip-wrap { overflow: hidden; padding-bottom: 48px; }
-    .pp-strip { display: flex; gap: 14px; width: max-content; animation: pp-marq 70s linear infinite; }
-    .pp-strip-wrap:hover .pp-strip { animation-play-state: paused; }
-    .pp-strip img { width: 132px; height: 164px; object-fit: cover; object-position: top; border-radius: 14px; display: block; opacity: .92; }
-    @keyframes pp-marq { to { transform: translateX(-50%); } }
 
     /* 거르기 막대 — 위 메뉴 아래에 붙어 따라온다 */
     .pp-bar { position: sticky; top: 84px; z-index: 20; background: rgba(244,241,234,.94); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid var(--pp-line); }
@@ -268,8 +254,6 @@ const strip = allTeam.filter(p => p.data.photo_url).sort(byOrder);
       .pp-hero { padding-top: 120px; }
       .pp-hero-grid { grid-template-columns: 1fr; gap: 28px; padding-bottom: 36px; }
       .pp-stats dd { font-size: 34px; }
-      .pp-strip img { width: 96px; height: 120px; border-radius: 12px; }
-      .pp-strip-wrap { padding-bottom: 32px; }
       .pp-bar-inner { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
       .pp-bar-inner::-webkit-scrollbar { display: none; }
       .pp-seg, .pp-chips { flex: none; flex-wrap: nowrap; }
@@ -286,6 +270,6 @@ const strip = allTeam.filter(p => p.data.photo_url).sort(byOrder);
       .pp-join-btns { justify-content: flex-start; }
     }
     @media (hover: none) { .pp-card:hover { transform: none; } .pp-card:hover img { transform: none; } }
-    @media (prefers-reduced-motion: reduce) { .pp-strip { animation: none; } .pp-card, .pp-card img, .pp-go { transition: none; } }
+    @media (prefers-reduced-motion: reduce) { .pp-card, .pp-card img, .pp-go { transition: none; } }
   </style>
 </BaseLayout>
