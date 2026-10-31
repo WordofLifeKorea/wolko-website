@@ -51,28 +51,23 @@ const ministries = [
   :global(.wl-motion) .rv { opacity: 0; transform: translateY(32px); transition: opacity 1.2s cubic-bezier(.2,.7,.2,1), transform 1.2s cubic-bezier(.2,.7,.2,1); transition-delay: var(--d, 0s); }
   :global(.wl-motion) .rv.is-in { opacity: 1; transform: none; }
 
-  /* ── 공통 섹션 ── */
+  /* ── 공통 섹션 — 사역 페이지와 같은 머리: 앞에 가는 선이 붙은 작은 표시, 왼쪽 제목, 오른쪽 설명 ── */
   .section { padding:var(--sec-y) 24px; }
   .section--alt { background:var(--white); }
   .section--bg { background:var(--bg); }
-  .section-badge {
-    display:block; width:fit-content; padding:8px 15px; border-radius:999px;
-    background:var(--primary-soft); color:var(--primary);
-    font-size:12px; font-weight:800; letter-spacing:0.05em; margin:0 auto 18px;
-  }
-  .section-title {
-    font-size:40px; font-weight:800; line-height:1.22;
-    letter-spacing:-0.035em; color:#0f1b22; margin-bottom:18px; text-align:center;
-  }
-  .section-desc { font-size:17px; line-height:1.9; color:var(--muted); max-width:720px; margin:0 auto; text-align:center; }
+  .section-badge { display:flex; align-items:center; gap:12px; width:fit-content; color:var(--primary); font-size:13px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; }
+  .section-badge::before { content:""; width:28px; height:1px; background:currentColor; }
+  .section-title { margin-top:20px; font-size:clamp(30px, 3.4vw, 44px); font-weight:700; line-height:1.22; letter-spacing:-0.03em; color:#0b2430; }
+  .section-desc { font-size:17px; line-height:1.85; color:#3e535d; }
+  .sec-head { display:grid; grid-template-columns:minmax(0,5fr) minmax(0,6fr); gap:24px 80px; align-items:end; }
+  .sec-head .section-desc { max-width:560px; }
 
-  /* ── WHO WE ARE 타이틀 강조 ── */
-  .who-title .accent {
-    display:block; margin-top:6px;
-    background:linear-gradient(90deg, #004f68 0%, #0a5b76 55%, #16a8d8 100%);
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-  }
-  .who-title-rule { width:64px; height:5px; margin:22px auto 0; border-radius:99px; background:linear-gradient(90deg, #004f68, #73d1f5); }
+  /* ── WHO WE ARE: 편지 위 제목만 가운데 정렬 ── */
+  .who-head { text-align:center; }
+  .who-head .section-badge { margin:0 auto; }
+  .who-head .section-badge::after { content:""; width:28px; height:1px; background:currentColor; }
+  .who-title .accent { display:block; }
+  .who-title-rule { width:1px; height:40px; margin:24px auto 0; background:rgba(0,79,104,0.3); }
 
   /* ── 봉투 → 편지: 화면에 들어오면 한 번, 정해진 순서로 재생 (봉인 → 덮개 → 편지가 나옴 → 펼쳐짐) ── */
   .intro-single-wrap { position:relative; isolation:isolate; }
@@ -117,72 +112,42 @@ const ministries = [
   .intro-sign-by { align-self:stretch; margin-top:10px; padding-top:9px; border-top:1px solid rgba(0,79,104,0.28); text-align:right; font-family:'Noto Serif KR', 'Nanum Myeongjo', serif; font-size:15px; font-weight:600; letter-spacing:.12em; color:#5b6c75; }
   .intro-sign-by .wl-en { font:600 11px/1.4 Montserrat, sans-serif; letter-spacing:.22em; }
 
-  /* ── HISTORY ── */
-  .history-grid { max-width:1240px; margin:56px auto 0; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-  .history-card { position:relative; border-radius:var(--r-xl); padding:44px 40px; overflow:hidden; display:flex; flex-direction:column; gap:16px; }
-  .history-card--camp { background:linear-gradient(145deg, #0a5b76 0%, #004f68 100%); box-shadow:0 24px 56px rgba(0,79,104,0.22); }
-  .history-card--institute { background:linear-gradient(145deg, #083d51 0%, #052b3a 100%); box-shadow:0 24px 56px rgba(5,43,58,0.24); }
-  .history-card::before { content:""; position:absolute; right:-60px; bottom:-60px; width:240px; height:240px; border-radius:50%; background:rgba(255,255,255,0.06); }
-  .history-card > * { position:relative; z-index:1; }
-  .history-year { font-size:56px; font-weight:900; letter-spacing:-0.05em; color:rgba(255,255,255,0.18); line-height:1; }
-  .history-tag { font-size:11px; font-weight:800; letter-spacing:0.1em; color:rgba(255,255,255,0.55); }
-  .history-card h3 { font-size:26px; font-weight:800; letter-spacing:-0.03em; color:#fff; line-height:1.25; }
-  .history-card p { font-size:15px; line-height:1.88; color:rgba(255,255,255,0.76); }
+  /* ── HISTORY: 두 줄기 — 큰 연도, 굵은 윗선, 제목, 글 ── */
+  .history-grid { max-width:1240px; margin:64px auto 0; display:grid; grid-template-columns:1fr 1fr; gap:0 72px; }
+  .history-card { padding-top:28px; border-top:2px solid #0b2430; display:flex; flex-direction:column; gap:14px; }
+  .history-year { font-size:64px; font-weight:700; letter-spacing:-0.04em; color:var(--primary); line-height:1; font-variant-numeric:tabular-nums; }
+  .history-tag { font-size:12px; font-weight:700; letter-spacing:0.12em; color:#5a7380; }
+  .history-card h3 { font-size:26px; font-weight:700; letter-spacing:-0.02em; color:#0b2430; line-height:1.3; }
+  .history-card p { font-size:15.5px; line-height:1.9; color:#4a5d66; }
 
-  /* ── CORE VALUES ── */
-  .values-grid { max-width:1240px; margin:56px auto 0; display:grid; grid-template-columns:repeat(6, minmax(0,1fr)); gap:18px; }
-  .value-card { grid-column:span 2; }
-  .value-card:nth-child(n+4) { grid-column:span 3; }
-  .value-card {
-    background:#f6f9fb; border:1px solid var(--primary-line); border-radius:var(--r-lg);
-    padding:34px 32px 36px; display:flex; flex-direction:column; gap:12px;
-    transition:transform .22s, background .22s, box-shadow .22s, border-color .22s;
-    cursor:default; position:relative; overflow:hidden;
-  }
-  .value-card::after { content:""; position:absolute; right:-24px; bottom:-32px; width:100px; height:100px; border-radius:50%; background:rgba(0,79,104,0.05); transition:transform .22s; }
-  .value-card:hover { background:linear-gradient(180deg, #0a5b76 0%, #004f68 100%); border-color:transparent; box-shadow:0 20px 48px rgba(0,79,104,0.22); transform:translateY(-5px); }
-  .value-card:hover::after { transform:scale(1.3); }
-  .value-card:hover .value-num { color:#73d1f5; transform:scale(1.05); }
-  .value-card:hover .value-title, .value-card:hover .value-desc { color:#fff; }
-  .value-card:hover .value-desc { color:rgba(255,255,255,0.82); }
-  .value-num { font:800 56px/1 var(--ff-serif); letter-spacing:-0.04em; color:var(--primary); transition:color .22s, transform .3s; position:relative; z-index:1; margin-bottom:8px; transform-origin:left bottom; }
-  .value-title { font-size:22px; font-weight:800; letter-spacing:-0.02em; color:#102028; line-height:1.3; transition:color .22s; position:relative; z-index:1; }
-  .value-desc { font-size:15px; line-height:1.8; color:var(--muted); transition:color .22s; position:relative; z-index:1; }
+  /* ── CORE VALUES: 다섯 칸 — 윗선 · 번호 · 이름 · 한 줄 ── */
+  .values-grid { max-width:1240px; margin:64px auto 0; display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:0 28px; }
+  .value-card { padding-top:22px; border-top:2px solid #0b2430; display:flex; flex-direction:column; gap:12px; }
+  .value-num { font-size:15px; font-weight:700; color:var(--primary); line-height:1; }
+  .value-title { font-size:22px; font-weight:700; letter-spacing:-0.02em; color:#0b2430; line-height:1.3; }
+  .value-desc { font-size:15px; line-height:1.8; color:#4a5d66; }
 
-  /* ── VISION & MISSION ── */
+  /* ── VISION & MISSION: 두 칸 — 비전 문장은 크게 ── */
   .vismis-inner { max-width:1240px; margin:0 auto; }
-  .vismis-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:56px; }
-  .vismis-card { position:relative; border-radius:var(--r-xl); padding:48px 40px; overflow:hidden; display:flex; flex-direction:column; gap:14px; }
-  .vismis-card--vision { background:linear-gradient(145deg, #0a5b76 0%, #004f68 100%); box-shadow:0 24px 56px rgba(0,79,104,0.22); }
-  .vismis-card--mission { background:linear-gradient(145deg, #1a4a3a 0%, #0f3328 100%); box-shadow:0 24px 56px rgba(15,51,40,0.22); }
-  .vismis-card::before { content:""; position:absolute; right:-60px; bottom:-60px; width:240px; height:240px; border-radius:50%; background:rgba(255,255,255,0.06); }
-  .vismis-card > * { position:relative; z-index:1; }
-  .vismis-card-num { font-size:11px; font-weight:800; letter-spacing:0.1em; color:rgba(255,255,255,0.5); }
-  .vismis-card h3 { font-size:28px; font-weight:800; letter-spacing:-0.03em; color:#fff; line-height:1.2; }
-  .vismis-card p { font-size:16px; line-height:1.85; color:rgba(255,255,255,0.78); }
+  .vismis-grid { display:grid; grid-template-columns:minmax(0,7fr) minmax(0,5fr); gap:0 72px; margin-top:64px; }
+  .vismis-card { padding-top:28px; border-top:2px solid #0b2430; display:flex; flex-direction:column; gap:16px; }
+  .vismis-card-num { font-size:12px; font-weight:700; letter-spacing:0.12em; color:#5a7380; }
+  .vismis-card h3 { font-size:26px; font-weight:700; letter-spacing:-0.02em; color:#0b2430; line-height:1.3; }
+  .vismis-card--vision h3 { font-size:clamp(28px, 2.8vw, 38px); line-height:1.35; color:var(--primary); }
+  .vismis-card p { font-size:16px; line-height:1.85; color:#4a5d66; }
 
-  /* ── COMMITMENTS ── */
-  .commit-inner { max-width:980px; margin:56px auto 0; }
-  .commit-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  /* 번호는 왼쪽에 크게, 제목과 설명은 오른쪽에. 마우스를 올리면 진한 청록 카드로 바뀌고 번호는 하늘색으로 굵어진다 */
-  .commit-card { background:var(--white); border:1px solid var(--primary-line); border-radius:var(--r-lg); padding:34px 32px; display:grid; grid-template-columns:84px minmax(0,1fr); column-gap:24px; row-gap:8px; align-content:center; box-shadow:0 8px 24px rgba(16,32,40,0.05); transition:transform .22s, box-shadow .22s, border-color .22s, background .22s; position:relative; overflow:hidden; }
-  .commit-card::before { content:""; position:absolute; top:-72px; right:-64px; width:180px; height:180px; border-radius:50%; background:radial-gradient(circle, rgba(115,209,245,0.17) 0%, rgba(115,209,245,0) 70%); pointer-events:none; transition:transform .3s, opacity .3s; }
-  .commit-card:hover { transform:translateY(-4px); background:linear-gradient(180deg, #0a5b76 0%, #004f68 100%); border-color:transparent; box-shadow:0 20px 48px rgba(0,79,104,0.22); }
-  .commit-card:hover::before { transform:scale(1.3); opacity:.9; }
-  .commit-card > * { position:relative; z-index:1; }
-  .commit-num { grid-row:1 / span 3; align-self:start; font:800 58px/1 var(--ff-serif); letter-spacing:-0.04em; background:linear-gradient(160deg, var(--primary) 0%, #4cc1e6 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; transition:transform .3s; transform-origin:left top; }
-  .commit-card:hover .commit-num { background:none; -webkit-text-fill-color:#73d1f5; transform:scale(1.06); }
-  .commit-card h4 { grid-column:2; font-size:20px; font-weight:800; letter-spacing:-0.01em; color:#102028; line-height:1.35; transition:color .22s; }
-  .commit-card p { grid-column:2; font-size:14.5px; line-height:1.85; color:var(--muted); transition:color .22s; }
-  .commit-card:hover h4 { color:#fff; }
-  .commit-card:hover p { color:rgba(255,255,255,0.84); }
+  /* ── COMMITMENTS: 2×2 — 번호 · 제목 · 글, 가는 선으로 나눈다 ── */
+  .commit-inner { max-width:1240px; margin:64px auto 0; }
+  .commit-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 72px; border-top:2px solid #0b2430; }
+  .commit-card { padding:28px 0 32px; border-bottom:1px solid #d6dee2; display:grid; grid-template-columns:48px minmax(0,1fr); column-gap:12px; row-gap:8px; align-content:start; }
+  .commit-num { grid-row:1 / span 2; font-size:15px; font-weight:700; line-height:1.6; color:var(--primary); }
+  .commit-card h4 { grid-column:2; font-size:20px; font-weight:700; letter-spacing:-0.02em; color:#0b2430; line-height:1.4; }
+  .commit-card p { grid-column:2; font-size:15px; line-height:1.85; color:#4a5d66; }
 
   /* ── MINISTRIES: 왼쪽 목록에서 고르면 오른쪽 큰 사진이 그 사역으로 바뀐다 ── */
   .ministry-inner { max-width:1240px; margin:0 auto; display:grid; grid-template-columns:minmax(0,5fr) minmax(0,7fr); gap:72px; }
   .ministry-side { display:flex; flex-direction:column; }
-  .ministry-head .section-badge { margin-left:0; }
-  .ministry-head .section-title, .ministry-head .section-desc { text-align:left; margin-left:0; }
-  .ministry-head .section-desc { font-size:16px; line-height:1.8; }
+  .ministry-head .section-desc { margin-top:18px; font-size:16px; line-height:1.8; }
   .ministry-list { list-style:none; margin:40px 0 0; padding:0; border-top:1px solid #cdd7dc; }
   .ministry-list li { position:relative; border-bottom:1px solid #cdd7dc; }
   /* 지금 보이는 사역의 밑줄 — 저절로 넘어가는 동안은 천천히 차오르고, 다 차면 다음 사역으로 */
@@ -243,55 +208,40 @@ const ministries = [
     .mi-title { font-size:18px; }
     .mi-desc { display:block; font-size:14px; line-height:1.7; color:#587383; }
   }
+  @media (max-width:1050px) {
+    .values-grid { grid-template-columns:repeat(3, minmax(0,1fr)); gap:36px 28px; }
+  }
   @media (max-width:860px) {
-    .history-grid, .vismis-grid, .commit-grid { grid-template-columns:1fr; }
-    .values-grid { grid-template-columns:repeat(2,1fr); }
-    .value-card, .value-card:nth-child(n+4) { grid-column:auto; }
-    .value-card:nth-child(5) { grid-column:1 / -1; }
+    .sec-head { grid-template-columns:1fr; }
+    .history-grid, .vismis-grid, .commit-grid { grid-template-columns:1fr; gap:40px; }
+    .commit-grid { gap:0; }
+    .values-grid { grid-template-columns:repeat(2, minmax(0,1fr)); }
   }
   @media (max-width:640px) {
-    /* 위쪽은 사진이 또렷하게 보이고, 아래로 남색에 자연스럽게 이어진 뒤 글이 시작된다 */
     .section-title { font-size:30px; }
-    .values-grid { grid-template-columns:1fr; }
-    .value-card:nth-child(5) { grid-column:auto; }
-    .history-card, .vismis-card { padding:34px 26px; }
     .intro-card { padding:64px 26px 40px; transform:none; }
     .intro-card::before { inset:9px; }
     .intro-card p:not(.intro-greet) { font-size:15.5px; line-height:2; }
     .intro-greet { font-size:18px; }
     .intro-sign-name { font-size:26px; }
-    .commit-grid { grid-template-columns:1fr; }
-    .commit-card { grid-template-columns:1fr; padding:28px 24px; }
-    .commit-num { grid-row:auto; font-size:46px; margin-bottom:6px; }
-    .commit-card h4, .commit-card p { grid-column:1; }
   }
 
-  /* ── 모바일: 카드 박스를 걷어내고 구분선과 번호 위주의 한 줄기 목록으로 — 읽기 편하게 ── */
+  /* ── 휴대폰: 한 줄기 목록 — 번호는 왼쪽, 이름과 글은 오른쪽 ── */
   @media (max-width:640px) {
     .section { padding-left:20px; padding-right:20px; }
-    .history-grid, .vismis-grid { gap:0; margin-top:30px; }
-    .history-card, .vismis-card { padding:26px 2px 28px; background:none; box-shadow:none; border-radius:0; border-top:1px solid rgba(0,79,104,.16); gap:10px; }
-    .history-card::before, .vismis-card::before { display:none; }
-    .history-year { font-size:40px; color:rgba(0,79,104,.2); }
-    .history-tag, .vismis-card-num { color:#6b8794; }
-    .history-card h3, .vismis-card h3 { color:#0a3f52; font-size:23px; }
-    .history-card p, .vismis-card p { color:#4a626d; font-size:15px; line-height:1.9; }
-
-    .values-grid, .commit-grid { display:block; margin-top:30px; }
-    .value-card, .value-card:nth-child(n+4), .value-card:nth-child(5), .commit-card {
-      display:grid; grid-template-columns:42px minmax(0,1fr); column-gap:14px; row-gap:3px; align-content:start;
-      padding:18px 2px 20px; background:none; border:0; border-top:1px solid rgba(0,79,104,.14); border-radius:0; box-shadow:none; transform:none;
-    }
-    .value-card::after, .commit-card::before { display:none; }
-    .value-num, .commit-num { grid-row:1 / span 2; margin:0; font-size:26px; line-height:1.15; transform:none; }
-    .value-title, .commit-card h4 { grid-column:2; font-size:18px; }
-    .value-desc, .commit-card p { grid-column:2; font-size:14.5px; line-height:1.75; }
-    /* 터치 뒤에 호버 색이 남지 않게 */
-    .value-card:hover, .commit-card:hover { background:none; box-shadow:none; transform:none; border-color:rgba(0,79,104,.14); }
-    .value-card:hover .value-title, .commit-card:hover h4 { color:#102028; }
-    .value-card:hover .value-desc, .commit-card:hover p { color:var(--muted); }
-    .value-card:hover .value-num { color:var(--primary); transform:none; }
-    .commit-card:hover .commit-num { -webkit-text-fill-color:transparent; background:linear-gradient(160deg, var(--primary) 0%, #4cc1e6 100%); -webkit-background-clip:text; background-clip:text; transform:none; }
+    .history-grid, .vismis-grid, .values-grid, .commit-inner { margin-top:36px; }
+    .history-year { font-size:48px; }
+    .history-card h3, .vismis-card h3 { font-size:22px; }
+    .vismis-card--vision h3 { font-size:26px; }
+    .history-card p, .vismis-card p { font-size:15px; }
+    .values-grid { grid-template-columns:1fr; gap:0; border-top:2px solid #0b2430; }
+    .value-card { display:grid; grid-template-columns:48px minmax(0,1fr); column-gap:12px; row-gap:4px; padding:20px 0; border-top:0; border-bottom:1px solid #d6dee2; }
+    .value-num { grid-row:1 / span 2; line-height:1.6; }
+    .value-title { font-size:18px; }
+    .value-desc { grid-column:2; font-size:14.5px; }
+    .commit-card { padding:22px 0 24px; }
+    .commit-card h4 { font-size:18px; }
+    .commit-card p { font-size:14.5px; }
 
     /* 사역 목록: 사진을 조금 줄인다 */
     .mi { grid-template-columns:76px minmax(0,1fr); gap:0 14px; padding:18px 0; }
@@ -338,12 +288,14 @@ const ministries = [
 <!-- ══ WHO WE ARE ══ -->
 <section class="section section--alt">
   <div class="page-wrap">
+    <div class="who-head">
     <span class="section-badge">WHO WE ARE</span>
     <h2 class="section-title who-title">
       <span class="wl-ko">다음 세대에<span class="accent">복음을 전합니다</span></span>
       <span class="wl-en">Reaching<span class="accent">Your Generation</span></span>
     </h2>
     <div class="who-title-rule"></div>
+    </div>
     <div class="intro-single-wrap" id="letterStage">
       <!-- 봉투: 스크롤하면 봉투가 열리고 편지가 쓰윽 올라온다 (자바스크립트가 켤 때만 보인다) -->
       <div class="env" id="env" aria-hidden="true">
@@ -376,12 +328,14 @@ const ministries = [
 
 <!-- ══ HISTORY ══ -->
 <section class="section section--bg">
-  <div class="page-wrap" style="text-align:center;">
+  <div class="page-wrap sec-head">
+    <div>
     <span class="section-badge">HISTORY</span>
     <h2 class="section-title">
       <span class="wl-ko">생명의말씀협회<br>역사</span>
       <span class="wl-en">The History of<br>Word of Life Fellowship</span>
     </h2>
+    </div>
     <p class="section-desc">
       <span class="wl-ko">Word of Life는 이 세대를 예수 그리스도께로 인도하기 위해 무엇이든 하겠다는 마음을 가지고 이 사역을 시작했습니다.</span>
       <span class="wl-en">From the beginning, it was the vision of Word of Life's founders that we will do what it takes to reach this generation for Jesus Christ.</span>
@@ -406,8 +360,8 @@ const ministries = [
 </section>
 
 <!-- ══ CORE VALUES ══ -->
-<section class="section section--alt" style="padding-bottom:var(--sec-y);">
-  <div class="page-wrap" style="text-align:center;margin-bottom:0;">
+<section class="section section--alt">
+  <div class="page-wrap">
     <span class="section-badge">CORE VALUES</span>
     <h2 class="section-title">
       <span class="wl-ko">월코가 추구하는<br>핵심 5가지</span>
@@ -468,12 +422,14 @@ const ministries = [
 
 <!-- ══ COMMITMENTS ══ -->
 <section class="section section--alt">
-  <div class="page-wrap" style="text-align:center;">
+  <div class="page-wrap sec-head">
+    <div>
     <span class="section-badge">OUR COMMITMENTS</span>
     <h2 class="section-title">
       <span class="wl-ko">지역 교회를 향한<br>월코의 약속</span>
       <span class="wl-en">Word of Life's Commitments<br>to the Local Church</span>
     </h2>
+    </div>
     <p class="section-desc">
       <span class="wl-ko">월코는 복음 메시지를 전파하는 데 있어 지역 교회의 중요한 역할을 인정합니다.</span>
       <span class="wl-en">Word of Life recognizes the vital role of the local church in advancing the gospel message.</span>
