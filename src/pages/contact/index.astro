@@ -124,24 +124,32 @@ import PageHero from '../../components/PageHero.astro';
     display:block; margin-bottom:8px;
     font-size:13px; font-weight:700; color:var(--ct-navy); letter-spacing:.02em;
   }
-  /* 문의 유형: 펼침 목록 대신 모든 항목이 보이는 네모 칸 — 고르면 남색으로 채워진다 */
-  .ct-type { margin:0; padding:0; border:0; min-width:0; }
-  .ct-type-groups { display:grid; gap:16px; }
-  .ct-type-group-label { margin-bottom:8px; font-size:12px; font-weight:600; color:var(--ct-label); }
-  .ct-type-options { display:flex; flex-wrap:wrap; gap:8px; }
-  .ct-type-opt { position:relative; display:block; cursor:pointer; }
-  .ct-type-opt input { position:absolute; opacity:0; width:1px; height:1px; pointer-events:none; }
-  .ct-type-opt span.ct-type-tile {
-    display:inline-flex; align-items:center; gap:8px; height:44px; padding:0 16px;
-    border:1px solid var(--ct-field); border-radius:2px; background:#fff;
-    font-size:14.5px; font-weight:600; color:var(--ct-ink);
-    transition:border-color .18s, background-color .18s, color .18s;
+  /* 문의 유형: 브라우저 기본 펼침 목록 대신 사이트 모양의 펼침 목록 — 묶음 제목 · 고른 항목 체크 · 네모 모서리 */
+  .ct-dd { position:relative; }
+  .ct-dd-btn {
+    width:100%; height:48px; padding:0 14px; display:flex; align-items:center; justify-content:space-between; gap:12px;
+    border:1px solid var(--ct-field); border-radius:2px; background:#fff; cursor:pointer;
+    font:inherit; font-size:15px; font-weight:500; color:var(--ct-ink); text-align:left;
+    transition:border-color .2s, box-shadow .2s;
   }
-  .ct-type-tile svg { width:14px; height:14px; flex:none; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:square; display:none; }
-  .ct-type-opt:hover span.ct-type-tile { border-color:var(--ct-deep); }
-  .ct-type-opt input:checked + span.ct-type-tile { background:var(--ct-deep); border-color:var(--ct-deep); color:#fff; }
-  .ct-type-opt input:checked + span.ct-type-tile svg { display:block; }
-  .ct-type-opt input:focus-visible + span.ct-type-tile { outline:2px solid var(--ct-deep); outline-offset:2px; }
+  .ct-dd-btn:hover { border-color:var(--ct-deep); }
+  .ct-dd-btn:focus-visible, .ct-dd.is-open .ct-dd-btn { outline:none; border-color:var(--ct-deep); box-shadow:0 0 0 3px rgba(0,79,104,.12); }
+  .ct-dd-chev { width:16px; height:16px; flex:none; color:var(--ct-label); transition:transform .2s; }
+  .ct-dd.is-open .ct-dd-chev { transform:rotate(180deg); }
+  .ct-dd-list {
+    position:absolute; z-index:20; left:0; right:0; top:calc(100% + 4px); margin:0; padding:6px 0; list-style:none;
+    max-height:min(420px, 60vh); overflow:auto;
+    background:#fff; border:1px solid var(--ct-field); border-radius:2px; box-shadow:0 12px 32px rgba(11,36,48,.12);
+  }
+  .ct-dd-list[hidden] { display:none; }
+  .ct-dd-group { padding:12px 16px 6px; font-size:12px; font-weight:600; color:var(--ct-label); letter-spacing:.02em; }
+  .ct-dd-group + .ct-dd-opt { margin-top:0; }
+  .ct-dd-group:not(:first-child) { margin-top:6px; border-top:1px solid #e6ecef; }
+  .ct-dd-opt { display:flex; align-items:center; gap:10px; min-height:42px; padding:0 16px; cursor:pointer; font-size:15px; color:var(--ct-ink); }
+  .ct-dd-opt svg { width:14px; height:14px; flex:none; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:square; visibility:hidden; }
+  .ct-dd-opt[aria-selected="true"] { font-weight:700; color:var(--ct-deep); }
+  .ct-dd-opt[aria-selected="true"] svg { visibility:visible; }
+  .ct-dd-opt.is-active { background:#f3f7f9; }
 
   /* 입력 칸 */
   .ct-form-grid {
@@ -358,37 +366,29 @@ import PageHero from '../../components/PageHero.astro';
     <div class="ct-form-wrap">
       <form onsubmit="handleSubmit(event)">
         <!-- 문의 유형 드롭다운 -->
-        <!-- 문의 유형: 보이는 선택 칸과 숨은 select 가 같은 값을 쓴다 (보내기 · ?type= · 이어쓰기는 select 값) -->
+        <!-- 문의 유형: 사이트 모양 펼침 목록 + 숨은 select (보내기 · ?type= · 이어쓰기는 select 값을 쓴다) -->
         <div class="ct-dropdown-wrap">
-          <fieldset class="ct-type">
-            <legend class="ct-dropdown-label"><span class="wl-ko">문의 유형</span><span class="wl-en">Inquiry Type</span></legend>
-            <div class="ct-type-groups">
-              <div class="ct-type-group">
-                <p class="ct-type-group-label"><span class="wl-ko">일반 · 협력</span><span class="wl-en">General</span></p>
-                <div class="ct-type-options">
-                  <label class="ct-type-opt"><input type="radio" name="ct-type-pick" value="general" checked><span class="ct-type-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">일반 문의</span><span class="wl-en">General Inquiry</span></span></label>
-                  <label class="ct-type-opt"><input type="radio" name="ct-type-pick" value="ministry"><span class="ct-type-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">사역 협력</span><span class="wl-en">Ministry Partnership</span></span></label>
-                  <label class="ct-type-opt"><input type="radio" name="ct-type-pick" value="mission"><span class="ct-type-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">선교팀</span><span class="wl-en">Mission Team</span></span></label>
-                  <label class="ct-type-opt"><input type="radio" name="ct-type-pick" value="serve"><span class="ct-type-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">섬기고 싶어요</span><span class="wl-en">Serve with WOLKO</span></span></label>
-                </div>
-              </div>
-              <div class="ct-type-group">
-                <p class="ct-type-group-label"><span class="wl-ko">프로그램</span><span class="wl-en">Programs</span></p>
-                <div class="ct-type-options">
-                  <label class="ct-type-opt"><input type="radio" name="ct-type-pick" value="wolbi"><span class="ct-type-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">제주월비 입학</span><span class="wl-en">WOLBI Admission</span></span></label>
-                  <label class="ct-type-opt"><input type="radio" name="ct-type-pick" value="camp"><span class="ct-type-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">캠프 신청</span><span class="wl-en">Camp Registration</span></span></label>
-                </div>
-              </div>
-              <div class="ct-type-group">
-                <p class="ct-type-group-label"><span class="wl-ko">후원 · 기도</span><span class="wl-en">Giving & Prayer</span></p>
-                <div class="ct-type-options">
-                  <label class="ct-type-opt"><input type="radio" name="ct-type-pick" value="give"><span class="ct-type-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">후원</span><span class="wl-en">Giving</span></span></label>
-                  <label class="ct-type-opt"><input type="radio" name="ct-type-pick" value="prayer"><span class="ct-type-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">기도 제목</span><span class="wl-en">Prayer Request</span></span></label>
-                  <label class="ct-type-opt"><input type="radio" name="ct-type-pick" value="other"><span class="ct-type-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">기타</span><span class="wl-en">Other</span></span></label>
-                </div>
-              </div>
-            </div>
-          </fieldset>
+          <span class="ct-dropdown-label" id="ct-type-label"><span class="wl-ko">문의 유형</span><span class="wl-en">Inquiry Type</span></span>
+          <div class="ct-dd">
+            <button type="button" class="ct-dd-btn" id="ct-type-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="ct-type-list" aria-labelledby="ct-type-label ct-type-btn">
+              <span class="ct-dd-value"><span class="wl-ko">일반 문의</span><span class="wl-en">General Inquiry</span></span>
+              <svg class="ct-dd-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <ul class="ct-dd-list" id="ct-type-list" role="listbox" aria-labelledby="ct-type-label" tabindex="-1" hidden>
+              <li class="ct-dd-group" role="presentation"><span class="wl-ko">일반 · 협력</span><span class="wl-en">General</span></li>
+              <li class="ct-dd-opt" role="option" id="ct-opt-general" data-value="general" aria-selected="true"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">일반 문의</span><span class="wl-en">General Inquiry</span></li>
+              <li class="ct-dd-opt" role="option" id="ct-opt-ministry" data-value="ministry" aria-selected="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">사역 협력</span><span class="wl-en">Ministry Partnership</span></li>
+              <li class="ct-dd-opt" role="option" id="ct-opt-mission" data-value="mission" aria-selected="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">선교팀</span><span class="wl-en">Mission Team</span></li>
+              <li class="ct-dd-opt" role="option" id="ct-opt-serve" data-value="serve" aria-selected="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">섬기고 싶어요</span><span class="wl-en">Serve with WOLKO</span></li>
+              <li class="ct-dd-group" role="presentation"><span class="wl-ko">프로그램</span><span class="wl-en">Programs</span></li>
+              <li class="ct-dd-opt" role="option" id="ct-opt-wolbi" data-value="wolbi" aria-selected="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">제주월비 입학</span><span class="wl-en">WOLBI Admission</span></li>
+              <li class="ct-dd-opt" role="option" id="ct-opt-camp" data-value="camp" aria-selected="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">캠프 신청</span><span class="wl-en">Camp Registration</span></li>
+              <li class="ct-dd-group" role="presentation"><span class="wl-ko">후원 · 기도</span><span class="wl-en">Giving & Prayer</span></li>
+              <li class="ct-dd-opt" role="option" id="ct-opt-give" data-value="give" aria-selected="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">후원</span><span class="wl-en">Giving</span></li>
+              <li class="ct-dd-opt" role="option" id="ct-opt-prayer" data-value="prayer" aria-selected="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">기도 제목</span><span class="wl-en">Prayer Request</span></li>
+              <li class="ct-dd-opt" role="option" id="ct-opt-other" data-value="other" aria-selected="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">기타</span><span class="wl-en">Other</span></li>
+            </ul>
+          </div>
           <div hidden>
             <select id="ct-type-select" name="type">
               <optgroup label="─────────────────────────">
@@ -485,19 +485,58 @@ import PageHero from '../../components/PageHero.astro';
   typeSelect.value = requestedType;
 })();
 
-// 문의 유형 칸 ↔ 숨은 select: 칸을 고르면 select 값이 바뀌고, 주소의 ?type= 이나 이어쓰기가 select 를 바꾸면 칸도 따라간다.
-(function syncInquiryTiles() {
+// 문의 유형 펼침 목록 ↔ 숨은 select: 목록에서 고르면 select 값이 바뀌고, 주소의 ?type= 이나 이어쓰기가 select 를 바꾸면 목록도 따라간다.
+// 키보드: 버튼에서 ↑↓·Enter·Space 로 열고, 목록에서 ↑↓ 이동 · Home/End · Enter/Space 선택 · Esc/Tab 닫기.
+(function inquiryDropdown() {
   var sel = document.getElementById('ct-type-select');
-  var picks = [].slice.call(document.querySelectorAll('input[name="ct-type-pick"]'));
-  if (!sel || !picks.length) return;
-  function fromSelect() { picks.forEach(function (r) { r.checked = r.value === sel.value; }); }
-  picks.forEach(function (r) {
-    r.addEventListener('change', function () { if (r.checked) sel.value = r.value; });
+  var wrap = document.querySelector('.ct-dd');
+  if (!sel || !wrap) return;
+  var btn = wrap.querySelector('.ct-dd-btn'), list = wrap.querySelector('.ct-dd-list'), value = btn.querySelector('.ct-dd-value');
+  var opts = [].slice.call(list.querySelectorAll('[role="option"]'));
+  var active = -1;
+  function idxOf(v) { for (var i = 0; i < opts.length; i++) if (opts[i].dataset.value === v) return i; return 0; }
+  function render() {
+    var i = idxOf(sel.value);
+    opts.forEach(function (o, k) { o.setAttribute('aria-selected', k === i ? 'true' : 'false'); });
+    value.innerHTML = opts[i].querySelector('.wl-ko').outerHTML + opts[i].querySelector('.wl-en').outerHTML;
+  }
+  function setActive(i) {
+    active = Math.max(0, Math.min(opts.length - 1, i));
+    opts.forEach(function (o, k) { o.classList.toggle('is-active', k === active); });
+    list.setAttribute('aria-activedescendant', opts[active].id);
+    opts[active].scrollIntoView({ block: 'nearest' });
+  }
+  function open() {
+    list.hidden = false; wrap.classList.add('is-open'); btn.setAttribute('aria-expanded', 'true');
+    setActive(idxOf(sel.value)); list.focus();
+  }
+  function close(refocus) {
+    list.hidden = true; wrap.classList.remove('is-open'); btn.setAttribute('aria-expanded', 'false');
+    if (refocus) btn.focus();
+  }
+  function choose(i) { sel.value = opts[i].dataset.value; render(); close(true); }
+  btn.addEventListener('click', function () { list.hidden ? open() : close(true); });
+  btn.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); open(); }
   });
-  sel.addEventListener('change', fromSelect);
-  fromSelect();
-  document.addEventListener('DOMContentLoaded', fromSelect);
-  window.addEventListener('load', fromSelect);
+  list.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActive(active + 1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(active - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); setActive(0); }
+    else if (e.key === 'End') { e.preventDefault(); setActive(opts.length - 1); }
+    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(active); }
+    else if (e.key === 'Escape') { e.preventDefault(); close(true); }
+    else if (e.key === 'Tab') { close(false); }
+  });
+  opts.forEach(function (o, k) {
+    o.addEventListener('click', function () { choose(k); });
+    o.addEventListener('mousemove', function () { if (active !== k) setActive(k); });
+  });
+  document.addEventListener('click', function (e) { if (!list.hidden && !wrap.contains(e.target)) close(false); });
+  sel.addEventListener('change', render);
+  render();
+  document.addEventListener('DOMContentLoaded', render);
+  window.addEventListener('load', render);
 })();
 
 function ctIsEn() { return document.documentElement.classList.contains('lang-en'); }
