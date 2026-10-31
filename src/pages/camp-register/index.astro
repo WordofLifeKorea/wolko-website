@@ -909,6 +909,50 @@ body:has(#crpModal.crp-modal--unity) .crp-refund-section--deposit { display: non
 #staff-recruit { scroll-margin-top: 120px; }
 @media (max-width: 640px) { #staff-recruit { scroll-margin-top: 96px; } }
 
+/* ── 신청 바로가기 줄 ── */
+.crp-jump { display: flex; flex-wrap: wrap; gap: 8px; width: min(1200px, calc(100% - 48px)); margin: -28px auto 56px; box-sizing: border-box; }
+.crp-jump-pill {
+  display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border-radius: 8px;
+  border: 1px solid #d3dee4; background: #fff; color: #0b2430; font-size: 14px; font-weight: 700; text-decoration: none; white-space: nowrap;
+  transition: background-color .18s, color .18s, border-color .18s;
+}
+.crp-jump-pill:hover { border-color: #004f68; color: #004f68; }
+.crp-jump-pill.is-current { background: #0b2430; border-color: #0b2430; color: #fff; }
+.crp-jump-pill:focus-visible { outline: 2px solid #004f68; outline-offset: 2px; }
+[data-jump-target] { scroll-margin-top: 120px; }
+@media (max-width: 740px) {
+  .crp-jump {
+    position: sticky; top: 80px; z-index: 40; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+    width: 100%; margin: -16px 0 24px; padding: 8px 20px; background: rgba(255, 255, 255, .94);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid #e3eaee;
+  }
+  .crp-jump::-webkit-scrollbar { display: none; }
+  .crp-jump-pill { height: 34px; padding: 0 14px; font-size: 13px; }
+  [data-jump-target], #staff-recruit { scroll-margin-top: 140px; }
+}
+
+/* ── 카드의 '자세히 보기' — 컴퓨터는 늘 펼쳐 두고 제목 줄을 숨긴다, 폰은 눌러서 펼친다 ── */
+.crp-more { margin: 0; }
+.crp-more-summary { display: none; }
+.crp-more-meta { margin-top: 0; border-top: 0; }
+/* 컴퓨터: 위 줄들과 '자세히' 줄들이 한 목록처럼 이어지게(사이 선이 두 번 겹치지 않게) */
+@media (min-width: 741px) {
+  .crp-reg-meta:has(+ .crp-more) { margin-bottom: 0; }
+  .crp-reg-meta:has(+ .crp-more) .crp-reg-meta-row:last-child { border-bottom: 0; }
+}
+@media (max-width: 740px) {
+  .crp-more-summary {
+    display: flex; align-items: center; justify-content: center; gap: 6px; list-style: none; cursor: pointer;
+    margin: 4px 0 12px; padding: 9px 12px; border-radius: 8px; background: #f3f7f9; color: #004f68; font-size: 13px; font-weight: 700;
+  }
+  .crp-more-summary::-webkit-details-marker { display: none; }
+  .crp-more-summary svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; transition: transform .2s; }
+  .crp-more[open] .crp-more-summary svg { transform: rotate(180deg); }
+  .crp-more-close, .crp-more[open] .crp-more-open { display: none; }
+  .crp-more[open] .crp-more-close { display: inline; }
+  .crp-more[open] .crp-more-summary { margin-bottom: 4px; }
+}
+
 /* 생년월일 · 지원 연령 */
 #crpBirthField .crp-birth-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .crp-age-warn { margin-top: 4px; padding: 14px 16px; border: 1px solid #e3c2c5; background: #fbf5f5; }
@@ -1338,11 +1382,62 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
       </div>
     </div>
 
+    {/* 바로가기: 캠프 · 스태프 신청 위치로 한 번에 — 폰에서는 머리글 아래에 붙어 따라오는 가로 줄 */}
+    {schedules.length > 0 && (
+      <nav class="crp-jump" aria-label="신청 바로가기">
+        {inlandCamps.length > 0 && <a class="crp-jump-pill" href="#camps-wolko"><span class="wl-ko">월코 캠프 신청</span><span class="wl-en">WOLKO Camps</span></a>}
+        {jejuCamps.length > 0 && <a class="crp-jump-pill" href="#camps-jeju"><span class="wl-ko">제주 국제 캠프 신청</span><span class="wl-en">Jeju Camps</span></a>}
+        {inlandCamps.length > 0 && <a class="crp-jump-pill" href="#staff-recruit"><span class="wl-ko">평택 스태프 신청</span><span class="wl-en">Pyeongtaek Staff</span></a>}
+        {jejuCamps.length > 0 && JEJU_STAFF_BY_INQUIRY && <a class="crp-jump-pill" href="#staff-jeju"><span class="wl-ko">제주 스태프 문의</span><span class="wl-en">Jeju Staff</span></a>}
+      </nav>
+    )}
+    <script is:inline>
+      // 카드 '자세히 보기': 폰(740px 이하)에서는 접어 두고, 컴퓨터에서는 늘 펼친다. 화면 폭이 바뀌면 다시 맞춘다.
+      // 바로가기 줄: 지금 보고 있는 구역의 단추를 진하게, 누르면 그 구역으로 부드럽게(움직임 줄이기면 바로) 이동.
+      (function () {
+        var phone = window.matchMedia('(max-width: 740px)');
+        function syncMore() { document.querySelectorAll('[data-crp-more]').forEach(function (d) { d.open = !phone.matches; }); }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', syncMore); else syncMore();
+        if (phone.addEventListener) phone.addEventListener('change', syncMore);
+        document.addEventListener('DOMContentLoaded', function () {
+          var pills = [].slice.call(document.querySelectorAll('.crp-jump-pill'));
+          if (!pills.length) return;
+          var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches, jumping = false, jumpTimer = 0;
+          pills.forEach(function (p) {
+            p.addEventListener('click', function (e) {
+              var t = document.querySelector(p.getAttribute('href')); if (!t) return;
+              e.preventDefault();
+              // 페이지 높이에 맞춰 직접 이동(scroll-margin-top 만큼 띄움). 이동하는 동안에는 바로가기 줄을 건드리지 않는다
+              var margin = parseFloat(getComputedStyle(t).scrollMarginTop) || 0;
+              jumping = true; clearTimeout(jumpTimer);
+              window.scrollTo({ top: t.getBoundingClientRect().top + window.scrollY - margin, behavior: reduce ? 'auto' : 'smooth' });
+              jumpTimer = setTimeout(function () { jumping = false; last = undefined; mark(); }, 1200);
+              history.replaceState(null, '', p.getAttribute('href'));
+            });
+          });
+          // 지금 구역: 바로가기 줄 아래(170px)를 이미 지난 구역 중 가장 가까운 것 (스태프 카드처럼 구역 안에 든 것도 정확히)
+          var targets = pills.map(function (p) { return document.querySelector(p.getAttribute('href')); }).filter(Boolean), ticking = false, last;
+          function mark() {
+            ticking = false;
+            var cur = null;
+            var best = -Infinity;
+            targets.forEach(function (t) { var top = t.getBoundingClientRect().top; if (top <= 170 && top > best) { best = top; cur = t; } });   // 지난 구역 중 가장 아래(가장 가까운) 것
+            if (cur === last) return; last = cur;
+            pills.forEach(function (p) { var on = !!cur && p.getAttribute('href') === '#' + cur.id; p.classList.toggle('is-current', on); if (on) p.setAttribute('aria-current', 'true'); else p.removeAttribute('aria-current'); });
+            var pill = pills.find(function (p) { return p.classList.contains('is-current'); }), bar = pill && pill.parentNode;
+            if (!jumping && pill && bar.scrollWidth > bar.clientWidth) bar.scrollLeft = pill.offsetLeft - bar.offsetLeft - 20;   // 바로 맞춘다 — 부드럽게 하면 페이지 이동이 멈춘다
+          }
+          window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(mark); } }, { passive: true });
+          mark();
+        });
+      })();
+    </script>
+
     {schedules.length > 0 ? (
       <>
         {/* ── 월코 내륙 캠프 ── */}
         {inlandCamps.length > 0 && (
-          <div class="crp-group">
+          <div class="crp-group" id="camps-wolko" data-jump-target>
             <div class="crp-group-header">
               <div class="crp-group-tag">
                 <span class="wl-ko">월코센터 · 평택</span>
@@ -1386,38 +1481,50 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                         <span class="crp-reg-meta-label"><span class="wl-ko">대상</span><span class="wl-en">For</span></span>
                         <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.target_ko)}</span><span class="wl-en">{metaLines(d.target_en)}</span></span>
                       </div>
-                      {(d.deadline_ko || d.deadline_en) && (
-                        <div class="crp-reg-meta-row">
-                          <span class="crp-reg-meta-label"><span class="wl-ko">신청 기간</span><span class="wl-en">Registration</span></span>
-                          <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.deadline_ko)}</span><span class="wl-en">{metaLines(d.deadline_en)}</span></span>
-                        </div>
-                      )}
                       {(d.price_ko || d.price_en) && (
                         <div class="crp-reg-meta-row">
                           <span class="crp-reg-meta-label"><span class="wl-ko">참가비</span><span class="wl-en">Fee</span></span>
                           <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.price_ko)}</span><span class="wl-en">{metaLines(d.price_en)}</span></span>
                         </div>
                       )}
-                      {usesWinterCampPolicy(s.id) && (
-                        <div class="crp-reg-meta-row">
-                          <span class="crp-reg-meta-label"><span class="wl-ko">장학금</span><span class="wl-en">Scholarships</span></span>
-                          <span class="crp-reg-meta-value crp-reg-scholar">
-                            {SCHOLARSHIPS.map((x) => (
-                              <span class="crp-sch-item">
-                                <span class="crp-sch-name"><span class="wl-ko">{x.ko[0]}{x.ko[1] && <small>{x.ko[1]}</small>}</span><span class="wl-en">{x.en[0]}{x.en[1] && <small>{x.en[1]}</small>}</span></span>
-                                <span class="crp-sch-amt"><span class="wl-ko">{x.amtKo}</span><span class="wl-en">{x.amtEn}</span></span>
-                              </span>
-                            ))}
-                            <span class="crp-sch-note"><span class="wl-ko">최대 두 가지까지 · 베스트 캠퍼는 별도</span><span class="wl-en">Up to two · Best Camper is extra</span></span>
-                          </span>
-                        </div>
-                      )}
                     </div>
-                    {(d.notes_ko || d.notes_en) && (
-                      <p class="crp-reg-notes">
-                        <span class="wl-ko">{d.notes_ko}</span>
-                        <span class="wl-en">{d.notes_en}</span>
-                      </p>
+                    {/* 신청 기간 · 장학금 · 안내 글: 폰에서는 '자세히 보기'를 눌러야 펼쳐진다(컴퓨터는 늘 펼침 — 아래 스크립트) */}
+                    {(d.deadline_ko || d.deadline_en || usesWinterCampPolicy(s.id) || d.notes_ko || d.notes_en) && (
+                      <details class="crp-more" open data-crp-more>
+                        <summary class="crp-more-summary">
+                          <span class="crp-more-open"><span class="wl-ko">자세히 보기</span><span class="wl-en">More details</span></span>
+                          <span class="crp-more-close"><span class="wl-ko">접기</span><span class="wl-en">Show less</span></span>
+                          <svg aria-hidden="true" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4"/></svg>
+                        </summary>
+                        <div class="crp-reg-meta crp-more-meta">
+                          {(d.deadline_ko || d.deadline_en) && (
+                            <div class="crp-reg-meta-row">
+                              <span class="crp-reg-meta-label"><span class="wl-ko">신청 기간</span><span class="wl-en">Registration</span></span>
+                              <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.deadline_ko)}</span><span class="wl-en">{metaLines(d.deadline_en)}</span></span>
+                            </div>
+                          )}
+                          {usesWinterCampPolicy(s.id) && (
+                            <div class="crp-reg-meta-row">
+                              <span class="crp-reg-meta-label"><span class="wl-ko">장학금</span><span class="wl-en">Scholarships</span></span>
+                              <span class="crp-reg-meta-value crp-reg-scholar">
+                                {SCHOLARSHIPS.map((x) => (
+                                  <span class="crp-sch-item">
+                                    <span class="crp-sch-name"><span class="wl-ko">{x.ko[0]}{x.ko[1] && <small>{x.ko[1]}</small>}</span><span class="wl-en">{x.en[0]}{x.en[1] && <small>{x.en[1]}</small>}</span></span>
+                                    <span class="crp-sch-amt"><span class="wl-ko">{x.amtKo}</span><span class="wl-en">{x.amtEn}</span></span>
+                                  </span>
+                                ))}
+                                <span class="crp-sch-note"><span class="wl-ko">최대 두 가지까지 · 베스트 캠퍼는 별도</span><span class="wl-en">Up to two · Best Camper is extra</span></span>
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        {(d.notes_ko || d.notes_en) && (
+                          <p class="crp-reg-notes">
+                            <span class="wl-ko">{d.notes_ko}</span>
+                            <span class="wl-en">{d.notes_en}</span>
+                          </p>
+                        )}
+                      </details>
                     )}
                     {(() => {
                       const isLive = d.status === 'open' && !d.use_external_form;
@@ -1563,7 +1670,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 );
               })}
             </div>
-            <div class="crp-staff-card crp-staff-card--group" id="staff-recruit" data-region="inland">
+            <div class="crp-staff-card crp-staff-card--group" id="staff-recruit" data-region="inland" data-jump-target>
               <div class="crp-staff-card-body">
                 <div class="crp-staff-card-info">
                   <div class="crp-staff-card-tag">STAFF · CREW · VOLUNTEER</div>
@@ -1584,7 +1691,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
 
         {/* ── 제주 캠프 ── */}
         {jejuCamps.length > 0 && (
-          <div class="crp-group">
+          <div class="crp-group" id="camps-jeju" data-jump-target>
             <div class="crp-group-header">
               <div class="crp-group-tag">
                 <span class="wl-ko">제주 월비캠퍼스</span>
@@ -1627,38 +1734,50 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                         <span class="crp-reg-meta-label"><span class="wl-ko">대상</span><span class="wl-en">For</span></span>
                         <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.target_ko)}</span><span class="wl-en">{metaLines(d.target_en)}</span></span>
                       </div>
-                      {(d.deadline_ko || d.deadline_en) && (
-                        <div class="crp-reg-meta-row">
-                          <span class="crp-reg-meta-label"><span class="wl-ko">신청 기간</span><span class="wl-en">Registration</span></span>
-                          <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.deadline_ko)}</span><span class="wl-en">{metaLines(d.deadline_en)}</span></span>
-                        </div>
-                      )}
                       {(d.price_ko || d.price_en) && (
                         <div class="crp-reg-meta-row">
                           <span class="crp-reg-meta-label"><span class="wl-ko">참가비</span><span class="wl-en">Fee</span></span>
                           <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.price_ko)}</span><span class="wl-en">{metaLines(d.price_en)}</span></span>
                         </div>
                       )}
-                      {usesWinterCampPolicy(s.id) && (
-                        <div class="crp-reg-meta-row">
-                          <span class="crp-reg-meta-label"><span class="wl-ko">장학금</span><span class="wl-en">Scholarships</span></span>
-                          <span class="crp-reg-meta-value crp-reg-scholar">
-                            {SCHOLARSHIPS.map((x) => (
-                              <span class="crp-sch-item">
-                                <span class="crp-sch-name"><span class="wl-ko">{x.ko[0]}{x.ko[1] && <small>{x.ko[1]}</small>}</span><span class="wl-en">{x.en[0]}{x.en[1] && <small>{x.en[1]}</small>}</span></span>
-                                <span class="crp-sch-amt"><span class="wl-ko">{x.amtKo}</span><span class="wl-en">{x.amtEn}</span></span>
-                              </span>
-                            ))}
-                            <span class="crp-sch-note"><span class="wl-ko">최대 두 가지까지 · 베스트 캠퍼는 별도</span><span class="wl-en">Up to two · Best Camper is extra</span></span>
-                          </span>
-                        </div>
-                      )}
                     </div>
-                    {(d.notes_ko || d.notes_en) && (
-                      <p class="crp-reg-notes">
-                        <span class="wl-ko">{d.notes_ko}</span>
-                        <span class="wl-en">{d.notes_en}</span>
-                      </p>
+                    {/* 신청 기간 · 장학금 · 안내 글: 폰에서는 '자세히 보기'를 눌러야 펼쳐진다(컴퓨터는 늘 펼침 — 아래 스크립트) */}
+                    {(d.deadline_ko || d.deadline_en || usesWinterCampPolicy(s.id) || d.notes_ko || d.notes_en) && (
+                      <details class="crp-more" open data-crp-more>
+                        <summary class="crp-more-summary">
+                          <span class="crp-more-open"><span class="wl-ko">자세히 보기</span><span class="wl-en">More details</span></span>
+                          <span class="crp-more-close"><span class="wl-ko">접기</span><span class="wl-en">Show less</span></span>
+                          <svg aria-hidden="true" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4"/></svg>
+                        </summary>
+                        <div class="crp-reg-meta crp-more-meta">
+                          {(d.deadline_ko || d.deadline_en) && (
+                            <div class="crp-reg-meta-row">
+                              <span class="crp-reg-meta-label"><span class="wl-ko">신청 기간</span><span class="wl-en">Registration</span></span>
+                              <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.deadline_ko)}</span><span class="wl-en">{metaLines(d.deadline_en)}</span></span>
+                            </div>
+                          )}
+                          {usesWinterCampPolicy(s.id) && (
+                            <div class="crp-reg-meta-row">
+                              <span class="crp-reg-meta-label"><span class="wl-ko">장학금</span><span class="wl-en">Scholarships</span></span>
+                              <span class="crp-reg-meta-value crp-reg-scholar">
+                                {SCHOLARSHIPS.map((x) => (
+                                  <span class="crp-sch-item">
+                                    <span class="crp-sch-name"><span class="wl-ko">{x.ko[0]}{x.ko[1] && <small>{x.ko[1]}</small>}</span><span class="wl-en">{x.en[0]}{x.en[1] && <small>{x.en[1]}</small>}</span></span>
+                                    <span class="crp-sch-amt"><span class="wl-ko">{x.amtKo}</span><span class="wl-en">{x.amtEn}</span></span>
+                                  </span>
+                                ))}
+                                <span class="crp-sch-note"><span class="wl-ko">최대 두 가지까지 · 베스트 캠퍼는 별도</span><span class="wl-en">Up to two · Best Camper is extra</span></span>
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        {(d.notes_ko || d.notes_en) && (
+                          <p class="crp-reg-notes">
+                            <span class="wl-ko">{d.notes_ko}</span>
+                            <span class="wl-en">{d.notes_en}</span>
+                          </p>
+                        )}
+                      </details>
                     )}
                     {/* 제주 캠프는 외부 신청이라 정원은 표시하지 않는다(카드는 꼭 필요한 정보만) */}
                     {canRegister ? (
@@ -1713,7 +1832,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               })}
             </div>
             {JEJU_STAFF_BY_INQUIRY ? (
-            <div class="crp-staff-card crp-staff-card--group crp-staff-card--inquiry" data-region="jeju">
+            <div class="crp-staff-card crp-staff-card--group crp-staff-card--inquiry" data-region="jeju" id="staff-jeju" data-jump-target>
               <div class="crp-staff-card-body">
                 <div class="crp-staff-card-info">
                   <div class="crp-staff-card-tag">STAFF · CREW · VOLUNTEER</div>
