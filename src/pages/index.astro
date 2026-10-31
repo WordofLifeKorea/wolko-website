@@ -204,6 +204,7 @@ const ministries = [
 .hm-stat-label { font-size: 13px; font-weight: 700; line-height: 1.5; color: var(--hm-label); }
 .hm-stat-value { margin-top: 8px; font-family: var(--ff-serif); font-size: clamp(96px, 9.2vw, 132px); font-weight: 700; line-height: 1; letter-spacing: -.05em; color: var(--hm-deep); }
 .hm-stat-value span { font-size: .485em; letter-spacing: -.02em; }
+.hm-stat-value b { font-weight: inherit; font-variant-numeric: tabular-nums; }
 .hm-stat-desc { margin-top: 18px; font-size: 15.5px; line-height: 1.8; color: var(--hm-text); }
 .hm-stat-desc strong { color: var(--hm-navy); font-weight: 700; }
 .hm-stat-source { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--hm-line); font-size: 12.5px; line-height: 1.6; color: var(--hm-muted); }
@@ -589,7 +590,7 @@ const ministries = [
           <span class="wl-ko">한국 청소년 무종교율</span>
           <span class="wl-en">Korean youth without religious affiliation</span>
         </p>
-        <p class="hm-stat-value">83<span>%</span></p>
+        <p class="hm-stat-value" aria-label="83%"><b data-count-to="83">83</b><span aria-hidden="true">%</span></p>
         <p class="hm-stat-desc">
           <span class="wl-ko">한국 청소년 10명 중 8명 이상이 종교가 없습니다. 종교가 있다고 답한 17%마저 개신교·불교·천주교 등 <strong>모든 종교를 합한 수치</strong>입니다.</span>
           <span class="wl-en">More than 8 in 10 Korean teens have no religion — and even the 17% who do represent <strong>all religions combined</strong> (Protestant, Buddhist, Catholic, and others).</span>
@@ -935,6 +936,29 @@ const ministries = [
       document.body.style.overflow = 'hidden';
     }
     setTimeout(showPromos, 700);
+  })();
+</script>
+
+<script is:inline>
+  // 큰 숫자(83%)는 화면에 들어오면 0부터 1.8초 동안 올라간다. 움직임 줄이기 설정이거나 IntersectionObserver 가 없으면 처음부터 83 그대로.
+  (function () {
+    if (!('IntersectionObserver' in window)) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var els = [].slice.call(document.querySelectorAll('[data-count-to]'));
+    els.forEach(function (el) { el.textContent = '0'; });
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        io.unobserve(en.target);
+        var el = en.target, to = +el.getAttribute('data-count-to'), t0 = Date.now(), dur = 1800;
+        (function step() {
+          var k = Math.min(1, (Date.now() - t0) / dur), e = 1 - Math.pow(1 - k, 4);
+          el.textContent = Math.round(to * e);
+          if (k < 1) setTimeout(step, 30);
+        })();
+      });
+    }, { threshold: 0.5 });
+    els.forEach(function (el) { io.observe(el); });
   })();
 </script>
 

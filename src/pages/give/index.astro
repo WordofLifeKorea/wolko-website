@@ -163,7 +163,7 @@ const involve = [
   <!-- ═══ 왜 지금 — 큰 숫자 한 줄 (홈과 같은 근거) ═══ -->
   <section class="gv-stat">
     <div class="gv-shell gv-stat-inner">
-      <div class="gv-stat-num">83<span>%</span></div>
+      <div class="gv-stat-num" aria-label="83%"><b data-count-to="83">83</b><span aria-hidden="true">%</span></div>
       <div class="gv-stat-body">
         <p class="gv-eyebrow gv-eyebrow--light"><span class="wl-ko">한국 청소년 무종교율</span><span class="wl-en">Korean Youth Without Religious Affiliation</span></p>
         <p class="gv-stat-text">
@@ -446,6 +446,29 @@ const involve = [
     document.querySelectorAll('.gv-acct-digits').forEach(function (el) { el.classList.add('is-armed'); io.observe(el); });
   })();
 </script>
+<script is:inline>
+  // 큰 숫자(83%)는 화면에 들어오면 0부터 1.8초 동안 올라간다. 움직임 줄이기 설정이거나 IntersectionObserver 가 없으면 처음부터 83 그대로.
+  (function () {
+    if (!('IntersectionObserver' in window)) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var els = [].slice.call(document.querySelectorAll('[data-count-to]'));
+    els.forEach(function (el) { el.textContent = '0'; });
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        io.unobserve(en.target);
+        var el = en.target, to = +el.getAttribute('data-count-to'), t0 = Date.now(), dur = 1800;
+        (function step() {
+          var k = Math.min(1, (Date.now() - t0) / dur), e = 1 - Math.pow(1 - k, 4);
+          el.textContent = Math.round(to * e);
+          if (k < 1) setTimeout(step, 30);
+        })();
+      });
+    }, { threshold: 0.5 });
+    els.forEach(function (el) { io.observe(el); });
+  })();
+</script>
+
 </BaseLayout>
 
 <style>
@@ -554,6 +577,7 @@ const involve = [
 .gv-stat-inner { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 72px; align-items: center; }
 .gv-stat-num { font-family: var(--ff-serif); font-size: clamp(110px, 12vw, 168px); font-weight: 700; line-height: .9; letter-spacing: -.05em; color: #73d1f5; }
 .gv-stat-num span { font-size: .5em; margin-left: 4px; }
+.gv-stat-num b { font-weight: inherit; font-variant-numeric: tabular-nums; }
 .gv-eyebrow--light { color: rgba(255,255,255,0.78); }
 .gv-stat-text { margin-top: 18px; max-width: 640px; font-size: 18px; line-height: 1.8; color: rgba(255,255,255,0.88); }
 .gv-stat-text strong { color: #fff; }
