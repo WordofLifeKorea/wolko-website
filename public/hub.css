@@ -1216,6 +1216,9 @@ body.hub-modal-open { overflow: hidden; }
 }
 @keyframes hk-sizzle { 0% { opacity: 0; transform: none; } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(-8px); } }
 @media (prefers-reduced-motion: reduce) { .hk-scene * { animation: none !important; } .hk-steam, .hk-sizzle { opacity: .6; } }
-/* 장면 윗부분이 카드의 흰 바탕으로 부드럽게 녹아들게 — 글자 칸과 그림 사이에 딱 잘린 선이 보이지 않도록 */
-.hk-scene { height: 128px; -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0,0,0,.35) 18px, #000 44px); mask-image: linear-gradient(180deg, transparent 0, rgba(0,0,0,.35) 18px, #000 44px); }
-:root:root .hub-dcard.hub-dcard-kitchen, :root:root .hub-dcard.hub-dcard-car { padding-bottom: 116px !important; }
+/* 장면은 카드 안쪽에 둥근 그림 칸으로 넣는다(카드 가장자리에서 12px 안쪽) — 글자 칸과 겹치거나 잘린 선처럼 보이지 않게,
+   위 내용과는 16px 띄운다. 그림 칸 둘레에는 아주 옅은 안쪽 테두리 */
+.hk-scene { left: 12px; right: 12px; bottom: 12px; height: 108px; border-radius: 10px; -webkit-mask-image: none; mask-image: none;
+  box-shadow: inset 0 0 0 1px rgba(11, 36, 48, .06); isolation: isolate; }
+.hk-scene svg { border-radius: 10px; }
+:root:root .hub-dcard.hub-dcard-kitchen, :root:root .hub-dcard.hub-dcard-car { padding-bottom: 136px !important; }
