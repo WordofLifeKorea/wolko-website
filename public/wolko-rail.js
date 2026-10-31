@@ -35,14 +35,15 @@
     var rgb = railRgb(ms);
     return css(rgb.map(function (v, k) { return Math.round(v * 0.7 + NIGHT[k] * 0.3); }));
   }
-  function paintRail() {
-    var now = Date.now(), root = document.documentElement.style;
+  // 포탈 첫 화면에서는 하늘 배너(hub-sky.js)가 미리보기 시각(?sky=)까지 맞춰 paintAt 을 불러 준다
+  function paintRail(ms) {
+    var now = ms || (window.WolkoSkyTime ? window.WolkoSkyTime.nowMs() : Date.now()), root = document.documentElement.style;
     root.setProperty('--ws-rail-bg', railColor(now));
     root.setProperty('--ws-notice-bg', noticeColor(now));
   }
-  window.WolkoRailSky = { railColor: railColor, noticeColor: noticeColor, sunTimesKst: sunTimesKst };
+  window.WolkoRailSky = { railColor: railColor, noticeColor: noticeColor, sunTimesKst: sunTimesKst, paintAt: paintRail };
   paintRail();
-  setInterval(paintRail, 5 * 60 * 1000);
+  setInterval(function () { paintRail(); }, 5 * 60 * 1000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) paintRail(); });
 })();
 

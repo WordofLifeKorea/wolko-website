@@ -64,3 +64,39 @@ test('이번 주 공지 카드도 같은 시간대 색 — 안쪽 공지 칸의 
   const css = readFileSync(new URL('../public/wolko-site.css', import.meta.url), 'utf8');
   assert.match(css, /\.hub-dcard-notice \{ background: var\(--ws-notice-bg, var\(--ws-navy\)\) !important;/);
 });
+
+// 하늘 배너(hub-sky.js) 맨 앞의 "시간대 하늘 계산" 부분만 떼어 돌린다
+function loadSkyTime(search = '') {
+  const src = readFileSync(new URL('../public/hub-sky.js', import.meta.url), 'utf8');
+  const block = src.slice(src.indexOf('(function () {\n  var NIGHT'), src.indexOf("(function () {\n  var sky = document.getElementById('hubSky')"));
+  const ctx = { window: {}, Math, Date, location: { search }, decodeURIComponent };
+  runInNewContext(block, ctx);
+  return ctx.window.WolkoSkyTime;
+}
+
+test('하늘 배너: 해는 해 뜰 때 왼쪽 지평선에서 떠올라 한낮에 가장 높고, 해 질 때 오른쪽 지평선으로 가라앉으며 노을이 진다', () => {
+  const T = loadSkyTime();
+  const at = iso => T.skyAt(Date.parse(iso));
+  const sun = T.sunTimes(Date.parse('2026-10-31T12:00:00+09:00'));
+  const minute = m => new Date(Date.parse('2026-10-31T00:00:00+09:00') + m * 60000).toISOString();
+  const noon = T.skyAt(Date.parse(minute((sun.rise + sun.set) / 2)));
+  assert.ok(noon.lift > 0.99 && Math.abs(noon.sx - 0.5) < 0.01 && noon.warm === 0, '한낮: 가장 높이, 가운데, 흰 노랑');
+  assert.equal(JSON.stringify([noon.a, noon.b]), '[[31,127,226],[116,198,248]]', '한낮은 원래 맑은 하늘색');
+  const rise = T.skyAt(Date.parse(minute(sun.rise)));
+  assert.ok(Math.abs(rise.lift) < 0.01 && rise.sx < 0.01 && rise.sunUp && rise.warm === 1, '해돋이: 왼쪽 지평선에 걸친 주황 해');
+  const set = T.skyAt(Date.parse(minute(sun.set - 5)));
+  assert.equal(JSON.stringify(set.b), '[255,142,90]', '해넘이 지평선은 주황');
+  assert.ok(set.glow > 0.9 && set.glowRgb === '255, 140, 70', '해 질 녘 노을빛이 가장 진하다');
+  assert.ok(!at('2026-10-31T18:30:00+09:00').sunUp, '해가 다 잠기면 해를 그리지 않는다');
+  assert.equal(at('2026-10-31T23:00:00+09:00').night, 1, '밤에는 별이 다 보인다');
+  assert.equal(at('2026-10-31T17:45:00+09:00').night, 0, '해 지고 바로는 아직 별이 없다');
+  assert.ok(at('2026-06-21T19:00:00+09:00').sunUp && !at('2026-12-21T17:40:00+09:00').sunUp, '계절마다 해 지는 시각이 다르다');
+});
+
+test('하늘 배너 미리보기: ?sky=17:30 은 오늘 그 시각, ?sky=demo 는 하루를 1분에', () => {
+  const T = loadSkyTime('?sky=17:30');
+  const kst = new Date(T.nowMs() + 9 * 3600000);
+  assert.equal(kst.getUTCHours() * 60 + kst.getUTCMinutes(), 17 * 60 + 30);
+  assert.equal(loadSkyTime('?sky=demo').demo, true);
+  assert.equal(loadSkyTime('').demo, false);
+});

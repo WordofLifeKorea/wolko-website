@@ -1,5 +1,8 @@
 /* 포탈 첫 화면 맨 위 하늘 — 오늘 날씨에 따라 하늘색 · 해 · 달 · 구름 · 안개가 바뀌고, 비 · 눈은 hub-sky.js 의 캔버스가 내린다 */
-.hub-sky { --sky-a: #0a6a8f; --sky-b: #2f9fc9; position: relative; isolation: isolate; overflow: hidden; margin: 0 0 22px; padding: 30px 32px 24px; min-height: 176px; border-radius: var(--ws-radius-sm, 8px); color: #fff; background: linear-gradient(160deg, var(--sky-a), var(--sky-b)); box-shadow: 0 26px 50px -30px rgba(0, 60, 90, .6); transition: background .6s; }
+/* 하늘색이 바뀔 때(시간대 · 날씨) 그라데이션이 끊기지 않고 천천히 넘어가도록 색 변수를 등록한다 */
+@property --sky-a { syntax: '<color>'; inherits: true; initial-value: #0a6a8f; }
+@property --sky-b { syntax: '<color>'; inherits: true; initial-value: #2f9fc9; }
+.hub-sky { --sky-a: #0a6a8f; --sky-b: #2f9fc9; position: relative; isolation: isolate; overflow: hidden; margin: 0 0 22px; padding: 30px 32px 24px; min-height: 176px; border-radius: var(--ws-radius-sm, 8px); color: #fff; background: linear-gradient(160deg, var(--sky-a), var(--sky-b)); box-shadow: 0 26px 50px -30px rgba(0, 60, 90, .6); transition: background .6s, --sky-a 2.4s ease, --sky-b 2.4s ease; }
 .hub-sky[data-kind="clear"][data-day="1"] { --sky-a: #1f7fe2; --sky-b: #74c6f8; }
 .hub-sky[data-kind="partly"][data-day="1"] { --sky-a: #3b84d8; --sky-b: #8ec2ea; }
 .hub-sky[data-kind="cloudy"][data-day="1"] { --sky-a: #5a7690; --sky-b: #a2b5c6; }
@@ -22,6 +25,24 @@
 .sk-sun::before { content: ''; position: absolute; inset: -46px; border-radius: 50%; background: repeating-conic-gradient(rgba(255, 244, 180, .34) 0 5deg, transparent 5deg 16deg); -webkit-mask: radial-gradient(circle, transparent 26%, #000 38%, transparent 70%); mask: radial-gradient(circle, transparent 26%, #000 38%, transparent 70%); animation: sk-spin 70s linear infinite; }
 .sk-sun::after { content: ''; position: absolute; inset: 20px; border-radius: 50%; background: #fff6c8; box-shadow: 0 0 40px 16px rgba(255, 232, 120, .65); animation: sk-pulse 4.5s ease-in-out infinite; }
 .hub-sky[data-day="1"][data-kind="clear"] .sk-sun, .hub-sky[data-day="1"][data-kind="partly"] .sk-sun { opacity: 1; transform: none; }
+/* ── 시간대 하늘(hub-sky.js가 .has-time 과 변수를 넣는다) ──
+   해는 해 뜨는 쪽(왼쪽 아래)에서 떠올라 한낮에 가장 높고, 해 질 녘에는 오른쪽 아래 지평선으로 가라앉으며 주황빛이 된다.
+   --sx 0→1 가로 위치, --lift 1 = 가장 높이 · 0 = 지평선(반쯤 걸침) · 음수 = 지평선 아래, --warm 0→1 붉은 정도.
+   이름 인사 글자와 날씨 카드 사이에서만 움직인다. */
+.hub-sky.has-time .sk-sun {
+  right: auto; left: calc(44% + var(--sx, .5) * (56% - 430px)); top: calc(100% - 64px - var(--lift, 1) * (100% - 72px));
+  /* 낮게 뜰수록 흰 노랑 → 주황으로 (--warm) */
+  background: radial-gradient(circle, rgb(255, calc(251 - var(--warm, 0) * 70), calc(226 - var(--warm, 0) * 150)) 0 20%, rgb(255, calc(229 - var(--warm, 0) * 95), calc(130 - var(--warm, 0) * 95)) 36%, rgba(255, calc(214 - var(--warm, 0) * 100), calc(90 - var(--warm, 0) * 40), .55) 52%, transparent 72%);
+  transition: opacity .8s, transform .8s, left 2.4s cubic-bezier(.25, .8, .25, 1), top 2.4s cubic-bezier(.25, .8, .25, 1);
+}
+.hub-sky.has-time .sk-sun::after { background: rgb(255, calc(246 - var(--warm, 0) * 80), calc(200 - var(--warm, 0) * 140)); box-shadow: 0 0 40px 16px rgba(255, calc(232 - var(--warm, 0) * 100), calc(120 - var(--warm, 0) * 70), .65); }
+.hub-sky.has-time .sk-sun::before { opacity: calc(1 - var(--warm, 0) * .55); }
+/* 노을빛 — 해 뜰 때는 복숭아빛, 해 질 때는 주황빛이 해 아래 지평선에서 번진다 */
+.sk-glow {
+  position: absolute; inset: 0; opacity: var(--glow, 0); transition: opacity 2.4s ease;
+  background: radial-gradient(85% 80% at calc(44% + 64px + var(--sx, .5) * (56% - 430px)) 112%, rgba(var(--glow-rgb, 255, 140, 70), .78), rgba(var(--glow-rgb, 255, 140, 70), .26) 46%, transparent 76%);
+}
+.hub-sky.is-demo, .hub-sky.is-demo .sk-sun, .hub-sky.is-demo .sk-glow { transition-duration: .2s !important; }
 /* 달 — 맑은 밤 */
 .sk-moon { position: absolute; right: 310px; top: 26px; width: 74px; height: 74px; border-radius: 50%; opacity: 0; transition: opacity .8s; box-shadow: inset -20px 6px 0 0 #fff4cf, 0 0 26px 2px rgba(255, 244, 207, .35); }
 .hub-sky[data-day="0"][data-kind="clear"] .sk-moon, .hub-sky[data-day="0"][data-kind="partly"] .sk-moon { opacity: 1; }
@@ -79,9 +100,12 @@
   .hub-wx-card { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: flex-start; gap: 4px 12px; min-width: 0; text-align: left; padding: 10px 16px; }
   .hub-wx-temp { font-size: 32px; }
   .sk-sun { right: -20px; top: -24px; transform: scale(.85); } .hub-sky[data-day="1"][data-kind="clear"] .sk-sun, .hub-sky[data-day="1"][data-kind="partly"] .sk-sun { transform: scale(.85); }
+  /* 폰: 글자가 화면 폭을 다 쓰므로 해는 오른쪽 끝 구역에서만 오르내린다 */
+  .hub-sky.has-time .sk-sun { left: calc(50% + var(--sx, .5) * (50% - 150px)); }
+  .sk-glow { background: radial-gradient(90% 70% at calc(50% + 54px + var(--sx, .5) * (50% - 150px)) 112%, rgba(var(--glow-rgb, 255, 140, 70), .78), rgba(var(--glow-rgb, 255, 140, 70), .26) 46%, transparent 76%); }
   .sk-moon { right: 24px; top: 18px; }
 }
-@media (prefers-reduced-motion: reduce) { .sk-sun::before, .sk-sun::after, .sk-cloud, .sk-fog, .hub-greeting .gl, .hub-sky-tip, .hub-wx-card { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .sk-sun::before, .sk-sun::after, .sk-cloud, .sk-fog, .hub-greeting .gl, .hub-sky-tip, .hub-wx-card { animation: none !important; } .hub-sky, .hub-sky.has-time .sk-sun, .sk-glow { transition: none !important; } }
 
 /* ── 알림 종 — 배너에는 글을 줄이고, 알림은 종 아이콘 + 숫자 뱃지로 모은다 ── */
 .hub-sky .hub-dash-top { justify-content: flex-start; align-items: center; gap: 10px 14px; }
