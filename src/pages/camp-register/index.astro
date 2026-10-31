@@ -40,20 +40,13 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 import { REGISTRATION_WINDOWS, WINTER_CAMP_POLICY, usesWinterCampPolicy } from '../../../functions/lib/winterCampPolicy.js';
 // 겨울 영어캠프 카드의 '장학금' 줄 — 금액은 장학금 규칙(winterCampPolicy.js)에서 그대로 가져온다
 const WD = WINTER_CAMP_POLICY.discounts, won = n => (n / 10000) + '만원', usd = n => '₩' + n.toLocaleString('en-US');
-const SCHOLARSHIP_KO = [
-  `얼리버드(1차 신청, 11월 4일까지) ${won(WD.early_bird.amount)} 할인`,
-  `친구 · 가족과 함께 참여 ${won(WD.sibling.amount)} 할인`,
-  `야고보서 1–5장 암송 통과 시 ${won(WD.james_memory.reward)} 환급`,
-  `직전 캠프 베스트 캠퍼 ${won(WD.excellent_camper.amount)} 할인`,
-  '최대 두 가지 (베스트 캠퍼는 별도)',
-].join('\n');
-const SCHOLARSHIP_EN = [
-  `Early Bird (Round 1, until Nov 4): ${usd(WD.early_bird.amount)} off`,
-  `Joining with a friend or family: ${usd(WD.sibling.amount)} off`,
-  `Memorize James 1–5: ${usd(WD.james_memory.reward)} back`,
-  `Best Camper of the last camp: ${usd(WD.excellent_camper.amount)} off`,
-  'Up to two (Best Camper is extra)',
-].join('\n');
+// [이름, 금액] — 이름과 금액을 따로 두어 한 줄에 이름은 왼쪽, 금액은 오른쪽에 나란히 (말 중간에서 줄이 바뀌지 않게)
+const SCHOLARSHIPS = [
+  { ko: ['얼리버드', '1차 신청 · 11월 4일까지'], en: ['Early Bird', 'Round 1 · until Nov 4'], amtKo: `${won(WD.early_bird.amount)} 할인`, amtEn: `${usd(WD.early_bird.amount)} off` },
+  { ko: ['친구 · 가족과 함께', ''], en: ['With a friend or family', ''], amtKo: `${won(WD.sibling.amount)} 할인`, amtEn: `${usd(WD.sibling.amount)} off` },
+  { ko: ['야고보서 1–5장 암송', '통과 시 캠프 후 환급'], en: ['Memorize James 1–5', 'paid back after camp'], amtKo: `${won(WD.james_memory.reward)} 환급`, amtEn: `${usd(WD.james_memory.reward)} back` },
+  { ko: ['베스트 캠퍼', '직전 캠프'], en: ['Best Camper', 'of the last camp'], amtKo: `${won(WD.excellent_camper.amount)} 할인`, amtEn: `${usd(WD.excellent_camper.amount)} off` },
+];
 import { isCrewClosedCamp } from '../../../functions/lib/staffCrew.js';   // 연합캠프는 크루 지원을 받지 않는다(서버와 같은 판단)
 
 // "어떤 경로를 통해 월코 캠프를 알게 되었나요?" — 캠프 신청서와 스태프·크루 지원서가 같은 목록을 쓴다 (값은 서버 목록과 같다)
@@ -199,7 +192,11 @@ html, body { overflow-x: hidden; max-width: 100%; }
   margin-bottom: 20px; word-break: keep-all;
 }
 /* 일정 · 대상 · 신청 기간 · 참가비 — 가는 선으로 나눈 줄 */
-.crp-reg-scholar { font-size: .92em; line-height: 1.7; } /* 장학금 줄: 네 가지를 한 줄씩, 조금 작게 */
+.crp-reg-scholar { display: flex; flex-direction: column; gap: 8px; white-space: normal; } /* 장학금 줄: 한 항목에 한 줄 — 이름(왼쪽) · 금액(오른쪽) */
+.crp-sch-item { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.crp-sch-name small { display: block; margin-top: 1px; font-size: .82em; color: #6b7d86; }
+.crp-sch-amt { flex: none; white-space: nowrap; font-weight: 700; color: #004f68; }
+.crp-sch-note { font-size: .85em; color: #6b7d86; }
 .crp-reg-meta { display: flex; flex-direction: column; margin-bottom: 20px; }
 .crp-reg-meta-row {
   display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; align-items: baseline;
@@ -1404,7 +1401,15 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                       {usesWinterCampPolicy(s.id) && (
                         <div class="crp-reg-meta-row">
                           <span class="crp-reg-meta-label"><span class="wl-ko">장학금</span><span class="wl-en">Scholarships</span></span>
-                          <span class="crp-reg-meta-value crp-reg-scholar"><span class="wl-ko">{SCHOLARSHIP_KO}</span><span class="wl-en">{SCHOLARSHIP_EN}</span></span>
+                          <span class="crp-reg-meta-value crp-reg-scholar">
+                            {SCHOLARSHIPS.map((x) => (
+                              <span class="crp-sch-item">
+                                <span class="crp-sch-name"><span class="wl-ko">{x.ko[0]}{x.ko[1] && <small>{x.ko[1]}</small>}</span><span class="wl-en">{x.en[0]}{x.en[1] && <small>{x.en[1]}</small>}</span></span>
+                                <span class="crp-sch-amt"><span class="wl-ko">{x.amtKo}</span><span class="wl-en">{x.amtEn}</span></span>
+                              </span>
+                            ))}
+                            <span class="crp-sch-note"><span class="wl-ko">최대 두 가지까지 · 베스트 캠퍼는 별도</span><span class="wl-en">Up to two · Best Camper is extra</span></span>
+                          </span>
                         </div>
                       )}
                     </div>
@@ -1637,7 +1642,15 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                       {usesWinterCampPolicy(s.id) && (
                         <div class="crp-reg-meta-row">
                           <span class="crp-reg-meta-label"><span class="wl-ko">장학금</span><span class="wl-en">Scholarships</span></span>
-                          <span class="crp-reg-meta-value crp-reg-scholar"><span class="wl-ko">{SCHOLARSHIP_KO}</span><span class="wl-en">{SCHOLARSHIP_EN}</span></span>
+                          <span class="crp-reg-meta-value crp-reg-scholar">
+                            {SCHOLARSHIPS.map((x) => (
+                              <span class="crp-sch-item">
+                                <span class="crp-sch-name"><span class="wl-ko">{x.ko[0]}{x.ko[1] && <small>{x.ko[1]}</small>}</span><span class="wl-en">{x.en[0]}{x.en[1] && <small>{x.en[1]}</small>}</span></span>
+                                <span class="crp-sch-amt"><span class="wl-ko">{x.amtKo}</span><span class="wl-en">{x.amtEn}</span></span>
+                              </span>
+                            ))}
+                            <span class="crp-sch-note"><span class="wl-ko">최대 두 가지까지 · 베스트 캠퍼는 별도</span><span class="wl-en">Up to two · Best Camper is extra</span></span>
+                          </span>
                         </div>
                       )}
                     </div>
