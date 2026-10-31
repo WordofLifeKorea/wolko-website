@@ -30,67 +30,72 @@ const events = [
 >
 
 <style>
-  :root {
-    --d:#5a3525; --m:#8c5132; --l:#d3a35c;
-    --r:#a5482d; --k:#39271f; --s:#6e584b;
-    --bg:#f5eee3; --line:rgba(90,53,37,0.13);
-    --f-sans:'Pretendard Variable',Pretendard,'Apple SD Gothic Neo',sans-serif;
+  /* 캠프 신청 페이지와 같은 디자인 언어 — 각진 모서리, 가는 선, 남색·회청색·흰색 */
+  .rv {
+    --c-deep:#004f68; --c-deep-dk:#003d52; --c-navy:#0b2430; --c-ink:#10252e;
+    --c-sub:#4a5d66; --c-muted:#587383; --c-label:#5a7380;
+    --c-line:#d6dee2; --c-rule:#e3e9ec; --c-soft:#f6f9fb; --c-fill:#f3f7f9; --c-white:#fff;
+    --f-serif: var(--ff-serif, 'GmarketSans', 'Pretendard Variable', Pretendard, sans-serif);
+    --f-sans: var(--ff-sans, 'Pretendard Variable', Pretendard, -apple-system, sans-serif);
+    font-family: var(--f-sans); color: var(--c-ink); word-break: keep-all;
+    background: var(--c-soft); padding: 112px 0 120px;
   }
+  .rv-inner { width: min(1200px, calc(100% - 48px)); margin-inline: auto; }
 
+  /* 제목 묶음: 작은 표시(앞에 가는 선) + 제목 + 본문 */
+  .rv-head { margin-bottom: 64px; }
+  .rv-label { display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--c-deep); }
+  .rv-label::before { content: ''; width: 28px; height: 1px; background: currentColor; flex: none; }
+  .rv-title { margin: 20px 0 0; font-family: var(--f-serif); font-size: clamp(30px, 3.4vw, 46px); font-weight: 700; color: var(--c-navy); line-height: 1.22; letter-spacing: -.03em; }
+  .rv-desc { margin: 16px 0 0; max-width: 640px; font-size: 16px; line-height: 1.85; color: var(--c-sub); }
 
-  .rv-wrap { max-width: 620px; margin: 0 auto; padding: 72px 24px 96px; }
-  .rv-section-title { display:flex; align-items:center; gap:12px; margin: 0 0 24px; font-size: 13px; font-weight: 800; letter-spacing: 0.12em; color: var(--r); text-transform: uppercase; }
-  .rv-section-title::after { content:''; flex:1; height:1px; background:var(--line); }
+  .rv-group-header { margin-bottom: 28px; padding-bottom: 16px; border-bottom: 2px solid var(--c-navy); font-family: var(--f-serif); font-size: 22px; font-weight: 700; line-height: 1.3; letter-spacing: -.03em; color: var(--c-navy); }
+  .rv-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; align-items: stretch; }
 
-  .rv-card {
-    border: 1px solid var(--line); border-radius: 18px; background: #fff;
-    padding: 32px; box-shadow: 0 4px 24px rgba(77,43,27,0.07);
+  .rv-card { background: var(--c-white); border: 1px solid var(--c-line); padding: 28px; display: flex; flex-direction: column; min-width: 0; }
+  .rv-card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .rv-type { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--c-label); }
+  .rv-status { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--c-deep); white-space: nowrap; }
+  .rv-status::before { content: ''; width: 6px; height: 6px; background: currentColor; flex: none; }
+  .rv-card h3 { margin: 0 0 10px; font-family: var(--f-serif); font-size: 24px; font-weight: 700; color: var(--c-navy); line-height: 1.3; letter-spacing: -.03em; }
+  .rv-card-lead { margin: 0 0 20px; font-size: 14px; line-height: 1.75; color: var(--c-muted); }
+
+  /* 일정 · 모임 — 가는 선으로 나눈 줄 */
+  .rv-facts { margin: 0 0 24px; }
+  .rv-fact { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 11px 0; border-top: 1px solid var(--c-rule); }
+  .rv-fact:last-child { border-bottom: 1px solid var(--c-rule); }
+  .rv-fact dt { font-size: 13px; font-weight: 600; color: var(--c-label); }
+  .rv-fact dd { margin: 0; font-size: 14.5px; font-weight: 500; color: var(--c-ink); line-height: 1.65; font-variant-numeric: tabular-nums; }
+
+  .rv-card-actions { margin-top: auto; display: grid; gap: 10px; }
+  .rv-arrow { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: square; transition: transform .25s; }
+  .rv-rsvp-btn, .rv-share-btn {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    width: 100%; height: 52px; padding: 0 20px; box-sizing: border-box;
+    border: 1px solid var(--c-deep); border-radius: 2px;
+    font-family: var(--f-sans); font-size: 15px; font-weight: 700; cursor: pointer; text-decoration: none;
+    transition: background-color .2s, border-color .2s;
   }
-  .rv-card + .rv-card { margin-top: 20px; }
-  .rv-card-badge {
-    display: inline-block; padding: 4px 12px; border-radius: 999px;
-    background: rgba(140,81,50,0.1); color: var(--m);
-    font-size: 11px; font-weight: 800; letter-spacing: 0.06em;
-  }
-  .rv-card h2 { margin: 14px 0 6px; font-size: 26px; font-weight: 800; color: var(--k); word-break: keep-all; }
-  .rv-card-lead { margin: 0 0 22px; font-size: 14px; line-height: 1.8; color: var(--s); word-break: keep-all; }
-  .rv-facts { display: grid; gap: 12px; margin-bottom: 22px; }
-  .rv-fact { display: grid; grid-template-columns: 74px 1fr; gap: 12px; align-items: start; font-size: 14px; }
-  .rv-fact dt { color: #9a7b5e; font-weight: 700; font-size: 12.5px; padding-top: 1px; }
-  .rv-fact dd { margin: 0; color: var(--s); font-weight: 500; line-height: 1.6; word-break: keep-all; }
+  .rv-rsvp-btn { background: var(--c-deep); color: #fff; }
+  .rv-rsvp-btn:hover { background: var(--c-deep-dk); border-color: var(--c-deep-dk); }
+  .rv-share-btn { background: var(--c-white); color: var(--c-deep); }
+  .rv-share-btn:hover { background: var(--c-fill); }
+  .rv-rsvp-btn:hover .rv-arrow { transform: translateX(3px); }
+  .rv-rsvp-btn:focus-visible, .rv-share-btn:focus-visible { outline: 2px solid var(--c-deep); outline-offset: 3px; }
+  .rv-share-btn svg.rv-link { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 
-  .rv-card-actions { margin-top: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-  .rv-rsvp-btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    min-height: 48px; padding: 0 30px; border: none; border-radius: 12px;
-    background: var(--r); color: #fff; font-family: var(--f-sans);
-    font-size: 15px; font-weight: 700; cursor: pointer; text-decoration: none;
-    transition: background .2s, transform .18s, box-shadow .2s;
-    box-shadow: 0 4px 14px rgba(165,72,45,0.25);
-  }
-  .rv-rsvp-btn:hover { background: #8a3a23; transform: translateY(-2px); box-shadow: 0 10px 26px rgba(165,72,45,0.32); }
-
-  .rv-share-btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-    min-height: 48px; padding: 0 18px; border-radius: 12px;
-    border: 1.5px solid rgba(90,53,37,0.18); background: #fff; color: var(--d);
-    font-family: var(--f-sans); font-size: 13.5px; font-weight: 700; cursor: pointer;
-    transition: border-color .2s, background .2s;
-  }
-  .rv-share-btn:hover { border-color: var(--m); background: #fff8ed; }
-  .rv-share-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
-
-  .rv-empty { padding: 56px 24px; text-align: center; color: var(--s); }
-  .rv-empty h3 { margin: 0 0 8px; font-size: 19px; font-weight: 800; color: var(--k); }
+  .rv-empty { background: var(--c-white); border: 1px solid var(--c-line); padding: 56px 24px; text-align: center; color: var(--c-sub); }
+  .rv-empty h3 { margin: 0 0 8px; font-family: var(--f-serif); font-size: 20px; font-weight: 700; color: var(--c-navy); }
   .rv-empty p { margin: 0; font-size: 14px; line-height: 1.8; }
 
+  @media (max-width: 1000px) { .rv-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (max-width: 640px) {
-    .rv-wrap { padding: 52px 18px 72px; }
+    .rv { padding: 64px 0 80px; }
+    .rv-inner { width: calc(100% - 40px); }
+    .rv-head { margin-bottom: 40px; }
+    .rv-grid { grid-template-columns: 1fr; }
     .rv-card { padding: 24px 20px; }
-    .rv-fact { grid-template-columns: 62px 1fr; font-size: 13.5px; }
-    .rv-card-actions { display: grid; grid-template-columns: 1fr; }
-    .rv-card-actions > .rv-rsvp-btn,
-    .rv-card-actions > .rv-share-btn { width: 100%; height: 48px; padding: 0 16px; font-size: 14px; }
+    .rv-group-header { font-size: 20px; margin-bottom: 20px; }
   }
 </style>
 
@@ -106,60 +111,75 @@ const events = [
   </Fragment>
 </PageHero>
 
-<div class="rv-wrap">
-  <h2 class="rv-section-title">
-    <span class="wl-ko">예정된 행사</span><span class="wl-en">Upcoming Events</span>
-  </h2>
-
-  {events.length > 0 ? events.map((event) => (
-    <div class="rv-card">
-      <span class="rv-card-badge">
-        <span class="wl-ko">참석 신청 받는 중</span><span class="wl-en">RSVP Open</span>
-      </span>
-      <h2>
-        <span class="wl-ko">{event.title_ko}</span>
-        <span class="wl-en">{event.title_en}</span>
-      </h2>
-      <p class="rv-card-lead">
-        <span class="wl-ko">{event.note_ko}</span>
-        <span class="wl-en">{event.note_en}</span>
+<section class="rv">
+  <div class="rv-inner">
+    <div class="rv-head">
+      <div class="rv-label">Upcoming Events</div>
+      <h2 class="rv-title"><span class="wl-ko">예정된 행사</span><span class="wl-en">Upcoming Events</span></h2>
+      <p class="rv-desc">
+        <span class="wl-ko">참석 신청은 각 행사의 초대장에서 하실 수 있어요. 초대장 링크를 함께하고 싶은 분께 공유해 주세요.</span>
+        <span class="wl-en">RSVP from each event's invitation, and feel free to share the invitation link with anyone you'd like to bring.</span>
       </p>
+    </div>
 
-      <dl class="rv-facts">
-        <div class="rv-fact">
-          <dt><span class="wl-ko">일정</span><span class="wl-en">Date</span></dt>
-          <dd><span class="wl-ko">{event.date_ko}</span><span class="wl-en">{event.date_en}</span></dd>
-        </div>
-        <div class="rv-fact">
-          <dt><span class="wl-ko">모임</span><span class="wl-en">Gathering</span></dt>
-          <dd><span class="wl-ko">{event.theme_ko}</span><span class="wl-en">{event.theme_en}</span></dd>
-        </div>
-      </dl>
+    {events.length > 0 ? (
+      <div>
+        <div class="rv-group-header"><span class="wl-ko">월코 행사</span><span class="wl-en">WOLKO Events</span></div>
+        <div class="rv-grid">
+          {events.map((event) => (
+            <div class="rv-card">
+              <div class="rv-card-top">
+                <span class="rv-type">Event</span>
+                <span class="rv-status"><span class="wl-ko">참석 신청 받는 중</span><span class="wl-en">RSVP open</span></span>
+              </div>
+              <h3>
+                <span class="wl-ko">{event.title_ko}</span>
+                <span class="wl-en">{event.title_en}</span>
+              </h3>
+              <p class="rv-card-lead">
+                <span class="wl-ko">{event.note_ko}</span>
+                <span class="wl-en">{event.note_en}</span>
+              </p>
 
-      <div class="rv-card-actions">
-        <a class="rv-rsvp-btn" href={event.invite}>
-          <span class="wl-ko">참석 신청하기 →</span>
-          <span class="wl-en">RSVP →</span>
-        </a>
-        <button type="button" class="rv-share-btn rsvp-share-btn" data-invite={event.invite} data-event-title-ko={event.title_ko} data-event-title-en={event.title_en}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>
-          <span class="wl-ko">초대장 공유하기</span><span class="wl-en">Share invitation</span>
-        </button>
+              <dl class="rv-facts">
+                <div class="rv-fact">
+                  <dt><span class="wl-ko">일정</span><span class="wl-en">Date</span></dt>
+                  <dd><span class="wl-ko">{event.date_ko}</span><span class="wl-en">{event.date_en}</span></dd>
+                </div>
+                <div class="rv-fact">
+                  <dt><span class="wl-ko">모임</span><span class="wl-en">Gathering</span></dt>
+                  <dd><span class="wl-ko">{event.theme_ko}</span><span class="wl-en">{event.theme_en}</span></dd>
+                </div>
+              </dl>
+
+              <div class="rv-card-actions">
+                <a class="rv-rsvp-btn" href={event.invite}>
+                  <span><span class="wl-ko">참석 신청하기</span><span class="wl-en">RSVP</span></span>
+                  <svg class="rv-arrow" aria-hidden="true" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+                </a>
+                <button type="button" class="rv-share-btn rsvp-share-btn" data-invite={event.invite} data-event-title-ko={event.title_ko} data-event-title-en={event.title_en}>
+                  <span><span class="wl-ko">초대장 공유하기</span><span class="wl-en">Share invitation</span></span>
+                  <svg class="rv-link" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  )) : (
-    <div class="rv-card rv-empty">
-      <h3>
-        <span class="wl-ko">예정된 행사가 없습니다</span>
-        <span class="wl-en">No upcoming events</span>
-      </h3>
-      <p>
-        <span class="wl-ko">새로운 행사가 정해지면 이곳에 안내해 드릴게요.</span>
-        <span class="wl-en">We'll announce new events here as they are scheduled.</span>
-      </p>
-    </div>
-  )}
-</div>
+    ) : (
+      <div class="rv-empty">
+        <h3>
+          <span class="wl-ko">예정된 행사가 없습니다</span>
+          <span class="wl-en">No upcoming events</span>
+        </h3>
+        <p>
+          <span class="wl-ko">새로운 행사가 정해지면 이곳에 안내해 드릴게요.</span>
+          <span class="wl-en">We'll announce new events here as they are scheduled.</span>
+        </p>
+      </div>
+    )}
+  </div>
+</section>
 
 <script is:inline>
 (function () {
@@ -193,7 +213,7 @@ const events = [
         window.prompt(isEn() ? 'Copy this link:' : '이 링크를 복사해 주세요:', link);
         return;
       }
-      btn.innerHTML = '<span class="wl-ko">복사했어요</span><span class="wl-en">Link copied</span>';
+      btn.innerHTML = '<span><span class="wl-ko">복사했어요</span><span class="wl-en">Link copied</span></span>';
       clearTimeout(btn._resetTimer);
       btn._resetTimer = setTimeout(function () { btn.innerHTML = labelHtml; }, 2000);
     });
