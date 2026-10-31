@@ -15,6 +15,10 @@ const CORS = {
 };
 
 const STAFF_TEAMS = ['프로그램', '티칭', '상담자', '테크', '찬양팀'];
+// 크루(청소년)는 티칭·상담을 맡지 않는다 — 크루 지원서(구글 폼)와 같은 팀 목록. 찬양팀=바이블 클럽 팀, 테크=미디어·테크 팀
+const CREW_TEAMS = ['프로그램', '찬양팀', '테크', '키친', '기타'];
+// 크루가 월코 캠프를 알게 된 경로
+const REFERRALS = ['지인', '학교', 'SNS', '네이버 카페', '월코 캠퍼', '기타'];
 const YES_NO = ['yes', 'no'];
 
 function escHtml(value) {
@@ -77,7 +81,9 @@ function buildStaffEmailHtml(reg) {
         ${reg.role === 'crew' ? `${divider}
         ${row('보호자', `${escHtml(reg.guardianName)} (${escHtml(reg.guardianRelation)})`)}
         ${row('보호자 연락처', escHtml([reg.guardianPhone, reg.guardianEmail].filter(Boolean).join(' · ')))}
-        ${row('보호자 동의', '동의 링크를 보냈습니다 — 동의가 끝나야 수락할 수 있습니다')}` : ''}
+        ${row('보호자 동의', '동의 링크를 보냈습니다 — 동의가 끝나야 수락할 수 있습니다')}
+        ${row('참가자 동의', reg.crewPledge ? '자발적 참여 · 캠프 규칙과 안전 지침 준수에 동의' : '—')}
+        ${row('월코 캠프를 알게 된 경로', escHtml(reg.referral || '—'))}` : ''}
         ${divider}
         ${row('출석 교회', escHtml(reg.church || '—'))}
         ${row('교회 홈페이지', escHtml(reg.churchWebsite || '—'))}
@@ -197,8 +203,9 @@ export async function onRequestPost(context) {
     const instruments = clean(data.instruments, 200);
     const previousCamp = YES_NO.includes(data.previousCamp) ? data.previousCamp : '';
     const previousCampDetail = previousCamp === 'yes' ? clean(data.previousCampDetail, 2000) : '';
-    const team1 = STAFF_TEAMS.includes(data.team1) ? data.team1 : '';
-    const team2 = STAFF_TEAMS.includes(data.team2) && data.team2 !== team1 ? data.team2 : '';
+    const teams = role === 'crew' ? CREW_TEAMS : STAFF_TEAMS;
+    const team1 = teams.includes(data.team1) ? data.team1 : '';
+    const team2 = teams.includes(data.team2) && data.team2 !== team1 ? data.team2 : '';
     const availableCamps = (Array.isArray(data.availableCamps) ? data.availableCamps : [])
       .map(id => clean(id, 80)).filter(Boolean).slice(0, 20);
     const availableCampNames = (Array.isArray(data.availableCampNames) ? data.availableCampNames : [])
@@ -211,6 +218,12 @@ export async function onRequestPost(context) {
     const guardianRelation = role === 'crew' && GUARDIAN_RELATIONS.includes(data.guardianRelation) ? data.guardianRelation : '';
     const guardianPhone = role === 'crew' ? normalizePhone(clean(data.guardianPhone, 30)) : '';
     const guardianEmail = role === 'crew' ? clean(data.guardianEmail, 120).toLowerCase() : '';
+    // 크루: 알게 된 경로("기타"면 직접 적은 말)와 참가자 동의(자발적 참여 · 캠프 규칙과 안전 지침 준수)
+    const referralPick = role === 'crew' && REFERRALS.includes(data.referral) ? data.referral : '';
+    const referralOther = referralPick === '기타' ? clean(data.referralOther, 100) : '';
+    const referral = referralPick === '월코 캠퍼' ? '월코 캠퍼로 참여한 적 있음'
+      : referralPick === '기타' ? (referralOther ? `기타: ${referralOther}` : '기타') : referralPick;
+    const crewPledge = role === 'crew' && data.crewPledge === true;
 
     const required = [name, phone, email, gender, birthDate, introduction, faithStory, church,
       cultHistory, englishAbility, mediaTech, previousCamp, team1];
@@ -238,6 +251,9 @@ export async function onRequestPost(context) {
       }
       if (guardianEmail && guardianEmail === email) {
         return Response.json({ error: '보호자 이메일은 지원자 이메일과 달라야 합니다.' }, { status: 400, headers: CORS });
+      }
+      if (!crewPledge) {
+        return Response.json({ error: '캠프 크루 참가자 동의에 체크해 주세요.' }, { status: 400, headers: CORS });
       }
     }
 
@@ -277,6 +293,7 @@ export async function onRequestPost(context) {
       accepted: false,
       acceptedAt: null,
       ...(role === 'crew' ? {
+        referral, crewPledge,
         guardianName, guardianRelation, guardianPhone, guardianEmail,
         parentConsent: { status: 'pending', requestedAt: registeredAt, sentVia: [] },
       } : {}),

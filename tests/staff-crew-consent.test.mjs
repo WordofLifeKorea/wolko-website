@@ -49,6 +49,7 @@ test('크루 지원 → 보호자에게 캠프 업무폰으로 문자 · 이메�
   try {
     const res = await register.onRequestPost(t.ctx(post('https://x/api/staff-register', {
       ...base, role: 'crew', guardianName: '김엄마', guardianRelation: '모', guardianPhone: '010-4444-5555', guardianEmail: 'mom@example.com',
+      crewPledge: true, referral: '네이버 카페',
     })));
     assert.equal(res.status, 200);
     const body = await res.json();
@@ -136,4 +137,39 @@ test('연합캠프는 크루 지원을 받지 않는다 — 연합캠프(제목�
   const page = readFileSync(new URL('../src/pages/camp-register/index.astro', import.meta.url), 'utf8');
   assert.match(page, /data-crew-closed=\{isCrewClosedCamp\(s\.id\) \? 'true' : undefined\}/);
   assert.match(page, /li\.dataset\.crewClosed !== 'true'/);
+});
+
+test('크루 지원서는 구글 폼 항목을 따른다 — 참가자 동의 필수 · 크루용 팀 목록 · 알게 된 경로', async () => {
+  const t = setup();
+  try {
+    const crew = { ...base, role: 'crew', guardianName: '김엄마', guardianRelation: '모', guardianPhone: '010-4444-5555' };
+    const noPledge = await register.onRequestPost(t.ctx(post('https://x/api/staff-register', crew)));
+    assert.equal(noPledge.status, 400, '참가자 동의가 없으면 받지 않는다');
+    assert.match((await noPledge.json()).error, /참가자 동의/);
+
+    const ok = await register.onRequestPost(t.ctx(post('https://x/api/staff-register', {
+      ...crew, crewPledge: true, team1: '키친', team2: '찬양팀', referral: '기타', referralOther: '교회 선배',
+    })));
+    assert.equal(ok.status, 200);
+    const reg = JSON.parse([...t.store.entries()].find(([k]) => k.includes(':reg:'))[1]);
+    assert.equal(reg.team1, '키친');
+    assert.equal(reg.serviceArea, '키친, 찬양팀');
+    assert.equal(reg.referral, '기타: 교회 선배');
+    assert.equal(reg.crewPledge, true);
+
+    // 스태프(성인)에게는 키친 팀이 없다 — 1지망이 비면 필수 항목 오류
+    const staff = await register.onRequestPost(t.ctx(post('https://x/api/staff-register', { ...base, email: 'adult@example.com', birthDate: '1995-01-01', team1: '키친' })));
+    assert.equal(staff.status, 400);
+  } finally { t.restore(); }
+
+  const page = readFileSync(new URL('../src/pages/camp-register/index.astro', import.meta.url), 'utf8');
+  assert.match(page, /#staffForm:not\(\.is-crew\) \.crew-only \{ display: none !important; \}/);
+  assert.match(page, /id="staffCrewPledge"/);
+  assert.match(page, /name="referral" value="월코 캠퍼"/);
+  for (const v of ['피아노', '베이스', '드럼', '일렉기타', '어쿠스틱 기타', '싱어', '없음']) {
+    assert.match(page, new RegExp(`name="staffInstrument" value="${v}"`));
+  }
+  assert.match(page, /건강 문제, 알레르기, 복용 중인 약/);
+  const consentPage = readFileSync(new URL('../src/pages/camp-register/consent/index.astro', import.meta.url), 'utf8');
+  assert.match(consentPage, /사진 및 영상이 홍보 목적으로 사용될 수 있음/);
 });
