@@ -115,10 +115,12 @@ html body :is(h1, .wl-page-head h1, .sc-title, .car-title, .events-heading h1, .
   :root:root:root .wolko-burger span { background: var(--ws-navy) !important; }
 }
 
-/* ── 왼쪽 메뉴(PC) · 서랍(폰): 홈페이지 아래쪽 바닥글과 같은 남색, 그라데이션 없이 평평하게 ── */
+/* ── 왼쪽 메뉴(PC) · 서랍(폰): 그라데이션 없이 평평한 한 가지 색 — 밤에는 바닥글과 같은 남색이고,
+      낮·새벽·해 질 녘에는 wolko-rail.js가 시간에 맞는 색(--ws-rail-bg)을 넣는다 ── */
 .wolko-rail, .wolko-drawer {
-  background: var(--ws-navy) !important;
+  background: var(--ws-rail-bg, var(--ws-navy)) !important;
   background-image: none !important;
+  transition: background-color 2s ease;
 }
 .wolko-rail-logo-link { border-bottom-color: rgba(255, 255, 255, .10) !important; }
 .wolko-rail-logo { border-radius: 50% !important; box-shadow: none !important; }
@@ -126,7 +128,7 @@ html body :is(h1, .wl-page-head h1, .sc-title, .car-title, .events-heading h1, .
 .wolko-rail-logo-sub { letter-spacing: .14em !important; color: rgba(255, 255, 255, .45) !important; }
 .wolko-rail-group, .wolko-drawer-group {
   display: flex; align-items: center; gap: 10px;
-  font-weight: 700 !important; letter-spacing: .12em !important; color: rgba(255, 255, 255, .42) !important;
+  font-weight: 700 !important; letter-spacing: .12em !important; color: rgba(255, 255, 255, .5) !important;
 }
 .wolko-rail-group::before, .wolko-drawer-group::before { content: ''; width: 16px; height: 1px; background: currentColor; flex: none; }
 .wolko-rail-item, .wolko-drawer-item { border-radius: var(--ws-radius-sm) !important; font-weight: 600 !important; }
@@ -182,11 +184,11 @@ html body .wl-prof-card h3 { font-family: var(--ws-serif) !important; color: var
 html body .wl-prof-field input { border-radius: var(--ws-radius-sm) !important; border-color: var(--ws-field) !important; }
 
 /* ══ 포탈 첫 화면(/portal) — 자체 사이드바 · 하늘 배너 · 대시보드 카드 ══ */
-.hub-sidebar { background: var(--ws-navy) !important; background-image: none !important; }
+.hub-sidebar { background: var(--ws-rail-bg, var(--ws-navy)) !important; background-image: none !important; transition: background-color 2s ease; }
 .hub-sidebar-brand { border-bottom-color: rgba(255, 255, 255, .10) !important; }
 .hub-sidebar-brand img { border-radius: 50% !important; box-shadow: none !important; }
 .hub-sidebar-brand-name { font-family: var(--ws-serif) !important; font-weight: 700 !important; letter-spacing: 0 !important; }
-.hub-nav-label { display: flex; align-items: center; gap: 10px; font-weight: 700 !important; letter-spacing: .12em !important; color: rgba(255, 255, 255, .42) !important; }
+.hub-nav-label { display: flex; align-items: center; gap: 10px; font-weight: 700 !important; letter-spacing: .12em !important; color: rgba(255, 255, 255, .5) !important; }
 .hub-nav-label::before { content: ''; width: 16px; height: 1px; background: currentColor; flex: none; }
 .hub-nav-item { border-radius: var(--ws-radius-sm) !important; font-weight: 600 !important; }
 .hub-nav-item::before { display: none !important; } /* 왼쪽 색 띠는 쓰지 않는다 */

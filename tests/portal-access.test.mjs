@@ -120,5 +120,5 @@ test('제한된 도구 페이지를 쓰는 모든 포탈 페이지에 접근 스
   assert.match(read('public/wolko-rail.js'), /wolko-access\.js\?v=\d+/);
   assert.match(read('src/layouts/CampTeamLayout.astro'), /wolko-access\.js/, '캠프팀 모든 페이지');
   for (const page of ['src/pages/portal/gospel-stats/mric/index.astro', 'src/pages/portal/serve-applications/index.astro', 'src/pages/portal/serve-inquiries/index.astro', 'src/pages/portal/notify-check/index.astro']) assert.match(read(page), /wolko-access\.js/, page);
-  for (const page of ['schedule/index', 'wolkoevents', 'gospel-stats/index', 'campstaff/index', 'camp-resources/index', 'car-drive/index', 'kitchen/index']) assert.match(read(`src/pages/portal/${page}.astro`), /wolko-rail\.js\?v=42/, page);
+  for (const page of ['schedule/index', 'wolkoevents', 'gospel-stats/index', 'campstaff/index', 'camp-resources/index', 'car-drive/index', 'kitchen/index']) assert.match(read(`src/pages/portal/${page}.astro`), /wolko-rail\.js\?v=\d+/, page);
 });

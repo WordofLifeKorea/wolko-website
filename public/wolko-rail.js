@@ -2,6 +2,39 @@
    각 도구 페이지 head에 이 스크립트와 wolko-rail.css를 넣으면 자동 삽입됨.
    라벨은 항상 펼쳐서 보여준다(예전엔 아이콘만 두고 호버해야 이름이 보였는데,
    페이지 사이 이동이 잘 안 보인다는 피드백으로 상시 펼침으로 바꿨다). */
+/* 왼쪽 메뉴 색이 하루 해를 따라 바뀐다 — 평택의 실제 해 뜨고 지는 시각(한국 시간)으로 계산한다.
+   밤은 원래 남색, 새벽은 남보라, 낮은 짙은 하늘색, 해 질 녘은 자두빛, 그 사이는 천천히 섞인다.
+   글자가 흰색이라 어느 시간대 색이든 충분히 어둡게 둔다. 5분마다 다시 계산한다. */
+(function () {
+  var NIGHT = [11, 36, 48], DAWN = [52, 49, 94], DAY = [21, 88, 128], SUNSET = [91, 48, 80], TWILIGHT = [44, 37, 73];
+  function sunTimesKst(ms, lat, lon) {
+    var rad = Math.PI / 180, d = new Date(ms + 9 * 3600000);
+    var n = Math.floor((Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - Date.UTC(d.getUTCFullYear(), 0, 0)) / 86400000);
+    var g = 2 * Math.PI / 365 * (n - 1);
+    var eqt = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g) - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
+    var decl = 0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g) + 0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
+    var ha = Math.acos(Math.cos(90.833 * rad) / (Math.cos(lat * rad) * Math.cos(decl)) - Math.tan(lat * rad) * Math.tan(decl)) / rad;
+    return { rise: 720 - 4 * (lon + ha) - eqt + 540, set: 720 - 4 * (lon - ha) - eqt + 540 }; // 한국 시간 0시부터 몇 분째
+  }
+  function railColor(ms) {
+    var sun = sunTimesKst(ms, 36.99, 127.09); // 평택 월코센터
+    var now = ((ms / 60000) + 540) % 1440;
+    var stops = [[0, NIGHT], [sun.rise - 70, NIGHT], [sun.rise - 15, DAWN], [sun.rise + 50, DAY], [sun.set - 80, DAY],
+      [sun.set - 10, SUNSET], [sun.set + 35, TWILIGHT], [sun.set + 90, NIGHT], [1440, NIGHT]];
+    for (var i = 1; i < stops.length; i++) {
+      if (now > stops[i][0]) continue;
+      var a = stops[i - 1], b = stops[i], t = b[0] === a[0] ? 1 : (now - a[0]) / (b[0] - a[0]);
+      return 'rgb(' + [0, 1, 2].map(function (k) { return Math.round(a[1][k] + (b[1][k] - a[1][k]) * t); }).join(', ') + ')';
+    }
+    return 'rgb(' + NIGHT.join(', ') + ')';
+  }
+  function paintRail() { document.documentElement.style.setProperty('--ws-rail-bg', railColor(Date.now())); }
+  window.WolkoRailSky = { railColor: railColor, sunTimesKst: sunTimesKst };
+  paintRail();
+  setInterval(paintRail, 5 * 60 * 1000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) paintRail(); });
+})();
+
 (function () {
   var GROUPS = [{ id: 'wolko', ko: '월코', en: 'WOLKO' }, { id: 'camp', ko: '캠프', en: 'Camp' }, { id: 'personal', ko: '개인업무', en: 'Personal' }];
   var TOOLS = [
