@@ -124,22 +124,24 @@ import PageHero from '../../components/PageHero.astro';
     display:block; margin-bottom:8px;
     font-size:13px; font-weight:700; color:var(--ct-navy); letter-spacing:.02em;
   }
-  .ct-select-wrap { position:relative; }
-  .ct-select-wrap select {
-    width:100%; height:48px; padding:0 44px 0 14px;
-    border:1px solid var(--ct-field); border-radius:2px;
-    font-size:15px; color:var(--ct-ink); background:#fff;
-    font-family:inherit; font-weight:500;
-    outline:none; cursor:pointer;
-    appearance:none; -webkit-appearance:none;
-    transition:border-color .2s, box-shadow .2s;
+  /* 문의 유형: 펼침 목록 대신 모든 항목이 보이는 네모 칸 — 고르면 남색으로 채워진다 */
+  .ct-type { margin:0; padding:0; border:0; min-width:0; }
+  .ct-type-groups { display:grid; gap:16px; }
+  .ct-type-group-label { margin-bottom:8px; font-size:12px; font-weight:600; color:var(--ct-label); }
+  .ct-type-options { display:flex; flex-wrap:wrap; gap:8px; }
+  .ct-type-opt { position:relative; display:block; cursor:pointer; }
+  .ct-type-opt input { position:absolute; opacity:0; width:1px; height:1px; pointer-events:none; }
+  .ct-type-opt span.ct-type-tile {
+    display:inline-flex; align-items:center; gap:8px; height:44px; padding:0 16px;
+    border:1px solid var(--ct-field); border-radius:2px; background:#fff;
+    font-size:14.5px; font-weight:600; color:var(--ct-ink);
+    transition:border-color .18s, background-color .18s, color .18s;
   }
-  .ct-select-wrap select:focus { border-color:var(--ct-deep); box-shadow:0 0 0 3px rgba(0,79,104,.12); }
-  .ct-select-chevron {
-    position:absolute; right:14px; top:50%; transform:translateY(-50%);
-    pointer-events:none; color:var(--ct-label);
-  }
-  .ct-select-chevron svg { width:16px; height:16px; display:block; }
+  .ct-type-tile svg { width:14px; height:14px; flex:none; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:square; display:none; }
+  .ct-type-opt:hover span.ct-type-tile { border-color:var(--ct-deep); }
+  .ct-type-opt input:checked + span.ct-type-tile { background:var(--ct-deep); border-color:var(--ct-deep); color:#fff; }
+  .ct-type-opt input:checked + span.ct-type-tile svg { display:block; }
+  .ct-type-opt input:focus-visible + span.ct-type-tile { outline:2px solid var(--ct-deep); outline-offset:2px; }
 
   /* 입력 칸 */
   .ct-form-grid {
@@ -356,11 +358,38 @@ import PageHero from '../../components/PageHero.astro';
     <div class="ct-form-wrap">
       <form onsubmit="handleSubmit(event)">
         <!-- 문의 유형 드롭다운 -->
+        <!-- 문의 유형: 보이는 선택 칸과 숨은 select 가 같은 값을 쓴다 (보내기 · ?type= · 이어쓰기는 select 값) -->
         <div class="ct-dropdown-wrap">
-          <label class="ct-dropdown-label" for="ct-type-select">
-            <span class="wl-ko">문의 유형</span><span class="wl-en">Inquiry Type</span>
-          </label>
-          <div class="ct-select-wrap">
+          <fieldset class="ct-type">
+            <legend class="ct-dropdown-label"><span class="wl-ko">문의 유형</span><span class="wl-en">Inquiry Type</span></legend>
+            <div class="ct-type-groups">
+              <div class="ct-type-group">
+                <p class="ct-type-group-label"><span class="wl-ko">일반 · 협력</span><span class="wl-en">General</span></p>
+                <div class="ct-type-options">
+                  <label class="ct-type-opt"><input type="radio" name="ct-type-pick" value="general" checked><span class="ct-type-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">일반 문의</span><span class="wl-en">General Inquiry</span></span></label>
+                  <label class="ct-type-opt"><input type="radio" name="ct-type-pick" value="ministry"><span class="ct-type-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">사역 협력</span><span class="wl-en">Ministry Partnership</span></span></label>
+                  <label class="ct-type-opt"><input type="radio" name="ct-type-pick" value="mission"><span class="ct-type-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">선교팀</span><span class="wl-en">Mission Team</span></span></label>
+                  <label class="ct-type-opt"><input type="radio" name="ct-type-pick" value="serve"><span class="ct-type-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">섬기고 싶어요</span><span class="wl-en">Serve with WOLKO</span></span></label>
+                </div>
+              </div>
+              <div class="ct-type-group">
+                <p class="ct-type-group-label"><span class="wl-ko">프로그램</span><span class="wl-en">Programs</span></p>
+                <div class="ct-type-options">
+                  <label class="ct-type-opt"><input type="radio" name="ct-type-pick" value="wolbi"><span class="ct-type-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">제주월비 입학</span><span class="wl-en">WOLBI Admission</span></span></label>
+                  <label class="ct-type-opt"><input type="radio" name="ct-type-pick" value="camp"><span class="ct-type-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">캠프 신청</span><span class="wl-en">Camp Registration</span></span></label>
+                </div>
+              </div>
+              <div class="ct-type-group">
+                <p class="ct-type-group-label"><span class="wl-ko">후원 · 기도</span><span class="wl-en">Giving & Prayer</span></p>
+                <div class="ct-type-options">
+                  <label class="ct-type-opt"><input type="radio" name="ct-type-pick" value="give"><span class="ct-type-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">후원</span><span class="wl-en">Giving</span></span></label>
+                  <label class="ct-type-opt"><input type="radio" name="ct-type-pick" value="prayer"><span class="ct-type-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">기도 제목</span><span class="wl-en">Prayer Request</span></span></label>
+                  <label class="ct-type-opt"><input type="radio" name="ct-type-pick" value="other"><span class="ct-type-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="wl-ko">기타</span><span class="wl-en">Other</span></span></label>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+          <div hidden>
             <select id="ct-type-select" name="type">
               <optgroup label="─────────────────────────">
                 <option value="general" data-ko="일반 문의" data-en="General Inquiry">일반 문의</option>
@@ -378,11 +407,6 @@ import PageHero from '../../components/PageHero.astro';
                 <option value="other" data-ko="기타" data-en="Other">기타</option>
               </optgroup>
             </select>
-            <div class="ct-select-chevron">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </div>
           </div>
         </div>
 
@@ -459,6 +483,21 @@ import PageHero from '../../components/PageHero.astro';
   if (!isAllowedType) return;
 
   typeSelect.value = requestedType;
+})();
+
+// 문의 유형 칸 ↔ 숨은 select: 칸을 고르면 select 값이 바뀌고, 주소의 ?type= 이나 이어쓰기가 select 를 바꾸면 칸도 따라간다.
+(function syncInquiryTiles() {
+  var sel = document.getElementById('ct-type-select');
+  var picks = [].slice.call(document.querySelectorAll('input[name="ct-type-pick"]'));
+  if (!sel || !picks.length) return;
+  function fromSelect() { picks.forEach(function (r) { r.checked = r.value === sel.value; }); }
+  picks.forEach(function (r) {
+    r.addEventListener('change', function () { if (r.checked) sel.value = r.value; });
+  });
+  sel.addEventListener('change', fromSelect);
+  fromSelect();
+  document.addEventListener('DOMContentLoaded', fromSelect);
+  window.addEventListener('load', fromSelect);
 })();
 
 function ctIsEn() { return document.documentElement.classList.contains('lang-en'); }
