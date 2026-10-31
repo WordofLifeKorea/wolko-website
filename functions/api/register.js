@@ -14,7 +14,7 @@
 import { appendRow, appendRowsToTab } from '../lib/googleSheets.js';
 import { sendSms, sendAlimtalk } from '../lib/solapi.js';
 import { sendApplicantNotice } from '../lib/applicantNotice.js';
-import { GENDER_CAPACITY, WINTER_CAMP_POLICY, birthYearCheck, registrationState, usesWinterCampPolicy, winterCampQuote, winterCamperScholarships } from '../lib/winterCampPolicy.js';
+import { GENDER_CAPACITY, WINTER_CAMP_POLICY, birthYearCheck, isUnionGroupCamp, registrationState, unityCampQuote, usesUnityCampPolicy, usesWinterCampPolicy, winterCampQuote, winterCamperScholarships } from '../lib/winterCampPolicy.js';
 import { normalizePhone } from '../lib/phone.js';
 import { personDupeKey } from '../lib/personDupe.js';
 
@@ -481,6 +481,9 @@ export async function onRequestPost(context) {
     } = data;
     let scholarshipDiscounts = scholarshipDiscountsInput;
     let scholarshipDiscountDetails = scholarshipDiscountDetailsInput;
+    // 연합캠프는 장학금이 없다 — 참가비 할인은 접수 시각으로만 정한다(unityCampQuote)
+    const unityCamp = usesUnityCampPolicy(campId);
+    if (unityCamp) { scholarshipDiscounts = {}; scholarshipDiscountDetails = {}; }
 
     if (!campId || !name?.trim() || !phone?.trim()) {
       return Response.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400, headers: CORS });
@@ -518,7 +521,7 @@ export async function onRequestPost(context) {
     let normalizedParticipants = [];
     let deferParticipantDetails = false;
     if (registrationType === 'group') {
-      const isUnionDefer = campId === '2026-inland-union';
+      const isUnionDefer = isUnionGroupCamp(campId);
       const requestedGroupCount = parseInt(groupCount, 10) || 0;
       // 연합캠프는 항상 명단 추후 제출 가능, 그 외 캠프는 신청자가 '추후 제출'을 명시적으로 체크한 경우에만 허용한다.
       const shouldDeferParticipantDetails = isUnionDefer
@@ -742,6 +745,8 @@ export async function onRequestPost(context) {
       Object.assign(reg, winterQuote);
       reg.scholarshipDiscountDetails.bestCamperEligible = scholarshipDiscountDetails?.bestCamperEligible === true;
     }
+    const unityQuote = unityCamp ? unityCampQuote(spotsNeeded) : null;
+    if (unityQuote) Object.assign(reg, unityQuote);
 
     // submissions 카운터 증가 (신청 접수 즉시)
     const [curSubsM, curSubsF] = await Promise.all([
@@ -767,7 +772,8 @@ export async function onRequestPost(context) {
       ])
     );
 
-    return Response.json({ success: true, pending: true, isWaitlist, waitlistNumber, ...(winterQuote ? { pricing: winterQuote } : {}) }, { headers: CORS });
+    const pricing = winterQuote || unityQuote;
+    return Response.json({ success: true, pending: true, isWaitlist, waitlistNumber, ...(pricing ? { pricing } : {}) }, { headers: CORS });
 
   } catch (e) {
     console.error('register error:', e);

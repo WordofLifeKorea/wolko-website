@@ -1,6 +1,6 @@
 export const WINTER_CAMP_POLICY = {
   campId: '2027-wolko-winter',
-  campIds: ['2027-wolko-winter', '2027-unity-winter'],
+  campIds: ['2027-wolko-winter'],
   version: 'winter-2027-v1',
   fee: 550000,
   deposit: 50000,
@@ -85,6 +85,47 @@ export function registrationState(campId, now = Date.now()) {
 
 export function usesWinterCampPolicy(campId) {
   return WINTER_CAMP_POLICY.campIds.includes(campId);
+}
+
+/**
+ * 2027 겨울 월코·교회 연합 캠프(공문 기준): 1인 90,000원(지도교사 포함), 12월 15일 전 등록 시 1인 10,000원 할인, 예약금 없음.
+ * 장학금은 없고, 교회가 단체로 신청하면 담당자가 개별 연락해 참가비 납부를 안내한다.
+ */
+export const UNITY_CAMP_POLICY = {
+  campIds: ['2027-unity-winter'],
+  version: 'unity-winter-2027-v1',
+  fee: 90000,
+  deposit: 0,
+  earlyDiscount: 10000,
+  earlyUntil: '2026-12-14T23:59:59.999+09:00',
+  earlyKo: '12월 15일 전 등록 할인',
+  earlyEn: 'Registered before Dec 15',
+};
+
+export function usesUnityCampPolicy(campId) {
+  return UNITY_CAMP_POLICY.campIds.includes(campId);
+}
+
+/** 교회 연합캠프는 교회 단체로만 받고, 학생 명단은 신청 뒤에 받는다. */
+export function isUnionGroupCamp(campId) {
+  return campId === '2026-inland-union' || usesUnityCampPolicy(campId);
+}
+
+/** 연합캠프 참가비 — 접수 시각이 12월 14일(한국 시간)까지면 인원마다 할인한다. 신청 기록에 그대로 덧붙인다. */
+export function unityCampQuote(spots = 1, appliedAt = Date.now()) {
+  const policy = UNITY_CAMP_POLICY;
+  const count = Math.max(1, parseInt(spots, 10) || 1);
+  const early = new Date(appliedAt).getTime() <= Date.parse(policy.earlyUntil);
+  const discount = early ? policy.earlyDiscount * count : 0;
+  return {
+    scholarshipPolicyVersion: policy.version,
+    scholarshipDiscounts: early ? { early_registration: count } : {},
+    scholarshipDiscountAmount: discount,
+    scholarshipDiscountText: early ? `${policy.earlyKo} ${count}명 (${discount.toLocaleString('ko-KR')}원 할인)` : '',
+    campFeeBase: policy.fee * count,
+    campFeeFinal: policy.fee * count - discount,
+    depositAmount: 0,
+  };
 }
 
 export function winterCampQuote(values, spots = 1, appliedAt = Date.now(), { perCamper = false } = {}) {

@@ -642,6 +642,13 @@ body.lang-en .crp-countdown-notice {
 .crp-tab-title { font-size: 15px; font-weight: 700; color: inherit; line-height: 1; }
 .crp-tab-sub { font-size: 13px; font-weight: 500; color: inherit; opacity: .72; line-height: 1; }
 .crp-modal--union-camp .crp-type-tabs { display: none; }
+/* 연합캠프(예약금 없음 · 장학금 없음): 장학금 고르는 칸과 예약금 계좌 안내를 숨기고 참가비만 보여 준다 */
+/* 언어 전환 규칙(#lang-root.lang-en .wl-en)보다 앞서도록 id를 두 번 쓴다 */
+#crpModal#crpModal:not(.crp-modal--unity) .crp-unity-only { display: none !important; }
+#crpModal#crpModal.crp-modal--unity .crp-unity-hide { display: none !important; }
+.crp-unity-fee-note { margin: 0 0 4px; }
+/* 환불 규정 창은 신청 창 밖에 있어서, 연합캠프 신청 중이면 예약금 항목만 뺀다 */
+body:has(#crpModal.crp-modal--unity) .crp-refund-section--deposit { display: none; }
 /* 접수 완료 화면에서는 신청 유형 전환이 필요 없으므로 감춘다 (모양만) */
 .crp-modal-card:has(#crpSuccessWrap:not([hidden])) .crp-type-tabs,
 .crp-modal-card:has(#staffSuccessWrap:not([hidden])) .crp-type-tabs { display: none; }
@@ -1749,7 +1756,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
           <div class="crp-modal-cap-fill-m" id="crpModalCapFillM"></div>
           <div class="crp-modal-cap-fill-f" id="crpModalCapFillF"></div>
         </div>
-        <div class="crp-modal-bank">
+        <div class="crp-modal-bank crp-unity-hide">
           <div class="crp-modal-bank-top">
             <span class="crp-modal-bank-label"><span class="wl-ko">예약금 및 캠프 참가비 입금계좌</span><span class="wl-en">Deposit &amp; Camp Fee Account</span></span>
             <button type="button" class="crp-acct-copy" data-copy="301-0343-5409-21">
@@ -1890,7 +1897,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 <input id="crpGPhone" class="wl-tall" name="gPhone" data-intl-phone placeholder="010-0000-0000">
               </div>
               <div class="crp-field crp-field--full">
-                <label><span class="wl-ko">총 참여 인원</span><span class="wl-en">Total Participants</span> <span class="req">*</span></label>
+                <label><span class="wl-ko">총 참여 인원</span><span class="wl-en">Total Participants</span> <span class="crp-unity-only"><span class="wl-ko">(지도교사 포함)</span><span class="wl-en">(leaders included)</span></span> <span class="req">*</span></label>
                 <select id="crpGCount" class="wl-tall" name="gCount" data-opt-ko="— 선택 —" data-opt-en="— Select —">
                   <option value="">— 선택 —</option>
                   {Array.from({length: 59}, (_, i) => i + 2).map(n => (
@@ -1959,16 +1966,20 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
           </label>
 
           <div class="crp-form-section">
-            <span class="crp-form-section-label"><span class="wl-ko">장학금 / 할인</span><span class="wl-en">Scholarship / Discounts</span></span>
+            <span class="crp-form-section-label"><span class="crp-unity-hide"><span class="wl-ko">장학금 / 할인</span><span class="wl-en">Scholarship / Discounts</span></span><span class="crp-unity-only"><span class="wl-ko">참가비</span><span class="wl-en">Camp Fee</span></span></span>
             <hr class="crp-form-section-line">
           </div>
           <div class="crp-field crp-field--full">
-            <label>
+            <label class="crp-unity-hide">
               <span class="wl-ko">해당되는 할인 항목 선택</span>
               <span class="wl-en">Select applicable discounts</span>
             </label>
+            <p class="crp-help crp-unity-only crp-unity-fee-note">
+              <span class="wl-ko">참가비는 1인 90,000원(지도교사 포함)입니다. 12월 15일 전에 등록하면 1인 10,000원 할인이 저절로 적용됩니다. 예약금은 없습니다.</span>
+              <span class="wl-en">The camp fee is KRW 90,000 per person, leaders included. Register before December 15 and KRW 10,000 per person comes off automatically. There is no deposit.</span>
+            </p>
             <p id="crpWinterScholarshipNotice" hidden><span class="wl-ko">최대 두 항목 선택 가능 (베스트 캠퍼는 별도, 중복 선택 가능) · 단체도 동일 적용 · 암송 장학금은 종료 후 확인하여 지급하며 참가비에서 미리 차감하지 않습니다.</span><span class="wl-en">Pick up to two options, and it works for groups too! Best Camper is a bonus and doesn't count toward the limit. The memorization reward is given after camp once we've checked, so it isn't taken off your fee upfront.</span></p>
-            <div class="crp-scholarship-options" id="crpScholarshipIndividual">
+            <div class="crp-scholarship-options crp-unity-hide" id="crpScholarshipIndividual">
               <label class="crp-scholarship-option">
                 <input type="checkbox" name="scholarshipDiscount" value="wolbi_syme">
                 <span>
@@ -1998,7 +2009,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               </label>
             </div>
             <div class="crp-camper-sch" id="crpCamperScholarships" hidden></div>
-            <div class="crp-scholarship-options" id="crpScholarshipGroup" hidden>
+            <div class="crp-scholarship-options crp-unity-hide" id="crpScholarshipGroup" hidden>
               <label class="crp-scholarship-option crp-scholarship-option--count">
                 <span>
                   <strong class="wl-ko">월비 또는 SYME 졸업자 및 참여자의 자녀 · 소개</strong>
@@ -2028,7 +2039,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               </label>
             </div>
             <label id="crpBestCamperConfirmation" class="crp-consent" hidden><input id="crpBestCamperEligible" type="checkbox"><span><strong class="wl-ko">바로 지난 캠프의 Best Camper 수상자임을 확인합니다. 그 이전 캠프 수상자는 해당하지 않습니다.</strong><strong class="wl-en">Yes, everyone claiming this was Best Camper at the camp right before this one. (Winners from earlier camps don't qualify.)</strong></span></label>
-            <div class="crp-scholarship-details" id="crpScholarshipDetails" hidden>
+            <div class="crp-scholarship-details crp-unity-hide" id="crpScholarshipDetails" hidden>
               <div class="crp-scholarship-detail" id="crpWolbiSymeDetail" hidden>
                 <strong class="crp-scholarship-detail-title">
                   <span class="wl-ko">월비 또는 SYME 졸업자 및 프로그램 참여자 추천·소개 정보</span>
@@ -2096,7 +2107,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 <strong id="crpBalanceFeePreview">459,000원</strong>
               </div>
               <div class="crp-fee-row crp-fee-row--total">
-                <span class="wl-ko">총 캠프 참여비 (예약금 포함)</span><span class="wl-en">Total camp fee (deposit included)</span>
+                <span class="crp-unity-hide"><span class="wl-ko">총 캠프 참여비 (예약금 포함)</span><span class="wl-en">Total camp fee (deposit included)</span></span>
+                <span class="crp-unity-only"><span class="wl-ko">총 캠프 참가비</span><span class="wl-en">Total camp fee</span></span>
                 <strong id="crpFinalFeePreview">499,000원</strong>
               </div>
             </div>
@@ -2139,11 +2151,15 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
           <label class="crp-consent crp-consent--deposit">
             <input type="checkbox" id="crpDepositConsent">
             <label for="crpDepositConsent">
-              <strong class="wl-ko">예약금과 캠프 참가비의 입금이 모두 확인된 후 캠프 등록이 최종 확정됨을 이해합니다.</strong>
-              <strong class="wl-en">I understand that camp registration is finalized only after both the deposit and camp fee payments have been verified.</strong>
+              <strong class="wl-ko crp-unity-hide">예약금과 캠프 참가비의 입금이 모두 확인된 후 캠프 등록이 최종 확정됨을 이해합니다.</strong>
+              <strong class="wl-en crp-unity-hide">I understand that camp registration is finalized only after both the deposit and camp fee payments have been verified.</strong>
+              <strong class="wl-ko crp-unity-only">캠프 참가비 입금이 확인된 후 캠프 등록이 최종 확정됨을 이해합니다.</strong>
+              <strong class="wl-en crp-unity-only">I understand that registration is finalized once the camp fee payment has been verified.</strong>
               <br>
-              <span class="wl-ko crp-note">신청 후 안내된 계좌로 예약금과 캠프 참가비를 입금해 주세요. 신청 인원이 캠프 정원을 초과하는 경우, 예약금 입금이 확인된 순서에 따라 참가 우선순위가 결정됩니다.</span>
-              <span class="wl-en crp-note">After applying, please transfer the deposit and camp fee to the provided account. If applications exceed camp capacity, participation priority will be determined by the order in which deposit payments are verified.</span>
+              <span class="wl-ko crp-note crp-unity-hide">신청 후 안내된 계좌로 예약금과 캠프 참가비를 입금해 주세요. 신청 인원이 캠프 정원을 초과하는 경우, 예약금 입금이 확인된 순서에 따라 참가 우선순위가 결정됩니다.</span>
+              <span class="wl-en crp-note crp-unity-hide">After applying, please transfer the deposit and camp fee to the provided account. If applications exceed camp capacity, participation priority will be determined by the order in which deposit payments are verified.</span>
+              <span class="wl-ko crp-note crp-unity-only">연합캠프는 예약금이 없습니다. 납부 방법과 기한은 신청 후 담당자가 개별로 안내해 드립니다.</span>
+              <span class="wl-en crp-note crp-unity-only">Unity Camp has no deposit. Our team will tell you how and when to pay after you apply.</span>
             </label>
           </label>
 
@@ -2189,10 +2205,10 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
         <!-- 예약금 입금 안내 -->
         <div class="crp-success-bank" id="crpSuccessBank">
           <div class="crp-success-bank-title">
-            <span class="wl-ko">예약금 입금 안내</span>
-            <span class="wl-en">Deposit Payment Info</span>
+            <span class="crp-unity-hide"><span class="wl-ko">예약금 입금 안내</span><span class="wl-en">Deposit Payment Info</span></span>
+            <span class="crp-unity-only"><span class="wl-ko">참가비 안내</span><span class="wl-en">Camp Fee</span></span>
           </div>
-          <div class="crp-success-bank-amount">
+          <div class="crp-success-bank-amount crp-unity-hide">
             <span class="wl-ko">예약금</span><span class="wl-en">Deposit</span>
             &nbsp;<strong id="crpDepositAmount">—</strong>
             <span id="crpDepositBreakdown" style="font-size:12px;color:var(--c-muted);font-weight:400;margin-left:6px;"></span>
@@ -2207,15 +2223,16 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               <strong id="crpSuccessDiscount">0원</strong>
             </div>
             <div class="crp-fee-row crp-fee-row--total">
-              <span class="wl-ko">총 캠프 참여비 (예약금 포함)</span><span class="wl-en">Total camp fee (deposit included)</span>
+              <span class="crp-unity-hide"><span class="wl-ko">총 캠프 참여비 (예약금 포함)</span><span class="wl-en">Total camp fee (deposit included)</span></span>
+              <span class="crp-unity-only"><span class="wl-ko">총 캠프 참가비</span><span class="wl-en">Total camp fee</span></span>
               <strong id="crpSuccessFinalFee">499,000원</strong>
             </div>
-            <div class="crp-fee-row crp-fee-row--balance">
+            <div class="crp-fee-row crp-fee-row--balance crp-unity-hide">
               <span class="wl-ko">예약금 납부 후 잔금</span><span class="wl-en">Balance after deposit</span>
               <strong id="crpSuccessBalanceFee">459,000원</strong>
             </div>
           </div>
-          <div class="crp-success-bank-info">
+          <div class="crp-success-bank-info crp-unity-hide">
             <div class="crp-success-bank-row">
               <span class="crp-bank-label wl-ko">은행</span><span class="crp-bank-label wl-en">Bank</span>
               <span class="crp-bank-val"><span class="wl-ko">농협</span><span class="wl-en">NH Bank</span></span>
@@ -2229,8 +2246,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               <span class="crp-bank-val"><span class="wl-ko">(사)한국생명의말씀협회</span><span class="wl-en">Korea Word of Life Association (Inc.)</span></span>
             </div>
           </div>
-          <p class="crp-success-bank-note wl-ko" id="crpBankNoteKo">입금자명을 <strong>신청자 이름</strong>으로 해주세요.<br>입금 확인 후 담당자가 최종 확정 처리합니다.</p>
-          <p class="crp-success-bank-note wl-en" id="crpBankNoteEn">Please use the <strong>registrant's name</strong> as the transfer memo.<br>Registration will be finalized after payment is verified.</p>
+          <p class="crp-success-bank-note wl-ko crp-unity-hide" id="crpBankNoteKo">입금자명을 <strong>신청자 이름</strong>으로 해주세요.<br>입금 확인 후 담당자가 최종 확정 처리합니다.</p>
+          <p class="crp-success-bank-note wl-en crp-unity-hide" id="crpBankNoteEn">Please use the <strong>registrant's name</strong> as the transfer memo.<br>Registration will be finalized after payment is verified.</p>
         </div>
 
         <p class="crp-success-count" id="crpSuccessCount"></p>
@@ -2264,7 +2281,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
       </div>
     </div>
     <div class="crp-refund-modal-body" id="crpRefundModalBody">
-      <div class="crp-refund-section">
+      <div class="crp-refund-section crp-refund-section--deposit">
         <div class="crp-refund-section-head wl-ko">예약금</div>
         <div class="crp-refund-section-head wl-en">Deposit</div>
         <div class="crp-refund-row wl-ko">예약 3일 경과 후 취소 시 위약금으로 처리되며 반환되지 않습니다.</div>
@@ -2704,7 +2721,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
 </div>
 
 <script>
-import { BIRTH_YEAR_RANGES, GENDER_CAPACITY, WINTER_CAMP_POLICY, birthYearCheck, registrationState, usesWinterCampPolicy, winterCampQuote } from '../../../functions/lib/winterCampPolicy.js';
+import { BIRTH_YEAR_RANGES, GENDER_CAPACITY, UNITY_CAMP_POLICY, WINTER_CAMP_POLICY, birthYearCheck, isUnionGroupCamp, registrationState, usesUnityCampPolicy, usesWinterCampPolicy, winterCampQuote } from '../../../functions/lib/winterCampPolicy.js';
 /* ── Reveal 애니메이션: 스크롤하면 제목·캠프 카드가 아래에서 차례로 떠오른다 (사역·캠프 페이지와 같은 방식).
    움직임 줄이기 설정이거나 IntersectionObserver 가 없으면 아무것도 하지 않는다 — 처음부터 그대로 다 보인다.
    신청 모달과 입력칸은 대상이 아니다. ── */
@@ -2900,11 +2917,20 @@ var SCHOLARSHIP_DISCOUNTS = {
 var legacyScholarshipDiscounts = SCHOLARSHIP_DISCOUNTS;
 var legacyScholarshipOptions = ['crpScholarshipIndividual', 'crpScholarshipGroup'].map(function(id) { return document.getElementById(id).innerHTML; });
 
+// 연합캠프: 장학금 고르는 칸 대신 "12월 15일 전 등록 할인"이 인원수만큼 저절로 붙고, 예약금이 없다
+var UNITY_DISCOUNTS = { early_registration: { amount: UNITY_CAMP_POLICY.earlyDiscount, ko: UNITY_CAMP_POLICY.earlyKo, en: UNITY_CAMP_POLICY.earlyEn } };
+function crpUnityMode() {
+  return usesUnityCampPolicy(campIdInput.value);
+}
+
 function setWinterScholarshipMode() {
   var winter = usesWinterCampPolicy(campIdInput.value);
-  CAMP_BASE_FEE = winter ? WINTER_CAMP_POLICY.fee : 499000;
+  var unity = crpUnityMode();
+  CAMP_BASE_FEE = winter ? WINTER_CAMP_POLICY.fee : unity ? UNITY_CAMP_POLICY.fee : 499000;
   if (winter) campDepositInput.value = String(WINTER_CAMP_POLICY.deposit);
-  SCHOLARSHIP_DISCOUNTS = winter ? WINTER_CAMP_POLICY.discounts : legacyScholarshipDiscounts;
+  if (unity) campDepositInput.value = String(UNITY_CAMP_POLICY.deposit);
+  modal.classList.toggle('crp-modal--unity', unity);
+  SCHOLARSHIP_DISCOUNTS = winter ? WINTER_CAMP_POLICY.discounts : unity ? UNITY_DISCOUNTS : legacyScholarshipDiscounts;
   ['crpScholarshipIndividual', 'crpScholarshipGroup'].forEach(function(id, index) {
     var container = document.getElementById(id);
     container.innerHTML = winter ? Object.keys(SCHOLARSHIP_DISCOUNTS).map(function(key) {
@@ -2924,7 +2950,7 @@ function setWinterScholarshipMode() {
 }
 
 function crpIsUnionCampId(campId) {
-  return campId === '2026-inland-union';
+  return isUnionGroupCamp(campId);
 }
 
 function crpIsUnionCampMode() {
@@ -2975,6 +3001,10 @@ function getSelectedScholarshipDiscounts() {
 }
 
 function getScholarshipCounts() {
+  if (crpUnityMode()) {
+    var people = scholarshipParticipantCount();
+    return people > 0 && Date.now() <= Date.parse(UNITY_CAMP_POLICY.earlyUntil) ? { early_registration: people } : {};
+  }
   if (crpPerCamperMode()) {
     return crpCamperRows().reduce(function(acc, row) {
       crpCamperScholarshipKeys(row).forEach(function(key) { acc[key] = (acc[key] || 0) + 1; });
@@ -3044,6 +3074,21 @@ function crpPaymentNoticeHtml(balanceLabel, english) {
       '<span data-num="1"><em>캠프 정원이 초과될 경우, 예약금 입금이 확인된 순서에 따라 참여 우선순위가 정해집니다.</em></span>' +
       '<span data-num="2"><em>예약금 없이 캠프 참여비 전액을 바로 납부하시면 캠프 참여가 즉시 확정 등록됩니다.</em></span>' +
       '<span data-num="3"><em>예약금 납부 후 남은 금액 <strong>' + balanceLabel + '</strong>은 예약금 납부일로부터 7일 이내 또는 캠프 시작 전날까지 납부해 주세요. 기한 내 잔여 캠프 참여비가 납부되지 않을 경우 신청이 취소될 수 있습니다.</em></span>' +
+    '</span>';
+}
+
+function crpUnityNoticeHtml(english) {
+  if (english) {
+    return '<strong class="crp-success-notice-title">Camp Fee Notice</strong>' +
+      '<span class="crp-success-notice-list">' +
+        '<span data-num="1"><em>The camp fee is KRW 90,000 per person, leaders included. Register before December 15 and it is KRW 10,000 less per person.</em></span>' +
+        '<span data-num="2"><em>There is no deposit. Our team will contact you about how and when to pay.</em></span>' +
+      '</span>';
+  }
+  return '<strong class="crp-success-notice-title">참가비 안내</strong>' +
+    '<span class="crp-success-notice-list">' +
+      '<span data-num="1"><em>참가비는 1인 90,000원(지도교사 포함)이며, 12월 15일 전에 등록하면 1인 10,000원 할인됩니다.</em></span>' +
+      '<span data-num="2"><em>예약금은 없습니다. 납부 방법과 기한은 담당자가 개별로 안내해 드립니다.</em></span>' +
     '</span>';
 }
 
@@ -3944,15 +3989,17 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
         feeSummaryEl.hidden = false;
       }
 
-      var paymentNoticeKo = crpPaymentNoticeHtml(paymentBalanceLabel, false);
-      var paymentNoticeEn = crpPaymentNoticeHtml(paymentBalanceLabel, true);
+      var paymentNoticeKo = crpUnityMode() ? crpUnityNoticeHtml(false) : crpPaymentNoticeHtml(paymentBalanceLabel, false);
+      var paymentNoticeEn = crpUnityMode() ? crpUnityNoticeHtml(true) : crpPaymentNoticeHtml(paymentBalanceLabel, true);
 
       if (currentType === 'group') {
         var gm = payload.maleCount, gf = payload.femaleCount, gc = payload.groupCount;
         successMsg.innerHTML = payload.participantDetailsDeferred
           ? (!crpIsUnionCampMode() ? (isEn
               ? 'Your group registration for <strong>' + gc + ' participants</strong> has been received. The participant list can be submitted later.<br>Please transfer the deposit below.'
-              : '<strong>총 ' + gc + '명</strong>의 단체 신청이 접수되었습니다. 참가 학생 명단은 추후 제출해 주세요.<br>아래 계좌로 예약금을 입금해 주세요.') : (isEn
+              : '<strong>총 ' + gc + '명</strong>의 단체 신청이 접수되었습니다. 참가 학생 명단은 추후 제출해 주세요.<br>아래 계좌로 예약금을 입금해 주세요.') : crpUnityMode() ? (isEn
+              ? 'Your Unity Camp registration for <strong>' + gc + ' participants</strong> has been received.<br>There is no deposit. Our team will contact you about paying the camp fee.'
+              : '<strong>총 ' + gc + '명</strong>의 연합캠프 신청이 접수되었습니다.<br>예약금은 없으며, 담당자가 개별로 연락드려 참가비 납부를 안내해 드립니다.') : (isEn
               ? 'Your Unity Camp registration for <strong>' + gc + ' participants</strong> has been received.<br>Please transfer the deposit below.'
               : '<strong>총 ' + gc + '명</strong>의 연합캠프 신청이 접수되었습니다.<br>아래 계좌로 예약금을 입금해 주세요.'))
           : (isEn

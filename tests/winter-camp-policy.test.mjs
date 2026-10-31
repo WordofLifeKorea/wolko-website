@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { runInNewContext } from 'node:vm';
-import { WINTER_CAMP_POLICY as policy, usesWinterCampPolicy, winterCampQuote } from '../functions/lib/winterCampPolicy.js';
+import { UNITY_CAMP_POLICY, WINTER_CAMP_POLICY as policy, isUnionGroupCamp, unityCampQuote, usesUnityCampPolicy, usesWinterCampPolicy, winterCampQuote } from '../functions/lib/winterCampPolicy.js';
 import { onRequestPost } from '../functions/api/register.js';
 
 const beforeDeadline = '2026-11-04T23:59:59.999+09:00';
@@ -18,20 +18,37 @@ test('content schema retains deposits and the modal uses policy deposits after r
   assert.match(policy.discounts.excellent_camper.note_ko, /바로 직전 캠프의 베스트 캠퍼만/);
 });
 
-test('winter union camp uses the same policy in the card, form and API', async () => {
-  assert.equal(usesWinterCampPolicy('2027-unity-winter'), true);
-  assert.equal(usesWinterCampPolicy('2026-inland-union'), false);
+test('Unity Camp follows its own letter: KRW 90,000 per person, KRW 10,000 off before Dec 15, no deposit', async () => {
+  assert.equal(usesWinterCampPolicy('2027-unity-winter'), false, '겨울 영어캠프 정책은 영어캠프에만');
+  assert.equal(usesUnityCampPolicy('2027-unity-winter'), true);
+  assert.equal(isUnionGroupCamp('2027-unity-winter'), true, '교회 단체로 받고 명단은 나중에');
+  assert.equal(isUnionGroupCamp('2026-inland-union'), true);
+  assert.equal(isUnionGroupCamp('2027-wolko-winter'), false);
   const card = JSON.parse(readFileSync(new URL('../src/content/camp_schedules/2027-unity-winter.json', import.meta.url), 'utf8'));
   assert.match(card.price_ko, /1인 90,000원/);   // 공문(2027 겨울 월코·교회 연합 캠프) 기준 안내
-  assert.equal(card.deposit_amount, 50000);
-  const { response, store } = await register({ campId: '2027-unity-winter', scholarshipDiscounts: { james_memory: 1, excellent_camper: 1 }, scholarshipDiscountDetails: { bestCamperEligible: true } });
-  assert.equal(response.status, 200);
-  const reg = JSON.parse([...store.entries()].find(([key]) => key.includes(':reg:'))[1]);
-  assert.equal(reg.campFeeBase, 550000);
-  assert.equal(reg.depositAmount, 50000);
-  assert.equal(reg.campFeeFinal, 350000);
-  assert.equal(reg.scholarshipDeferredReward, 100000);
-  assert.equal(reg.scholarshipPolicyVersion, policy.version);
+  assert.equal(card.deposit_amount, 0, '연합캠프는 예약금이 없다');
+
+  const church = { campId: '2027-unity-winter', registrationType: 'group', groupCount: 12, participants: [], church: '평택교회',
+    scholarshipDiscounts: { excellent_camper: 1 }, scholarshipDiscountDetails: { bestCamperEligible: true } };
+  const early = await register({ ...church, __now: '2026-12-14T23:00:00+09:00' });
+  assert.equal(early.response.status, 200);
+  const reg = JSON.parse([...early.store.entries()].find(([key]) => key.includes(':reg:'))[1]);
+  assert.equal(reg.participantDetailsDeferred, true);
+  assert.equal(reg.campFeeBase, 1080000);
+  assert.equal(reg.scholarshipDiscountAmount, 120000, '장학금은 무시하고 등록 할인만');
+  assert.equal(reg.campFeeFinal, 960000);
+  assert.equal(reg.depositAmount, 0);
+  assert.equal(reg.scholarshipPolicyVersion, UNITY_CAMP_POLICY.version);
+
+  const late = await register({ ...church, __now: '2026-12-15T00:00:00+09:00' });
+  const lateReg = JSON.parse([...late.store.entries()].find(([key]) => key.includes(':reg:'))[1]);
+  assert.equal(lateReg.campFeeFinal, 1080000, '12월 15일부터는 할인이 없다');
+  assert.deepEqual(unityCampQuote(3, '2026-12-01T12:00:00+09:00').campFeeFinal, 240000);
+
+  const page = readFileSync(new URL('../src/pages/camp-register/index.astro', import.meta.url), 'utf8');
+  assert.match(page, /if \(unity\) campDepositInput\.value = String\(UNITY_CAMP_POLICY\.deposit\)/);
+  assert.match(page, /#crpModal#crpModal\.crp-modal--unity \.crp-unity-hide \{ display: none !important; \}/);
+  assert.match(page, /<div class="crp-success-bank-info crp-unity-hide">/, '계좌 안내는 숨긴다');
 });
 
 test('winter fee, deposit and balance match the new policy', () => {
