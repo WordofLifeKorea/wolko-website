@@ -1,18 +1,23 @@
 /* CRS 입력 자동 번역 — 화면 쪽 도우미. 한글로 적은 글은 영어로, 영어로 적은 글은 한글로 번역해 같은 기록 안의 tr 에 함께 저장한다.
- *   tr = { 칸이름: { l: 번역 언어('en'|'ko'), t: 번역문, s: 번역할 때의 원문 } }
+ *   tr = { 칸이름: { l: 번역 언어('en'|'ko'), t: 번역문, s: 번역할 때의 원문, v: 번역 방식 판(TR_V) } }
+ * 교회 · 사람 · 장소 이름은 "Sarang Church (사랑의교회)"처럼 원문을 괄호로 함께 적는다. 판(v)이 TR_V 보다 낮은 예전 번역은 화면에는 그대로 쓰되,
+ * 다음에 저장하거나 CRS 를 열 때 뒤에서 새 방식으로 다시 번역한다.
  * 원문이 나중에 고쳐지면 s 가 달라져 낡은 번역은 쓰지 않고(원문을 보여 주고), 저장할 때 새로 번역한다.
  * 번역 서버(/api/portal/crs-translate)가 없거나 실패하면 번역 없이 원문만 저장 — 저장을 막지 않는다. */
 (function () {
   'use strict';
   var API = '/api/portal/crs-translate', TOKEN_KEY = 'wolko-hub-token', MAX = 30, TIMEOUT = 20000;
-  var CHURCH_FIELDS = { churchName: 'church', pastorName: 'person', assignedMissionary: 'person', notes: 'note' };   // 주소는 지도 검색에 쓰이므로 번역하지 않고 입력한 그대로 둔다
+  var TR_V = 2;
+  // 주소(location)는 지도 검색 · 위치에는 입력한 원문을 그대로 쓰고, 번역은 화면에 보여 줄 때만 쓴다. 교단은 거르기(필터)에 원문을 쓴다.
+  var CHURCH_FIELDS = { churchName: 'church', pastorName: 'person', assignedMissionary: 'person', denomination: 'church', location: 'address', notes: 'note' };
   var VISIT_FIELDS = { visitor: 'person', notes: 'note' };
   var ENTRY_FIELDS = { person: 'person' };
 
-  /** 한글 글자가 글자 수의 30% 이상이면 ko, 아니면 en (서버 detectLang 과 같은 규칙) */
+  /** 한글 글자가 글자 수의 30% 이상이면 ko, 아니면 en — 괄호 속(함께 적은 고유명사)은 빼고 본다 (서버 detectLang 과 같은 규칙) */
+  function detectRaw(s) { var ko = (s.match(/[가-힣]/g) || []).length, en = (s.match(/[A-Za-z]/g) || []).length; return ko > 0 && ko / (ko + en) >= 0.3 ? 'ko' : 'en'; }
   function detectLang(text) {
-    var s = String(text == null ? '' : text), ko = (s.match(/[가-힣]/g) || []).length, en = (s.match(/[A-Za-z]/g) || []).length;
-    return ko > 0 && ko / (ko + en) >= 0.3 ? 'ko' : 'en';
+    var s = String(text == null ? '' : text), bare = s.replace(/\([^()]*\)/g, ' ');
+    return /[가-힣A-Za-z]/.test(bare) ? detectRaw(bare) : detectRaw(s);
   }
   var hasLetters = function (s) { return /[가-힣A-Za-z]/.test(String(s == null ? '' : s)); };
   var textOf = function (obj, key) { return obj && obj[key] != null ? String(obj[key]).trim() : ''; };
@@ -28,10 +33,12 @@
     keys.forEach(function (k) { var e = obj && obj.tr && obj.tr[k]; out.push(obj && obj[k] != null ? String(obj[k]) : ''); if (e && e.t && e.s === textOf(obj, k)) out.push(e.t); });
     return out.join(' ').toLowerCase();
   }
-  /** 새 번역이 필요한 칸 — 글이 있고(글자가 포함) 아직 번역이 없거나, 원문이 달라진 것 */
+  /** 지금 방식(판)의 새 번역인지 */
+  function fresh(e, v) { return !!(e && e.t && e.s === v && (e.v || 1) >= TR_V); }
+  /** 새 번역이 필요한 칸 — 글이 있고(글자가 포함) 아직 번역이 없거나, 원문이 달라졌거나, 예전 방식 번역인 것 */
   function missing(obj, fields, prevTr) {
     var tr = prevTr || (obj && obj.tr) || {};
-    return Object.keys(fields).filter(function (k) { var v = textOf(obj, k), e = tr[k]; return v && hasLetters(v) && !(e && e.t && e.s === v); });
+    return Object.keys(fields).filter(function (k) { var v = textOf(obj, k); return v && hasLetters(v) && !fresh(tr[k], v); });
   }
   function authHeaders() { var h = { 'Content-Type': 'application/json' }; try { h.Authorization = 'Bearer ' + (sessionStorage.getItem(TOKEN_KEY) || ''); } catch (e) { /* 토큰 없이 시도 → 401 → 번역 없이 저장 */ } return h; }
 
@@ -50,11 +57,11 @@
   /** 한 기록(obj)의 새 번역이 필요한 칸을 번역해, 새로 만든 tr 을 돌려준다(이미 새 번역인 칸은 그대로 유지). 번역이 하나도 없으면 null */
   async function fill(obj, fields, prevTr) {
     var tr = {}, keep = prevTr || (obj && obj.tr) || {};
-    Object.keys(keep).forEach(function (k) { if (fields[k] && keep[k] && keep[k].t && keep[k].s === textOf(obj, k)) tr[k] = keep[k]; });
+    Object.keys(keep).forEach(function (k) { if (fields[k] && keep[k] && keep[k].t && keep[k].s === textOf(obj, k)) tr[k] = keep[k]; });   // 예전 판도 새 번역이 올 때까지는 남겨 둔다
     var keys = missing(obj, fields, keep);
     if (keys.length) {
       var got = await request(keys.map(function (k) { return { text: textOf(obj, k), kind: fields[k] }; }));
-      if (got) keys.forEach(function (k, i) { if (got[i] && got[i].text) tr[k] = { l: got[i].lang, t: got[i].text, s: textOf(obj, k) }; });
+      if (got) keys.forEach(function (k, i) { if (got[i] && got[i].text) tr[k] = { l: got[i].lang, t: got[i].text, s: textOf(obj, k), v: TR_V }; });
     }
     return Object.keys(tr).length ? tr : null;
   }
@@ -70,10 +77,10 @@
     return jobs.map(function (j, n) {
       var tr = {}, keep = (j.obj && j.obj.tr) || {};
       Object.keys(keep).forEach(function (k) { if (j.fields[k] && keep[k] && keep[k].t && keep[k].s === textOf(j.obj, k)) tr[k] = keep[k]; });
-      plan[n].forEach(function (k) { var r = got && got[at]; at++; if (r && r.text) tr[k] = { l: r.lang, t: r.text, s: textOf(j.obj, k) }; });
+      plan[n].forEach(function (k) { var r = got && got[at]; at++; if (r && r.text) tr[k] = { l: r.lang, t: r.text, s: textOf(j.obj, k), v: TR_V }; });
       return Object.keys(tr).length ? tr : null;
     });
   }
 
-  window.CrsTr = { detectLang: detectLang, pick: pick, searchText: searchText, missing: missing, fill: fill, fillMany: fillMany, request: request, CHURCH_FIELDS: CHURCH_FIELDS, VISIT_FIELDS: VISIT_FIELDS, ENTRY_FIELDS: ENTRY_FIELDS };
+  window.CrsTr = { TR_V: TR_V, detectLang: detectLang, pick: pick, searchText: searchText, missing: missing, fill: fill, fillMany: fillMany, request: request, CHURCH_FIELDS: CHURCH_FIELDS, VISIT_FIELDS: VISIT_FIELDS, ENTRY_FIELDS: ENTRY_FIELDS };
 })();

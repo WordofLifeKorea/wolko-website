@@ -27,7 +27,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
   <link rel="stylesheet" href="/wolko-site.css?v=7">
   <script src="/wolko-rail.js?v=48" defer></script>
-  <script src="/crs-translate.js?v=1" defer></script>
+  <script src="/crs-translate.js?v=2" defer></script>
   <script is:inline src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}`}></script>
   <script is:inline src="/wolko-session.js?v=2"></script>
 </head>
@@ -1990,8 +1990,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       const visitsArr = Object.values(c.visits || {}).filter(Boolean);
       const lastVisitDisplay = latestVisitSummary(c);
       const metaItems = [
-        c.location ? `<span><em class="meta-label">${getLang()==='ko'?'지역':'Loc'}</em>${esc(c.location)}</span>` : '',
-        c.denomination ? `<span><em class="meta-label">${esc(t('denomination_label'))}</em>${esc(c.denomination)}</span>` : '',
+        c.location ? `<span><em class="meta-label">${getLang()==='ko'?'지역':'Loc'}</em>${esc(trText(c, 'location'))}</span>` : '',
+        c.denomination ? `<span><em class="meta-label">${esc(t('denomination_label'))}</em>${esc(trText(c, 'denomination'))}</span>` : '',
         c.assignedMissionary ? `<span><em class="meta-label">${esc(t('missionary_label'))}</em>${esc(trText(c, 'assignedMissionary'))}</span>` : '',
         visitsArr.length ? `<span><em class="meta-label">${getLang()==='ko'?'방문':'Visits'}</em>${visitsArr.length}회</span>` : '',
       ].filter(Boolean).join('');
@@ -2424,7 +2424,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       ${detailCoords ? '<div class="detail-map-preview"><div id="detail-map"></div></div>' : ''}
       <div class="detail-info" data-block="info" data-title="${isKo ? '교회 정보' : 'Church info'}">
         <div class="detail-info-row"><strong>${t('detail_pastor')}</strong> ${esc(trText(church, 'pastorName') || t('not_entered'))}${church.pastorPhone ? ` &nbsp;${esc(church.pastorPhone)}` : ''}</div>
-        ${church.location ? `<div class="detail-info-row"><strong>${t('detail_location')}</strong> ${esc(church.location)}</div>` : ''}
+        ${church.location ? `<div class="detail-info-row"><strong>${t('detail_location')}</strong> ${esc(trText(church, 'location'))}</div>` : ''}
         ${cleanWebsite(church.website) ? `<div class="detail-info-row"><strong>${t('website_label')}</strong> <a class="detail-website" href="${esc(cleanWebsite(church.website))}" target="_blank" rel="noopener noreferrer">${esc(websiteLabel(cleanWebsite(church.website)))} ↗</a></div>` : ''}
         ${church.notes ? `<div class="detail-info-row"><strong>${t('detail_notes')}</strong> ${esc(trText(church, 'notes'))}</div>` : ''}
         <div class="detail-info-row" style="margin-top:.3rem">

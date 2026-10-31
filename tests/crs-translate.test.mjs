@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
-import { translateCrsItems, cleanItems, buildPrompt, parseTranslations, MAX_ITEMS } from '../functions/lib/crsTranslate.js';
+import { translateCrsItems, cleanItems, buildPrompt, parseTranslations, MAX_ITEMS, detectLang, splitMixed } from '../functions/lib/crsTranslate.js';
 import * as api from '../functions/api/portal/crs-translate.js';
 import { createHubSessionToken } from '../functions/lib/hubAccounts.js';
 
@@ -77,7 +77,7 @@ test('화면 도우미: 화면 언어에 맞는 새 번역만 보여 주고, 원
 test('화면 도우미: 새로 번역할 칸만 서버에 보내고, 이미 번역된 칸은 그대로 둔다 (실패하면 null — 원문만 저장)', async () => {
   const calls = [];
   const T = loadHelper(async (url, init) => { calls.push(JSON.parse(init.body).items); return reply([{ lang: 'en', text: 'Hello' }])(); });
-  const prev = { pastorName: { l: 'en', t: 'Pastor Kim', s: '김 목사' } };
+  const prev = { pastorName: { l: 'en', t: 'Pastor Kim', s: '김 목사', v: T.TR_V } };
   const tr = await T.fill({ churchName: '', pastorName: '김 목사', notes: '안녕하세요', phone: '010' }, T.CHURCH_FIELDS, prev);
   assert.deepEqual(calls[0], [{ text: '안녕하세요', kind: 'note' }], '번역할 칸 하나만 보낸다');
   assert.deepEqual(Object.keys(tr).sort(), ['notes', 'pastorName']);
@@ -108,4 +108,52 @@ test('CRS 화면 연결: 저장할 때 번역하고, 보여 줄 때 화면 언�
   // 연락처·주소는 번역 대상이 아니다
   const helper = readFileSync(new URL('../public/crs-translate.js', import.meta.url), 'utf8');
   assert.doesNotMatch(helper, /pastorPhone|detailAddress: 'address'/);
+});
+
+test('언어 판정은 괄호 속 고유명사를 빼고 본다', () => {
+  assert.equal(detectLang('사랑의교회 (Sarang Church)'), 'ko');
+  assert.equal(detectLang('Sarang Church (사랑의교회)'), 'en');
+  assert.equal(detectLang('(사랑의교회)'), 'ko', '괄호뿐이면 전체로');
+  const T = loadHelper(async () => { throw new Error('no'); });
+  assert.equal(T.detectLang('Sarang Church (사랑의교회)'), 'en');
+});
+
+test('한글과 영어를 확실히 나란히 적은 글은 번역하지 않고 나눈다 — 애매하면 번역기로', async () => {
+  assert.deepEqual(splitMixed('사랑의교회 (SaRang Church)'), { ko: '사랑의교회', en: 'SaRang Church' });
+  assert.deepEqual(splitMixed('Grace Church / 은혜교회'), { ko: '은혜교회', en: 'Grace Church' });
+  assert.deepEqual(splitMixed('김철수 | Cheolsu Kim'), { ko: '김철수', en: 'Cheolsu Kim' });
+  assert.deepEqual(splitMixed('평택에서 만남\nMet in Pyeongtaek'), { ko: '평택에서 만남', en: 'Met in Pyeongtaek' });
+  for (const unclear of ['새빛교회 (구 빛교회)', 'GGC 사랑교회', 'Pastor 김', '평택중앙교회']) assert.equal(splitMixed(unclear), null, unclear);
+  let called = 0;
+  const out = await translateCrsItems({ ANTHROPIC_API_KEY: 'k' }, [{ text: '사랑의교회 (SaRang Church)', kind: 'church' }, { text: '평택에서 만남 / Met in Pyeongtaek', kind: 'note' }], { fetchImpl: async () => { called++; return sse('[]'); } });
+  assert.equal(called, 0, '나눌 수 있으면 번역기를 부르지 않는다');
+  assert.deepEqual(out, [{ lang: 'en', text: 'SaRang Church (사랑의교회)' }, { lang: 'en', text: 'Met in Pyeongtaek' }]);
+});
+
+test('번역 지시: 고유명사는 "번역 (원문)", 주소는 괄호 없이, 호칭 용어집도 함께', () => {
+  const { system } = buildPrompt([{ kind: 'church', from: 'ko', to: 'en', text: '사랑의교회' }]);
+  assert.match(system, /"Sarang Church \(사랑의교회\)"/);
+  assert.match(system, /"은혜공동체교회 \(Grace Community Church\)"/);
+  assert.match(system, /"Hwangyu Kim \(김환규\)"/);
+  assert.match(system, /Addresses:[^\n]*Do not add brackets/);
+  assert.match(system, /"Mrs\. Han" = "한권사님"/);
+});
+
+test('번역 결과도 호칭 용어집대로 바로잡는다', async () => {
+  const out = await translateCrsItems({ ANTHROPIC_API_KEY: 'k' }, [{ text: 'Met Mrs. Han at church', kind: 'note' }], { fetchImpl: async () => sse('[{"i":0,"text":"교회에서 한 여사님을 만남"}]') });
+  assert.equal(out[0].text, '교회에서 한권사님을 만남');
+});
+
+test('화면 도우미: 주소 · 교단도 번역하되 원문은 그대로 두고, 예전 방식 번역은 다시 번역한다', async () => {
+  const T = loadHelper(async (url, init) => reply(JSON.parse(init.body).items.map(i => ({ lang: 'en', text: 'T:' + i.text })))());
+  assert.equal(T.CHURCH_FIELDS.location, 'address'); assert.equal(T.CHURCH_FIELDS.denomination, 'church');
+  const church = { churchName: '평택교회', location: '경기도 평택시 경기대로 1407', tr: { churchName: { l: 'en', t: 'Pyeongtaek Church', s: '평택교회' } } };
+  assert.equal(JSON.stringify(T.missing(church, T.CHURCH_FIELDS).sort()), '["churchName","location"]', '판 표시 없는 예전 번역도 다시');
+  assert.equal(T.pick(church, 'churchName', 'en'), 'Pyeongtaek Church', '새 번역이 오기 전까지는 예전 번역을 보여 준다');
+  const tr = await T.fill(church, T.CHURCH_FIELDS, church.tr);
+  assert.equal(tr.location.t, 'T:경기도 평택시 경기대로 1407'); assert.equal(tr.location.v, T.TR_V);
+  assert.equal(church.location, '경기도 평택시 경기대로 1407', '주소 원문(지도 검색용)은 그대로');
+  const src = readFileSync(new URL('../src/pages/portal/crs/index.astro', import.meta.url), 'utf8');
+  assert.ok(src.includes("trText(church, 'location')") && src.includes("trText(c, 'denomination')"));
+  assert.match(src, /denominationFamily\(c\.denomination\)/, '교단 거르기는 원문으로');
 });
