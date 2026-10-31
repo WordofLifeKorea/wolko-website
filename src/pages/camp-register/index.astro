@@ -414,18 +414,19 @@ body.lang-en .crp-countdown-notice {
 }
 .staff-form-actions {
   position: sticky; bottom: 0; z-index: 25;
-  display: flex; gap: 12px;
+  /* 신청서 아래 버튼 줄(.crp-form-actions)과 같은 칸 나눔 */
+  display: grid; grid-template-columns: minmax(112px, 160px) minmax(0, 1fr); gap: 12px;
   margin: 28px -40px 0; padding: 16px 40px;
   background: #fff; border-top: 1px solid var(--c-field);
 }
-.staff-form-actions .crp-submit { flex: 1; margin-top: 0; }
+.staff-form-actions .crp-submit { margin-top: 0; }
 .staff-draft-btn {
-  flex: 0 0 auto; height: 52px; padding: 0 22px; border-radius: 2px;
-  border: 1px solid var(--c-deep); background: #fff; color: var(--c-deep);
+  height: 52px; padding: 0 16px; border-radius: 2px;
+  border: 1px solid var(--c-field); background: #fff; color: var(--c-navy);
   font-size: 15px; font-weight: 700; font-family: var(--f-sans); cursor: pointer;
-  transition: background-color 0.18s;
+  transition: background-color .2s, border-color .2s;
 }
-.staff-draft-btn:hover { background: var(--c-fill); }
+.staff-draft-btn:hover { background: var(--c-fill); border-color: var(--c-deep); }
 .staff-draft-btn:focus-visible { outline: 2px solid var(--c-deep); outline-offset: 2px; }
 .staff-draft-hint { margin: 12px 0 0; padding-bottom: 28px; font-size: 12px; color: var(--c-muted); text-align: center; }
 
@@ -497,7 +498,7 @@ body.lang-en .crp-countdown-notice {
   animation: crpSlideUp 0.28s cubic-bezier(0.22,1,0.36,1);
 }
 @media (min-width: 741px) {
-  #crpModal .crp-modal-card { max-width: 760px; }
+  #crpModal .crp-modal-card, #staffModal .crp-modal-card { max-width: 760px; }
 }
 /* 전역 스크롤바(투명 thin)는 자리가 넓어 카드 오른쪽에 흰 띠가 남으므로, 모달 안에서는 4px 얇은 막대로 바꾼다(Chrome 은 scrollbar-width 가 auto 여야 ::-webkit-scrollbar 가 적용된다) */
 .crp-modal-card, #staffModal .crp-staff-modal-body { scrollbar-width: auto; scrollbar-color: auto; }
@@ -649,15 +650,15 @@ body.lang-en .crp-countdown-notice {
 #crpModal .ip-cc { height: 48px !important; min-height: 48px !important; }
 #staffModal .crp-field input:not([type="checkbox"]):not([type="radio"]),
 #staffModal .crp-field select,
-#staffModal .ip-cc { height: 44px !important; min-height: 44px !important; }
+#staffModal .ip-cc { height: 48px !important; min-height: 48px !important; }
 .crp-submit, .staff-draft-btn { min-height: 52px !important; }
-#crpModal .crp-field select {
+#crpModal .crp-field select, #staffModal .crp-field select {
   appearance: none; -webkit-appearance: none; padding-right: 38px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23004f68' stroke-width='1.5' stroke-linecap='square'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 14px center; background-size: 10px 6px;
 }
-#crpModal .ip-cc { border: 1px solid var(--c-field); border-radius: 2px; font-size: 14px; padding-left: 10px; }
-#crpModal .ip-cc:focus { border-color: var(--c-deep); box-shadow: 0 0 0 1px var(--c-deep); }
+#crpModal .ip-cc, #staffModal .ip-cc { border: 1px solid var(--c-field); border-radius: 2px; font-size: 14px; padding-left: 10px; }
+#crpModal .ip-cc:focus, #staffModal .ip-cc:focus { border-color: var(--c-deep); box-shadow: 0 0 0 1px var(--c-deep); }
 /* 입력 커서(캐럿)가 흰색으로 보이는 환경(OS·브라우저 다크 모드 자동 변환 등)에서도 잘 보이도록 색을 직접 지정하고, 신청 창은 라이트 모드로 고정한다 */
 .crp-reg-modal { color-scheme: light; }
 .crp-field input:not([data-datepick]), .crp-field textarea, .crp-group-participant input:not([data-datepick]) { caret-color: var(--c-deep); }
@@ -1144,40 +1145,19 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
 .crp-staff-success-msg { font-size: 15px; line-height: 1.8; color: var(--c-body); margin: 0 0 28px; }
 .crp-staff-success .crp-submit { max-width: 260px; }
 
-/* ── 스태프 지원서: 박스는 최소한으로 — 섹션마다 아주 옅은 배경, 한 줄 입력칸은 아래 선만, 서술형 답변(textarea)만 박스로 남긴다 ── */
-#staffForm .crp-form-grid { background: #f6f9fb; border-radius: 2px; padding: 18px 18px 8px; }
-#staffForm .crp-field input:not([type="checkbox"]):not([type="radio"]),
-#staffForm .crp-field select {
-  border: 0; border-bottom: 1.5px solid #d3e0e7; border-radius: 0; background-color: transparent;
-  padding-left: 2px; padding-right: 22px; box-shadow: none;
-}
-#staffForm .crp-field input:not([type="checkbox"]):not([type="radio"]):hover,
-#staffForm .crp-field select:hover { border-bottom-color: #9bb6c3; }
-#staffForm .crp-field input:not([type="checkbox"]):not([type="radio"]):focus,
-#staffForm .crp-field select:focus { border-bottom: 2px solid var(--c-mid); background-color: transparent; box-shadow: none; }
-#staffForm .crp-field select { background-position: right 2px center; }
-#staffForm #staffName { padding-right: 2px; }
-#staffForm #staffGender { width: 64px; max-width: 100%; align-self: flex-start; padding-right: 18px; }
-#staffForm .staff-birth-grid { width: 144px; max-width: 100%; grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr)); gap: 4px; }
-#staffForm #staffGender,
-#staffForm .staff-birth-grid select {
-  appearance: none; -webkit-appearance: none; padding-right: 14px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='m1 1 4 4 4-4' fill='none' stroke='%23334e5c' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 1px center;
-}
+/* ── 스태프 지원서 — 입력칸·선택칸·섹션 모양은 캠프 신청서와 같다 (흰 바탕, 테두리 48px 칸) ── */
 #staffForm .staff-applicant-grid { container-type: inline-size; }
-.staff-applicant-top { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(60px, 112px) 64px 144px; gap: 6px; }
+.staff-applicant-top { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 20px 12px; }
+/* 좁은 폭(폰): 이름 | 성별, 생년월일은 다음 줄 전체 — 테두리 칸(화살표 자리 포함)이 세 칸 한 줄에 들어가지 않는다 */
+.staff-applicant-birth { grid-column: 1 / -1; }
 @container (min-width: 420px) {
   .staff-applicant-top {
     grid-template-columns: minmax(112px, 1fr) minmax(80px, .6fr) minmax(144px, 1.4fr);
     gap: 24px;
   }
+  .staff-applicant-birth { grid-column: auto; }
 }
-@container (max-width: 279px) {
-  .staff-applicant-top { grid-template-columns: minmax(0, 112px) 64px; }
-  .staff-applicant-birth { grid-column: 1 / -1; }
-}
-#staffForm .crp-field textarea { background: #fff; }
+
 
 
 /* 스태프 지원서 첫 섹션 배치 고정: 이름 | 성별 / 생년월일(한 줄 전체) / 전화번호 | 이메일 — 칸은 항상 열 폭을 꽉 채운다 (내용 크기로 줄어들지 않게) */
@@ -1223,8 +1203,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
     margin: 24px -20px 0;
     padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
   }
-  .crp-form-actions { grid-template-columns: 96px minmax(0, 1fr); }
-  .staff-draft-btn { padding: 0 16px; }
+  .crp-form-actions, .staff-form-actions { grid-template-columns: 96px minmax(0, 1fr); }
+  .staff-draft-btn { padding: 0 12px; }
   .crp-consent { padding: 13px 14px; }
   .crp-scholarship-option--count { align-items: stretch; grid-template-columns: 1fr; gap: 10px; }
   .crp-scholarship-detail-grid { grid-template-columns: 1fr; }
@@ -2299,7 +2279,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
 <!-- ── 스태프 신청 모달 ── -->
 <div id="staffModal" class="crp-reg-modal" hidden aria-modal="true" role="dialog">
   <div class="crp-modal-overlay" id="staffOverlay"></div>
-  <div class="crp-modal-card" style="max-width:580px;">
+  <div class="crp-modal-card">
     <button class="crp-modal-close" id="staffCloseBtn" aria-label="닫기">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
         <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -2309,7 +2289,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
     <!-- 헤더 -->
     <div class="crp-modal-head crp-staff-modal-head">
       <div class="crp-modal-badge crp-staff-modal-badge">
-        STAFF · CREW · VOLUNTEER
+        <span class="wl-ko">Word of Life Korea · 스태프 · 크루 지원서</span><span class="wl-en">Word of Life Korea · Staff &amp; Crew Application</span>
       </div>
       <div class="crp-modal-title" id="staffModalTitle"><span class="wl-ko">캠프 스태프 지원서</span><span class="wl-en">Camp Staff Application</span></div>
       <div class="crp-staff-modal-desc">
