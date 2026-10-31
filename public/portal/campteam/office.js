@@ -2,8 +2,8 @@
    명단 밖에서 들어온 사람은 게스트 캐릭터가 되어 걸어 들어와 옆에 서서 구경한다. 1분마다 새로 불러온다(탭을 보고 있을 때만). */
 (function () {
   CT.addDict({
-    ko: { ofTitle: '사무실', ofHide: '자리 숨기기', ofShow: '자리 보이기', ofGuest: '게스트', ofHere: '명', ofOff: '끄기', ofOn: '켜기', ofHint: '캠프팀 페이지를 열어 두면 자리에 앉아요' },
-    en: { ofTitle: 'Office', ofHide: 'Hide me', ofShow: 'Show me', ofGuest: 'Guest', ofHere: ' in', ofOff: 'Off', ofOn: 'On', ofHint: 'Open a camp team page to take your seat' },
+    ko: { ofTitle: '사무실', ofHide: '자리 숨기기', ofShow: '자리 보이기', ofGuest: '게스트', ofOoo: '휴가', ofWfh: '재택', ofHere: '명', ofOff: '끄기', ofOn: '켜기', ofHint: '캠프팀 페이지를 열어 두면 자리에 앉아요' },
+    en: { ofTitle: 'Office', ofHide: 'Hide me', ofShow: 'Show me', ofGuest: 'Guest', ofOoo: 'OOO', ofWfh: 'WFH', ofHere: ' in', ofOff: 'Off', ofOn: 'On', ofHint: 'Open a camp team page to take your seat' },
   });
   var A = window.CTOfficeArt, esc = CT.esc, host = null, cells = {}, guests = {}, order = '', state = null, first = true, timer = null, glTimer = null;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -19,7 +19,7 @@
   }
   // 관리자가 올린 캐릭터 그림이 있으면 그림으로, 없으면 코드로 그린 캐릭터로 보여 준다
   function art(m, enter) { return A.ready(m.avatar.sprite) ? A.deskImg(m.avatar, m.seated, enter) : A.desk(m.avatar, m.seated); }
-  function cellHtml(m, enter) { return art(m, enter) + '<span class="ofc-name">' + esc(m.name) + '</span>'; }
+  function cellHtml(m, enter) { return art(m, enter) + (m.ooo ? '<span class="ofc-sign' + (m.seated ? ' wfh' : '') + '">' + esc(CT.t(m.seated ? 'ofWfh' : 'ofOoo')) + '</span>' : '') + '<span class="ofc-name">' + esc(m.name) + '</span>'; }
   function guestHtml(g, enter) { return (A.guestReady() ? A.guestImg(enter) : A.guest()) + '<span class="ofc-name">' + esc(g.name) + '</span><span class="ofc-tag">' + esc(CT.t('ofGuest')) + '</span>'; }
 
   /** 「사무실 끄기」 — 이 화면에서만 사무실 그림을 숨긴다(내 자리를 남에게 숨기는 것과는 별개). 새로 열면 다시 기본으로 보인다 */
@@ -32,7 +32,7 @@
     var ids = d.members.map(function (m) { return m.id; }).join(',') + '|' + d.guests.map(function (g) { return g.id; }).join(',');
     var keep = {};
     d.members.forEach(function (m) {
-      var sig = [m.seated, m.name, JSON.stringify(m.avatar), A.ready(m.avatar.sprite), A.walkReady(m.avatar.sprite)].join('|'), c = cells[m.id];
+      var sig = [m.seated, m.ooo, m.name, JSON.stringify(m.avatar), A.ready(m.avatar.sprite), A.walkReady(m.avatar.sprite)].join('|'), c = cells[m.id];
       if (!c || c.sig !== sig) {
         var enter = m.seated && ((c && !c.seated) || (first && m.you)); // 방금 앉은 사람(처음 열 때의 나 · 부재였다가 도착한 사람)은 걸어와서 앉는다
         var el = document.createElement('div'); el.className = 'ofc-cell' + (m.you ? ' you' : '') + (m.seated ? '' : ' away'); el.dataset.id = m.id; el.innerHTML = cellHtml(m, enter);

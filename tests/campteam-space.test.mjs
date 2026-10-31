@@ -8,7 +8,8 @@ const get = async (env, who, qs) => Space.onRequestGet({ env, request: await req
 const J = r => r.json();
 
 test('캠프별 운영 공간(행사): 일정·업무·회의·결정·파일·예산이 한 번에 모인다', async () => {
-  const env = mk(); const d = await J(await get(env, U.dir, '?id=camp-w27'));
+  const env = mk(); env.DB.sqlite.prepare("UPDATE events SET startDate = ?1 WHERE id = 'e6'").run(new Date(Date.now() + 2 * 86400e3).toISOString().slice(0, 10)); // 시험용 자료의 일정이 지나가 버려도 시험이 깨지지 않게 날짜를 모레로
+  const d = await J(await get(env, U.dir, '?id=camp-w27'));
   assert.equal(d.camp.nameKo, '2027 Winter Camp'); assert.equal(d.type.id, 'type-winter');
   assert.ok(d.stats.total >= 14 && d.stats.open >= 10 && d.stats.noOwner >= 1 && d.stats.completed >= 1);
   assert.ok(d.tasks.length && d.tasks.every(t => !['Completed', 'Not Applicable'].includes(t.status))); assert.ok(d.events.some(e => e.title.includes('Speaker Call')));

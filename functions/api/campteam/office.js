@@ -2,11 +2,13 @@ import { campSession, json, needLogin, needPerm, badRequest, noDb, FIXED_ADMIN_E
 import { getAccount } from '../../lib/hubAccounts.js';
 import { nowIso, audit } from '../../lib/campteamDb.js';
 import { SEAT_WINDOW_MS, sanitizeAvatar, defaultAvatar, parseAvatar, publicId } from '../../lib/campteamOffice.js';
+import { oooToday } from '../../lib/campteamOoo.js';
+import { todayKst } from '../../lib/carDrive.js';
 
 /**
  * 캠프팀 「팀 사무실」.
  *  - POST  (캠프팀 로그인한 누구나)  → 내가 지금 이 화면을 열어 두고 있다고 알림(1분마다). 본문 { hidden: true|false } 를 주면 「내 자리 숨기기」를 바꾼다.
- *  - GET   (캠프팀 로그인한 누구나)  → { members: [{ id, name, avatar, seated, you }], guests: [{ id, name }], me: { hidden } }
+ *  - GET   (캠프팀 로그인한 누구나)  → { members: [{ id, name, avatar, seated, you, ooo }], guests: [{ id, name }], me: { hidden } }
  *      members = 캠프팀 명단 전원(앉아 있으면 seated), guests = 명단 밖에서 지금 들어와 있는 사람(자리는 없이 구경). 이메일·연락처는 내려가지 않는다.
  *  - PUT   { email?, avatar }          → 캐릭터 모양 저장. 자기 것은 누구나, 다른 사람 것은 관리자만.
  * 접속 기록은 이 표(캠프팀 DB)에만 쓴다 — 포털의 저장소에는 아무것도 쓰지 않는다.
@@ -28,11 +30,13 @@ export async function onRequestPost({ env, request }) {
 export async function onRequestGet({ env, request }) {
   const { s, res } = await who(env, request); if (res) return res;
   const me = s.email.toLowerCase(), cutoff = new Date(Date.now() - SEAT_WINDOW_MS).toISOString();
-  const [roster, presence, avatars] = await Promise.all([
+  const [roster, presence, avatars, oooList] = await Promise.all([
     safe(async () => (await env.DB.prepare('SELECT email, name FROM camp_members WHERE active = 1 ORDER BY name').all()).results, []),
     safe(async () => (await env.DB.prepare('SELECT email, lastSeen, hidden FROM office_presence WHERE lastSeen >= ?1').bind(cutoff).all()).results, []),
     safe(async () => (await env.DB.prepare('SELECT email, json FROM office_avatars').all()).results, []),
+    safe(() => oooToday(env, todayKst()), []),   // 오늘 부재(휴가)인 사람 — 명단과 이름이 맞은 사람만 이메일이 붙는다
   ]);
+  const oooSet = new Set(oooList.map((x) => x.email).filter(Boolean));
   const here = new Map(presence.map((p) => [p.email.toLowerCase(), p])), av = new Map(avatars.map((a) => [a.email.toLowerCase(), a.json]));
   const seen = new Set(roster.map((r) => r.email.toLowerCase()));
   // 코드에 고정된 관리자는 명단(DB)에 없어도, 지금 접속해 있거나 캐릭터를 정해 둔 경우에만 자리를 보인다(항상 빈 책상이 따로 생기지 않게)
@@ -40,7 +44,7 @@ export async function onRequestGet({ env, request }) {
   const list = roster.concat(extra);
   const members = list.filter((r) => { const p = here.get(r.email.toLowerCase()); return !(p && p.hidden) || r.email.toLowerCase() === me; }).map((r) => {
     const e = r.email.toLowerCase(), p = here.get(e);
-    return { id: publicId(e), name: first(r.name, r.email), avatar: av.has(e) ? parseAvatar(av.get(e), e) : defaultAvatar(e), seated: !!p && !p.hidden, you: e === me };
+    return { id: publicId(e), name: first(r.name, r.email), avatar: av.has(e) ? parseAvatar(av.get(e), e) : defaultAvatar(e), seated: !!p && !p.hidden, you: e === me, ooo: oooSet.has(e) };
   });
   const rosterSet = new Set(list.map((r) => r.email.toLowerCase()));
   const guestRows = presence.filter((p) => !p.hidden && !rosterSet.has(p.email.toLowerCase())).slice(0, 12);
