@@ -7,6 +7,7 @@
     ko: { hello0: function (n) { return n + '님, 좋은 아침이에요'; }, hello1: function (n) { return n + '님, 안녕하세요'; }, hello2: function (n) { return n + '님, 오늘도 수고 많으셨어요'; }, hello3: function (n) { return n + '님, 늦은 시간까지 수고 많아요'; },
       wxKind: { clear: '맑음', partly: '구름 조금', cloudy: '흐림', fog: '안개', rain: '비', snow: '눈', storm: '천둥번개' }, wxNight: '맑은 밤', wxTip: { clear: '하늘이 맑아요. 기분 좋은 하루 보내세요', clearNight: '맑은 밤하늘이에요', partly: '구름이 조금 꼈어요', cloudy: '흐린 하루예요', fog: '안개가 꼈어요. 운전 조심하세요', rain: '비가 와요. 우산 챙기세요', snow: '눈이 와요. 길 조심하세요', storm: '천둥 번개가 쳐요. 야외 활동은 조심하세요' }, wxCold: ' · 쌀쌀해요, 따뜻하게 입으세요', wxHot: ' · 무더워요, 물 많이 드세요', wxFeels: '체감', wxHiLo: function (hi, lo) { return '최고 ' + hi + '° / 최저 ' + lo + '°'; }, wxRain: '강수확률', wxCity: '평택',
       dutyKitchen: function (meal, part) { return '오늘 ' + meal + ' ' + part + ' 담당이에요'; }, dutyCar: function (what) { return '오늘 ' + what + ' 운행 담당이에요'; }, carPickup: '픽업', carDropoff: '드롭오프', dutyGospel: '지난달 복음 통계 보고를 아직 안 했어요', dutyGospelGo: '보고하기',
+      oooLabel: function (n) { return '오늘 부재 ' + n + '명'; }, oooMine: '나', oooHint: '월코 캘린더의 휴가 일정이에요',
       tdDuty: '오늘 내 듀티', tdNotice: '새 월코 공지', tdNoticeSeen: '확인했어요', tdItems2: '건',
       pnoticesTitle: '월코 이번 주 공지', pkitchenTitle: '오늘 키친 듀티', pcarTitle: '오늘 차량 운행', peventsTitle: '다가오는 월코 일정', pchurchesTitle: '최근 업데이트된 교회',
       wPnoticesD: '월코 포털의 이번 주 전체 공지', wPkitchenD: '오늘 주방 당번 (포털)', wPcarD: '오늘 픽업·드롭오프 운전자 (포털)', wPeventsD: '앞으로 2주 월코 일정 (포털)', wPchurchesD: '최근 업데이트된 교회 (포털)',
@@ -15,6 +16,7 @@
     en: { hello0: function (n) { return 'Good morning, ' + n; }, hello1: function (n) { return 'Hello, ' + n; }, hello2: function (n) { return 'Good evening, ' + n; }, hello3: function (n) { return 'Working late, ' + n + '?'; },
       wxKind: { clear: 'Clear', partly: 'Partly cloudy', cloudy: 'Cloudy', fog: 'Fog', rain: 'Rain', snow: 'Snow', storm: 'Thunderstorm' }, wxNight: 'Clear night', wxTip: { clear: 'Clear skies. Have a lovely day', clearNight: 'A clear night sky', partly: 'A few clouds today', cloudy: 'A cloudy day', fog: 'Foggy. Drive carefully', rain: "It's raining. Take an umbrella", snow: "It's snowing. Watch your step", storm: 'Thunderstorms. Be careful outdoors' }, wxCold: ' · Chilly, dress warmly', wxHot: ' · Hot, drink plenty of water', wxFeels: 'Feels', wxHiLo: function (hi, lo) { return 'High ' + hi + '° / Low ' + lo + '°'; }, wxRain: 'Rain', wxCity: 'Pyeongtaek',
       dutyKitchen: function (meal, part) { return "You're on " + meal + ' ' + part + ' today'; }, dutyCar: function (what) { return "You're driving the " + what + ' today'; }, carPickup: 'Pick-up', carDropoff: 'Drop-off', dutyGospel: "You haven't submitted last month's Gospel report", dutyGospelGo: 'Report now',
+      oooLabel: function (n) { return n + ' out today'; }, oooMine: 'me', oooHint: 'From the WOLKO calendar (time off)',
       tdDuty: 'My duty today', tdNotice: 'New WOLKO notices', tdNoticeSeen: 'Got it', tdItems2: '',
       pnoticesTitle: 'WOLKO notices this week', pkitchenTitle: "Today's Kitchen Duty", pcarTitle: "Today's Vehicle Runs", peventsTitle: 'Upcoming WOLKO events', pchurchesTitle: 'Recently updated churches',
       wPnoticesD: "This week's portal-wide notices", wPkitchenD: "Today's kitchen crew (portal)", wPcarD: "Today's pick-up / drop-off drivers (portal)", wPeventsD: 'WOLKO events in the next 2 weeks (portal)', wPchurchesD: 'Recently updated churches (portal)',
@@ -94,6 +96,17 @@
       (me.car || []).map(function (w) { return { href: '/portal/car-drive', text: CT.t('dutyCar')(CT.t(w === 'pickup' ? 'carPickup' : 'carDropoff')) }; }),
       me.gospelPending ? [{ href: '/portal/gospel-stats/?write=1&month=' + encodeURIComponent(me.gospelMonth), text: CT.t('dutyGospel') }] : []);
   }
+  // ── 오늘 부재(휴가) — 「오늘 할 일」 카드 오른쪽 위의 작은 말풍선. 이름은 마우스를 올리면 보이고(폰은 누르면), 벗어나면 사라진다 ──
+  function oooHtml() {
+    var o = (feed && feed.ooo) || []; if (!o.length) return '';
+    var names = o.map(function (x) { return '<span>' + esc(x.name) + (x.mine ? ' <em>(' + esc(CT.t('oooMine')) + ')</em>' : '') + '</span>'; }).join('');
+    return '<button type="button" class="ooo-bub" data-a="ooo" aria-expanded="false" aria-label="' + esc(CT.t('oooLabel')(o.length)) + '"><i aria-hidden="true">🌴</i> ' + esc(CT.t('oooLabel')(o.length)) + '<span class="ooo-tip" role="tooltip">' + names + '<small>' + esc(CT.t('oooHint')) + '</small></span></button>';
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('.ooo-bub'), open = document.querySelector('.ooo-bub.open');
+    if (open && open !== b) { open.classList.remove('open'); open.setAttribute('aria-expanded', 'false'); }
+    if (b) { var on = !b.classList.contains('open'); b.classList.toggle('open', on); b.setAttribute('aria-expanded', on ? 'true' : 'false'); }
+  });
   function todayExtra() {
     var d = dutyList(), nn = newNotices(), html = '';
     if (d.length) html += '<div class="tds td-duty"><h3>' + esc(CT.t('tdDuty')) + ' <em>' + d.length + esc(CT.t('tdItems2')) + '</em></h3>' + d.map(function (x) { return '<div class="tdr td-duty"><a href="' + esc(x.href) + '"><b>' + esc(x.text) + '</b></a></div>'; }).join('') + '</div>';
@@ -277,7 +290,7 @@
   }
   document.addEventListener('ct-today', badge);
 
-  window.CTHero = { pending: function () { return !loaded; }, start: start, widget: widget, todayExtra: todayExtra, badge: badge, refresh: refresh, links: LINKS, markSeen: function () {
+  window.CTHero = { pending: function () { return !loaded; }, start: start, widget: widget, todayExtra: todayExtra, oooHtml: oooHtml, badge: badge, refresh: refresh, links: LINKS, markSeen: function () {
     var ids = ((feed && feed.notices) || []).map(function (n) { return n.id; });
     if (feed) feed.seen = (feed.seen || []).concat(ids);                 // 먼저 화면에서 사라지게 하고
     ls.set('ct-seen-notices', JSON.stringify(ids));                     // 서버에 못 보내도 이 기기에서는 유지되게

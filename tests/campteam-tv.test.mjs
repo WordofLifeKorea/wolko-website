@@ -60,7 +60,7 @@ test('TV 데이터: 열쇠 없이/틀리면 403, 맞으면 필요한 내용만 �
   seen.length = 0; const res = await tv(env, 'testtoken1'); assert.equal(res.status, 200); assert.equal(res.headers.get('cache-control'), 'no-store');
   const raw = await res.clone().text(), body = await J(res);
   assert.equal(seen.some(q => /budget_|file_versions|meeting_texts|audit_log/.test(q)), false, '금액·전사문·변경 기록 표는 읽지 않는다');
-  assert.deepEqual(seen.filter(q => /camp_members/.test(q)).map(q => q.replace(/\s+/g, ' ').trim()), ['SELECT email FROM camp_members WHERE active = 1'], '명단 표는 "이 사람이 팀원인가" 가리려고 이메일 한 칸만 읽는다(응답에는 넣지 않는다)');
+  assert.deepEqual(seen.filter(q => /camp_members/.test(q)).map(q => q.replace(/\s+/g, ' ').trim()), ['SELECT email FROM camp_members WHERE active = 1', 'SELECT email, name FROM camp_members WHERE active = 1'], '명단 표는 "이 사람이 팀원인가"(듀티)와 "부재 이름이 명단의 누구인가"에만 쓰고 이메일은 응답에 넣지 않는다(바로 아래에서 응답에 @ 가 없음을 확인한다)');
   assert.doesNotMatch(raw, /plannedAmount|actualAmount|@wolko\.org|@wol\.org|token|body"/i, '금액·이메일·열쇠가 응답에 없다');
   assert.equal('token' in body.settings, false); assert.equal(body.settings.language, 'en'); assert.equal(body.layout.pages.length, 3);
   const d = body.data; assert.equal(d.stats.overdue, 1); assert.ok(d.stats.open >= 19 && d.stats.completion >= 0);

@@ -4,6 +4,7 @@ import { currentWeekStart, todayKst } from '../../lib/carDrive.js';
 import { kitchenToday, carToday, upcomingEvents, recentChurchList, readNotices, noticesForWeek, mySchedule } from '../../lib/portalDashboard.js';
 import { loadWeather } from '../../lib/weather.js';
 import { nowIso } from '../../lib/campteamDb.js';
+import { oooToday } from '../../lib/campteamOoo.js';
 
 /**
  * 캠프팀 홈이 보여 줄 포털(월코 전체) 정보 — 날씨, 내 오늘 듀티, 이번 주 공지, 키친·차량, 일정, 교회.
@@ -27,7 +28,7 @@ export async function onRequestGet({ env, request }) {
   const s = await campSession(request, env);
   if (!s) return needLogin();
   const today = todayKst(), weekStart = currentWeekStart(today);
-  const [name, weather, notices, kitchen, car, events, churches, me, seen] = await Promise.all([
+  const [name, weather, notices, kitchen, car, events, churches, me, seen, ooo] = await Promise.all([
     displayName(env, s.email),
     settle(() => loadWeather(readOnly(env))),
     settle(async () => noticesForWeek(await readNotices(env), weekStart, today).map(({ byEmail, ...n }) => n)),
@@ -38,8 +39,10 @@ export async function onRequestGet({ env, request }) {
     settle(() => mySchedule(env, { email: s.email }, today)),
     // 「확인했어요」를 누른 공지(내 계정 기준 — 폰·컴퓨터 어디서 눌러도 같다). 캠프팀 DB 의 알림 확인 표에만 기록한다
     settle(async () => (await env.DB.prepare(`SELECT alertKey FROM alert_state WHERE email = ?1 AND alertKey LIKE 'pnotice:%'`).bind(s.email.toLowerCase()).all()).results.map((r) => r.alertKey.slice(8))),
+    // 오늘 부재(휴가)인 사람 — 이름만 (이메일은 보내지 않고, 내 이름에만 mine 표시)
+    settle(async () => (await oooToday(env, today)).map((x) => ({ name: x.name, mine: !!x.email && x.email === s.email.toLowerCase() }))),
   ]);
-  return json({ today, weekStart, name, weather, seen: seen || [], notices, kitchen, car, events, churches, me: me ? { kitchen: me.kitchen, car: me.car, gospelPending: !!me.gospelPending, gospelMonth: me.gospelMonth } : null });
+  return json({ today, weekStart, name, weather, seen: seen || [], ooo: ooo || [], notices, kitchen, car, events, churches, me: me ? { kitchen: me.kitchen, car: me.car, gospelPending: !!me.gospelPending, gospelMonth: me.gospelMonth } : null });
 }
 
 /** POST { seen: [공지 번호…] } — 이 공지들을 「확인했어요」로 기록한다(내 계정). 포털의 공지 자체는 건드리지 않는다. */

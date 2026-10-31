@@ -10,6 +10,7 @@
       ppNoCamp: '캠프 미지정', ppNoTeam: '팀 폴더 없음', ppAll: '이 안의 파일 모두 한 번에 보기', ppCards: '← 분류로 보기', ppHint: '포털에서 정한 분류(캠프 → 형식 → 팀 폴더) 그대로 나눠 보여요.',
       aiTitle: '✨ AI 도우미', aiSwitch: '파일을 고르거나 제목을 입력하면 AI가 제목·종류·캠프를 추천해 줘요', aiNote: '켜면 고른 파일의 앞부분 글(또는 PDF·사진), 파일 없이 제목만 입력했다면 그 제목이 AI 서비스로 전송돼요. 파일은 저장되지 않고, 저장은 직접 눌러야 해요. 예산(금액) 자료는 보내지 않아요.', aiGo: '✨ 추천 받기', aiBusy: 'AI가 파일을 읽는 중…', aiDone: 'AI가 채웠어요 — 고쳐도 돼요.', aiKoRow: '한글 제목', aiEnRow: 'English title', aiOffMsg: 'AI 추천이 아직 켜지지 않았어요 (관리자가 서버 설정에서 켜야 해요).', aiBudget: '예산(금액) 자료는 AI에 보내지 않아요.', aiFail: 'AI 추천을 받지 못했어요: ', aiNeedFile: '먼저 파일을 골라 주세요.', aiChip: 'AI', aiCamp: '관련 캠프: ', aiNoRead: '이 형식은 내용을 읽지 못해 파일 이름만 보고 추천했어요.', autoChip: '자동', aiBusyTitle: 'AI가 제목을 보고 추천하는 중…', aiTitleDone: '제목을 보고 AI가 추천했어요 — 고르거나 고쳐도 돼요.', 
       addMaterial: '+ 자료 추가', mkAddTitle: '자료 추가', tabFile: '파일 올리기', tabLink: '링크 연결', pickFiles: '파일 선택', pickFolder: '📁 폴더 선택', dzPickDir: '폴더 열기',
+      newDocs: '새로 만들기', newDocHint: '새 창에서 만든 뒤, 주소창의 링크를 복사해서 아래에 붙여 넣으세요.', ndDoc: '구글 문서', ndSheet: '구글 시트', ndSlide: '구글 슬라이드', ndForm: '구글 폼', ndCanva: 'Canva 디자인',
       linkOk: '인식했어요: ', canva: 'Canva 디자인', linkShare: '링크 공유 설정이 「링크가 있는 사람은 볼 수 있음」(또는 팀원 지정)이어야 팀원이 열 수 있어요. Google 문서·Drive·Canva 모두 같아요.',
       folderName: '폴더 이름', folderNameEn: '영문 이름 (선택)', mTitles: '파일 이름 (하나씩 고칠 수 있어요)', mAiBusy: 'AI가 이름을 정리하는 중…', mAiDone: 'AI가 이름을 정리했어요. 고쳐도 돼요.', mAiOff: '기본 정리만 했어요. 고쳐도 돼요.',
       mAiNote: 'AI에는 폴더·파일 이름만 보내요 (파일 내용은 보내지 않아요).', mGroup: '폴더로 묶어서 올리기', mSel: '개 선택됨', mUpload: '올리기', mRemove: '빼기', mSkipped: '숨김·시스템 파일은 뺐어요: ', mTooMany: '한 번에 최대 200개까지만 올려요.', mNeedFolder: '폴더 이름을 입력해 주세요.', mFail: '올리지 못한 파일(목록에 남겨 뒀어요)',
@@ -30,6 +31,7 @@
       ppNoCamp: 'No camp', ppNoTeam: 'No team folder', ppAll: 'Show all files here at once', ppCards: '← Back to groups', ppHint: 'Grouped the way the portal groups them (camp → type → team folder).',
       aiTitle: '✨ AI helper', aiSwitch: 'When you pick a file or type a title, AI suggests title, type and camp', aiNote: 'When on, the beginning of the file text (or the PDF/photo) — or, without a file, the title you type — is sent to the AI service. The file itself is not stored, and you still press Save yourself. Budget (amount) files are never sent.', aiGo: '✨ Suggest', aiBusy: 'AI is reading the file…', aiDone: 'Filled in by AI — you can edit it.', aiKoRow: '한글 제목', aiEnRow: 'English title', aiOffMsg: 'AI suggestions are not turned on yet (an admin must enable them in the server settings).', aiBudget: 'Budget (amount) files are never sent to AI.', aiFail: 'Could not get AI suggestions: ', aiNeedFile: 'Please choose a file first.', aiChip: 'AI', aiCamp: 'Related camp: ', aiNoRead: 'This format could not be read, so the suggestion is based on the file name only.', autoChip: 'Auto', aiBusyTitle: 'AI is reading your title…', aiTitleDone: 'AI suggested from your title — pick one or edit.', 
       addMaterial: '+ Add material', mkAddTitle: 'Add material', tabFile: 'Upload files', tabLink: 'Link', pickFiles: 'Choose files', pickFolder: '📁 Choose folder', dzPickDir: 'Choose folder',
+      newDocs: 'Create new', newDocHint: 'Create it in the new window, then copy the link from the address bar and paste it below.', ndDoc: 'Google Doc', ndSheet: 'Google Sheet', ndSlide: 'Google Slides', ndForm: 'Google Form', ndCanva: 'Canva design',
       linkOk: 'Recognized: ', canva: 'Canva design', linkShare: 'Link sharing must allow the team to open it ("Anyone with the link can view" or specific people). Same for Google Docs, Drive and Canva.',
       folderName: 'Folder name', folderNameEn: 'English name (optional)', mTitles: 'File names (edit each one)', mAiBusy: 'AI is tidying the names…', mAiDone: 'AI tidied the names. You can edit them.', mAiOff: 'Basic tidy only. You can edit them.',
       mAiNote: 'Only the folder and file NAMES are sent to the AI (never the contents).', mGroup: 'Upload as a folder', mSel: ' selected', mUpload: 'Upload', mRemove: 'Remove', mSkipped: 'Skipped hidden/system files: ', mTooMany: 'At most 200 files at a time.', mNeedFolder: 'Please enter a folder name.', mFail: 'Could not upload (kept in the list)',
@@ -261,6 +263,11 @@
       return '<optgroup label="' + esc(CT.pick(t, 'name')) + '"><option value="type:' + esc(t.id) + '"' + (selected === 'type:' + t.id ? ' selected' : '') + '>' + esc(CT.t('targetType') + CT.pick(t, 'name')) + '</option>' +
         t.camps.map(function (c) { return '<option value="camp:' + esc(c.id) + '"' + (selected === 'camp:' + c.id ? ' selected' : '') + '>' + esc(CT.pick(c, 'name')) + '</option>'; }).join('') + '</optgroup>'; }).join('');
   }
+  /* 새로 만들기: 구글 문서·시트·슬라이드·폼, Canva 를 새 창에서 연다 (포털은 만들어진 링크만 받는다) */
+  var NEW_DOCS = [['ndDoc', 'https://docs.new', '📄'], ['ndSheet', 'https://sheets.new', '📊'], ['ndSlide', 'https://slides.new', '📽️'], ['ndForm', 'https://forms.new', '📝'], ['ndCanva', 'https://www.canva.com/create/', '🎨']];
+  function newDocsHtml() {
+    return '<div class="newdocs" data-guide="files.newdocs"><b>' + esc(CT.t('newDocs')) + '</b>' + NEW_DOCS.map(function (n) { return '<a class="btn sm" target="_blank" rel="noopener noreferrer" href="' + n[1] + '">' + n[2] + ' ' + esc(CT.t(n[0])) + ' ↗</a>'; }).join('') + '<small class="hint">' + esc(CT.t('newDocHint')) + '</small></div>';
+  }
   function folderOptions(selected) {
     return '<option value="">' + esc(CT.t('folderNone')) + '</option>' + S.folders.map(function (d) { return '<option value="' + esc(d.id) + '"' + (selected === d.id ? ' selected' : '') + '>📁 ' + esc(folderLabel(d)) + '</option>'; }).join('');
   }
@@ -283,6 +290,7 @@
         aiBoxHtml() + '<div class="multi" id="multi" hidden><label class="chk" id="mGroupRow" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="mGroup"><span>' + esc(CT.t('mGroup')) + '</span></label>' +
         '<div id="mFolder" class="two"><label>' + esc(CT.t('folderName')) + '<input id="mFolderName" maxlength="120"></label><label>' + esc(CT.t('folderNameEn')) + '<input id="mFolderEn" maxlength="120"></label></div>' +
         '<div class="hint" id="mAi"></div><div class="mrows" id="mRows"></div></div>';
+      if (mode === 'link') h += newDocsHtml();
       if (mode === 'link' || (mode === 'edit' && f.storage === 'link')) h += '<label>' + esc(CT.t('fUrl')) + '<input type="url" name="externalUrl" id="urlIn" required maxlength="500" placeholder="https://docs.google.com/… · https://www.canva.com/…" value="' + esc(f ? f.externalUrl : val('externalUrl', '')) + '"></label><div class="hint" id="urlKind"></div><div class="hintbox">' + esc(CT.t('linkShare')) + '</div>';
       h += '<label id="titleLbl">' + esc(CT.t('fTitle')) + '<input name="title" maxlength="120" ' + (mode === 'file' ? '' : 'required') + ' value="' + esc(val('title', f ? f.title : '')) + '"></label>' +
         '<label>' + esc(CT.t('fDesc')) + '<input name="description" maxlength="500" value="' + esc(val('description', f ? f.description : '')) + '"></label>' +
