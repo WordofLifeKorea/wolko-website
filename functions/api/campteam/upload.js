@@ -3,11 +3,12 @@ import { uuid, nowIso, text, audit } from '../../lib/campteamDb.js';
 import { CATEGORIES, FILE_STATUSES, DEFAULT_MAX_UPLOAD_BYTES, restrictedFor, cleanFileName, kindFor, mimeFor, setFilePublic } from '../../lib/campteamFiles.js';
 import { storageFor } from '../../lib/campteamStorage.js';
 import { checkRefs } from './files.js';
+import { applyMeta, joinBatch } from '../../lib/campteamFileMeta.js';
 
 /**
  * 파일 올리기. 파일 내용은 요청 본문 그대로(스트리밍), 정보는 주소의 ? 값과 헤더로 보낸다.
  *   헤더  X-File-Name: 인코딩된 파일 이름,  Content-Length: 필수
- *   새 파일:   ?title= &description= &campId= &typeId= &category= &topic= &status=
+ *   새 파일:   ?title= &description= &campId= &typeId= &category= &topic= &status= &tags= &lang= &scripture= &speaker= &batchId=
  *   새 버전:   ?fileId= &note=
  */
 export async function onRequestPost({ env, request }) {
@@ -47,6 +48,8 @@ export async function onRequestPost({ env, request }) {
         FILE_STATUSES.includes(status) ? status : '', category, text(p.get('topic'), 60), restricted, now).run();
     if (folderId) await env.DB.prepare('UPDATE files SET folderId = ?2 WHERE id = ?1').bind(fileId, folderId).run();
     if (p.get('publicToAll') === '1' && !restricted) await setFilePublic(env, fileId, true, s.email);
+    await applyMeta(env, fileId, p);                      // 태그·언어·성경 본문·설교자 (0024 가 없으면 건너뜀)
+    if (p.get('batchId')) await joinBatch(env, p.get('batchId'), fileId, s.email); // 「AI 정리함」 일괄 올리기 묶음 — 한 번에 되돌릴 수 있게
     file = { id: fileId };
   }
 

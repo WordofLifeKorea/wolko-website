@@ -16,7 +16,8 @@
       asstStarting: "I'll show you on screen.", asstFail: "I couldn't answer right now. Please try again in a moment.", asstOff: 'The AI helper is not turned on yet. The common questions above still work.', asstStep: function (i, n) { return i + ' / ' + n; } }
   });
   var KEY = 'ct-asst', esc = CT.esc, tr = function (o) { return o ? (o[CT.lang()] || o.ko || '') : ''; };
-  var st = (function () { try { var v = JSON.parse(sessionStorage.getItem(KEY) || 'null'); if (v && typeof v === 'object') return { open: !!v.open, msgs: Array.isArray(v.msgs) ? v.msgs.slice(-24) : [], guide: v.guide && G.guides[v.guide.id] ? v.guide : null }; } catch (e) {} return { open: false, msgs: [], guide: null }; })();
+  // (20분 넘게 멈춘 안내는 이어가지 않는다 — 나중에 다른 화면에서 불쑥 나오지 않게)
+  var st = (function () { try { var v = JSON.parse(sessionStorage.getItem(KEY) || 'null'); if (v && typeof v === 'object') return { open: !!v.open, msgs: Array.isArray(v.msgs) ? v.msgs.slice(-24) : [], guide: v.guide && G.guides[v.guide.id] && Date.now() - (v.guide.at || 0) < 20 * 60000 ? v.guide : null }; } catch (e) {} return { open: false, msgs: [], guide: null }; })();
   var cfg = { member: false, configured: false }, busy = false;
   function save() { try { sessionStorage.setItem(KEY, JSON.stringify({ open: st.open, msgs: st.msgs.slice(-24), guide: st.guide })); } catch (e) {} }
   var $ = function (s, r) { return (r || document).querySelector(s); };
@@ -62,10 +63,10 @@
   function stopLoop() { cancelAnimationFrame(raf); clearInterval(tick); raf = tick = 0; document.removeEventListener('keydown', onKey, true); clearLayer(); }
   function onKey(e) { if (e.key === 'Escape' && st.guide) endGuide(false); }
   function currentStep() { var g = st.guide && G.guides[st.guide.id]; return g ? g.steps[st.guide.i] : null; }
-  function advance() { if (!st.guide) return; st.guide.i++; since = Date.now(); save(); if (!currentStep()) endGuide(true); else { clearLayer(); update(); } }
+  function advance() { if (!st.guide) return; st.guide.i++; st.guide.at = Date.now(); since = Date.now(); save(); if (!currentStep()) endGuide(true); else { clearLayer(); update(); } }
   function onTargetClick() { var i = st.guide && st.guide.i; setTimeout(function () { if (st.guide && st.guide.i === i) advance(); }, 350); }
   function startGuide(id, i) {
-    if (!G.guides[id]) return; stopLoop(); st.guide = { id: id, i: i || 0 }; st.open = false; save(); render(); since = Date.now(); begin();
+    if (!G.guides[id]) return; stopLoop(); st.guide = { id: id, i: i || 0, at: Date.now() }; st.open = false; save(); render(); since = Date.now(); begin();
   }
   function begin() {
     document.addEventListener('keydown', onKey, true); tick = setInterval(update, 250); update();

@@ -1,3 +1,4 @@
+import { applyMeta } from '../../lib/campteamFileMeta.js';
 import { campSession, canWriteFile, json, needLogin, needPerm, badRequest, noDb, denyView } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, text, audit } from '../../lib/campteamDb.js';
 import { CATEGORIES, FILE_STATUSES, restrictedFor, validExternalUrl, linkKindFor, kindForLink, PUBLIC_SQL, setFilePublic, isFilePublic } from '../../lib/campteamFiles.js';
@@ -5,7 +6,7 @@ import { CATEGORIES, FILE_STATUSES, restrictedFor, validExternalUrl, linkKindFor
 const SORTS = {
   newest: 'f.createdAt DESC', oldest: 'f.createdAt ASC', updated: 'f.updatedAt DESC', name: 'f.title COLLATE NOCASE ASC',
 };
-const SELECT = `SELECT f.id, f.campId, f.typeId, f.title, f.description, f.category, f.topic, f.kind, f.storage, f.linkKind, f.externalUrl,
+const SELECT = `SELECT f.id, f.campId, f.typeId, f.title, f.description, f.category, f.topic, f.tags, f.lang, f.scripture, f.speaker, f.kind, f.storage, f.linkKind, f.externalUrl,
     f.uploadedBy, f.statusLabel, f.restricted, f.createdAt, f.updatedAt, f.isTest,
     (SELECT COUNT(*) FROM file_public pb WHERE pb.fileId = f.id) AS isPublic,
     f.folderId, fd.name AS folderName, fd.nameEn AS folderNameEn,
@@ -20,6 +21,7 @@ const SELECT = `SELECT f.id, f.campId, f.typeId, f.title, f.description, f.categ
   LEFT JOIN file_versions v ON v.id = f.currentVersionId`;
 // 마이그레이션(0018 공개 표, 0023 폴더)이 아직 없는 DB 에서도 목록은 열린다: 없는 부분만 빼고 다시 묻는다
 const NO_PUBLIC = (sql) => sql.replace('(SELECT COUNT(*) FROM file_public pb WHERE pb.fileId = f.id) AS isPublic', '0 AS isPublic');
+const NO_TAGS = (sql) => sql.replace('f.tags, f.lang, f.scripture, f.speaker,', "'' AS tags, f.lang, '' AS scripture, '' AS speaker,");   // 0024(태그) 전
 const NO_FOLDER = (sql) => sql.replace('f.folderId, fd.name AS folderName, fd.nameEn AS folderNameEn,', 'NULL AS folderId, NULL AS folderName, NULL AS folderNameEn,').replace('LEFT JOIN file_folders fd ON fd.id = f.folderId AND fd.deletedAt IS NULL\n  ', '');
 
 /** 목록 · 검색 · 필터 · 정렬: ?q= &campId=(없으면 전체, none=공통) &folderId=(none=폴더 없음) &typeId= &category= &status= &kind= &sort= &limit= &offset= */
@@ -29,18 +31,19 @@ export async function onRequestGet({ env, request }) {
   if (!s) return needLogin();
   { const dv = denyView(s.perms, 'files', '자료실'); if (dv) return dv; }
   const p = new URL(request.url).searchParams;
-  const q = text(p.get('q'), 80), campId = p.get('campId'), typeId = p.get('typeId'), kind = p.get('kind'), folderId = text(p.get('folderId'), 60);
+  const q = text(p.get('q'), 80), campId = p.get('campId'), typeId = p.get('typeId'), kind = p.get('kind'), folderId = text(p.get('folderId'), 60), tag = text(p.get('tag'), 24);
   const order = SORTS[p.get('sort')] || SORTS.newest;
   const limit = Math.min(Math.max(parseInt(p.get('limit'), 10) || 100, 1), 200), offset = Math.max(parseInt(p.get('offset'), 10) || 0, 0);
-  const build = (folder) => {
+  const build = (folder, tg) => {
     const where = ['f.deletedAt IS NULL'], args = [];
     if (!s.perms.moneyRead) where.push('f.restricted = 0'); // 금액 자료는 권한이 없으면 목록에도 나오지 않는다
     if (!s.campRole) where.push(PUBLIC_SQL);               // 캠프팀 명단 밖의 월코 팀원은 "월코 팀 전체 공개" 파일만
     if (q) {
       const like = `%${q.replace(/[%_\\]/g, m => '\\' + m)}%`;
-      where.push(`(f.title LIKE ? ESCAPE '\\' OR f.description LIKE ? ESCAPE '\\' OR f.topic LIKE ? ESCAPE '\\' OR v.fileName LIKE ? ESCAPE '\\' OR c.nameKo LIKE ? ESCAPE '\\' OR c.nameEn LIKE ? ESCAPE '\\'${folder ? ` OR fd.name LIKE ? ESCAPE '\\' OR fd.nameEn LIKE ? ESCAPE '\\'` : ''})`);
-      args.push(like, like, like, like, like, like); if (folder) args.push(like, like); // 캠프 이름(한글·영문)으로도 찾는다 // 폴더 이름으로 찾으면 그 폴더 파일이 모두 나온다
+      where.push(`(f.title LIKE ? ESCAPE '\\' OR f.description LIKE ? ESCAPE '\\' OR f.topic LIKE ? ESCAPE '\\' OR v.fileName LIKE ? ESCAPE '\\' OR c.nameKo LIKE ? ESCAPE '\\' OR c.nameEn LIKE ? ESCAPE '\\'${tg ? ` OR f.tags LIKE ? ESCAPE '\\' OR f.scripture LIKE ? ESCAPE '\\' OR f.speaker LIKE ? ESCAPE '\\'` : ''}${folder ? ` OR fd.name LIKE ? ESCAPE '\\' OR fd.nameEn LIKE ? ESCAPE '\\'` : ''})`);
+      args.push(like, like, like, like, like, like); if (tg) args.push(like, like, like); if (folder) args.push(like, like); // 캠프 이름(한글·영문)으로도 찾는다 // 폴더 이름으로 찾으면 그 폴더 파일이 모두 나온다
     }
+    if (tag && tg) { where.push(`(',' || f.tags || ',') LIKE ? ESCAPE '\\'`); args.push(`%,${tag.replace(/[%_\\]/g, m => '\\' + m)},%`); } // 태그 하나로 거르기
     if (folderId && folder) { if (folderId === 'none') where.push('f.folderId IS NULL'); else { where.push('f.folderId = ?'); args.push(folderId); } }
     if (campId === 'none') where.push(`(f.campId IS NULL AND NOT EXISTS (SELECT 1 FROM file_links l WHERE l.fileId = f.id AND l.deletedAt IS NULL))`);
     else if (campId) { where.push(`(f.campId = ? OR EXISTS (SELECT 1 FROM file_links l WHERE l.fileId = f.id AND l.campId = ? AND l.deletedAt IS NULL))`); args.push(campId, campId); }
@@ -54,23 +57,31 @@ export async function onRequestGet({ env, request }) {
     else if (kind) { where.push('f.kind = ?'); args.push(text(kind, 10)); }
     return { clause: where.join(' AND '), args };
   };
-  let folder = true, pub = true, rows, total;
+  let folder = true, pub = true, tg = true, rows, total;
   for (let attempt = 0; ; attempt++) {
-    const { clause, args } = build(folder);
-    let sel = SELECT; if (!pub) sel = NO_PUBLIC(sel); if (!folder) sel = NO_FOLDER(sel);
+    const { clause, args } = build(folder, tg);
+    let sel = SELECT; if (!pub) sel = NO_PUBLIC(sel); if (!folder) sel = NO_FOLDER(sel); if (!tg) sel = NO_TAGS(sel);
     try {
       rows = (await env.DB.prepare(`${sel} WHERE ${clause} ORDER BY ${order}, f.id LIMIT ? OFFSET ?`).bind(...args, limit, offset).all()).results;
       total = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM files f ${folder ? 'LEFT JOIN file_folders fd ON fd.id = f.folderId AND fd.deletedAt IS NULL' : ''} LEFT JOIN camps c ON c.id = f.campId LEFT JOIN file_versions v ON v.id = f.currentVersionId WHERE ${clause}`).bind(...args).first()).n;
       break;
     } catch (e) {
-      const m = String((e && e.message) || e), noFolder = folder && /file_folders|folderId/.test(m), noPub = pub && /file_public/.test(m);
-      if (attempt > 2 || (!noFolder && !noPub)) throw e;
-      if (noFolder) folder = false; if (noPub) pub = false; // 0018·0023 적용 전에도 목록은 열린다
+      const m = String((e && e.message) || e), noFolder = folder && /file_folders|folderId/.test(m), noPub = pub && /file_public/.test(m), noTg = tg && /\b(tags|scripture|speaker)\b/.test(m);
+      if (attempt > 3 || (!noFolder && !noPub && !noTg)) throw e;
+      if (noFolder) folder = false; if (noPub) pub = false; if (noTg) tg = false; // 0018·0023 적용 전에도 목록은 열린다
     }
+  }
+  // 자주 쓰인 태그 (보이는 자료만) — 화면의 태그 거르기와 AI 가 「기존 태그」를 고를 때 쓴다
+  let tagStats = [];
+  if (tg) {
+    const vis = ['f.deletedAt IS NULL', "f.tags <> ''"]; if (!s.perms.moneyRead) vis.push('f.restricted = 0'); if (!s.campRole) vis.push(PUBLIC_SQL);
+    const cnt = new Map();
+    for (const r of ((await env.DB.prepare(`SELECT f.tags FROM files f WHERE ${vis.join(' AND ')} LIMIT 2000`).all().catch(() => ({ results: [] }))).results)) for (const t of String(r.tags).split(',')) if (t) cnt.set(t, (cnt.get(t) || 0) + 1);
+    tagStats = [...cnt.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 40).map(([tag, n]) => ({ tag, n }));
   }
   return json({
     items: rows.map(r => ({ ...r, linkedCampIds: r.linkedCampIds ? r.linkedCampIds.split(',') : [] })),
-    total, perms: s.perms,
+    total, tagStats, perms: s.perms,
   });
 }
 
@@ -94,6 +105,7 @@ export async function onRequestPost({ env, request }) {
     .bind(id, b.campId || null, b.typeId || null, title, text(b.description, 500), kindForLink(linkKind), url, s.email,
       FILE_STATUSES.includes(b.status) ? b.status : '', category, text(b.topic, 60), restricted, linkKind, now).run();
   if ('publicToAll' in b && !restricted) await setFilePublic(env, id, !!b.publicToAll, s.email);
+  await applyMeta(env, id, b);
   await audit(env, s.email, 'create', 'file', id, `link:${title}`);
   return json({ id }, 201);
 }
@@ -132,6 +144,7 @@ export async function onRequestPatch({ env, request }) {
   await env.DB.prepare(`UPDATE files SET title=?2, description=?3, category=?4, topic=?5, statusLabel=?6, campId=?7, typeId=?8, externalUrl=?9, linkKind=?10, restricted=?11, currentVersionId=?12, updatedAt=?13 WHERE id=?1`)
     .bind(id, title, 'description' in b ? text(b.description, 500) : row.description, category, 'topic' in b ? text(b.topic, 60) : row.topic,
       'status' in b ? (FILE_STATUSES.includes(b.status) ? b.status : row.statusLabel) : row.statusLabel, campId, typeId, url, linkKind, restricted, versionId, now).run();
+  await applyMeta(env, id, b);   // 태그·언어·성경 본문·설교자 (보낸 칸만 바뀐다)
   if (folderChange) await env.DB.prepare('UPDATE files SET folderId = ?2 WHERE id = ?1').bind(id, folderId || null).run(); // 폴더로 옮기기(빈 값이면 폴더 밖으로)
   if (b.addCampId) {
     const camp = await env.DB.prepare('SELECT id FROM camps WHERE id = ?1 AND deletedAt IS NULL').bind(String(b.addCampId)).first();
