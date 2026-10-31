@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=86">
+  <link rel="stylesheet" href="/hub.css?v=87">
   <link rel="stylesheet" href="/hub-sky.css?v=13">
   <script src="/hub-sky.js?v=6" defer></script>
   <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
@@ -672,27 +672,30 @@
       + ['196 46', '206 44', '216 46'].map((xy, i) => '<path class="hk-steam s' + (i + 1) + '" d="M' + xy + 'q-4-6 0-12q4-6 0-12" style="stroke:var(--kc-steam)" stroke-width="2.4" fill="none" stroke-linecap="round"/>').join('') + '</g>'
       + '<rect width="300" height="112" fill="#1a2440" style="opacity:var(--kc-dim)"/><circle cx="246" cy="60" r="70" fill="url(#hkLamp)" style="opacity:var(--kc-lamp-wash)"/>'
       + '</svg></span>';
-    const LAMPS = [70, 230, 370, 530].map(x => '<path d="M' + x + ' 92V66h8" stroke="#3a4656" stroke-width="2" fill="none"/><circle cx="' + (x + 8) + '" cy="68" r="16" fill="url(#hcLight)" class="hk-glow"/><circle cx="' + (x + 8) + '" cy="68" r="2.4" fill="#fff4c8"/>').join('');
+    const LAMPS = [70, 230, 390, 550, 710, 870].map(x => '<path d="M' + x + ' 92V66h8" stroke="#3a4656" stroke-width="2" fill="none"/><circle cx="' + (x + 8) + '" cy="68" r="16" fill="url(#hcLight)" class="hk-glow"/><circle cx="' + (x + 8) + '" cy="68" r="2.4" fill="#fff4c8"/>').join('');
     const WHEEL = x => '<g transform="translate(' + x + ' 34)"><g class="hk-spin"><circle r="6" fill="#3d3550" stroke="#2a2438" stroke-width="1.6"/><circle r="2.2" fill="#dcd6ee"/><path d="M0-4v8M-4 0h8" stroke="#dcd6ee" stroke-width="1.2"/></g></g>';
     /* 도시: 먼 빌딩 줄과 가까운 빌딩 줄(창문은 밤에 불이 켜진다). 320px 무늬를 두 번 이어 붙여 끊김 없이 흘러간다 */
-    const CITY = (list, base) => [0, 320].map(off => { let x = off; return list.map(([w, h]) => { const r = '<rect x="' + x + '" y="' + (base - h) + '" width="' + (w - 2) + '" height="' + (h + 4) + '" rx="1.5"/>'; x += w; return r; }).join(''); }).join('');
+    // 끊김 없이 흐르게: 무늬(320px)를 세 번 이어 붙이고, 같은 무늬가 정확히 320px마다 되풀이되게(창 불빛 · 가로등도) 한다.
+    // 빌딩과 창문은 사각형 수백 개 대신 path 하나로 그려 움직일 때 가볍게.
+    const OFFS = [0, 320, 640];
+    const CITY = (list, base) => OFFS.map(off => { let x = off; return list.map(([w, h]) => { const d = 'M' + x + ' ' + (base - h) + 'h' + (w - 2) + 'v' + (h + 4) + 'h-' + (w - 2) + 'z'; x += w; return d; }).join(''); }).join('');
     const FAR_B = [[26, 30], [18, 22], [32, 40], [22, 26], [28, 34], [20, 18], [34, 44], [24, 28], [30, 36], [22, 24], [26, 32], [38, 42]];
     const NEAR_B = [[34, 26], [26, 18], [40, 32], [30, 22], [36, 28], [28, 16], [44, 30], [32, 20], [50, 24]];
-    const CITY_FAR = CITY(FAR_B, 92);
-    const CITY_NEAR = CITY(NEAR_B, 96);
-    const CITY_WIN = [0, 320].map(off => { let x = off, out = ''; NEAR_B.forEach(([w, h], i) => { for (let wy = 96 - h + 5; wy < 90; wy += 7) for (let wx = x + 5; wx < x + w - 7; wx += 8) if ((wx * 7 + wy * 3 + i) % 5) out += '<rect x="' + wx + '" y="' + wy + '" width="3.5" height="3.5" rx=".6"/>'; x += w; }); return out; }).join('');
+    const CITY_FAR = '<path d="' + CITY(FAR_B, 92) + '"/>';
+    const CITY_NEAR = '<path d="' + CITY(NEAR_B, 96) + '"/>';
+    const CITY_WIN = '<path d="' + OFFS.map(off => { let x = 0, out = ''; NEAR_B.forEach(([w, h], i) => { for (let wy = 96 - h + 5; wy < 90; wy += 7) for (let wx = x + 5; wx < x + w - 7; wx += 8) if ((wx * 7 + wy * 3 + i) % 5) out += 'M' + (wx + off) + ' ' + wy + 'h3.5v3.5h-3.5z'; x += w; }); return out; }).join('') + '"/>';
     const CAR_DECO = '<span class="hub-scene hk-scene" aria-hidden="true"><svg viewBox="0 0 300 112" preserveAspectRatio="xMidYMax slice">'
       + '<defs><linearGradient id="hcSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--kc-sky-a)"/><stop offset="1" style="stop-color:var(--kc-sky-b)"/></linearGradient>'
       + '<linearGradient id="hcBeam" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff3c4" stop-opacity=".9"/><stop offset="1" stop-color="#fff3c4" stop-opacity="0"/></linearGradient>'
       + '<radialGradient id="hcLight" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffe29a" stop-opacity=".9"/><stop offset="1" stop-color="#ffe29a" stop-opacity="0"/></radialGradient></defs>'
-      + '<rect width="300" height="112" fill="url(#hcSky)"/>'
+      + '<rect x="-60" width="420" height="112" fill="url(#hcSky)"/>'
       + '<g class="kc-sun" style="transform:translate(var(--kc-csun-x),var(--kc-csun-y))"><circle r="22" style="fill:var(--kc-sun-color)" opacity=".22" class="hk-glow"/><circle r="10" style="fill:var(--kc-sun-color)"/></g>'
       + '<g class="kc-night"><circle cx="232" cy="24" r="9" fill="#f4f1de"/><circle cx="236" cy="20" r="8" style="fill:var(--kc-sky-a)"/><circle cx="40" cy="18" r="1.2" fill="#fff" class="hk-tw"/><circle cx="96" cy="10" r="1" fill="#fff" class="hk-tw t2"/><circle cx="150" cy="26" r="1.2" fill="#fff" class="hk-tw t3"/><circle cx="190" cy="12" r="1" fill="#fff" class="hk-tw"/><circle cx="276" cy="40" r="1.1" fill="#fff" class="hk-tw t2"/></g>'
       + '<g class="hk-far" style="fill:var(--kc-hill-far)">' + CITY_FAR + '</g>'
       + '<g class="hk-near"><g style="fill:var(--kc-hill-near)">' + CITY_NEAR + '</g><g style="fill:var(--kc-win)">' + CITY_WIN + '</g>'
       + '<g class="kc-lamps">' + LAMPS + '</g></g>'
-      + '<rect y="94" width="300" height="18" style="fill:var(--kc-road)"/><g class="hk-dash"><path d="M0 103H330" style="stroke:var(--kc-road-line)" stroke-width="2" stroke-dasharray="14 14"/></g>'
-      + '<path class="kc-snow" d="M0 94H300" stroke="#fff" stroke-width="3"/>'
+      + '<rect x="-60" y="94" width="420" height="18" style="fill:var(--kc-road)"/><g class="hk-dash"><path d="M-56 103H392" style="stroke:var(--kc-road-line)" stroke-width="2" stroke-dasharray="14 14"/></g>'
+      + '<path class="kc-snow" d="M-60 94H360" stroke="#fff" stroke-width="3"/>'
       + '<path class="kc-beam hk-beam" d="M180 72L264 62L264 98Z" fill="url(#hcBeam)"/>'
       /* 차: 카니발 같은 미니밴 — 길고 높은 몸체, 옆 미닫이문, 창 세 칸(상표는 넣지 않는다) */
       + '<g transform="translate(108 52)"><g class="hk-bob">'
