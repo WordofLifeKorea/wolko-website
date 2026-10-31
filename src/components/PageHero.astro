@@ -7,19 +7,28 @@
 // 공통: 앞에 가는 선이 붙은 작은 표시, G마켓 산스 제목, 왼쪽 정렬, 같은 폭, 같은 등장 움직임.
 // 쓰는 쪽에서 넣는 칸: eyebrow, title, desc(설명 한 줄) 또는 bar(설명·숫자·버튼 줄), 기본 칸(빵부스러기 등 덧붙임).
 //   bar 안에서 쓰는 이름: .ph-sub(설명) .ph-stats > .ph-stat > dt/dd(숫자, 글자면 .ph-stats--text) .ph-actions > .ph-cta(.ph-cta--ghost)
+// 페이지마다 조금씩 다르게(같은 틀 안에서) — 아래 셋 중 하나쯤만 고른다:
+//   align="center" : 가운데 정렬 (짧은 제목, 한 문장으로 말하는 페이지)
+//   shade="left"   : 왼쪽부터 어둡게, 글은 세로 가운데 왼쪽 (오른쪽에 사진의 주인공이 있을 때)
+//   mark="CAMP"    : 오른쪽 위에 테두리만 있는 큰 영문 낱말 (사역 이름이 분명한 페이지). 휴대폰에서는 감춘다.
 interface Props {
   variant?: 'photo' | 'band' | 'plain';
   image?: string;
   pos?: string;      // 사진 위치 (background-position)
   mpos?: string;     // 휴대폰에서의 사진 위치
   id?: string;
+  align?: 'left' | 'center';
+  shade?: 'bottom' | 'left';
+  mark?: string;
 }
-const { variant = 'photo', image, pos = '50% 40%', mpos, id } = Astro.props;
+const { variant = 'photo', image, pos = '50% 40%', mpos, id, align = 'left', shade = 'bottom', mark } = Astro.props;
+const cls = ['ph', `ph--${variant}`, align === 'center' && 'ph--center', shade === 'left' && 'ph--shade-left'].filter(Boolean).join(' ');
 const style = image ? `--ph-img:url("${image}");--ph-pos:${pos};--ph-mpos:${mpos || pos}` : undefined;
 const hasBar = Astro.slots.has('bar');
 ---
 {image && <link rel="preload" as="image" href={image} fetchpriority="high" />}
-<section class={`ph ph--${variant}`} id={id} style={style} data-img={image}>
+<section class={cls} id={id} style={style} data-img={image}>
+  {mark && <span class="ph-mark" aria-hidden="true">{mark}</span>}
   <div class="ph-inner">
     <slot name="before" />
     <div class="ph-eyebrow"><slot name="eyebrow" /></div>
@@ -130,6 +139,39 @@ const hasBar = Astro.slots.has('bar');
     .ph-cta { width: 100%; justify-content: space-between; padding: 0 20px; }
   }
 
+  /* ── 페이지마다 조금씩 다르게 ── */
+  /* 가운데 정렬: 작은 표시 양쪽에 선, 설명 줄은 한 줄기로 가운데 */
+  .ph--center .ph-inner { align-items: center; text-align: center; }
+  .ph--center .ph-eyebrow::after { content: ''; width: 28px; height: 1px; background: currentColor; flex: none; }
+  .ph--center .ph-desc { margin-left: auto; margin-right: auto; }
+  .ph--center .ph-bar, .ph--center .ph-bar:has(.ph-stats), .ph--center .ph-bar:has(.ph-stats > :nth-child(4)) { align-self: stretch; display: flex; flex-direction: column; align-items: center; gap: 28px; }
+  .ph--center .ph-sub { max-width: 640px; }
+  .ph--center .ph-bar .ph-stats { margin: 0; padding: 0; border: 0; grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(120px, auto); gap: 0 56px; }
+  .ph--center .ph-actions { justify-content: center; }
+  /* 왼쪽부터 어둡게: 글은 세로 가운데 왼쪽 칸에 */
+  .ph--photo.ph--shade-left::after { background: linear-gradient(90deg, rgba(5,20,28,0.92) 0%, rgba(5,20,28,0.7) 38%, rgba(5,20,28,0.15) 72%, rgba(5,20,28,0.05) 100%), linear-gradient(0deg, rgba(5,20,28,0.45) 0%, rgba(5,20,28,0) 35%); }
+  .ph--photo.ph--shade-left .ph-inner { justify-content: center; padding-top: 24px; padding-bottom: 96px; }
+  .ph--shade-left .ph-inner > * { max-width: 640px; }
+  .ph--shade-left .ph-inner > .ph-title { max-width: 860px; }
+  .ph--shade-left .ph-bar, .ph--shade-left .ph-bar:has(.ph-stats), .ph--shade-left .ph-bar:has(.ph-stats > :nth-child(4)) { display: flex; flex-direction: column; align-items: flex-start; gap: 26px; }
+  .ph--shade-left .ph-bar .ph-stats { align-self: stretch; margin: 0; padding: 0; border: 0; grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+  .ph--shade-left .ph-actions { justify-content: flex-start; }
+  /* 큰 영문 낱말: 테두리만, 사진 위 오른쪽 위 */
+  .ph-mark { position: absolute; z-index: 1; right: -0.04em; top: 96px; font-family: var(--ff-serif); font-weight: 700; line-height: .8; letter-spacing: -0.05em; white-space: nowrap; color: transparent; -webkit-text-stroke: 1.5px rgba(255,255,255,0.28); pointer-events: none; user-select: none; }
+  .ph--photo .ph-mark { font-size: clamp(140px, 19vw, 300px); }
+  .ph--band .ph-mark { top: 86px; font-size: clamp(96px, 12vw, 180px); -webkit-text-stroke-color: rgba(255,255,255,0.22); }
+  @media (max-width: 640px) {
+    .ph-mark { display: none; }
+    .ph--center .ph-inner { align-items: stretch; text-align: left; }
+    .ph--center .ph-eyebrow::after { display: none; }
+    .ph--center .ph-bar, .ph--shade-left .ph-bar { display: block; }
+    .ph--center .ph-bar .ph-stats, .ph--shade-left .ph-bar .ph-stats { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-columns: auto; gap: 18px 12px; margin-top: 26px; }
+    .ph--center .ph-bar:has(.ph-stats > :nth-child(3):last-child) .ph-stats, .ph--shade-left .ph-bar:has(.ph-stats > :nth-child(3):last-child) .ph-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .ph--photo.ph--shade-left::after { background: linear-gradient(180deg, rgba(5,20,28,0.35) 0%, rgba(5,20,28,0) 14%, rgba(5,20,28,0) 32%, #0b1e27 62%); }
+    .ph--photo.ph--shade-left .ph-inner { justify-content: flex-end; padding: 0 20px 28px; }
+    .ph--shade-left .ph-inner > * { max-width: none; }
+  }
+
   /* 움직임 — 자바스크립트가 html 에 .wl-motion 을 붙일 때만 (움직임 줄이기 설정이면 처음부터 다 보인다).
      사진을 다 받은 뒤(.is-ready) 사진 → 작은 표시 → 제목 → 설명 줄 순서로 시작한다. 글이 먼저 다 나온 뒤 사진이 툭 바뀌는 일이 없게. */
   @keyframes phZoom { from { opacity: 0; transform: scale(1.08); } 20% { opacity: 1; } to { opacity: 1; transform: none; } }
@@ -138,6 +180,9 @@ const hasBar = Astro.slots.has('bar');
   .wl-motion .ph:not(.is-ready)::before,
   .wl-motion .ph:not(.is-ready) :is(.ph-eyebrow, .ph-title, .ph-bar, .ph-desc) { opacity: 0; }
   .wl-motion .ph--photo.is-ready::before, .wl-motion .ph--band.is-ready::before { animation: phZoom 3.8s cubic-bezier(.2,.6,.2,1) both; }
+  .wl-motion .ph:not(.is-ready) .ph-mark { opacity: 0; }
+  .wl-motion .ph.is-ready .ph-mark { animation: phMark 2.4s .2s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes phMark { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: none; } }
   .wl-motion .ph.is-ready .ph-eyebrow { animation: phRise 1.2s .35s cubic-bezier(.2,.7,.2,1) both; }
   .wl-motion .ph.is-ready .ph-eyebrow::before { animation: phLine 1s .65s ease-out both; }
   .wl-motion .ph.is-ready .ph-title { animation: phRise 1.3s .6s cubic-bezier(.2,.7,.2,1) both; }
