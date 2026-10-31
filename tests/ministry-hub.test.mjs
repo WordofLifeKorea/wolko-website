@@ -40,11 +40,11 @@ test('public ministry entry points lead to the overview hub', async () => {
   assert.match(sitemap, /<loc>https:\/\/wolko\.org\/ministry\/<\/loc>/);
 });
 
-test('about commitments are flat rows split by thin rules, never a side stripe', async () => {
+test('about commitments are flat blocks under a top rule, never a side stripe', async () => {
   const about = await read('src/pages/about/index.astro');
 
   assert.doesNotMatch(about, /\.commit-card::before\s*\{[^}]*left:0;[^}]*height:100%/s);
   assert.doesNotMatch(about, /\.commit-card[^{]*\{[^}]*border-left/s);
-  assert.match(about, /\.commit-card\s*\{[^}]*border-bottom:1px solid/s);   // 카드 대신 가는 선으로 나눈 줄
-  assert.doesNotMatch(about, /\.commit-num\s*\{[^}]*gradient/s);             // 번호는 그라데이션 없이 단색
+  assert.match(about, /\.commit-card\s*\{[^}]*border-top:2px solid/s);      // 카드 대신 굵은 윗선으로 나눈 칸
+  assert.doesNotMatch(about, /\.commit-num\s*\{[^}]*gradient/s);             // 번호는 그라데이션 없이 테두리 글자
 });

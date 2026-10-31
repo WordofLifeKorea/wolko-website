@@ -43,8 +43,8 @@ const ministries = [
 
   /* ── 글꼴 — 홈 화면과 같게: 제목·숫자는 G마켓 산스, 본문은 Pretendard (편지 카드의 손글씨 느낌 글꼴은 그대로) ── */
   .section { font-family: var(--ff-sans); }
-  .section-title, .history-year, .history-card h3, .vismis-card h3,
-  .value-title, .value-num, .commit-card h4, .commit-num, .mi-title, .ms-title { font-family: var(--ff-serif); }
+  .section-title, .history-year, .history-card h3,
+  .value-title, .value-num, .commit-card h4, .commit-num, .mi-title, .ms-title, .values-big, .mission-title, .vision-statement { font-family: var(--ff-serif); }
 
   /* ── 움직임 — 자바스크립트가 html 에 .wl-motion 을 붙일 때만 (움직임 줄이기 설정이면 붙이지 않아 처음부터 다 보인다) ── */
   /* 스크롤하면 하나씩 떠오른다 — 같은 줄의 카드는 --d 만큼 늦게 */
@@ -112,48 +112,55 @@ const ministries = [
   .intro-sign-by { align-self:stretch; margin-top:10px; padding-top:9px; border-top:1px solid rgba(0,79,104,0.28); text-align:right; font-family:'Noto Serif KR', 'Nanum Myeongjo', serif; font-size:15px; font-weight:600; letter-spacing:.12em; color:#5b6c75; }
   .intro-sign-by .wl-en { font:600 11px/1.4 Montserrat, sans-serif; letter-spacing:.22em; }
 
-  /* ── HISTORY: 한 줄 연대표 — 가로선 위에 점, 크게 비워 둔(테두리만 있는) 연도 ── */
-  .history-grid { position:relative; max-width:1240px; margin:72px auto 0; display:grid; grid-template-columns:1fr 1fr; gap:0 72px; }
-  .history-grid::before { content:""; position:absolute; left:0; right:0; top:0; height:2px; background:#0b2430; }
-  .history-card { position:relative; padding-top:40px; display:flex; flex-direction:column; gap:14px; }
-  .history-card::before { content:""; position:absolute; top:-6px; left:0; width:14px; height:14px; border-radius:50%; background:var(--primary); box-shadow:0 0 0 5px var(--bg); }
-  .history-year { font-size:clamp(84px, 9vw, 128px); font-weight:700; letter-spacing:-0.04em; line-height:.9; color:transparent; -webkit-text-stroke:1.5px var(--primary); font-variant-numeric:tabular-nums; margin-bottom:10px; }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+  /* ── HISTORY: 세로 연대표 — 가운데 선에 점, 글과 사진이 번갈아 양쪽에 ── */
+  .history-grid { position:relative; max-width:1240px; margin:72px auto 0; }
+  .history-grid::before { content:""; position:absolute; left:50%; top:0; bottom:0; width:2px; margin-left:-1px; background:#0b2430; }
+  .history-card { position:relative; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0 120px; align-items:center; }
+  .history-card + .history-card { margin-top:72px; }
+  .history-card::before { content:""; position:absolute; left:50%; top:50%; width:18px; height:18px; margin:-9px 0 0 -9px; border-radius:50%; background:var(--primary); box-shadow:0 0 0 6px var(--bg), 0 0 0 7px var(--primary); }
+  .history-card--camp .history-text { text-align:right; }
+  .history-card--institute .history-text { order:2; }
+  .history-text { display:flex; flex-direction:column; gap:12px; }
+  .history-year { font-size:clamp(64px, 6.4vw, 92px); font-weight:700; letter-spacing:-0.04em; line-height:1; color:var(--primary); font-variant-numeric:tabular-nums; margin-bottom:6px; }
   .history-tag { font-size:12px; font-weight:700; letter-spacing:0.12em; color:#5a7380; }
   .history-card h3 { font-size:28px; font-weight:700; letter-spacing:-0.02em; color:#0b2430; line-height:1.3; }
   .history-card p { font-size:15.5px; line-height:1.9; color:#4a5d66; }
+  .history-photo { margin:0; aspect-ratio:16 / 10; overflow:hidden; background:#0b1e27; }
+  .history-photo img { width:100%; height:100%; object-fit:cover; display:block; }
 
-  /* ── CORE VALUES: 다섯 칸 — 테두리만 있는 큰 번호 · 윗선 · 이름 · 한 줄 ── */
-  .values-grid { max-width:1240px; margin:64px auto 0; display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:0 28px; }
-  .value-card { display:flex; flex-direction:column; gap:12px; }
-  .value-num { font-size:64px; font-weight:700; line-height:1; letter-spacing:-0.04em; color:transparent; -webkit-text-stroke:1.2px var(--primary); padding-bottom:18px; margin-bottom:8px; border-bottom:2px solid #0b2430; }
-  .value-title { font-size:22px; font-weight:700; letter-spacing:-0.02em; color:#0b2430; line-height:1.3; }
-  .value-desc { font-size:15px; line-height:1.8; color:#4a5d66; }
+  /* ── CORE VALUES: 왼쪽은 테두리만 있는 큰 "5" 와 제목, 오른쪽은 다섯 줄 표 ── */
+  .values-layout { max-width:1240px; margin:0 auto; display:grid; grid-template-columns:minmax(0,4fr) minmax(0,8fr); gap:80px; align-items:start; }
+  .values-big { margin-top:16px; font-family:var(--ff-serif); font-size:clamp(180px, 18vw, 260px); font-weight:700; line-height:.85; letter-spacing:-0.06em; color:transparent; -webkit-text-stroke:2px var(--primary); }
+  .values-side .section-title { margin-top:24px; font-size:clamp(28px, 2.6vw, 36px); }
+  .values-grid { list-style:none; margin:0; padding:0; border-top:2px solid #0b2430; }
+  .value-card { display:grid; grid-template-columns:72px 240px minmax(0,1fr); gap:0 24px; align-items:baseline; padding:28px 0; border-bottom:1px solid #d6dee2; }
+  .value-num { font-size:15px; font-weight:700; color:var(--primary); }
+  .value-title { font-size:24px; font-weight:700; letter-spacing:-0.02em; color:#0b2430; line-height:1.3; }
+  .value-desc { font-size:16px; line-height:1.75; color:#4a5d66; }
 
-  /* ── VISION & MISSION: 사진 위 남색 띠 — 비전 문장은 큰 따옴표와 함께 크게 ── */
-  .vismis-band { position:relative; overflow:hidden; color:#fff; background:#0b1e27 url('/images/heroes/worship.jpg') 50% 35% / cover no-repeat; }
-  .vismis-band::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg, rgba(5,20,28,0.94) 0%, rgba(5,20,28,0.82) 50%, rgba(5,20,28,0.6) 100%); }
-  .vismis-band > * { position:relative; z-index:1; }
-  .vismis-band .section-badge { color:rgba(255,255,255,0.8); }
-  .vismis-band .section-title { color:#fff; }
-  .vismis-inner { max-width:1240px; margin:0 auto; }
-  .vismis-grid { display:grid; grid-template-columns:minmax(0,7fr) minmax(0,5fr); gap:0 80px; margin-top:64px; }
-  .vismis-card { padding-top:28px; border-top:1px solid rgba(255,255,255,0.35); display:flex; flex-direction:column; gap:16px; }
-  .vismis-card-num { font-size:12px; font-weight:700; letter-spacing:0.12em; color:rgba(255,255,255,0.7); }
-  .vismis-card h3 { font-size:26px; font-weight:700; letter-spacing:-0.02em; color:#fff; line-height:1.3; }
-  .vismis-card--vision h3 { position:relative; padding-top:40px; font-size:clamp(30px, 3.2vw, 46px); line-height:1.3; }
-  .vismis-card--vision h3::before { content:"\201C"; position:absolute; top:-14px; left:-4px; font-size:96px; line-height:1; color:#73d1f5; }
-  .vismis-card p { font-size:16px; line-height:1.85; color:rgba(255,255,255,0.82); }
+  /* ── VISION: 사진 위 가운데 큰 문장 ── */
+  .vision-photo { position:relative; overflow:hidden; color:#fff; min-height:620px; display:flex; align-items:center; background:#0b1e27 url('/images/heroes/worship.jpg') 50% 35% / cover no-repeat; }
+  .vision-photo::before { content:""; position:absolute; inset:0; background:rgba(5,20,28,0.72); }
+  .vision-photo-inner { position:relative; z-index:1; width:100%; max-width:1080px; text-align:center; }
+  .vision-badge { margin:0 auto; color:rgba(255,255,255,0.8); }
+  .vision-badge::after { content:""; width:28px; height:1px; background:currentColor; }
+  .vision-statement { margin-top:28px; font-family:var(--ff-serif); font-size:clamp(34px, 4vw, 58px); font-weight:700; line-height:1.3; letter-spacing:-0.03em; color:#fff; }
 
-  /* ── COMMITMENTS: 왼쪽은 제목과 사진(따라 내려온다), 오른쪽은 약속 네 줄 ── */
-  .commit-layout { max-width:1240px; margin:0 auto; display:grid; grid-template-columns:minmax(0,5fr) minmax(0,7fr); gap:0 88px; align-items:start; }
-  .commit-side { position:sticky; top:110px; }
-  .commit-side .section-desc { margin-top:18px; }
-  .commit-photo { margin:40px 0 0; aspect-ratio:4 / 3; overflow:hidden; background:#0b1e27; }
-  .commit-photo img { width:100%; height:100%; object-fit:cover; object-position:50% 35%; display:block; }
-  .commit-grid { border-top:2px solid #0b2430; }
-  .commit-card { padding:32px 0 34px; border-bottom:1px solid #d6dee2; display:grid; grid-template-columns:80px minmax(0,1fr); column-gap:16px; row-gap:10px; align-content:start; }
-  .commit-num { grid-row:1 / span 2; font-size:44px; font-weight:700; line-height:1; letter-spacing:-0.04em; color:transparent; -webkit-text-stroke:1.2px var(--primary); }
-  .commit-card h4 { grid-column:2; font-size:21px; font-weight:700; letter-spacing:-0.02em; color:#0b2430; line-height:1.4; }
+  /* ── MISSION: 남색 띠 — 왼쪽 제목, 오른쪽 사명 문장 ── */
+  .mission-band { background:#0b2430; color:#fff; padding-top:88px; padding-bottom:88px; }
+  .mission-band .section-badge { color:rgba(255,255,255,0.78); }
+  .mission-inner { max-width:1240px; margin:0 auto; display:grid; grid-template-columns:minmax(0,4fr) minmax(0,8fr); gap:80px; align-items:baseline; }
+  .mission-title { margin-top:16px; font-family:var(--ff-serif); font-size:32px; font-weight:700; letter-spacing:-0.02em; color:#fff; }
+  .mission-text { font-size:21px; line-height:1.75; color:rgba(255,255,255,0.88); }
+
+  /* ── COMMITMENTS: 2×2 — 테두리만 있는 큰 번호, 굵은 윗선 ── */
+  .commit-inner { max-width:1240px; margin:56px auto 0; }
+  .commit-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 72px; }
+  .commit-card { padding:40px 0 44px; border-top:2px solid #0b2430; display:grid; grid-template-columns:120px minmax(0,1fr); column-gap:20px; row-gap:12px; align-content:start; }
+  .commit-num { grid-row:1 / span 2; font-size:80px; font-weight:700; line-height:.9; letter-spacing:-0.04em; color:transparent; -webkit-text-stroke:1.5px var(--primary); }
+  .commit-card h4 { grid-column:2; font-size:22px; font-weight:700; letter-spacing:-0.02em; color:#0b2430; line-height:1.4; }
   .commit-card p { grid-column:2; font-size:15.5px; line-height:1.85; color:#4a5d66; }
 
   /* ── MINISTRIES: 왼쪽 목록에서 고르면 오른쪽 큰 사진이 그 사역으로 바뀐다 ── */
@@ -221,17 +228,20 @@ const ministries = [
     .mi-desc { display:block; font-size:14px; line-height:1.7; color:#587383; }
   }
   @media (max-width:1050px) {
-    .values-grid { grid-template-columns:repeat(3, minmax(0,1fr)); gap:36px 28px; }
+    .value-card { grid-template-columns:56px minmax(0,1fr); row-gap:6px; }
+    .value-desc { grid-column:2; }
+    .history-card { gap:0 88px; }
   }
   @media (max-width:860px) {
     .sec-head { grid-template-columns:1fr; }
-    .history-grid, .vismis-grid { grid-template-columns:1fr; gap:48px; }
-    .history-grid::before { display:none; }
-    .history-card { padding-top:28px; border-top:2px solid #0b2430; }
-    .history-card::before { top:-8px; }
-    .values-grid { grid-template-columns:repeat(2, minmax(0,1fr)); gap:40px 28px; }
-    .commit-layout { grid-template-columns:1fr; }
-    .commit-side { position:static; margin-bottom:40px; }
+    .history-grid::before, .history-card::before { display:none; }
+    .history-card { grid-template-columns:1fr; gap:24px; padding-top:28px; border-top:2px solid #0b2430; }
+    .history-card + .history-card { margin-top:56px; }
+    .history-card--camp .history-text { text-align:left; }
+    .history-card--institute .history-text { order:0; }
+    .values-layout, .mission-inner { grid-template-columns:1fr; gap:36px; }
+    .values-big { font-size:160px; }
+    .commit-grid { grid-template-columns:1fr; }
   }
   @media (max-width:640px) {
     .section-title { font-size:30px; }
@@ -245,20 +255,21 @@ const ministries = [
   /* ── 휴대폰: 한 줄기 목록 — 번호는 왼쪽, 이름과 글은 오른쪽 ── */
   @media (max-width:640px) {
     .section { padding-left:20px; padding-right:20px; }
-    .history-grid, .vismis-grid, .values-grid, .commit-inner { margin-top:36px; }
-    .history-card h3, .vismis-card h3 { font-size:22px; }
-    .vismis-card--vision h3 { font-size:26px; }
-    .history-card p, .vismis-card p { font-size:15px; }
-    .history-year { font-size:72px; }
-    .values-grid { grid-template-columns:1fr; gap:0; border-top:2px solid #0b2430; }
-    .value-card { display:grid; grid-template-columns:64px minmax(0,1fr); column-gap:12px; row-gap:4px; padding:20px 0; border-bottom:1px solid #d6dee2; }
-    .value-num { grid-row:1 / span 2; font-size:36px; padding:0; margin:0; border:0; }
-    .value-title { font-size:18px; }
-    .value-desc { grid-column:2; font-size:14.5px; }
-    .vismis-card--vision h3 { font-size:28px; }
-    .commit-photo { margin-left:-20px; margin-right:-20px; }
-    .commit-card { grid-template-columns:56px minmax(0,1fr); padding:24px 0 26px; }
-    .commit-num { font-size:32px; }
+    .history-grid, .commit-inner { margin-top:36px; }
+    .history-year { font-size:56px; }
+    .history-card h3 { font-size:22px; }
+    .history-card p { font-size:15px; }
+    .values-big { font-size:120px; }
+    .value-card { padding:20px 0; }
+    .value-title { font-size:19px; }
+    .value-desc { font-size:14.5px; }
+    .vision-photo { min-height:440px; }
+    .vision-statement { font-size:28px; }
+    .mission-band { padding-top:64px; padding-bottom:64px; }
+    .mission-title { font-size:26px; }
+    .mission-text { font-size:17px; }
+    .commit-card { grid-template-columns:64px minmax(0,1fr); padding:28px 0 30px; }
+    .commit-num { font-size:44px; }
     .commit-card h4 { font-size:18px; }
     .commit-card p { font-size:14.5px; }
 
@@ -362,98 +373,106 @@ const ministries = [
   </div>
   <div class="history-grid page-wrap">
     <div class="history-card history-card--camp">
-      <div class="history-year"><span data-count-from="1900">1946</span></div>
-      <span class="history-tag">WORD OF LIFE CAMPS</span>
-      <h3><span class="wl-ko">캠프 사역의 시작</span><span class="wl-en">Word of Life Camps</span></h3>
-      <p class="wl-ko">잭 월츤과 해리는 50센트짜리 보트를 빌려 처음으로 지금의 생명의 말씀 섬에 노를 저어 갔습니다. 부지는 폐허 상태였지만, 두 사람은 누구의 기대도 뛰어넘는 비전을 그 섬에서 보았습니다. 잭은 83세의 소유주 클라크 여사에게 매매가의 5분의 1인 2만 5천 달러를 제안했고, 그녀가 이를 수락했습니다. 그날 이후로 수십만 명의 청소년들이 생명의 말씀 섬 캠프에 참가했습니다.</p>
-      <p class="wl-en">Jack and Harry rented a rowboat for fifty cents and rowed over to what is now Word of Life Island for the very first time. Though the property was in shambles, the pair had a vision for that island that far exceeded anyone's expectation. Jack offered $25,000 — a fifth of the asking price — to the eighty-three-year-old owner, Miss Clark, and she accepted. Since that day, hundreds of thousands of teens have attended camp on Word of Life Island.</p>
+      <div class="history-text">
+        <div class="history-year"><span data-count-from="1900">1946</span></div>
+        <span class="history-tag">WORD OF LIFE CAMPS</span>
+        <h3><span class="wl-ko">캠프 사역의 시작</span><span class="wl-en">Word of Life Camps</span></h3>
+        <p class="wl-ko">잭 월츤과 해리는 50센트짜리 보트를 빌려 처음으로 지금의 생명의 말씀 섬에 노를 저어 갔습니다. 부지는 폐허 상태였지만, 두 사람은 누구의 기대도 뛰어넘는 비전을 그 섬에서 보았습니다. 잭은 83세의 소유주 클라크 여사에게 매매가의 5분의 1인 2만 5천 달러를 제안했고, 그녀가 이를 수락했습니다. 그날 이후로 수십만 명의 청소년들이 생명의 말씀 섬 캠프에 참가했습니다.</p>
+        <p class="wl-en">Jack and Harry rented a rowboat for fifty cents and rowed over to what is now Word of Life Island for the very first time. Though the property was in shambles, the pair had a vision for that island that far exceeded anyone's expectation. Jack offered $25,000 — a fifth of the asking price — to the eighty-three-year-old owner, Miss Clark, and she accepted. Since that day, hundreds of thousands of teens have attended camp on Word of Life Island.</p>
+      </div>
+      <figure class="history-photo"><img src="/images/heroes/outdoor.jpg" alt="캠프에서 함께 뛰노는 청소년들" loading="lazy"></figure>
     </div>
     <div class="history-card history-card--institute">
-      <div class="history-year"><span data-count-from="1920">1970</span></div>
-      <span class="history-tag">WORD OF LIFE BIBLE INSTITUTE</span>
-      <h3><span class="wl-ko">월비 사역의 시작</span><span class="wl-en">Word of Life Bible Institute</span></h3>
-      <p class="wl-ko">브라질 상파울루에 설립된 첫 번째 캠퍼스의 모델을 따라 미국에서도 첫 번째 성경학교가 문을 열었습니다. 생명의말씀협회 성경학교는 체계적인 제자 훈련과 세계 수준의 성경 교사들로 알려져 있습니다. 오늘날 생명의말씀협회는 전 세계 14개국에 성경학교를 두고 매년 수천 명의 청소년들을 훈련하고 있으며, 성경학교는 학생들이 전 세계로 복음을 들고 나아가는 발판이 되었습니다.</p>
-      <p class="wl-en">The first American Bible Institute was opened following the pattern of the original campus in Sao Paulo, Brazil. Known for structured discipleship and world-class Bible teachers, Word of Life now has Bible Institutes in 14 countries around the world, training thousands of young people each year. The Bible Institute has become a launching ground for students to take the Gospel all around the world.</p>
+      <div class="history-text">
+        <div class="history-year"><span data-count-from="1920">1970</span></div>
+        <span class="history-tag">WORD OF LIFE BIBLE INSTITUTE</span>
+        <h3><span class="wl-ko">월비 사역의 시작</span><span class="wl-en">Word of Life Bible Institute</span></h3>
+        <p class="wl-ko">브라질 상파울루에 설립된 첫 번째 캠퍼스의 모델을 따라 미국에서도 첫 번째 성경학교가 문을 열었습니다. 생명의말씀협회 성경학교는 체계적인 제자 훈련과 세계 수준의 성경 교사들로 알려져 있습니다. 오늘날 생명의말씀협회는 전 세계 14개국에 성경학교를 두고 매년 수천 명의 청소년들을 훈련하고 있으며, 성경학교는 학생들이 전 세계로 복음을 들고 나아가는 발판이 되었습니다.</p>
+        <p class="wl-en">The first American Bible Institute was opened following the pattern of the original campus in Sao Paulo, Brazil. Known for structured discipleship and world-class Bible teachers, Word of Life now has Bible Institutes in 14 countries around the world, training thousands of young people each year. The Bible Institute has become a launching ground for students to take the Gospel all around the world.</p>
+      </div>
+      <figure class="history-photo"><img src="/images/ministries/wolbi.jpg" alt="제주 월비 학생들" loading="lazy"></figure>
     </div>
   </div>
 </section>
 
 <!-- ══ CORE VALUES ══ -->
 <section class="section section--alt">
-  <div class="page-wrap">
+  <div class="page-wrap values-layout">
+    <div class="values-side">
     <span class="section-badge">CORE VALUES</span>
+    <div class="values-big" aria-hidden="true">5</div>
     <h2 class="section-title">
       <span class="wl-ko">월코가 추구하는<br>핵심 5가지</span>
       <span class="wl-en">Five Core Values<br>That Shape WOLKO</span>
     </h2>
-  </div>
-  <div class="values-grid page-wrap">
-    <div class="value-card">
+    </div>
+    <ol class="values-grid">
+    <li class="value-card">
       <span class="value-num">01</span>
       <div class="value-title"><span class="wl-ko">성경 중심</span><span class="wl-en">Bible-Centered</span></div>
       <p class="value-desc"><span class="wl-ko">하나님의 말씀이 우리 삶과 사역의 기준입니다.</span><span class="wl-en">The clear truth of God's Word is our guide.</span></p>
-    </div>
-    <div class="value-card">
+    </li>
+    <li class="value-card">
       <span class="value-num">02</span>
       <div class="value-title"><span class="wl-ko">청소년 사역 중심</span><span class="wl-en">Youth-Focused</span></div>
       <p class="value-desc"><span class="wl-ko">다음 세대 안에 담긴 가능성을 볼 때 우리의 열정이 뜨거워집니다.</span><span class="wl-en">The potential of the next generation is our passion.</span></p>
-    </div>
-    <div class="value-card">
+    </li>
+    <li class="value-card">
       <span class="value-num">03</span>
       <div class="value-title"><span class="wl-ko">복음 중심</span><span class="wl-en">Gospel-Driven</span></div>
       <p class="value-desc"><span class="wl-ko">우리가 전하고자 하는 메시지는 바로 예수님의 복음입니다.</span><span class="wl-en">The Good News of Jesus is our message.</span></p>
-    </div>
-    <div class="value-card">
+    </li>
+    <li class="value-card">
       <span class="value-num">04</span>
       <div class="value-title"><span class="wl-ko">제자 삼기</span><span class="wl-en">Disciple-Making</span></div>
       <p class="value-desc"><span class="wl-ko">다시 제자를 세우는 제자를 훈련하는 것이 우리의 방식입니다.</span><span class="wl-en">The training of multipliers is our method.</span></p>
-    </div>
-    <div class="value-card">
+    </li>
+    <li class="value-card">
       <span class="value-num">05</span>
       <div class="value-title"><span class="wl-ko">열정과 헌신</span><span class="wl-en">High-Energy</span></div>
       <p class="value-desc"><span class="wl-ko">그리스도 안에서 누리는 생동감 넘치는 삶이 우리 사역의 원동력입니다.</span><span class="wl-en">The excitement of life in Christ is our culture.</span></p>
-    </div>
+    </li>
+    </ol>
   </div>
 </section>
 
-<!-- ══ VISION & MISSION ══ -->
-<section class="section vismis-band">
-  <div class="vismis-inner page-wrap">
-    <span class="section-badge">VISION & MISSION</span>
-    <h2 class="section-title"><span class="wl-ko">비전과 사명</span><span class="wl-en">Our Vision & Mission</span></h2>
-    <div class="vismis-grid">
-      <div class="vismis-card vismis-card--vision">
-        <span class="vismis-card-num">VISION STATEMENT</span>
-        <h3>
-          <span class="wl-ko">모든 청소년이 예수님과 함께<br>다음 걸음을 내딛는 것</span>
-          <span class="wl-en">Every young person taking their next step with Jesus</span>
-        </h3>
-      </div>
-      <div class="vismis-card vismis-card--mission">
-        <span class="vismis-card-num">MISSION STATEMENT</span>
-        <h3><span class="wl-ko">우리의 사명</span><span class="wl-en">Our Mission</span></h3>
-        <p class="wl-ko">월코는 성경의 원리에 따라 청소년을 전도하고 제자로 훈련하여, 예수 그리스도의 교회가 건강하게 성장하도록 섬깁니다.</p>
-        <p class="wl-en">The mission of Word of Life Fellowship is the evangelization and discipleship of youth through various means consistent with the Holy Scriptures to strengthen and build up the church of Jesus Christ.</p>
-      </div>
+<!-- ══ VISION & MISSION — 사진 위에 비전 문장, 이어서 남색 띠에 사명 ══ -->
+<section class="section vision-photo">
+  <div class="vision-photo-inner page-wrap">
+    <h2 class="sr-only"><span class="wl-ko">비전과 사명</span><span class="wl-en">Our Vision & Mission</span></h2>
+    <span class="section-badge vision-badge">VISION STATEMENT</span>
+    <p class="vision-statement">
+      <span class="wl-ko">&ldquo;모든 청소년이 예수님과 함께<br>다음 걸음을 내딛는 것&rdquo;</span>
+      <span class="wl-en">&ldquo;Every young person taking their next step with Jesus&rdquo;</span>
+    </p>
+  </div>
+</section>
+<section class="section mission-band">
+  <div class="page-wrap mission-inner">
+    <div>
+      <span class="section-badge">MISSION STATEMENT</span>
+      <h3 class="mission-title"><span class="wl-ko">우리의 사명</span><span class="wl-en">Our Mission</span></h3>
     </div>
+    <p class="mission-text"><span class="wl-ko">월코는 성경의 원리에 따라 청소년을 전도하고 제자로 훈련하여, 예수 그리스도의 교회가 건강하게 성장하도록 섬깁니다.</span><span class="wl-en">The mission of Word of Life Fellowship is the evangelization and discipleship of youth through various means consistent with the Holy Scriptures to strengthen and build up the church of Jesus Christ.</span></p>
   </div>
 </section>
 
 <!-- ══ COMMITMENTS ══ -->
 <section class="section section--alt">
-  <div class="page-wrap commit-layout">
-    <div class="commit-side">
+  <div class="page-wrap sec-head">
+    <div>
     <span class="section-badge">OUR COMMITMENTS</span>
     <h2 class="section-title">
       <span class="wl-ko">지역 교회를 향한<br>월코의 약속</span>
       <span class="wl-en">Word of Life's Commitments<br>to the Local Church</span>
     </h2>
+    </div>
     <p class="section-desc">
       <span class="wl-ko">월코는 복음 메시지를 전파하는 데 있어 지역 교회의 중요한 역할을 인정합니다.</span>
       <span class="wl-en">Word of Life recognizes the vital role of the local church in advancing the gospel message.</span>
     </p>
-    <figure class="commit-photo"><img src="/images/heroes/books.jpg" alt="말씀 집회에서 성경을 들어 올린 청소년들" loading="lazy"></figure>
-    </div>
+  </div>
+  <div class="commit-inner page-wrap">
     <div class="commit-grid">
       <div class="commit-card">
         <span class="commit-num" aria-hidden="true">01</span>
@@ -568,10 +587,10 @@ const ministries = [
 
     // 섹션 떠오르기 — 편지(봉투)는 따로 움직이니 뺀다
     // 순서: 한 섹션 안에서 작은 표시 → 제목 → 설명 → (조금 뒤) 카드가 왼쪽부터 하나씩. 같이 화면에 들어와도 이 차례대로 떠오른다.
-    var groups = ['.history-grid', '.values-grid', '.vismis-grid', '.commit-grid', '.ministry-list'];
+    var groups = ['.history-grid', '.values-grid', '.commit-grid', '.ministry-list'];
     var items = [];
     [].forEach.call(document.querySelectorAll('.section'), function (sec) {
-      [].forEach.call(sec.querySelectorAll('.section-badge, .section-title, .who-title-rule, .section-desc'), function (el, i) {
+      [].forEach.call(sec.querySelectorAll('.section-badge, .section-title, .who-title-rule, .section-desc, .vision-statement, .mission-title, .mission-text, .values-big'), function (el, i) {
         el.style.setProperty('--d', i * 0.14 + 's'); items.push(el);
       });
     });
