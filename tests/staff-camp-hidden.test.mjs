@@ -24,7 +24,7 @@ test('우리학교 캠프는 공개 캠프 카드에서는 숨기고, 스태프 
   assert.match(read('src/pages/camp/index.astro'), /\.filter\(s => !s\.data\.public_card_hidden\)/);
   const reg = read('src/pages/camp-register/index.astro');
   assert.match(reg, /const schedules = visibleAll\.filter\(s => !s\.data\.public_card_hidden\)/);
-  assert.match(reg, /\{\[\.\.\.staffInland, \.\.\.staffJeju\]\.filter\(\(s\) => !s\.data\.staff_application_hidden\)/);
+  assert.match(reg, /\{\[\.\.\.staffInland, \.\.\.\(JEJU_STAFF_BY_INQUIRY \? \[\] : staffJeju\)\]\.filter\(\(s\) => !s\.data\.staff_application_hidden\)/);
 });
 
 test('시흥중앙성결교회 초등영어캠프는 스태프 선택지에만 표시한다', () => {
@@ -59,4 +59,13 @@ test('스태프 지원서 첫 섹션: 이름 | 성별 / 생년월일 전체 / �
 test('폰에서도 스태프 제출 버튼(옛 청록색)에 다른 색 그림자가 번지지 않는다 — 그림자 없음', () => {
   const reg = read('src/pages/camp-register/index.astro');
   assert.match(reg, /\.crp-submit--teal \{ box-shadow: none; \}/);
+});
+
+test('제주 캠프 스태프는 당분간 메일·전화 문의 — 제주 카드는 회색으로 잠그고 지원서 캠프 목록에서도 뺀다', () => {
+  const reg = read('src/pages/camp-register/index.astro');
+  assert.match(reg, /const JEJU_STAFF_BY_INQUIRY = true;/);
+  assert.match(reg, /class="crp-staff-card crp-staff-card--group crp-staff-card--inquiry" data-region="jeju"/);
+  assert.match(reg, /<button class="crp-staff-open-btn" data-region="jeju" type="button" disabled>/);
+  assert.match(reg, /제주 캠프는 메일과 전화로 신청 문의 부탁드립니다\./);
+  assert.match(reg, /if \(card\.classList\.contains\('crp-staff-card--inquiry'\)\) return;/);
 });

@@ -15,6 +15,8 @@ const inlandCamps = schedules.filter(s => s.data.camp_type !== 'jeju');
 // 스태프 지원의 체크박스 목록은 카드에서 숨긴 캠프(예: 우리학교 캠프)도 포함한다
 const staffInland = visibleAll.filter(s => s.data.camp_type !== 'jeju');
 const staffJeju = visibleAll.filter(s => s.data.camp_type === 'jeju');
+// 제주 캠프 스태프는 당분간 지원서로 받지 않고 메일·전화 문의로 받는다 — 제주 카드는 회색으로 잠그고, 지원서의 캠프 목록에서도 뺀다
+const JEJU_STAFF_BY_INQUIRY = true;
 const staffCampNames: Record<string, { ko: string; en: string }> = {
   '2027-wolko-winter': { ko: '겨울 월코 영어 캠프', en: 'Winter WOLKO English Camp' },
   '2027-unity-winter': { ko: '겨울 연합 캠프', en: 'Winter Union Camp' },
@@ -327,6 +329,13 @@ body.lang-en .crp-countdown-notice {
   display: flex; align-items: center; gap: 24px;
 }
 .crp-staff-card--group { margin-top: 24px; }
+/* 문의로 받는 카드(제주) — 강조 없이 회색, 버튼은 잠그고 연락처를 보여준다 */
+.crp-staff-card.crp-staff-card--inquiry { background: var(--c-fill); border-color: var(--c-line); }
+.crp-staff-card--inquiry .crp-staff-card-tag { color: var(--c-label); }
+.crp-staff-card--inquiry .crp-staff-card-camp { color: var(--c-body); }
+.crp-staff-card-note { margin: 8px 0 0; font-size: 14px; line-height: 1.7; color: var(--c-sub); word-break: keep-all; }
+.crp-staff-card-contact { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 4px; }
+.crp-staff-card-contact a { color: var(--c-deep) !important; font-weight: 700; text-decoration: underline !important; text-underline-offset: 3px; }
 .crp-staff-card-body { flex: 1; min-width: 0; }
 .crp-staff-card-info { min-width: 0; }
 .crp-staff-card-tag { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #00798a; margin-bottom: 6px; }
@@ -1610,6 +1619,28 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 );
               })}
             </div>
+            {JEJU_STAFF_BY_INQUIRY ? (
+            <div class="crp-staff-card crp-staff-card--group crp-staff-card--inquiry" data-region="jeju">
+              <div class="crp-staff-card-body">
+                <div class="crp-staff-card-info">
+                  <div class="crp-staff-card-tag">STAFF · CREW · VOLUNTEER</div>
+                  <div class="crp-staff-card-camp">
+                    <span class="wl-ko">제주캠프 스태프 지원</span>
+                    <span class="wl-en">Jeju Camp Staff Application</span>
+                  </div>
+                  <p class="crp-staff-card-note">
+                    <span class="wl-ko">제주 캠프는 메일과 전화로 신청 문의 부탁드립니다.</span>
+                    <span class="wl-en">For Jeju camps, please inquire by email or phone.</span>
+                    <span class="crp-staff-card-contact"><a href="tel:064-799-6084">TEL 064-799-6084</a><a href="mailto:wolbijeju.contact@gmail.com">wolbijeju.contact@gmail.com</a></span>
+                  </p>
+                </div>
+              </div>
+              <button class="crp-staff-open-btn" data-region="jeju" type="button" disabled>
+                <span class="wl-ko">메일·전화 문의</span>
+                <span class="wl-en">Email / Phone</span>
+              </button>
+            </div>
+            ) : (
             <div class="crp-staff-card crp-staff-card--group" data-region="jeju">
               <div class="crp-staff-card-body">
                 <div class="crp-staff-card-info">
@@ -1626,10 +1657,11 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 <svg class="crp-arrow" aria-hidden="true" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
               </button>
             </div>
+            )}
           </div>
         )}
         <ul id="staffCampOptions" hidden>
-          {[...staffInland, ...staffJeju].filter((s) => !s.data.staff_application_hidden).map((s) => (
+          {[...staffInland, ...(JEJU_STAFF_BY_INQUIRY ? [] : staffJeju)].filter((s) => !s.data.staff_application_hidden).map((s) => (
             <li
               data-camp-id={s.id}
               data-region={s.data.camp_type === 'jeju' ? 'jeju' : 'inland'}
@@ -1669,11 +1701,11 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
         <div class="crp-contact-label wl-en">Camp Inquiry</div>
         <div class="crp-contact-info wl-ko">
           <span class="crp-contact-info-line">월코 캠프 문의 &nbsp;|&nbsp; <strong>TEL</strong> 010-7310-9216 &nbsp;|&nbsp; <strong>EMAIL</strong> wolkorea1@gmail.com</span>
-          <span class="crp-contact-info-line">제주 캠프 문의 &nbsp;|&nbsp; <strong>TEL</strong> 064-799-3707 &nbsp;|&nbsp; <strong>EMAIL</strong> wolbijeju.contact@gmail.com</span>
+          <span class="crp-contact-info-line">제주 캠프 문의 &nbsp;|&nbsp; <strong>TEL</strong> 064-799-6084 &nbsp;|&nbsp; <strong>EMAIL</strong> wolbijeju.contact@gmail.com</span>
         </div>
         <div class="crp-contact-info wl-en">
           <span class="crp-contact-info-line">WOLKO Camp Inquiry &nbsp;|&nbsp; <strong>TEL</strong> 010-7310-9216 &nbsp;|&nbsp; <strong>EMAIL</strong> wolkorea1@gmail.com</span>
-          <span class="crp-contact-info-line">Jeju Camp Inquiry &nbsp;|&nbsp; <strong>TEL</strong> 064-799-3707 &nbsp;|&nbsp; <strong>EMAIL</strong> wolbijeju.contact@gmail.com</span>
+          <span class="crp-contact-info-line">Jeju Camp Inquiry &nbsp;|&nbsp; <strong>TEL</strong> 064-799-6084 &nbsp;|&nbsp; <strong>EMAIL</strong> wolbijeju.contact@gmail.com</span>
         </div>
       </div>
       <div class="crp-contact-divider"></div>
@@ -4069,6 +4101,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
 
   // 지역 카드: 열린 캠프가 하나도 없으면 버튼을 잠근다.
   document.querySelectorAll('.crp-staff-card--group').forEach(function(card) {
+    if (card.classList.contains('crp-staff-card--inquiry')) return; // 문의로 받는 카드(제주)는 버튼 문구를 그대로 둔다
     var region = card.dataset.region;
     var hasOpen = staffCampOptions().some(function(li) { return li.dataset.region === region; });
     var btn = card.querySelector('.crp-staff-open-btn');
