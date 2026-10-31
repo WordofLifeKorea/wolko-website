@@ -3,6 +3,7 @@
  * 포털의 읽기용 함수만 불러다 쓰고 아무것도 저장하지 않는다(날씨 저장도 막는다). 조각마다 따로 읽어서 하나가 실패해도 나머지는 그대로 내려준다(실패한 조각은 null).
  * 이메일·연락처는 응답에 담지 않는다. 명단 이메일은 "이 사람이 캠프팀인가"를 가리는 데만 쓰고 밖으로 내보내지 않는다.
  */
+import { oooToday } from './campteamOoo.js';
 import { readDay, MEALS } from './kitchenDuty.js';
 import { SLOTS as DRIVE_SLOTS, slotKey, shownName, currentWeekStart } from './carDrive.js';
 import { readNotices, noticesForWeek, upcomingEvents } from './portalDashboard.js';
@@ -26,12 +27,13 @@ export async function teamCar(env, today, roster) {
 
 export async function tvPortal(env, today, rosterEmails) {
   const roster = new Set((rosterEmails || []).map((e) => String(e || '').trim().toLowerCase())), week = currentWeekStart(today);
-  const [weather, notices, kitchen, car, events] = await Promise.all([
+  const [weather, notices, kitchen, car, events, ooo] = await Promise.all([
     settle(() => loadWeather(readOnly(env))),
     settle(async () => noticesForWeek(await readNotices(env), week, today).slice(0, 12).map((n) => ({ title: n.title || '', body: String(n.body || '').slice(0, 500), pinned: !!n.pinned, dueDate: n.dueDate || '', tr: n.tr ? { title: n.tr.title || '', text: n.tr.text || '' } : null }))),
     settle(() => teamKitchen(env, today, roster)),
     settle(() => teamCar(env, today, roster)),
     settle(async () => { const e = await upcomingEvents(env, today, 8); return e ? e.map((x) => ({ title: x.title, allDay: !!x.allDay, start: x.start, end: x.end, location: x.location || '' })) : null; }),
+    settle(async () => (await oooToday(env, today)).map((x) => x.name)),   // 오늘 부재(휴가)인 사람 이름만
   ]);
-  return { weather, notices, duty: { kitchen, car }, events };
+  return { weather, notices, duty: { kitchen, car }, events, ooo };
 }

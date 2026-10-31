@@ -1,11 +1,11 @@
 /** TV 대시보드: 위젯 종류, 배치 검사, 토큰 */
-export const TV_APP_VERSION = '1.1.1'; // TV 화면이 이 값이 바뀐 것을 보면 스스로 완전히 새로고침한다
+export const TV_APP_VERSION = '1.2.0'; // TV 화면이 이 값이 바뀐 것을 보면 스스로 완전히 새로고침한다
 export const COLS = 16, ROWS = 9;
 // 위젯 종류와 최소 크기 (편집기와 같은 값)
 export const WIDGETS = {
   brand: [2, 1], weather: [1, 1], clock: [2, 1], stats: [4, 1], dday: [2, 2], progress: [3, 2], theme: [2, 1], campers: [3, 2],
   tasks: [3, 2], events: [3, 2], meetings: [3, 2], notices: [3, 2], late: [3, 2],
-  hero: [4, 2], pnotices: [3, 2], duty: [3, 2], pevents: [3, 2],   // 포털 정보: 인사·날씨, 월코 이번 주 공지, 팀원의 오늘 듀티, 월코 일정
+  hero: [4, 2], pnotices: [3, 2], duty: [3, 2], ooo: [3, 2], pevents: [3, 2],   // 포털 정보: 인사·날씨, 월코 이번 주 공지, 팀원의 오늘 듀티, 월코 일정
 };
 export const LIST_WIDGETS = ['tasks', 'events', 'meetings', 'notices', 'late', 'pnotices', 'pevents'];
 

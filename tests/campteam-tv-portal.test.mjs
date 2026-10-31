@@ -3,6 +3,7 @@ import test from 'node:test';
 import * as TvData from '../functions/api/campteam/tv-data.js';
 import { sanitizeLayout, defaultLayout, cleanSettings, WIDGETS, LIST_WIDGETS } from '../functions/lib/campteamTv.js';
 import { todayKst, currentWeekStart } from '../functions/lib/carDrive.js';
+import { tvPortal } from '../functions/lib/campteamTvPortal.js';
 import { fakeD1, makeEnv, U } from './helpers/campteam-fakes.mjs';
 
 const tv = async (env) => TvData.onRequestGet({ env, request: new Request('http://localhost:8788/api/campteam/tv-data?t=testtoken1') });
@@ -40,10 +41,18 @@ test('TV 포털 정보: 날씨를 못 읽거나 저장소가 없어도 TV 데이
 });
 
 test('TV 위젯·설정: 새 위젯 종류는 검사를 통과하고 기본 배치에 들어 있으며, 하늘 배경 설정은 on/off 만', () => {
-  for (const t of ['hero', 'pnotices', 'duty', 'pevents']) assert.ok(WIDGETS[t], t);
+  for (const t of ['hero', 'pnotices', 'duty', 'ooo', 'pevents']) assert.ok(WIDGETS[t], t);
   assert.ok(LIST_WIDGETS.includes('pnotices') && LIST_WIDGETS.includes('pevents') && !LIST_WIDGETS.includes('duty'));
   const types = defaultLayout().pages.flatMap((p) => p.items.map((i) => i.type)); for (const t of ['hero', 'pnotices', 'duty']) assert.ok(types.includes(t), t + ' 기본 배치');
   assert.ok(sanitizeLayout(defaultLayout()).layout);
   const one = sanitizeLayout({ pages: [{ id: 'a', name: 'A', secs: 20, items: [{ uid: 'p', type: 'pnotices', x: 0, y: 0, w: 5, h: 4, opts: { n: 3 } }] }] }); assert.equal(one.layout.pages[0].items[0].opts.n, 3, '목록 위젯은 개수 설정 가능');
   assert.equal(cleanSettings({ sky: 'off' }).settings.sky, 'off'); assert.match(cleanSettings({ sky: 'fog' }).error, /하늘/);
+});
+
+test('TV 「오늘 부재」: 이름만 내려가고 이메일은 담기지 않는다', async () => {
+  const e = makeEnv(fakeD1(), {}), today = '2026-11-02';
+  e.DB.sqlite.prepare("INSERT INTO events (id,title,kind,startDate,endDate,createdAt,updatedAt,createdBy) VALUES ('ev-tv-ooo','Guest Teacher','out',?1,?1,'2026-10-30','2026-10-30','t')").run(today);
+  const p = await tvPortal(e, today, []);
+  assert.ok(Array.isArray(p.ooo) && p.ooo.includes('Guest Teacher'));
+  assert.ok(!JSON.stringify(p.ooo).includes('@'), '이메일은 TV 로 나가지 않는다');
 });

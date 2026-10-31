@@ -39,6 +39,12 @@
         (w ? '<div class="tv-hero-r"><div class="tv-hero-n">' + esc(w.temp) + '<sup>°</sup></div><div class="tv-hero-w">' + esc((s.weatherLabel || '') + (s.weatherLabel ? ' · ' : '') + wxText(w, lang)) + '</div><div class="tv-hero-s">' + esc((lang === 'ko' ? '체감 ' : 'Feels ') + w.feels + '°' + (w.hi != null && w.lo != null ? ' · ' + (lang === 'ko' ? '최고 ' : 'High ') + w.hi + '° / ' + (lang === 'ko' ? '최저 ' : 'Low ') + w.lo + '°' : '') + (w.rain != null ? ' · ' + (lang === 'ko' ? '강수 ' : 'Rain ') + w.rain + '%' : '')) + '</div></div>' : '') + '</div>'; } },
     pnotices:{ ko: 'WOLKO Notices · 월코 이번 주 공지', en: 'WOLKO notices this week', min: [3, 2], size: [8, 3], list: 1, ih: 6.6, ihc: 2.8, title: function (c) { return c.lang === 'ko' ? '월코 이번 주 공지' : 'WOLKO Notices This Week'; }, items: function (c) { return (c.data.portal && c.data.portal.notices) || []; },
       item: function (n, c) { var v = noticeText(n, c); return '<div class="tv-pn">' + (n.pinned ? '<span class="tv-chip">' + (c.lang === 'ko' ? '고정' : 'Pinned') + '</span> ' : '') + (v.t ? '<b>' + esc(v.t) + '</b>' : '') + '<div class="noteb">' + esc(v.b) + '</div></div>'; } },
+    ooo:     { ko: '오늘 부재 (휴가)', en: 'Out today', min: [3, 2], size: [4, 2], fit: 1, html: function (c) {
+      var o = (c.data.portal && c.data.portal.ooo) || [], ko = c.lang === 'ko', rows = '';
+      if (!c.data.portal) rows = '<div class="tv-cap tv-center" style="text-align:center">—</div>';
+      else if (!o.length) rows = '<div class="tv-cap tv-center" style="text-align:center">' + (ko ? '오늘 부재인 사람이 없어요' : 'Nobody is out today') + '</div>';
+      else rows = o.map(function (n) { return '<div class="tv-duty"><b>🌴</b><span><em>' + esc(n) + '</em></span></div>'; }).join('');
+      return '<div class="tv-hd"><h2>' + (ko ? '오늘 부재' : 'Out Today') + '</h2><span>' + (o.length ? o.length : '') + '</span></div><div class="tv-body">' + rows + '</div>'; } },
     duty:    { ko: '오늘 듀티 · 팀원 (키친·차량)', en: "Today's duty (kitchen & car)", min: [3, 2], size: [5, 3], fit: 1, html: function (c) {
       var m = MEALK[lg(c)], d = (c.data.portal && c.data.portal.duty) || {}, k = d.kitchen || [], car = d.car || {}, rows = '';
       k.forEach(function (x) { rows += '<div class="tv-duty"><b>' + esc(m[x.meal] || x.meal) + '</b><span>' + (x.prep.length ? esc(m.prep) + ': <em>' + esc(x.prep.join(', ')) + '</em>' : '') + (x.prep.length && x.clean.length ? ' · ' : '') + (x.clean.length ? esc(m.clean) + ': <em>' + esc(x.clean.join(', ')) + '</em>' : '') + '</span></div>'; });
