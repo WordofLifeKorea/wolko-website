@@ -469,7 +469,7 @@
     if (locked) p.items.forEach(function (x) { x.pub = false; });
     $('mGroupRow').hidden = !!p.folder; $('mGroup').checked = !!p.group; $('mFolder').hidden = !p.group;
     if (document.activeElement !== $('mFolderName')) $('mFolderName').value = p.name; if (document.activeElement !== $('mFolderEn')) $('mFolderEn').value = p.nameEn;
-    $('mAi').textContent = p.aiMsg || '';
+    $('mAi').textContent = p.deep && p.deep.done ? '' : (p.aiMsg || '');   // 내용을 읽고 정리한 뒤에는 「이름만 보냈어요」 안내를 숨긴다(내용을 읽었는데 틀린 안내가 남지 않게)
     var all = p.items.length && p.items.every(function (x) { return x.pub; });
     $('mRows').innerHTML = '<div class="mhead"><span class="hint">' + esc(CT.t('mTitles')) + '</span><label class="mpub"><input type="checkbox" id="mPubAll"' + (all ? ' checked' : '') + (locked ? ' disabled' : '') + '><span>' + esc(CT.t('mPubAll')) + '</span></label></div><div class="hint">' + esc(CT.t('mPubHint')) + '</div>' + p.items.map(function (x, i) {
       return '<div class="mrow"><input data-i="' + i + '" maxlength="120" value="' + esc(x.title) + '"><label class="mpub" title="' + esc(CT.t('mPubHint')) + '"><input type="checkbox" data-pub="' + i + '"' + (x.pub ? ' checked' : '') + (locked ? ' disabled' : '') + '><span>' + esc(CT.t('mPub')) + '</span></label><button type="button" class="btn sm" data-rm="' + i + '">' + esc(CT.t('mRemove')) + '</button><small>' + esc((x.dir ? x.dir + '/' : '') + x.file.name) + ' · ' + fmtSize(x.file.size) + '</small>' + (p.meta ? metaRow(x, i) : '') + '</div>'; }).join('');
