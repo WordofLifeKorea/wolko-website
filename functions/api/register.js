@@ -162,12 +162,12 @@ function buildRegistrationEmailHtml(reg) {
     ? `${reg.groupCount}명 (참가 학생 명단 추후 제출)`
     : `${reg.groupCount}명 (남 ${reg.maleCount} / 여 ${reg.femaleCount})`;
   const groupCountLabel = hasDeferredParticipants ? '인원' : '인원 (남/여)';
-  const unionExtraRows = isGroup && reg.referralSource ? `
-    ${reg.referralSource ? `
+  // 월코 캠프를 알게 된 경로 — 개인 · 단체 모두
+  const referralRow = reg.referralSource ? `
     <tr>
       <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">알게 된 경로</td>
       <td style="padding:8px 0;font-size:14px;">${escapeHtml(reg.referralSource)}</td>
-    </tr>` : ''}` : '';
+    </tr>` : '';
   const groupRows = isGroup ? `
     <tr>
       <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">${groupCountLabel}</td>
@@ -177,7 +177,7 @@ function buildRegistrationEmailHtml(reg) {
       <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;vertical-align:top;">참가 학생</td>
       <td style="padding:8px 0;font-size:14px;">${participantList}</td>
     </tr>
-    ${unionExtraRows}` : '';
+` : '';
   const refundRows = `
     <tr>
       <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">환불 계좌</td>
@@ -249,6 +249,7 @@ function buildRegistrationEmailHtml(reg) {
         </tr>
         ${individualRows}
         ${groupRows}
+        ${referralRow}
         ${refundRows}
         ${mediaRow}
         ${scholarshipRows}
@@ -698,7 +699,7 @@ export async function onRequestPost(context) {
           refundAccount: refundAccountNorm,
           refundHolder: refundHolderNorm,
           payOnSite: payOnSiteNorm,
-          referralSource: referralSource?.trim() || '',
+          referralSource: String(referralSource ?? '').trim().slice(0, 120),
           scholarshipDiscounts: normalizedScholarshipDiscounts,
           scholarshipDiscountDetails: normalizedScholarshipDiscountDetails,
           scholarshipDiscountText: scholarshipText,
@@ -721,6 +722,7 @@ export async function onRequestPost(context) {
           ...(birthDate ? { birthDate: String(birthDate).trim() } : {}),
           church: church?.trim() || '',
           school: school?.trim() || '',
+          referralSource: String(referralSource ?? '').trim().slice(0, 120),
           emergency: emergency?.trim() || '',
           mediaConsent,
           refundBank: refundBankNorm,

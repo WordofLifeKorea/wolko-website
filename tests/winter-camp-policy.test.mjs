@@ -320,3 +320,11 @@ test('Korean phone numbers with the +82 country code are stored and sent as 010-
   }
   assert.equal(normalizePhone('+1 5551234567'), '+15551234567');
 });
+
+test('camp registration keeps how the family heard about WOLKO Camp (individual and group)', async () => {
+  const one = await register({ referralSource: '  기타: 유튜브  ' });
+  assert.equal(one.response.status, 200);
+  assert.equal(JSON.parse([...one.store.entries()].find(([key]) => key.includes(':reg:'))[1]).referralSource, '기타: 유튜브');
+  const church = await register({ campId: '2027-unity-winter', registrationType: 'group', groupCount: 5, participants: [], church: '평택교회', referralSource: '교회', __now: '2026-11-20T12:00:00+09:00' });
+  assert.equal(JSON.parse([...church.store.entries()].find(([key]) => key.includes(':reg:'))[1]).referralSource, '교회');
+});

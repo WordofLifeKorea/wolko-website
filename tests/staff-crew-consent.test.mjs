@@ -165,7 +165,15 @@ test('크루 지원서는 구글 폼 항목을 따른다 — 참가자 동의 �
   const page = readFileSync(new URL('../src/pages/camp-register/index.astro', import.meta.url), 'utf8');
   assert.match(page, /#staffForm:not\(\.is-crew\) \.crew-only \{ display: none !important; \}/);
   assert.match(page, /id="staffCrewPledge"/);
-  assert.match(page, /name="referral" value="월코 캠퍼"/);
+  assert.match(page, /<select id="staffReferral" name="referral"/);
+  assert.match(page, /\{ value: '월코 캠퍼', ko: '월코 캠퍼로 참여한 적 있음'/);
+  // 선택 항목은 모두 드롭다운 — 칩(라디오) 묶음이 남아 있지 않다
+  assert.doesNotMatch(page, /type="radio" name="(cultHistory|englishAbility|mediaTech|previousCamp|referral)"/);
+  assert.match(page, /<button type="button" class="staff-ms-btn" id="staffInstrumentBtn"/);
+  // 캠프 신청서(개인 · 단체)에도 알게 된 경로를 묻는다
+  assert.match(page, /<select id="crpReferral" class="wl-tall"/);
+  assert.match(page, /<select id="crpGReferral" class="wl-tall"/);
+  assert.match(page, /referralSource: referralSource,/);
   for (const v of ['피아노', '베이스', '드럼', '일렉기타', '어쿠스틱 기타', '싱어', '없음']) {
     assert.match(page, new RegExp(`name="staffInstrument" value="${v}"`));
   }
