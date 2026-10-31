@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
+import TeamNavList from '../../components/TeamNavList.astro';
 
 export async function getStaticPaths() {
   const team = await getCollection('team');
@@ -9,12 +10,17 @@ export async function getStaticPaths() {
 }
 const { person, allTeam } = Astro.props;
 
-// 사이드바: 월코 선교사 → 월코 인턴 → 제주 선교사 → 제주 인턴
 const byOrd = (a: any, b: any) => (a.data.order ?? 99) - (b.data.order ?? 99);
 const wolkoMission = allTeam.filter(p => p.data.category === 'missionary' && p.data.campus === 'pyeongtaek').sort(byOrd);
 const wolkoSTW     = allTeam.filter(p => p.data.category === 'stw'        && p.data.campus === 'pyeongtaek').sort(byOrd);
 const jejuMission  = allTeam.filter(p => p.data.category === 'missionary' && p.data.campus !== 'pyeongtaek').sort(byOrd);
 const jejuSTW      = allTeam.filter(p => p.data.category === 'stw'        && p.data.campus !== 'pyeongtaek').sort(byOrd);
+// 옆 목록: 사역 거점(평택 · 제주)마다 선교사 → 단기 사역자 (사람이 없는 칸은 뺀다)
+const navCampuses = [
+  { num: '01', ko: '평택 월코센터', en: 'Pyeongtaek WOLKO Center', groups: [{ ko: '선교사', en: 'Missionaries', people: wolkoMission }, { ko: '단기 사역자', en: 'Short-term Workers', people: wolkoSTW }] },
+  { num: '02', ko: '제주 월비', en: 'Jeju WOLBI', groups: [{ ko: '선교사', en: 'Missionaries', people: jejuMission }, { ko: '단기 사역자', en: 'Short-term Workers', people: jejuSTW }] },
+].map(c => ({ ...c, groups: c.groups.filter(g => g.people.length) })).filter(c => c.groups.length);
+const teamCount = wolkoMission.length + wolkoSTW.length + jejuMission.length + jejuSTW.length;
 const d = person.data;
 const campusKo = d.campus === 'pyeongtaek' ? '평택 월코센터' : '제주 월비캠퍼스';
 const campusEn = d.campus === 'pyeongtaek' ? 'Pyeongtaek WOLKO Center' : 'Jeju WOLBI Campus';
@@ -50,6 +56,7 @@ const ROLE_MAP: Record<string, string> = {
   'Intern':            '인턴',
   'Staff':             '간사',
 };
+const roleOf = (badge: string) => (badge ? (ROLE_MAP[badge] || badge) : '');
 const roleBadgeKo = d.role_badge ? (ROLE_MAP[d.role_badge] || d.role_badge) : '';
 
 // ── 성경 참조 한→영 자동 변환 ──────────────────────────────────
@@ -327,221 +334,89 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   .mp-btn, .mp-back a, .mp-bio-wrap { transition: none; }
 }
 
-/* ── TEAM NAVIGATOR SIDEBAR ─────────────────────────── */
+/* ── 섬기는이 목록 — 컴퓨터: 오른쪽에 떠 있는 카드(머리글 아래), 폰: 아래에서 올라오는 목록 ── */
 .tn-sidebar {
-  position: fixed;
-  right: 0; top: 0; bottom: 0;
-  width: 210px;
-  background: rgba(255,255,255,0.98);
-  backdrop-filter: blur(12px);
-  border-left: 1px solid var(--c-line, #d6dee2);
-  z-index: 200;
-  display: flex;
-  flex-direction: column;
-  transform: translateX(0);
-  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  position: fixed; top: 92px; right: 16px; bottom: 16px; z-index: 200;
+  width: 256px; display: flex; flex-direction: column;
+  background: #fff; border: 1px solid #dce5ea; border-radius: 16px;
+  box-shadow: 0 18px 44px -20px rgba(11, 36, 48, .28), 0 2px 6px rgba(11, 36, 48, .05);
+  transition: transform .35s cubic-bezier(.4, 0, .2, 1);
 }
-.tn-sidebar.is-collapsed { transform: translateX(198px); }
-
+.tn-sidebar.is-collapsed { transform: translateX(calc(100% + 16px)); }
 .tn-toggle {
-  position: absolute;
-  left: -32px; top: 50%;
-  transform: translateY(-50%);
-  width: 32px; height: 64px;
-  background: #fff;
-  border: 1px solid #d6dee2;
-  border-right: none;
-  border-radius: 2px 0 0 2px;
-  cursor: pointer;
+  position: absolute; left: -30px; top: 50%; transform: translateY(-50%);
+  width: 30px; height: 60px; padding: 0;
   display: flex; align-items: center; justify-content: center;
-  color: #4a5d66;
-  transition: color 0.2s, background 0.2s;
+  background: #fff; border: 1px solid #dce5ea; border-right: 0; border-radius: 12px 0 0 12px;
+  box-shadow: -6px 6px 16px -10px rgba(11, 36, 48, .25);
+  color: #4a5d66; cursor: pointer; transition: color .2s, background-color .2s;
 }
 .tn-toggle:hover { background: #f3f7f9; color: #004f68; }
-.tn-toggle svg { transition: transform 0.3s; }
+.tn-toggle:focus-visible { outline: 2px solid #004f68; outline-offset: 2px; }
+.tn-toggle svg { transition: transform .3s; }
 .tn-sidebar.is-collapsed .tn-toggle svg { transform: rotate(180deg); }
+.tn-head {
+  flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 16px 18px 12px; border-bottom: 1px solid #e6edf1;
+}
+.tn-eyebrow { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #004f68; }
+.tn-eyebrow::before { content: ''; width: 18px; height: 1px; background: currentColor; }
+.tn-all { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: #4a5d66; text-decoration: none; white-space: nowrap; }
+.tn-all:hover { color: #004f68; }
+.tn-all svg { width: 12px; height: 12px; transition: transform .2s; }
+.tn-all:hover svg { transform: translateX(2px); }
+.tn-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #c9d6dc transparent; border-radius: 0 0 16px 16px; }
 
-.tn-header {
-  padding: 14px 14px 10px;
-  border-bottom: 1px solid #d6dee2;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  color: #004f68;
-  flex-shrink: 0;
+/* 목록 자리만큼 본문을 왼쪽으로 — 접으면 본문이 다시 넓어진다 */
+@media (min-width: 769px) {
+  .mp-wrap { padding-right: 288px; transition: padding-right .35s cubic-bezier(.4, 0, .2, 1); }
+  .mp-wrap.is-tn-collapsed { padding-right: 24px; }
 }
-.tn-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px 0 24px;
-  scrollbar-width: thin;
-  scrollbar-color: #c9d6dc transparent;
-}
-.tn-campus-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  color: #5a7380;
-  padding: 12px 14px 6px;
-}
-.tn-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 14px;
-  text-decoration: none;
-  color: #4a5d66;
-  transition: background 0.15s, color 0.15s;
-}
-.tn-item:hover { background: #f3f7f9; color: #004f68; }
-/* 지금 보고 있는 사람 — 옅은 바탕 + 굵은 이름 (왼쪽 색 줄은 쓰지 않는다) */
-.tn-item.is-active { background: #e9f1f4; color: #0b2430; }
-.tn-item.is-active .tn-name { font-weight: 700; }
-.tn-avatar {
-  width: 40px; height: 40px;
-  border-radius: 2px;
-  object-fit: cover; object-position: top;
-  background: #d6dee2;
-  flex-shrink: 0;
-}
-.tn-avatar-placeholder {
-  width: 40px; height: 40px;
-  border-radius: 2px;
-  background: #e2eaee;
-  flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--ff-serif);
-  font-size: 15px;
-  font-weight: 700;
-  color: #5a7380;
-}
-.tn-name {
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.3;
-  word-break: keep-all;
-}
-.tn-role {
-  font-size: 11px;
-  color: #587383;
-  line-height: 1.2;
-  margin-top: 3px;
-}
-
-@media (max-width: 1100px) {
-  .tn-sidebar { width: 188px; }
-  .tn-sidebar.is-collapsed { transform: translateX(176px); }
+@media (min-width: 769px) and (max-width: 1100px) {
+  .tn-sidebar { width: 224px; }
+  .mp-wrap { padding-right: 252px; }
 }
 @media (max-width: 768px) {
   .tn-sidebar { display: none; }
 }
-/* main content에 우측 여백 추가 (사이드바 공간 확보) */
-@media (min-width: 769px) {
-  .mp-wrap { padding-right: 210px; }
-}
-@media (min-width: 769px) and (max-width: 1100px) {
-  .mp-wrap { padding-right: 188px; }
-}
 
-/* 인턴 섹션 */
-.tn-stw-wrap { border-top: 1px solid #d6dee2; margin-top: 8px; padding-top: 4px; }
-.tn-stw-toggle {
-  width: 100%;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 10px 14px 6px;
-  text-align: left;
-  transition: background 0.15s;
-}
-.tn-stw-toggle:hover { background: #f3f7f9; }
-.tn-stw-icon { transition: transform 0.25s; color: #5a7380; }
-.tn-stw-toggle.is-open .tn-stw-icon { transform: rotate(180deg); }
-
-/* ── MOBILE: 플로팅 버튼 + 바텀시트 ──────────────── */
-.tn-fab { display: none; }
-.tn-sheet-backdrop { display: none; }
-.tn-sheet { display: none; }
-
+/* 폰: 오른쪽 아래 버튼 → 아래에서 올라오는 목록 */
+.tn-fab, .tn-sheet-backdrop, .tn-sheet { display: none; }
 @media (max-width: 768px) {
   .tn-sheet-backdrop {
-    display: block;
-    position: fixed; inset: 0;
-    background: rgba(5,20,28,0.45);
-    z-index: 301;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
+    display: block; position: fixed; inset: 0; z-index: 301;
+    background: rgba(5, 20, 28, .45); opacity: 0; pointer-events: none;
+    transition: opacity .3s; -webkit-tap-highlight-color: transparent;
   }
   .tn-sheet-backdrop.is-open { opacity: 1; pointer-events: auto; }
-
   .tn-sheet {
-    display: flex;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    max-height: 72vh;
-    background: #fff;
-    border-radius: 4px 4px 0 0;
-    z-index: 302;
-    flex-direction: column;
-    transform: translateY(100%);
-    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
-    box-shadow: 0 -8px 32px rgba(5,20,28,0.16);
+    display: flex; flex-direction: column; position: fixed; left: 0; right: 0; bottom: 0; z-index: 302;
+    max-height: 76vh; background: #fff; border-radius: 20px 20px 0 0;
+    box-shadow: 0 -10px 36px rgba(5, 20, 28, .18);
+    transform: translateY(100%); transition: transform .35s cubic-bezier(.4, 0, .2, 1);
   }
   .tn-sheet.is-open { transform: translateY(0); }
-
+  .tn-sheet-handle { flex: none; width: 40px; height: 4px; margin: 10px auto 0; border-radius: 4px; background: #d6dee2; }
+  .tn-sheet .tn-head { padding: 12px 12px 12px 20px; }
+  .tn-sheet-close {
+    flex: none; width: 36px; height: 36px; min-height: 0; padding: 0; margin-left: 4px;
+    display: flex; align-items: center; justify-content: center;
+    background: #f3f7f9; border: 0; border-radius: 10px; color: #4a5d66; cursor: pointer;
+  }
+  .tn-sheet .tn-scroll { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; border-radius: 0; }
   .tn-fab {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    bottom: 24px; right: 20px;
-    width: 52px; height: 52px;
-    border-radius: 2px;
-    background: #0b2430;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    z-index: 303;
-    box-shadow: 0 6px 20px rgba(5,20,28,0.28);
-    transition: background 0.2s;
+    display: flex; align-items: center; justify-content: center;
+    position: fixed; right: 16px; bottom: 20px; z-index: 303;
+    width: 54px; height: 54px; padding: 0;
+    background: #0b2430; color: #fff; border: 0; border-radius: 16px;
+    box-shadow: 0 10px 24px -6px rgba(5, 20, 28, .45);
+    cursor: pointer; transition: background-color .2s, transform .2s, opacity .2s;
   }
-  .tn-fab:hover { background: #004f68; }
-  .tn-fab.is-open { background: #004f68; }
-
-  .tn-sheet-handle {
-    width: 40px; height: 4px;
-    background: #d6dee2;
-    border-radius: 2px;
-    margin: 12px auto 0;
-    flex-shrink: 0;
-  }
-  .tn-sheet-header {
-    padding: 12px 20px 10px;
-    border-bottom: 1px solid #d6dee2;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: #004f68;
-    flex-shrink: 0;
-  }
-  .tn-sheet-scroll {
-    flex: 1;
-    overflow-y: auto;
-    padding: 6px 0 32px;
-    -webkit-overflow-scrolling: touch;
-  }
-  /* 시트 내 아이템은 조금 더 넓게 */
-  .tn-sheet .tn-item { padding: 9px 20px; }
-  .tn-sheet .tn-campus-label { padding: 12px 20px 6px; }
-  .tn-sheet .tn-stw-toggle { padding: 10px 20px 6px; }
-  .tn-sheet .tn-avatar { width: 48px; height: 48px; }
-  .tn-sheet .tn-avatar-placeholder { width: 48px; height: 48px; font-size: 18px; }
+  .tn-fab:active { transform: scale(.96); }
+  .tn-fab.is-open { opacity: 0; pointer-events: none; transform: scale(.85); }   /* 목록이 열리면 닫기 버튼이 있으니 숨긴다 */
+}
+@media (prefers-reduced-motion: reduce) {
+  .tn-sidebar, .tn-toggle svg, .mp-wrap, .tn-sheet, .tn-sheet-backdrop, .tn-fab { transition: none; }
 }
 </style>
 
@@ -946,177 +821,45 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 })();
 </script>
 
-<!-- ── Team Navigator Sidebar ─────────────────────── -->
-<aside class="tn-sidebar" id="tnSidebar">
-  <button class="tn-toggle" id="tnToggle" aria-label="팀원 목록 열기/닫기">
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <path d="M5 2L10 7l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
+<!-- ── 섬기는이 목록: 컴퓨터는 오른쪽 카드, 폰은 버튼을 누르면 아래에서 올라온다 ── -->
+<aside class="tn-sidebar" id="tnSidebar" aria-label="섬기는이 목록">
+  <button class="tn-toggle" id="tnToggle" type="button" aria-controls="tnSidebar" aria-expanded="true" aria-label="섬기는이 목록 접기 / 펼치기">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M5 2l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
-  <div class="tn-header">
-    <span class="wl-ko">섬기는이</span>
-    <span class="wl-en">Our Team</span>
+  <div class="tn-head">
+    <p class="tn-eyebrow"><span class="wl-ko">섬기는이</span><span class="wl-en">Our Team</span></p>
+    <a class="tn-all" href="/people"><span class="wl-ko">전체 {teamCount}명</span><span class="wl-en">All {teamCount}</span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 6h7.5M6.5 3l3 3-3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
   </div>
-  <div class="tn-scroll">
-
-    <!-- ① 월코(평택) 선교사 -->
-    {wolkoMission.length > 0 && (
-      <div class="tn-campus-label">
-        <span class="wl-ko">평택 월코</span><span class="wl-en">WOLKO Pyeongtaek</span>
-      </div>
-    )}
-    {wolkoMission.map(p => {
-      const isActive = p.slug === person.slug;
-      const initial = (p.data.name_ko || p.data.name_en || '?')[0];
-      return (
-        <a href={`/team/${p.slug}`} class={`tn-item${isActive ? ' is-active' : ''}`}>
-          {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
-          <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</span>
-          <div>
-            <div class="tn-name"><span class="wl-ko">{p.data.name_ko}</span><span class="wl-en">{p.data.name_en}</span></div>
-            <div class="tn-role"><span class="wl-ko">{ROLE_MAP[p.data.role_badge] || p.data.role_badge}</span><span class="wl-en">{p.data.role_badge}</span></div>
-          </div>
-        </a>
-      );
-    })}
-
-    <!-- ② 월코(평택) 인턴 -->
-    {wolkoSTW.length > 0 && (
-      <div class="tn-stw-wrap">
-        <button class="tn-stw-toggle" id="tnStwToggleA">
-          <span class="tn-campus-label" style="padding:0;margin:0;display:flex;align-items:center;gap:6px;width:100%;">
-            <span class="wl-ko">인턴</span><span class="wl-en">Interns</span>
-            <svg class="tn-stw-icon" width="11" height="11" viewBox="0 0 11 11" fill="none" style="margin-left:auto;flex-shrink:0;">
-              <path d="M2 4l3.5 3.5L9 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </span>
-        </button>
-        <div class="tn-stw-list" id="tnStwListA" style="display:none;">
-          {wolkoSTW.map(p => {
-            const isActive = p.slug === person.slug;
-            const initial = (p.data.name_ko || p.data.name_en || '?')[0];
-            return (
-              <a href={`/team/${p.slug}`} class={`tn-item${isActive ? ' is-active' : ''}`}>
-                {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
-                <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</span>
-                <div>
-                  <div class="tn-name"><span class="wl-ko">{p.data.name_ko}</span><span class="wl-en">{p.data.name_en}</span></div>
-                  <div class="tn-role"><span class="wl-ko">{ROLE_MAP[p.data.role_badge] || p.data.role_badge}</span><span class="wl-en">{p.data.role_badge}</span></div>
-                </div>
-              </a>
-            );
-          })}
-        </div>
-      </div>
-    )}
-
-    <!-- ③ 제주 선교사 -->
-    {(jejuMission.length > 0 || jejuSTW.length > 0) && (
-      <div class="tn-campus-label" style="margin-top:6px;">
-        <span class="wl-ko">제주 월비</span><span class="wl-en">WOLBI Jeju</span>
-      </div>
-    )}
-    {jejuMission.map(p => {
-      const isActive = p.slug === person.slug;
-      const initial = (p.data.name_ko || p.data.name_en || '?')[0];
-      return (
-        <a href={`/team/${p.slug}`} class={`tn-item${isActive ? ' is-active' : ''}`}>
-          {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
-          <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</span>
-          <div>
-            <div class="tn-name"><span class="wl-ko">{p.data.name_ko}</span><span class="wl-en">{p.data.name_en}</span></div>
-            <div class="tn-role"><span class="wl-ko">{ROLE_MAP[p.data.role_badge] || p.data.role_badge}</span><span class="wl-en">{p.data.role_badge}</span></div>
-          </div>
-        </a>
-      );
-    })}
-
-    <!-- ④ 제주 인턴 -->
-    {jejuSTW.length > 0 && (
-      <div class="tn-stw-wrap">
-        <button class="tn-stw-toggle" id="tnStwToggleB">
-          <span class="tn-campus-label" style="padding:0;margin:0;display:flex;align-items:center;gap:6px;width:100%;">
-            <span class="wl-ko">인턴</span><span class="wl-en">Interns</span>
-            <svg class="tn-stw-icon" width="11" height="11" viewBox="0 0 11 11" fill="none" style="margin-left:auto;flex-shrink:0;">
-              <path d="M2 4l3.5 3.5L9 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </span>
-        </button>
-        <div class="tn-stw-list" id="tnStwListB" style="display:none;">
-          {jejuSTW.map(p => {
-            const isActive = p.slug === person.slug;
-            const initial = (p.data.name_ko || p.data.name_en || '?')[0];
-            return (
-              <a href={`/team/${p.slug}`} class={`tn-item${isActive ? ' is-active' : ''}`}>
-                {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
-                <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</span>
-                <div>
-                  <div class="tn-name"><span class="wl-ko">{p.data.name_ko}</span><span class="wl-en">{p.data.name_en}</span></div>
-                  <div class="tn-role"><span class="wl-ko">{ROLE_MAP[p.data.role_badge] || p.data.role_badge}</span><span class="wl-en">{p.data.role_badge}</span></div>
-                </div>
-              </a>
-            );
-          })}
-        </div>
-      </div>
-    )}
+  <div class="tn-scroll" id="tnScroll">
+    <TeamNavList campuses={navCampuses} current={person.slug} roleKo={roleOf} />
   </div>
 </aside>
 
 <script>
-  (function() {
-    var sidebar = document.getElementById('tnSidebar');
-    var toggle = document.getElementById('tnToggle');
-    var wrap = document.querySelector('.mp-wrap');
+  (function () {
+    var sidebar = document.getElementById('tnSidebar'), toggle = document.getElementById('tnToggle'), wrap = document.querySelector('.mp-wrap');
     if (!sidebar || !toggle) return;
-
-    var SIDEBAR_W = window.innerWidth <= 1100 ? '188px' : '210px';
-    var isMobile = window.innerWidth <= 768;
-
-    function applyState(isCollapsed) {
-      sidebar.classList.toggle('is-collapsed', isCollapsed);
-      if (wrap && !isMobile) {
-        wrap.style.paddingRight = isCollapsed ? '12px' : SIDEBAR_W;
-      }
+    function apply(collapsed) {
+      sidebar.classList.toggle('is-collapsed', collapsed);
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+      if (wrap) wrap.classList.toggle('is-tn-collapsed', collapsed);
     }
-
-    var collapsed = localStorage.getItem('tn_collapsed') === '1';
-    applyState(collapsed);
-
-    toggle.addEventListener('click', function() {
-      collapsed = !collapsed;
-      applyState(collapsed);
-      localStorage.setItem('tn_collapsed', collapsed ? '1' : '0');
+    var collapsed = false;
+    try { collapsed = localStorage.getItem('tn_collapsed') === '1'; } catch (e) { /* 저장소를 못 쓰면 펼친 채로 */ }
+    apply(collapsed);
+    toggle.addEventListener('click', function () {
+      collapsed = !collapsed; apply(collapsed);
+      try { localStorage.setItem('tn_collapsed', collapsed ? '1' : '0'); } catch (e) { /* 이번에만 */ }
     });
-
-    // 인턴 섹션 토글 헬퍼 (A=평택, B=제주)
-    function initStwToggle(toggleId, listId, storageKey) {
-      var t = document.getElementById(toggleId);
-      var l = document.getElementById(listId);
-      if (!t || !l) return;
-      var stored = localStorage.getItem(storageKey);
-      var open = stored === null ? true : stored !== '0'; // 기본: 펼침
-      if (l.querySelector('.tn-item.is-active')) open = true;
-      if (open) { l.style.display = ''; t.classList.add('is-open'); }
-      t.addEventListener('click', function() {
-        open = !open;
-        l.style.display = open ? '' : 'none';
-        t.classList.toggle('is-open', open);
-        localStorage.setItem(storageKey, open ? '1' : '0');
-      });
-    }
-    initStwToggle('tnStwToggleA', 'tnStwListA', 'tn_stw_open_pt');
-    initStwToggle('tnStwToggleB', 'tnStwListB', 'tn_stw_open_jj');
-
-    // 현재 항목 스크롤 위치로 이동
-    var active = sidebar.querySelector('.tn-item.is-active');
-    if (active) active.scrollIntoView({ block: 'center', behavior: 'instant' });
+    // 지금 보고 있는 사람이 목록 가운데 오게
+    var scroll = document.getElementById('tnScroll'), active = sidebar.querySelector('.tn-item.is-active');
+    if (scroll && active) { var a = active.getBoundingClientRect(), b = scroll.getBoundingClientRect(); scroll.scrollTop += a.top - b.top - b.height / 2 + a.height / 2; }
   })();
 </script>
 
-<!-- ── Mobile: FAB + Bottom Sheet ──────────────────── -->
-<button class="tn-fab" id="tnFab" aria-label="팀원 목록">
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+<!-- ── 폰: 버튼 + 아래에서 올라오는 목록 ── -->
+<button class="tn-fab" id="tnFab" type="button" aria-controls="tnSheet" aria-expanded="false" aria-label="섬기는이 목록">
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
     <circle cx="8" cy="7" r="3" stroke="white" stroke-width="1.8"/>
     <circle cx="15" cy="7" r="2.5" stroke="white" stroke-width="1.6" opacity=".7"/>
     <path d="M2 18c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
@@ -1124,144 +867,38 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   </svg>
 </button>
 <div class="tn-sheet-backdrop" id="tnBackdrop"></div>
-<div class="tn-sheet" id="tnSheet">
+<div class="tn-sheet" id="tnSheet" role="dialog" aria-label="섬기는이 목록">
   <div class="tn-sheet-handle"></div>
-  <div class="tn-sheet-header" style="display:flex;align-items:center;justify-content:space-between;">
-    <span>
-      <span class="wl-ko">섬기는이</span>
-      <span class="wl-en">Our Team</span>
+  <div class="tn-head">
+    <p class="tn-eyebrow"><span class="wl-ko">섬기는이</span><span class="wl-en">Our Team</span></p>
+    <span style="display:flex;align-items:center;">
+      <a class="tn-all" href="/people"><span class="wl-ko">전체 {teamCount}명</span><span class="wl-en">All {teamCount}</span></a>
+      <button class="tn-sheet-close" id="tnSheetClose" type="button" aria-label="닫기">
+        <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
     </span>
-    <button id="tnSheetClose" type="button" aria-label="닫기" style="background:none;border:none;cursor:pointer;width:36px;height:36px;min-height:0;padding:0;margin-right:-9px;color:#5b8fa8;display:flex;align-items:center;justify-content:center;flex:none;">
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    </button>
   </div>
-  <div class="tn-sheet-scroll">
-    <!-- ① 월코 선교사 -->
-    {wolkoMission.length > 0 && <div class="tn-campus-label"><span class="wl-ko">평택 월코</span><span class="wl-en">WOLKO Pyeongtaek</span></div>}
-    {wolkoMission.map(p => {
-      const act = p.slug === person.slug;
-      const ini = (p.data.name_ko || p.data.name_en || '?')[0];
-      return (
-        <a href={`/team/${p.slug}`} class={`tn-item${act ? ' is-active' : ''}`}>
-          {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
-          <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{ini}</span>
-          <div><div class="tn-name"><span class="wl-ko">{p.data.name_ko}</span><span class="wl-en">{p.data.name_en}</span></div><div class="tn-role"><span class="wl-ko">{ROLE_MAP[p.data.role_badge] || p.data.role_badge}</span><span class="wl-en">{p.data.role_badge}</span></div></div>
-        </a>
-      );
-    })}
-    <!-- ② 월코 인턴 -->
-    {wolkoSTW.length > 0 && (
-      <div class="tn-stw-wrap">
-        <button class="tn-stw-toggle" id="tnStwToggleA2">
-          <span class="tn-campus-label" style="padding:0;margin:0;display:flex;align-items:center;gap:6px;width:100%;">
-            <span class="wl-ko">인턴</span><span class="wl-en">Interns</span>
-            <svg class="tn-stw-icon" width="11" height="11" viewBox="0 0 11 11" fill="none" style="margin-left:auto;flex-shrink:0;"><path d="M2 4l3.5 3.5L9 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-        </button>
-        <div class="tn-stw-list" id="tnStwListA2" style="display:none;">
-          {wolkoSTW.map(p => {
-            const act = p.slug === person.slug;
-            const ini = (p.data.name_ko || p.data.name_en || '?')[0];
-            return (
-              <a href={`/team/${p.slug}`} class={`tn-item${act ? ' is-active' : ''}`}>
-                {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
-                <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{ini}</span>
-                <div><div class="tn-name"><span class="wl-ko">{p.data.name_ko}</span><span class="wl-en">{p.data.name_en}</span></div><div class="tn-role"><span class="wl-ko">{ROLE_MAP[p.data.role_badge] || p.data.role_badge}</span><span class="wl-en">{p.data.role_badge}</span></div></div>
-              </a>
-            );
-          })}
-        </div>
-      </div>
-    )}
-    <!-- ③ 제주 선교사 -->
-    {(jejuMission.length > 0 || jejuSTW.length > 0) && <div class="tn-campus-label" style="margin-top:6px;"><span class="wl-ko">제주 월비</span><span class="wl-en">WOLBI Jeju</span></div>}
-    {jejuMission.map(p => {
-      const act = p.slug === person.slug;
-      const ini = (p.data.name_ko || p.data.name_en || '?')[0];
-      return (
-        <a href={`/team/${p.slug}`} class={`tn-item${act ? ' is-active' : ''}`}>
-          {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
-          <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{ini}</span>
-          <div><div class="tn-name"><span class="wl-ko">{p.data.name_ko}</span><span class="wl-en">{p.data.name_en}</span></div><div class="tn-role"><span class="wl-ko">{ROLE_MAP[p.data.role_badge] || p.data.role_badge}</span><span class="wl-en">{p.data.role_badge}</span></div></div>
-        </a>
-      );
-    })}
-    <!-- ④ 제주 인턴 -->
-    {jejuSTW.length > 0 && (
-      <div class="tn-stw-wrap">
-        <button class="tn-stw-toggle" id="tnStwToggleB2">
-          <span class="tn-campus-label" style="padding:0;margin:0;display:flex;align-items:center;gap:6px;width:100%;">
-            <span class="wl-ko">인턴</span><span class="wl-en">Interns</span>
-            <svg class="tn-stw-icon" width="11" height="11" viewBox="0 0 11 11" fill="none" style="margin-left:auto;flex-shrink:0;"><path d="M2 4l3.5 3.5L9 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-        </button>
-        <div class="tn-stw-list" id="tnStwListB2" style="display:none;">
-          {jejuSTW.map(p => {
-            const act = p.slug === person.slug;
-            const ini = (p.data.name_ko || p.data.name_en || '?')[0];
-            return (
-              <a href={`/team/${p.slug}`} class={`tn-item${act ? ' is-active' : ''}`}>
-                {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
-                <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{ini}</span>
-                <div><div class="tn-name"><span class="wl-ko">{p.data.name_ko}</span><span class="wl-en">{p.data.name_en}</span></div><div class="tn-role"><span class="wl-ko">{ROLE_MAP[p.data.role_badge] || p.data.role_badge}</span><span class="wl-en">{p.data.role_badge}</span></div></div>
-              </a>
-            );
-          })}
-        </div>
-      </div>
-    )}
+  <div class="tn-scroll" id="tnSheetScroll">
+    <TeamNavList campuses={navCampuses} current={person.slug} roleKo={roleOf} variant="sheet" />
   </div>
 </div>
 
 <script>
-  (function() {
-    var fab = document.getElementById('tnFab');
-    var backdrop = document.getElementById('tnBackdrop');
-    var sheet = document.getElementById('tnSheet');
-    if (!fab || !sheet) return;
-
-    function openSheet() {
-      sheet.classList.add('is-open');
-      backdrop.classList.add('is-open');
-      fab.classList.add('is-open');
-      document.body.style.overflow = 'hidden';
-      // 현재 항목 스크롤
-      var active = sheet.querySelector('.tn-item.is-active');
-      if (active) setTimeout(function() { active.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 350);
+  (function () {
+    var fab = document.getElementById('tnFab'), backdrop = document.getElementById('tnBackdrop'), sheet = document.getElementById('tnSheet');
+    if (!fab || !sheet || !backdrop) return;
+    function setOpen(open) {
+      sheet.classList.toggle('is-open', open); backdrop.classList.toggle('is-open', open); fab.classList.toggle('is-open', open);
+      fab.setAttribute('aria-expanded', String(open));
+      document.body.style.overflow = open ? 'hidden' : '';
+      var scroll = document.getElementById('tnSheetScroll'), active = sheet.querySelector('.tn-item.is-active');
+      if (open && scroll && active) { var a = active.getBoundingClientRect(), b = scroll.getBoundingClientRect(); scroll.scrollTop += a.top - b.top - b.height / 2 + a.height / 2; }
     }
-    function closeSheet() {
-      sheet.classList.remove('is-open');
-      backdrop.classList.remove('is-open');
-      fab.classList.remove('is-open');
-      document.body.style.overflow = '';
-    }
-
-    fab.addEventListener('click', function() {
-      sheet.classList.contains('is-open') ? closeSheet() : openSheet();
-    });
-    backdrop.addEventListener('click', closeSheet);
-    backdrop.addEventListener('touchend', function(e) { e.preventDefault(); closeSheet(); });
+    fab.addEventListener('click', function () { setOpen(!sheet.classList.contains('is-open')); });
+    backdrop.addEventListener('click', function () { setOpen(false); });
     var closeBtn = document.getElementById('tnSheetClose');
-    if (closeBtn) closeBtn.addEventListener('click', closeSheet);
-
-    // 인턴 토글 (바텀시트용) — A=평택, B=제주
-    function initSheetStw(toggleId, listId, storageKey) {
-      var t = document.getElementById(toggleId);
-      var l = document.getElementById(listId);
-      if (!t || !l) return;
-      var stored = localStorage.getItem(storageKey);
-      var open = stored === null ? true : stored !== '0';
-      if (l.querySelector('.tn-item.is-active')) open = true;
-      if (open) { l.style.display = ''; t.classList.add('is-open'); }
-      t.addEventListener('click', function() {
-        open = !open;
-        l.style.display = open ? '' : 'none';
-        t.classList.toggle('is-open', open);
-        localStorage.setItem(storageKey, open ? '1' : '0');
-      });
-    }
-    initSheetStw('tnStwToggleA2', 'tnStwListA2', 'tn_stw_open_pt');
-    initSheetStw('tnStwToggleB2', 'tnStwListB2', 'tn_stw_open_jj');
+    if (closeBtn) closeBtn.addEventListener('click', function () { setOpen(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && sheet.classList.contains('is-open')) { setOpen(false); fab.focus(); } });
   })();
 </script>
 

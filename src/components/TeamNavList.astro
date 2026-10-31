@@ -1,0 +1,106 @@
+---
+/**
+ * 섬기는이 프로필 옆 사람 목록 — 사역 거점(평택 · 제주)마다 선교사 · 단기 사역자로 나눠 보여 준다.
+ * 컴퓨터의 오른쪽 목록과 폰의 아래에서 올라오는 목록이 같이 쓴다(variant="sheet" 면 조금 크게).
+ */
+interface Props {
+  campuses: { num: string; ko: string; en: string; groups: { ko: string; en: string; people: any[] }[] }[];
+  current: string;
+  roleKo: (badge: string) => string;
+  variant?: 'side' | 'sheet';
+}
+const { campuses, current, roleKo, variant = 'side' } = Astro.props;
+const initialOf = (p: any) => (p.data.name_ko || p.data.name_en || '?').trim().charAt(0);
+---
+<div class:list={['tn-nav', `tn-nav--${variant}`]}>
+  {campuses.map((c) => (
+    <section class="tn-campus">
+      <h3 class="tn-campus-name"><span class="tn-campus-num">{c.num}</span><span class="wl-ko">{c.ko}</span><span class="wl-en">{c.en}</span></h3>
+      {c.groups.map((g) => (
+        <div class="tn-group">
+          <p class="tn-group-label"><span class="wl-ko">{g.ko}</span><span class="wl-en">{g.en}</span><span class="tn-group-count">{g.people.length}</span></p>
+          <ul class="tn-list">
+            {g.people.map((p) => (
+              <li>
+                <a href={`/team/${p.slug}`} class:list={['tn-item', { 'is-active': p.slug === current }]} aria-current={p.slug === current ? 'page' : undefined}>
+                  <span class="tn-avatar" aria-hidden="true">
+                    <span class="tn-initial">{initialOf(p)}</span>
+                    {p.data.photo_url && <img src={p.data.photo_url} alt="" loading="lazy" style={p.data.photo_position ? `object-position: ${p.data.photo_position}` : undefined} onerror="this.remove()" />}
+                  </span>
+                  <span class="tn-text">
+                    <span class="tn-name"><span class="wl-ko">{p.data.name_ko}</span><span class="wl-en">{p.data.name_en}</span></span>
+                    <span class="tn-role"><span class="wl-ko">{roleKo(p.data.role_badge)}</span><span class="wl-en">{p.data.role_badge}</span></span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </section>
+  ))}
+</div>
+
+<style>
+  .tn-nav { padding: 0 10px 28px; }
+  .tn-campus + .tn-campus { margin-top: 10px; }
+  /* 사역 거점 이름은 목록을 내려도 위에 붙어 있다 */
+  .tn-campus-name {
+    position: sticky; top: 0; z-index: 1;
+    display: flex; align-items: baseline; gap: 8px;
+    margin: 0; padding: 14px 8px 8px;
+    background: linear-gradient(180deg, #fff 78%, rgba(255, 255, 255, 0));
+    font-size: 13px; font-weight: 800; letter-spacing: -.01em; color: #0b2430;
+  }
+  .tn-campus-num { font-family: var(--ff-serif); font-size: 12px; font-weight: 700; color: #004f68; }
+  .tn-group { margin-top: 2px; }
+  .tn-group + .tn-group { margin-top: 12px; }
+  .tn-group-label {
+    display: flex; align-items: center; gap: 6px;
+    margin: 0; padding: 4px 8px 6px;
+    font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #5a7380;
+  }
+  .tn-group-count {
+    margin-left: auto; min-width: 20px; padding: 1px 6px; border-radius: 999px;
+    background: #eef3f6; color: #587383; font-size: 10.5px; font-weight: 700; letter-spacing: 0; text-align: center;
+  }
+  .tn-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+  .tn-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 7px 8px; border-radius: 10px;
+    color: #10252e; text-decoration: none;
+    transition: background-color .18s, color .18s;
+  }
+  .tn-item:hover { background: #f3f7f9; }
+  .tn-item:focus-visible { outline: 2px solid #004f68; outline-offset: 1px; }
+  /* 지금 보고 있는 사람 — 옅은 바탕 + 사진 둘레 + 굵은 이름 (왼쪽 색 줄은 쓰지 않는다) */
+  .tn-item.is-active { background: #e6f0f4; }
+  .tn-item.is-active .tn-avatar { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #004f68; }
+  .tn-item.is-active .tn-name { font-weight: 800; color: #004f68; }
+  .tn-avatar {
+    position: relative; flex: none; width: 40px; height: 40px;
+    border-radius: 10px; overflow: hidden; background: #e2eaee;
+    transition: box-shadow .2s;
+  }
+  .tn-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+  .tn-initial {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-family: var(--ff-serif); font-size: 15px; font-weight: 700; color: #5a7380;
+  }
+  .tn-text { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .tn-name { font-size: 13.5px; font-weight: 600; line-height: 1.3; letter-spacing: -.01em; word-break: keep-all; color: #0b2430; }
+  .tn-role { font-size: 11.5px; line-height: 1.3; color: #587383; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* 폰 목록: 손가락으로 누르기 쉽게 조금 크게 */
+  .tn-nav--sheet { padding: 0 12px 32px; }
+  .tn-nav--sheet .tn-campus-name { padding: 16px 8px 8px; font-size: 14px; }
+  .tn-nav--sheet .tn-item { padding: 9px 8px; gap: 14px; }
+  .tn-nav--sheet .tn-avatar { width: 48px; height: 48px; border-radius: 12px; }
+  .tn-nav--sheet .tn-initial { font-size: 18px; }
+  .tn-nav--sheet .tn-name { font-size: 15px; }
+  .tn-nav--sheet .tn-role { font-size: 12.5px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tn-item, .tn-avatar { transition: none; }
+  }
+</style>
