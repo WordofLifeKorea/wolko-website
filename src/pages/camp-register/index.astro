@@ -184,7 +184,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
   font-size: 14.5px; font-weight: 500; color: var(--c-ink); line-height: 1.65; word-break: keep-all;
   font-variant-numeric: tabular-nums;
 }
-.crp-reg-notes { font-size: 13.5px; line-height: 1.75; color: var(--c-muted); margin: -4px 0 20px; word-break: keep-all; }
+.crp-reg-notes { white-space: pre-line; /* 안내를 여러 줄로 적으면 줄바꿈을 살린다 */ font-size: 13.5px; line-height: 1.75; color: var(--c-muted); margin: -4px 0 20px; word-break: keep-all; }
 
 /* ── CAPACITY BAR — 가는 막대, 각진 끝 ── */
 .crp-cap { margin-bottom: 20px; }
@@ -1307,7 +1307,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                       </div>
                       <div class="crp-reg-meta-row">
                         <span class="crp-reg-meta-label"><span class="wl-ko">대상</span><span class="wl-en">For</span></span>
-                        <span class="crp-reg-meta-value"><span class="wl-ko">{d.target_ko}</span><span class="wl-en">{d.target_en}</span></span>
+                        <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.target_ko)}</span><span class="wl-en">{metaLines(d.target_en)}</span></span>
                       </div>
                       {(d.deadline_ko || d.deadline_en) && (
                         <div class="crp-reg-meta-row">
@@ -1318,7 +1318,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                       {(d.price_ko || d.price_en) && (
                         <div class="crp-reg-meta-row">
                           <span class="crp-reg-meta-label"><span class="wl-ko">참가비</span><span class="wl-en">Fee</span></span>
-                          <span class="crp-reg-meta-value"><span class="wl-ko">{d.price_ko}</span><span class="wl-en">{d.price_en}</span></span>
+                          <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.price_ko)}</span><span class="wl-en">{metaLines(d.price_en)}</span></span>
                         </div>
                       )}
                     </div>
@@ -1534,7 +1534,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                       </div>
                       <div class="crp-reg-meta-row">
                         <span class="crp-reg-meta-label"><span class="wl-ko">대상</span><span class="wl-en">For</span></span>
-                        <span class="crp-reg-meta-value"><span class="wl-ko">{d.target_ko}</span><span class="wl-en">{d.target_en}</span></span>
+                        <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.target_ko)}</span><span class="wl-en">{metaLines(d.target_en)}</span></span>
                       </div>
                       {(d.deadline_ko || d.deadline_en) && (
                         <div class="crp-reg-meta-row">
@@ -1545,7 +1545,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                       {(d.price_ko || d.price_en) && (
                         <div class="crp-reg-meta-row">
                           <span class="crp-reg-meta-label"><span class="wl-ko">참가비</span><span class="wl-en">Fee</span></span>
-                          <span class="crp-reg-meta-value"><span class="wl-ko">{d.price_ko}</span><span class="wl-en">{d.price_en}</span></span>
+                          <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.price_ko)}</span><span class="wl-en">{metaLines(d.price_en)}</span></span>
                         </div>
                       )}
                     </div>
