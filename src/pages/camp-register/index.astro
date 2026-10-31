@@ -37,7 +37,23 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   upcoming: { ko: '준비 중',   en: 'Upcoming',           cls: 'status-upcoming' },
   full:     { ko: '정원 마감', en: 'Full',               cls: 'status-full' },
 };
-import { REGISTRATION_WINDOWS } from '../../../functions/lib/winterCampPolicy.js';
+import { REGISTRATION_WINDOWS, WINTER_CAMP_POLICY, usesWinterCampPolicy } from '../../../functions/lib/winterCampPolicy.js';
+// 겨울 영어캠프 카드의 '장학금' 줄 — 금액은 장학금 규칙(winterCampPolicy.js)에서 그대로 가져온다
+const WD = WINTER_CAMP_POLICY.discounts, won = n => (n / 10000) + '만원', usd = n => '₩' + n.toLocaleString('en-US');
+const SCHOLARSHIP_KO = [
+  `얼리버드(1차 신청, 11월 4일까지) ${won(WD.early_bird.amount)} 할인`,
+  `친구 · 가족과 함께 참여 ${won(WD.sibling.amount)} 할인`,
+  `야고보서 1–5장 암송 통과 시 ${won(WD.james_memory.reward)} 환급`,
+  `직전 캠프 베스트 캠퍼 ${won(WD.excellent_camper.amount)} 할인`,
+  '최대 두 가지 (베스트 캠퍼는 별도)',
+].join('\n');
+const SCHOLARSHIP_EN = [
+  `Early Bird (Round 1, until Nov 4): ${usd(WD.early_bird.amount)} off`,
+  `Joining with a friend or family: ${usd(WD.sibling.amount)} off`,
+  `Memorize James 1–5: ${usd(WD.james_memory.reward)} back`,
+  `Best Camper of the last camp: ${usd(WD.excellent_camper.amount)} off`,
+  'Up to two (Best Camper is extra)',
+].join('\n');
 import { isCrewClosedCamp } from '../../../functions/lib/staffCrew.js';   // 연합캠프는 크루 지원을 받지 않는다(서버와 같은 판단)
 
 // "어떤 경로를 통해 월코 캠프를 알게 되었나요?" — 캠프 신청서와 스태프·크루 지원서가 같은 목록을 쓴다 (값은 서버 목록과 같다)
@@ -183,6 +199,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
   margin-bottom: 20px; word-break: keep-all;
 }
 /* 일정 · 대상 · 신청 기간 · 참가비 — 가는 선으로 나눈 줄 */
+.crp-reg-scholar { font-size: .92em; line-height: 1.7; } /* 장학금 줄: 네 가지를 한 줄씩, 조금 작게 */
 .crp-reg-meta { display: flex; flex-direction: column; margin-bottom: 20px; }
 .crp-reg-meta-row {
   display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; align-items: baseline;
@@ -1384,6 +1401,12 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                           <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.price_ko)}</span><span class="wl-en">{metaLines(d.price_en)}</span></span>
                         </div>
                       )}
+                      {usesWinterCampPolicy(s.id) && (
+                        <div class="crp-reg-meta-row">
+                          <span class="crp-reg-meta-label"><span class="wl-ko">장학금</span><span class="wl-en">Scholarships</span></span>
+                          <span class="crp-reg-meta-value crp-reg-scholar"><span class="wl-ko">{SCHOLARSHIP_KO}</span><span class="wl-en">{SCHOLARSHIP_EN}</span></span>
+                        </div>
+                      )}
                     </div>
                     {(d.notes_ko || d.notes_en) && (
                       <p class="crp-reg-notes">
@@ -1609,6 +1632,12 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                         <div class="crp-reg-meta-row">
                           <span class="crp-reg-meta-label"><span class="wl-ko">참가비</span><span class="wl-en">Fee</span></span>
                           <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.price_ko)}</span><span class="wl-en">{metaLines(d.price_en)}</span></span>
+                        </div>
+                      )}
+                      {usesWinterCampPolicy(s.id) && (
+                        <div class="crp-reg-meta-row">
+                          <span class="crp-reg-meta-label"><span class="wl-ko">장학금</span><span class="wl-en">Scholarships</span></span>
+                          <span class="crp-reg-meta-value crp-reg-scholar"><span class="wl-ko">{SCHOLARSHIP_KO}</span><span class="wl-en">{SCHOLARSHIP_EN}</span></span>
                         </div>
                       )}
                     </div>
