@@ -20,7 +20,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=95">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=96">
   <link rel="stylesheet" href="/wolko-auth.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=24">
   <link rel="stylesheet" href="/wolko-header.css?v=16">
@@ -1249,8 +1249,9 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
       const wrap = document.getElementById('campusTabs');
       if (!wrap) return;
       const countFor = campus => allRegs.filter(r => ADMIN_CAMP_IDS.has(r.campId) && r.registrationType !== 'staff' && (campus === 'all' || campusOf(r.campId) === campus)).reduce((sum, r) => sum + regHeadcount(r), 0);
-      wrap.innerHTML = [['all', t('campusAll')], ['wolko', t('campusWolko')], ['wolbi', t('campusWolbi')]].map(([id, label]) =>
-        `<button type="button" role="tab" class="campus-tab${id === activeCampus ? ' active' : ''}" data-campus="${id}" aria-selected="${id === activeCampus}" onclick="selectCampus('${id}')">${esc(label)}<span class="campus-tab-count">${countFor(id)}</span></button>`).join('');
+      // 좁은 화면에서는 짧은 이름(평택·제주)으로 바꿔 세 단추가 한 줄에 들어가게 한다
+      wrap.innerHTML = [['all', t('campusAll'), t('campusAll')], ['wolko', t('campusWolko'), t('campusShortWolko')], ['wolbi', t('campusWolbi'), t('campusShortWolbi')]].map(([id, label, short]) =>
+        `<button type="button" role="tab" class="campus-tab${id === activeCampus ? ' active' : ''}" data-campus="${id}" aria-selected="${id === activeCampus}" aria-label="${esc(label)}" onclick="selectCampus('${id}')"><span class="campus-tab-long">${esc(label)}</span><span class="campus-tab-short">${esc(short)}</span><span class="campus-tab-count">${countFor(id)}</span></button>`).join('');
     }
     function selectCampus(campus) {
       if (!['all', 'wolko', 'wolbi'].includes(campus) || campus === activeCampus) return;
