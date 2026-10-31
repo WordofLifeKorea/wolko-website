@@ -5,7 +5,7 @@ import { getCollection } from 'astro:content';
 
 const allTeam = (await getCollection('team')).filter(p => p.data.active !== false);
 
-// 캠퍼스 + 구분별 그룹화 & 정렬
+// 사역 거점 + 구분별 그룹화 & 정렬
 const pyMissionary = allTeam
   .filter(p => p.data.campus === 'pyeongtaek' && p.data.category === 'missionary')
   .sort((a, b) => a.data.order - b.data.order);
@@ -27,11 +27,11 @@ const isDirector = (person) => (person.data.role_badge || '').includes('Director
 // 사진이 없을 때 액자 안에 넣을 첫 글자
 const initialOf = (person) => (person.data.name_ko || person.data.name_en || '?').trim().charAt(0);
 
-// 캠퍼스 두 곳 — 같은 모양으로 그린다 (id 는 맨 위 배너 버튼이 #wp-pyeongtaek 로 이어지므로 그대로 둔다)
+// 사역 거점 두 곳(평택 월코센터 · 제주 월비) — 같은 모양으로 그린다 (id 는 맨 위 배너 버튼이 #wp-pyeongtaek 로 이어지므로 그대로 둔다)
 const campuses = [
   {
     id: 'wp-pyeongtaek', num: '01',
-    labelKo: '평택 · 본 캠퍼스', labelEn: 'Pyeongtaek · Main Campus',
+    labelKo: '경기 평택', labelEn: 'Pyeongtaek, Gyeonggi',
     ko: '평택 월코센터', en: 'Pyeongtaek WOLKO Center',
     groups: [
       { ko: '선교사', en: 'Missionaries', people: pyMissionary },
@@ -40,7 +40,7 @@ const campuses = [
   },
   {
     id: 'wp-jeju', num: '02',
-    labelKo: '제주 · 월비 캠퍼스', labelEn: 'Jeju · Wolbi Campus',
+    labelKo: '제주 애월', labelEn: 'Aewol, Jeju',
     ko: '제주 월비', en: 'Jeju WOLBI',
     groups: [
       { ko: '선교사', en: 'Missionaries', people: jejuMissionary },
@@ -75,7 +75,7 @@ const campuses = [
             <dd><span data-count-from="0">{pyStw.length + jejuStw.length}</span></dd>
           </div>
           <div class="ph-stat">
-            <dt><span class="wl-ko">사역 캠퍼스</span><span class="wl-en">Campuses</span></dt>
+            <dt><span class="wl-ko">사역 거점</span><span class="wl-en">Ministry Locations</span></dt>
             <dd><span data-count-from="0">2</span></dd>
           </div>
         </dl>
@@ -88,11 +88,11 @@ const campuses = [
       </Fragment>
     </PageHero>
 
-    <!-- 소개 + 캠퍼스 바로가기 -->
+    <!-- 소개 + 사역 거점 바로가기 -->
     <section class="wp-intro">
       <div class="wp-shell wp-intro-inner">
         <div>
-          <p class="wp-eyebrow"><span class="wl-ko">두 캠퍼스</span><span class="wl-en">Two Campuses</span></p>
+          <p class="wp-eyebrow"><span class="wl-ko">두 사역 거점</span><span class="wl-en">Two Ministry Locations</span></p>
           <h2><span class="wl-ko">평택과 제주에서<br>함께 섬깁니다</span><span class="wl-en">Serving Together<br>in Pyeongtaek and Jeju</span></h2>
         </div>
         <div>
@@ -100,7 +100,7 @@ const campuses = [
             <span class="wl-ko">사역자를 누르면 각자의 이야기와 삶의 말씀, 기도제목을 볼 수 있습니다.</span>
             <span class="wl-en">Select a team member to read their story, life verse, and prayer requests.</span>
           </p>
-          <nav class="wp-jump" aria-label="캠퍼스 바로가기">
+          <nav class="wp-jump" aria-label="사역 거점 바로가기">
             {campuses.map((c) => (
               <a href={`#${c.id}`}>
                 <span class="wp-jump-num">{c.num}</span>
@@ -116,7 +116,7 @@ const campuses = [
       </div>
     </section>
 
-    <!-- 캠퍼스별 사역자 -->
+    <!-- 사역 거점별 사역자 -->
     {campuses.map((c, ci) => (
       <section class:list={['wp-campus', { 'wp-campus--alt': ci % 2 === 1 }]} id={c.id} aria-labelledby={`${c.id}-title`}>
         <div class="wp-shell">
@@ -228,7 +228,7 @@ const campuses = [
     .wp-eyebrow { display: flex; align-items: center; gap: 12px; color: var(--wp-deep); font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
     .wp-eyebrow::before { content: ''; width: 28px; height: 1px; background: currentColor; }
 
-    /* 소개 + 캠퍼스 바로가기 */
+    /* 소개 + 사역 거점 바로가기 */
     .wp-intro { padding: 120px 0 88px; }
     .wp-intro-inner { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 80px; align-items: end; }
     .wp-intro h2 { margin-top: 20px; font-family: var(--ff-serif); font-size: clamp(32px, 3.4vw, 46px); font-weight: 700; line-height: 1.22; letter-spacing: -.03em; color: var(--wp-navy); }
@@ -240,7 +240,7 @@ const campuses = [
     .wp-jump-meta { font-size: 13px; color: var(--wp-muted); }
     .wp-jump a:hover .wp-jump-name { color: var(--wp-deep); text-decoration: underline; text-underline-offset: 4px; }
 
-    /* 캠퍼스 한 꼭지 */
+    /* 사역 거점 한 꼭지 */
     .wp-campus { padding: 96px 0 112px; scroll-margin-top: 40px; }
     .wp-campus--alt { background: var(--wp-soft); }
     .wp-campus-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; margin-bottom: 56px; }
