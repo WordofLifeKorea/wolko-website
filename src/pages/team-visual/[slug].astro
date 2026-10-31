@@ -98,12 +98,12 @@ const meta = { slug: person.slug, name_ko: d.name_ko, name_en: d.name_en, title_
     const UI = {
       ko: { photo: '사진 바꾸기', heroLabel: '히어로 · 맨 위 큰 문구', verseLabel: '말씀', lookup: '구절 불러오기', lookupNote: '구절 주소를 쓰고 "구절 불러오기"를 누르면 한글(개역한글)과 영어 성경 본문이 함께 채워져요.', bioLabel: '소개글', paraNote: '빈 줄을 넣으면 문단이 나뉘어요.', bio2Label: '함께하는 분 소개글', prayerLabel: '중보기도 · 기도제목', prayerNote: '한 줄에 기도제목 하나씩 쓰면 목록으로 보여요.',
         hint: '한글로 쓰면 영어가, 영어로 쓰면 한글이 저장할 때 자동 번역돼요.', save: '저장', saving: '저장 중…', translating: '번역 중…', saved: '저장했어요. 사이트에는 1~2분 뒤 반영돼요.', savedTr: n => '저장했어요 (' + n + '개 항목 자동 번역). 사이트에는 1~2분 뒤 반영돼요.', savedNoTr: (n, why) => '저장했어요. 다만 자동 번역은 되지 않아 반대 언어 ' + n + '개 항목은 그대로예요 (' + why + '). 번역은 직접 써 주세요.', nochange: '바뀐 내용이 없어요.', unsaved: '저장하지 않은 변경이 있어요',
-        uploading: '사진 올리는 중…', uploaded: '사진을 바꿨어요.', lookingUp: '구절 찾는 중…', looked: '구절을 채웠어요.', needRef: '구절 주소를 먼저 써 주세요.',
+        uploading: '사진 올리는 중…', uploaded: '사진을 바꿨어요. 사이트에는 2~3분 뒤 보여요.', lookingUp: '구절 찾는 중…', looked: '구절을 채웠어요.', needRef: '구절 주소를 먼저 써 주세요.',
         gateLogin: '먼저 포탈에 로그인해 주세요.', gateDenied: '이 소개 페이지를 고칠 권한이 없어요. 마스터에게 연결을 요청해 주세요.', gateFail: '연결에 실패했어요. 잠시 후 다시 시도해 주세요.', fail: '요청에 실패했어요.',
         ph: { hero_tagline: n => n, hero_tagline2: n => n, hero_subtitle: () => '이 사역자를 소개하는 한두 문장', verse: () => '말씀 본문', bio: () => '소개글(간증, 사역 이야기)을 자유롭게 써 주세요.', bio_2: () => '함께하는 분의 소개글', prayer: () => '기도제목을 한 줄에 하나씩 적어 주세요.' } },
       en: { photo: 'Change photo', heroLabel: 'Hero · big headline', verseLabel: 'Verse', lookup: 'Look up verse', lookupNote: 'Type the reference and press "Look up verse" to fill both the Korean (KRV) and English text.', bioLabel: 'About', paraNote: 'A blank line starts a new paragraph.', bio2Label: 'About (partner)', prayerLabel: 'Prayer requests', prayerNote: 'One request per line shows as a list.',
         hint: 'Write in Korean and English is translated on save — write in English and Korean is.', save: 'Save', saving: 'Saving…', translating: 'Translating…', saved: 'Saved. The site updates in 1–2 minutes.', savedTr: n => 'Saved (' + n + ' item' + (n === 1 ? '' : 's') + ' auto-translated). The site updates in 1–2 minutes.', savedNoTr: (n, why) => 'Saved. Auto-translation failed, so ' + n + ' item' + (n === 1 ? ' was' : 's were') + ' left as is in the other language (' + why + '). Please write the translation yourself.', nochange: 'Nothing changed.', unsaved: 'You have unsaved changes',
-        uploading: 'Uploading photo…', uploaded: 'Photo updated.', lookingUp: 'Looking up…', looked: 'Verse filled in.', needRef: 'Type a verse reference first.',
+        uploading: 'Uploading photo…', uploaded: 'Photo updated. It shows on the site in 2–3 minutes.', lookingUp: 'Looking up…', looked: 'Verse filled in.', needRef: 'Type a verse reference first.',
         gateLogin: 'Please sign in to the portal first.', gateDenied: 'You are not linked to this profile page. Ask the master admin to link you.', gateFail: 'Could not connect. Please try again.', fail: 'Request failed.',
         ph: { hero_tagline: n => n, hero_tagline2: n => n, hero_subtitle: () => 'One or two sentences introducing this person', verse: () => 'Verse text', bio: () => 'Write your story and ministry here.', bio_2: () => 'About your partner', prayer: () => 'One prayer request per line.' } },
     };
@@ -132,9 +132,9 @@ const meta = { slug: person.slug, name_ko: d.name_ko, name_en: d.name_en, title_
         autosize(ta);
       });
       $('tvRef').value = cur.verse_ref || '';
-      $('tvHeroBg').style.backgroundImage = cur.photo_url ? `url("${cur.photo_url}")` : '';
-      $('tvStoryImg').src = cur.photo_story || cur.photo_url || ''; $('tvStoryImg').style.display = (cur.photo_story || cur.photo_url) ? 'block' : 'none';
-      $('tvStory2Img').src = cur.photo_url_2 || ''; $('tvStory2Img').style.display = cur.photo_url_2 ? 'block' : 'none';
+      $('tvHeroBg').style.backgroundImage = cur.photo_url ? `url("${shownSrc(cur.photo_url)}")` : '';
+      $('tvStoryImg').src = shownSrc(cur.photo_story || cur.photo_url || ''); $('tvStoryImg').style.display = (cur.photo_story || cur.photo_url) ? 'block' : 'none';
+      $('tvStory2Img').src = shownSrc(cur.photo_url_2 || ''); $('tvStory2Img').style.display = cur.photo_url_2 ? 'block' : 'none';
       $('tvStory2').hidden = !meta.spouse;
       $('tvKo').classList.toggle('on', lang === 'ko'); $('tvEn').classList.toggle('on', lang === 'en');
     }
@@ -231,6 +231,27 @@ const meta = { slug: person.slug, name_ko: d.name_ko, name_en: d.name_en, title_
 
     /* ─── 사진 바꾸기 (바로 올라간다) ─── */
     let photoField = '';
+    // 올린 사진은 사이트가 다시 만들어진 뒤(2~3분)에야 그 주소로 열린다 — 그동안은 이 기기에 있는 사진으로 보여 준다
+    const localSrc = {};
+    function shownSrc(url) { return localSrc[url] || url; }
+    // 휴대폰·카메라 원본(수 MB, 2천만 화소 이상)은 긴 변 2400px JPEG로 줄여서 올린다 — 올리기도 빠르고 페이지도 빨리 뜬다.
+    // 아이폰 HEIC처럼 서버가 받지 않는 형식도 이 과정에서 JPEG가 된다. 줄일 수 없는 브라우저면 원본을 그대로 올린다.
+    const MAX_SIDE = 2400;
+    async function shrinkPhoto(file) {
+      try {
+        const bmp = await createImageBitmap(file);
+        const scale = Math.min(1, MAX_SIDE / Math.max(bmp.width, bmp.height));
+        const small = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/webp';
+        if (scale === 1 && small && file.size <= 1.5 * 1024 * 1024) { bmp.close && bmp.close(); return file; }
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(bmp.width * scale); canvas.height = Math.round(bmp.height * scale);
+        canvas.getContext('2d').drawImage(bmp, 0, 0, canvas.width, canvas.height);
+        bmp.close && bmp.close();
+        const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.86));
+        if (!blob) return file;
+        return new File([blob], (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+      } catch (e) { return file; }
+    }
     document.addEventListener('click', e => {
       const b = e.target.closest('[data-photo]'); if (!b) return;
       photoField = b.dataset.photo; $('tvFile').value = ''; $('tvFile').click();
@@ -240,8 +261,10 @@ const meta = { slug: person.slug, name_ko: d.name_ko, name_en: d.name_en, title_
       if (f.size > 24 * 1024 * 1024) return say('24MB 이하만 올릴 수 있어요.', 'err');
       say(u('uploading'));
       try {
-        const fd = new FormData(); fd.append('file', f); fd.append('field', photoField);
+        const photo = await shrinkPhoto(f);
+        const fd = new FormData(); fd.append('file', photo); fd.append('field', photoField);
         const d = await api('/api/team/upload', fd, true);
+        localSrc[d.url] = URL.createObjectURL(photo);
         cur[photoField] = d.url; orig[photoField] = d.url; paint(); refreshDirty(); say(u('uploaded'), 'ok');
       } catch (e) { say(e.message, 'err'); }
     });

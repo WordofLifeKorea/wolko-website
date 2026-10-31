@@ -133,3 +133,11 @@ test('소개 페이지 화면 편집기: 실제 페이지 구성 위에서 쓰�
   assert.match(src, /if \(koCh === enCh\) continue;/, '양쪽을 모두 직접 고쳤거나 둘 다 안 바뀌면 번역하지 않는다');
   assert.doesNotMatch(src, /\/api\/team\/login|loginPw/);
 });
+
+test('내 페이지 사진 바꾸기: 원본을 줄여서 올리고, 사이트에 반영되기 전에도 고른 사진이 바로 보인다', () => {
+  const page = readFileSync(new URL('../src/pages/team-visual/[slug].astro', import.meta.url), 'utf8');
+  assert.match(page, /const MAX_SIDE = 2400;/);
+  assert.match(page, /const photo = await shrinkPhoto\(f\);/);
+  assert.match(page, /localSrc\[d\.url\] = URL\.createObjectURL\(photo\);/);
+  assert.match(page, /shownSrc\(cur\.photo_url\)/);
+});
