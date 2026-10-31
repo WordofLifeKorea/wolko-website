@@ -4,6 +4,7 @@
  * Stored in KV with registrationType: 'staff', no capacity limit.
  * role: 'staff'(고등학교 졸업 성인) | 'crew'(미성년자 — 보호자 동의 링크를 보내고, 동의가 끝나야 관리자가 수락할 수 있다)
  */
+import { attachFormTranslation } from '../lib/formTranslate.js';
 import { appendRow } from '../lib/googleSheets.js';
 import { sendAlimtalk } from '../lib/solapi.js';
 import { normalizePhone } from '../lib/phone.js';
@@ -330,6 +331,8 @@ export async function onRequestPost(context) {
     const summary = { ...base, regId: applicationId, campId: regs.map(r => r.campId).join(', '), campTitleKo: regs.map(r => r.campTitleKo).join(', ') };
     context.waitUntil(
       Promise.allSettled([
+        // 자기소개 · 신앙 이야기 · 교회 · 악기 · 지난 캠프 · 참고 사항 · 알게 된 경로(기타)를 한↔영 자동 번역해 각 지원 건에 붙인다
+        attachFormTranslation(env, 'staff', regs.map(r => `camp:${r.campId}:reg:${r.regId}`), base),
         sendStaffEmail(env, summary).catch(e => console.error('staff email failed:', e)),
         syncStaffToSheet(env, summary).catch(e => console.error('staff sheets sync failed:', e)),
         sendAlimtalk(env, summary.phone, env.KAKAO_TEMPLATE_STAFF, {

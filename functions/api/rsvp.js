@@ -9,6 +9,7 @@
 import { parseHubSessionToken, portalSession } from '../lib/hubAccounts.js';
 import { normalizePhone } from '../lib/phone.js';
 import { canAddRsvp } from '../lib/rsvpAccess.js';
+import { attachFormTranslation } from '../lib/formTranslate.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -148,6 +149,8 @@ export async function onRequestPost(context) {
     ]);
 
     context.waitUntil(sendRsvpEmail(env, rsvp).catch(e => console.error('rsvp email failed:', e)));
+    // 남기신 말씀은 한↔영 자동 번역을 옆에 붙인다(응답 뒤 백그라운드 · 실패해도 신청은 그대로)
+    context.waitUntil(attachFormTranslation(env, 'rsvp', `rsvp:${eventId}:${rsvpId}`, rsvp));
 
     return Response.json({ success: true }, { headers: CORS });
 

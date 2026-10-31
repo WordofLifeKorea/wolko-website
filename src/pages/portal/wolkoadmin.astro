@@ -20,7 +20,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=93">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=94">
   <link rel="stylesheet" href="/wolko-auth.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=24">
   <link rel="stylesheet" href="/wolko-header.css?v=16">
@@ -390,7 +390,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         thCounselorMemo:'상담자 메모', thCamperTestimony:'간증문', thPhone:'연락처', thEmail:'이메일',
         gradeFromBirthSuffix:'(생년월일 기준)', gradePreschool:'미취학', gradeGraduated:'고등학교 졸업 이후',
         thGrade:'학년 / 인원', thGender:'성별', thChurch:'교회', thSchool:'학교',
-        thEmergency:'비상연락처', thNotes:'메모', thDate:'신청일시', thDelete:'삭제',
+        trOriginal:'원문', trAuto:'자동 번역', thEmergency:'비상연락처', thNotes:'메모', thDate:'신청일시', thDelete:'삭제',
         staffRegTitle:'스태프 · 봉사자 지원 목록', thTeam:'팀', thApplicantMemo:'신청자 메모',
         thBirthDate:'생년월일', thPreviousCamp:'캠프 경험', thTestimony:'자기소개·간증',
         thChurchWebsite:'교회 홈페이지', thPastorName:'담임 목사님 성함', thTraining:'캠프 트레이닝', roleCrew:'크루', roleStaff:'스태프', staffAccepted:'수락됨', consentPending:'보호자 동의 대기', consentAgreed:'보호자 동의 완료', guardianSection:'보호자 동의', thGuardian:'보호자', thGuardianContact:'보호자 연락처', thConsent:'동의 상태', consentSentVia:'발송', consentAgreedBy:'서명', acceptBtn:'수락', unacceptBtn:'수락 취소', resendConsentBtn:'동의 링크 다시 보내기', acceptNeedsConsent:'보호자 동의가 끝나야 수락할 수 있어요', acceptConfirmMsg:'이 지원서를 수락할까요?', unacceptConfirmMsg:'수락을 취소할까요?', acceptDone:'수락했습니다.', unacceptDone:'수락을 취소했습니다.', resendDone:'동의 링크를 다시 보냈습니다.', trainingExceptionLabel:'개인 사정으로 불참 (메모 확인)', trainingCommitLabel:'2주 참여 동의', thPastorContact:'목사님·교회 연락처', thCultHistory:'하나님의 교회·신천지 참여', thEnglish:'일상 생활 영어', thMediaTech:'미디어·테크', thInstruments:'악기', thReferral:'알게 된 경로', thAvailableCamps:'섬길 수 있는 캠프', thIntroduction:'자기소개', thPreviousCampDetail:'캠프 봉사 경험 상세', thFaithStory:'예수님을 믿게 된 이야기',
@@ -497,7 +497,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         thCounselorMemo:'Counselor Note', thCamperTestimony:'Testimony', thPhone:'Phone', thEmail:'Email',
         gradeFromBirthSuffix:'(from date of birth)', gradePreschool:'Preschool', gradeGraduated:'Past high school',
         thGrade:'Grade / Count', thGender:'Gender', thChurch:'Church', thSchool:'School',
-        thEmergency:'Emergency', thNotes:'Notes', thDate:'Registered', thDelete:'Delete',
+        trOriginal:'Original', trAuto:'Auto-translated', thEmergency:'Emergency', thNotes:'Notes', thDate:'Registered', thDelete:'Delete',
         staffRegTitle:'Staff & Volunteer Applications', thTeam:'Team', thApplicantMemo:'Applicant Note',
         thBirthDate:'Birth Date', thPreviousCamp:'Camp Exp.', thTestimony:'Intro/Testimony',
         thChurchWebsite:'Church Website', thPastorName:'Senior Pastor', thTraining:'Camp Training', roleCrew:'Crew', roleStaff:'Staff', staffAccepted:'Accepted', consentPending:'Awaiting guardian', consentAgreed:'Guardian agreed', guardianSection:'Guardian Consent', thGuardian:'Guardian', thGuardianContact:'Guardian contact', thConsent:'Consent', consentSentVia:'Sent via', consentAgreedBy:'Signed by', acceptBtn:'Accept', unacceptBtn:'Undo accept', resendConsentBtn:'Resend consent link', acceptNeedsConsent:'Guardian consent is required before accepting', acceptConfirmMsg:'Accept this application?', unacceptConfirmMsg:'Undo acceptance?', acceptDone:'Accepted.', unacceptDone:'Acceptance undone.', resendDone:'Consent link resent.', trainingExceptionLabel:'Cannot attend (see notes)', trainingCommitLabel:'Agreed to 2 weeks', thPastorContact:'Pastor/Church Contact', thCultHistory:'WMSCOG/Shincheonji', thEnglish:'Everyday English', thMediaTech:'Media/Tech', thInstruments:'Instruments', thReferral:'How they heard', thAvailableCamps:'Available Camps', thIntroduction:'Introduction', thPreviousCampDetail:'Camp Service Details', thFaithStory:'Faith Story',
@@ -1981,13 +1981,13 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
                 ${detailItem(t('thType'), typeBadge)}
                 ${detailItem(t('thGrade'), esc(r.registrationType !== 'group' && !r.grade && r.birthDate ? gradeFromBirth(r.birthDate) || gradeOrCount : gradeOrCount))}
                 ${detailItem(t('thGender'), genderCell)}
-                ${detailItem(t('thChurch'), esc(r.church || '—'))}
-                ${detailItem(t('thSchool'), esc(r.school || '—'))}
+                ${detailItem(t('thChurch'), trHtml(r, 'church'))}
+                ${detailItem(t('thSchool'), trHtml(r, 'school'))}
                 ${detailItem(t('thEmergency'), esc(r.emergency || '—'))}
-                ${r.referralSource ? detailItem(t('thReferral'), esc(r.referralSource)) : ''}
+                ${r.referralSource ? detailItem(t('thReferral'), trHtml(r, 'referralSource')) : ''}
                 ${detailItem(t('thPhone'), esc(r.phone || '—'))}
                 ${detailItem(t('thEmail'), esc(r.email || '—'))}
-                ${detailItem(t('thNotes'), esc(applicantMemo || '—'), true)}
+                ${detailItem(t('thNotes'), applicantMemo ? trHtml(r, 'notes') : '—', true)}
               </div>
             </div>
             ${refundDetailSection}
@@ -2144,7 +2144,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         const date = new Date(r.registeredAt);
         const dateStr = `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
         const applicantMemo = r.notes || '';
-        const testimonyCell = renderMemoFull(r.testimony || '');
+        const testimonyCell = r.faithStory && r.testimony === r.faithStory ? trMemoFull(r, 'faithStory') : renderMemoFull(r.testimony || '');
         const campStyle = getCampRowStyle(r);
         const rowStyle = `--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};`;
 
@@ -2165,7 +2165,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         const teamCell = staffEditMode
           ? renderTeamEditor(r, currentTeams)
           : renderTeamStack(currentTeams);
-        const memoCell = renderMemoFull(applicantMemo);
+        const memoCell = trMemoFull(r, 'notes');
         const isExpanded = expandedStaffDetails.has(r.regId);
         const staffCampLabel = campDisplayName(r.campId);
         const staffDetailItem = (label, value, wide = false) => `<div class="registration-detail-item${wide ? ' registration-detail-wide' : ''}">
@@ -2183,7 +2183,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
                       ${staffDetailItem(t('thTeam'), teamCell)}
                       ${staffDetailItem(t('thGender'), genderBadge)}
                       ${staffDetailItem(t('thBirthDate'), esc(r.birthDate || '—'))}
-                      ${staffDetailItem(t('thChurch'), esc(r.church || '—'))}
+                      ${staffDetailItem(t('thChurch'), trHtml(r, 'church'))}
                       ${staffDetailItem(t('thPreviousCamp'), esc(previousCampLabel(r.previousCamp)))}
                       ${staffDetailItem(t('thPhone'), phoneCell)}
                       ${staffDetailItem(t('thEmail'), esc(r.email || '—'), true)}
@@ -2193,11 +2193,11 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
                       ${r.cultHistory ? staffDetailItem(t('thCultHistory'), esc(previousCampLabel(r.cultHistory))) : ''}
                       ${r.englishAbility ? staffDetailItem(t('thEnglish'), /^[0-5]$/.test(String(r.englishAbility)) ? esc(r.englishAbility + ' / 5') : esc(previousCampLabel(r.englishAbility))) : ''}
                       ${r.mediaTech ? staffDetailItem(t('thMediaTech'), /^[0-5]$/.test(String(r.mediaTech)) ? esc(r.mediaTech + ' / 5') : esc(previousCampLabel(r.mediaTech))) : ''}
-                      ${r.instruments ? staffDetailItem(t('thInstruments'), esc(r.instruments)) : ''}
-                      ${r.referral ? staffDetailItem(t('thReferral'), esc(r.referral)) : ''}
+                      ${r.instruments ? staffDetailItem(t('thInstruments'), trHtml(r, 'instruments')) : ''}
+                      ${r.referral ? staffDetailItem(t('thReferral'), trHtml(r, 'referral')) : ''}
                       ${Array.isArray(r.availableCampNames) && r.availableCampNames.length ? staffDetailItem(t('thAvailableCamps'), esc(r.availableCampNames.join(', ')), true) : ''}
-                      ${r.introduction ? staffDetailItem(t('thIntroduction'), esc(r.introduction), true) : ''}
-                      ${r.previousCampDetail ? staffDetailItem(t('thPreviousCampDetail'), esc(r.previousCampDetail), true) : ''}
+                      ${r.introduction ? staffDetailItem(t('thIntroduction'), trHtml(r, 'introduction'), true) : ''}
+                      ${r.previousCampDetail ? staffDetailItem(t('thPreviousCampDetail'), trHtml(r, 'previousCampDetail'), true) : ''}
                       ${r.trainingException ? staffDetailItem(t('thTraining'), `<span style="color:#c2410c;font-weight:700;">${t('trainingExceptionLabel')}</span>`) : r.commitment ? staffDetailItem(t('thTraining'), esc(t('trainingCommitLabel'))) : ''}
                       ${staffDetailItem(t('thApplicantMemo'), memoCell, true)}
                       ${staffDetailItem(r.faithStory ? t('thFaithStory') : t('thTestimony'), testimonyCell, true)}
@@ -2827,6 +2827,29 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
       return reg?.notes || '';
     }
 
+    /* 신청서 자동 번역(reg.tr) — 화면 언어 쪽을 크게, 다른 쪽(원문 또는 번역)을 아래에 작게 보여 준다. 번역이 없으면 원문만 */
+    function trInfo(reg, key) {
+      const orig = String(reg?.[key] ?? ''), tr = reg?.tr && reg.tr[key];
+      if (!orig || !tr || !tr.text) return null;
+      let text = tr.text;
+      if ((key === 'referral' || key === 'referralSource') && /^기타:/.test(orig)) text = (tr.lang === 'en' ? 'Other: ' : '기타: ') + tr.text;
+      return tr.lang === adminLang ? { main: text, alt: orig, altKey: 'trOriginal' } : { main: orig, alt: text, altKey: 'trAuto' };
+    }
+    function trHtml(reg, key, fallback = '—') {
+      const info = trInfo(reg, key);
+      if (!info) return esc(String(reg?.[key] ?? '') || fallback);
+      return `${esc(info.main)}<small class="tr-alt"><b>${esc(t(info.altKey))}</b> ${esc(info.alt)}</small>`;
+    }
+    function trMemoFull(reg, key) {
+      const info = trInfo(reg, key);
+      if (!info) return renderMemoFull(String(reg?.[key] ?? ''));
+      return `<span class="memo-fulltext">${esc(info.main)}</span><small class="tr-alt"><b>${esc(t(info.altKey))}</b> ${esc(info.alt)}</small>`;
+    }
+    /** CSV 의 '자동 번역' 칸 — 번역된 칸을 '교회: … / 메모: …' 처럼 한 줄로 */
+    function trCsv(reg, keys) {
+      return keys.map(([key, label]) => { const tr = reg?.tr && reg.tr[key]; return tr && tr.text ? `${label}: ${tr.text}` : ''; }).filter(Boolean).join(' / ');
+    }
+
     function previousCampLabel(value) {
       if (value === 'yes') return adminLang === 'en' ? 'Yes' : '예';
       if (value === 'no') return adminLang === 'en' ? 'No' : '아니오';
@@ -3360,15 +3383,16 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         const regs = sortedRegs(filteredRegs().filter(r => r.registrationType === 'staff'));
         if (regs.length === 0) { showToast(t('csvNoStaff'), 'error'); return; }
         const headers = adminLang === 'en'
-          ? ['No','Camp','Name','Phone','Email','Gender','Birth Date','Church','Previous Camp','Teams','Applicant Note','Introduction/Testimony','Registered','RegID']
-          : ['번호','캠프','이름','연락처','이메일','성별','생년월일','교회','이전 캠프 참여','섬기고 싶은 분야','신청자 메모','자기소개 및 간증','신청일시','RegID'];
+          ? ['No','Camp','Name','Phone','Email','Gender','Birth Date','Church','Previous Camp','Teams','Applicant Note','Introduction/Testimony','Auto-translated','Registered','RegID']
+          : ['번호','캠프','이름','연락처','이메일','성별','생년월일','교회','이전 캠프 참여','섬기고 싶은 분야','신청자 메모','자기소개 및 간증','자동 번역','신청일시','RegID'];
         const rows = regs.map((r, i) => {
           const date = new Date(r.registeredAt).toLocaleString('ko-KR');
           const genderLabel = r.gender === 'male' ? t('male') : r.gender === 'female' ? t('female') : '';
           return [
             i + 1, campDisplayName(r.campId),
             r.name, r.phone, r.email, genderLabel, r.birthDate || '', r.church || '',
-            previousCampLabel(r.previousCamp), staffTeams(r).join(', '), r.notes || '', r.testimony || '', date, r.regId,
+            previousCampLabel(r.previousCamp), staffTeams(r).join(', '), r.notes || '', r.testimony || '',
+            trCsv(r, [['church', t('thChurch')], ['introduction', t('thIntroduction')], ['faithStory', t('thFaithStory')], ['instruments', t('thInstruments')], ['previousCampDetail', t('thPreviousCampDetail')], ['notes', t('thApplicantMemo')], ['referral', t('thReferral')]]), date, r.regId,
           ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
         });
         const csv = bom + [headers.join(','), ...rows].join('\n');
@@ -3382,8 +3406,8 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         const regs = sortedRegs(filteredRegs().filter(r => r.registrationType !== 'staff'));
         if (regs.length === 0) { showToast(t('csvNoCamp'), 'error'); return; }
         const headers = adminLang === 'en'
-          ? ['No','Status','Camp','Type','Name','Students','Counselor','Saved','Dedicated','Counselor Note','Testimony','Phone','Email','Grade/Count','Gender','Church','School','Emergency','Refund Bank','Refund Account','Refund Holder','Discounts','Discount Details','Final Payment','Notes','Registered','RegID']
-          : ['번호','상태','캠프','유형','이름','학생 명단','담당 카운슬러','구원','헌신','상담자 메모','간증문','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','환불 은행','환불 계좌','예금주','장학금/할인','할인 상세','총 납입금','메모','신청일시','RegID'];
+          ? ['No','Status','Camp','Type','Name','Students','Counselor','Saved','Dedicated','Counselor Note','Testimony','Phone','Email','Grade/Count','Gender','Church','School','Emergency','Refund Bank','Refund Account','Refund Holder','Discounts','Discount Details','Final Payment','Notes','Auto-translated','Registered','RegID']
+          : ['번호','상태','캠프','유형','이름','학생 명단','담당 카운슬러','구원','헌신','상담자 메모','간증문','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','환불 은행','환불 계좌','예금주','장학금/할인','할인 상세','총 납입금','메모','자동 번역','신청일시','RegID'];
         const rows = regs.map((r, i) => {
           const date = new Date(r.registeredAt).toLocaleString('ko-KR');
           const gradeOrCount = r.registrationType === 'group' ? `${t('groupBadge')} ${tt('personCountFn', r.groupCount)}` : (r.grade || '');
@@ -3423,7 +3447,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
             r.church || '', r.school || '', r.emergency || '',
             r.refundBank || '', r.refundAccount || '', r.refundHolder || '',
             r.scholarshipDiscountText || '', r.scholarshipDiscountDetailText || '', r.campFeeFinal ? formatAdminWon(r.campFeeFinal) : '',
-            r.notes || '', date, r.regId,
+            r.notes || '', trCsv(r, [['church', t('thChurch')], ['school', t('thSchool')], ['notes', t('thNotes')], ['referralSource', t('thReferral')]]), date, r.regId,
           ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
         });
         const csv = bom + [headers.join(','), ...rows].join('\n');

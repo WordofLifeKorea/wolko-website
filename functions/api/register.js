@@ -11,6 +11,7 @@
  * KAKAO_TEMPLATE_ADMIN_NOTIFY 알림톡 템플릿이 승인되어 있으면 알림톡으로,
  * 아니면(심사중/미설정) SMS로 자동 폴백.
  */
+import { attachFormTranslation } from '../lib/formTranslate.js';
 import { appendRow, appendRowsToTab } from '../lib/googleSheets.js';
 import { sendSms, sendAlimtalk } from '../lib/solapi.js';
 import { sendApplicantNotice } from '../lib/applicantNotice.js';
@@ -766,6 +767,8 @@ export async function onRequestPost(context) {
     // KV 저장 완료 후 이메일·시트·SMS는 백그라운드에서 실행 (응답 속도에 영향 없음)
     context.waitUntil(
       Promise.allSettled([
+        // 교회 · 학교 · 메모 · 알게 된 경로(기타)를 한↔영 자동 번역해 기록에 붙인다(실패해도 신청은 그대로)
+        attachFormTranslation(env, 'camp', `camp:${campId}:reg:${regId}`, reg),
         sendRegistrationEmail(env, reg).catch(e => console.error('registration email failed:', e)),
         syncToSheet(env, reg).catch(e => console.error('sheets sync failed:', e)),
         notifyAdmin(env, reg).catch(e => console.error('admin notify failed:', e)),

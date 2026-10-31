@@ -55,9 +55,9 @@
   .events-stat strong { grid-row: auto; font-size: 30px; }
   .events-stat small { font-size: 10px; }
   .events-wrap .events-toolbar { padding: 18px 16px; gap: 14px; }
-  .events-wrap #rsvp .events-toolbar > .events-actions { display: grid; grid-template-columns: minmax(0, 1fr) 40px auto; width: 100%; margin: 0; }
+  .events-wrap #rsvp .events-toolbar > .events-actions { display: grid; grid-template-columns: minmax(0, 1fr) 40px auto auto; width: 100%; margin: 0; }
   .events-search { width: 100%; }
-  .events-wrap .events-export { padding: 0 10px; font-size: 11px; }
+  .events-wrap .events-export, .events-add { padding: 0 10px; font-size: 11px; }
   .events-table, .events-table tbody { display: block; }
   .events-table thead { display: none; }
   .events-table tbody tr { display: grid; grid-template-columns: 1fr auto; gap: 14px; padding: 18px 16px; border-bottom: 1px solid #ede8e3; }
@@ -71,7 +71,8 @@
 }
 
 /* 참석자 직접 추가 */
-.events-add { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border: 1px solid #a5482d; border-radius: var(--ws-radius-sm, 8px); background: #a5482d; color: #fff; font: 700 14px/1 inherit; cursor: pointer; }
+/* 참석자 추가: 옆 'CSV 다운로드' · 새로고침과 같은 높이 · 같은 글자 크기(예전 font 묶음 규칙에 inherit 가 들어가 통째로 무시되어 글자가 작았다) */
+.events-add { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 16px; border: 1px solid #a5482d; border-radius: var(--ws-radius-sm, 8px); background: #a5482d; color: #fff; font-family: inherit; font-size: 13px; font-weight: 700; line-height: 1; white-space: nowrap; cursor: pointer; }
 .events-add:hover { background: #8e3d25; }
 .events-add[hidden] { display: none; }
 .rsvp-add-overlay { position: fixed; inset: 0; z-index: 9500; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(30, 16, 8, .5); }
@@ -95,3 +96,7 @@
 .events-tab.is-active { border-color: #a5482d; background: #a5482d; color: #fff; }
 .events-tab:focus-visible { outline: 2px solid #a5482d; outline-offset: 2px; }
 
+
+/* 메모 자동 번역: 화면 언어 쪽이 위, 다른 쪽(원문 또는 번역)은 아래에 작게 */
+.events-note-alt { display: block; margin-top: 6px; color: #8a7466; font-size: 12.5px; line-height: 1.55; }
+.events-note-alt b { margin-right: 4px; padding: 1px 6px; border-radius: 999px; background: #f5ebe3; color: #94472e; font-size: 10.5px; font-weight: 800; }

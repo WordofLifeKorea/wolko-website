@@ -6,6 +6,7 @@
 import { portalSession } from '../lib/hubAccounts.js';
 import { normalizePhone } from '../lib/phone.js';
 import { canAddRsvp } from '../lib/rsvpAccess.js';
+import { attachFormTranslation } from '../lib/formTranslate.js';
 
 const H = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };
 const EVENTS = {
@@ -15,7 +16,8 @@ const EVENTS = {
 const clean = (v, max) => String(v ?? '').trim().slice(0, max);
 const fail = (error, status = 400) => Response.json({ error }, { status, headers: H });
 
-export async function onRequestPost({ env, request }) {
+export async function onRequestPost(context) {
+  const { env, request } = context;
   const session = await portalSession(request, env);
   if (!session) return fail('포탈 로그인이 필요합니다.', 401);
   if (!canAddRsvp(session)) return fail('참석자를 추가할 수 있는 계정이 아닙니다.', 403);
@@ -36,5 +38,7 @@ export async function onRequestPost({ env, request }) {
   const rsvp = { rsvpId, eventId, eventTitleKo: event.ko, eventTitleEn: event.en, name, phone, email, partySize, notes: clean(data?.notes, 1000), source: 'manual', addedBy: String(session.email || '').toLowerCase(), createdAt: new Date().toISOString() };
   await env.CAMP_KV.put(`rsvp:${eventId}:${rsvpId}`, JSON.stringify(rsvp));
   if (dupeKey) await env.CAMP_KV.put(dupeKey, rsvpId);
+  const tr = attachFormTranslation(env, 'rsvp', `rsvp:${eventId}:${rsvpId}`, rsvp);   // 메모 한↔영 번역(백그라운드)
+  if (typeof context.waitUntil === 'function') context.waitUntil(tr);
   return Response.json({ success: true, rsvp }, { status: 201, headers: H });
 }
