@@ -98,14 +98,45 @@ html body :is(h1, .wl-page-head h1, .sc-title, .car-title, .events-heading h1, .
 :root:root:root :is(body > header, .app-header) .wl-user-chip:hover { background: var(--ws-fill) !important; }
 :root:root:root .wl-user-avatar { border-radius: var(--ws-radius-sm) !important; background: var(--ws-navy) !important; color: #fff !important; }
 :root:root:root .wl-user-text small { color: var(--ws-label) !important; }
-/* 언어 토글: 옅은 바탕 두 칸, 고른 쪽만 진한 청록 */
-:root:root:root :is(body > header, .app-header) :is(.wl-lang-toggle, .adm-lang-switch) {
+/* ── 언어 토글: 포탈 모든 페이지가 같은 모양 (홈페이지 머리글 토글도 같은 모양 — src/styles/global.css) ──
+   옅은 바탕 두 칸 · 고른 쪽만 진한 청록 · 국기 + KO/EN. 폰에서는 국기만.
+   세 가지 마크업을 모두 덮는다: 도구 페이지(.wl-lang-toggle), 관리자 스위치(.adm-lang-switch), 포탈 첫 화면(.hub-lang-toggle).
+   CRS 상세 창 안의 작은 토글(.detail-lang-toggle)은 그대로 둔다. */
+:root:root:root:root :is(.wl-lang-toggle:not(.detail-lang-toggle), .adm-lang-switch, .hub-lang-toggle) {
+  position: relative; display: inline-grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; grid-auto-flow: row !important;
+  gap: 2px !important; width: 120px !important; height: 36px !important; min-height: 36px !important; padding: 3px !important; margin: 0;
   background: var(--ws-fill) !important; border: 1px solid var(--ws-field) !important; border-radius: var(--ws-radius-sm) !important;
+  box-shadow: none !important; box-sizing: border-box !important; flex: none !important; cursor: pointer;
 }
-:root:root:root :is(body > header, .app-header) :is(.wl-lang-btn, .adm-lang-option, .adm-lang-thumb) { border-radius: var(--ws-radius-xs) !important; }
-:root:root:root :is(body > header, .app-header) .wl-lang-btn { color: var(--ws-label) !important; }
-:root:root:root :is(body > header, .app-header) .wl-lang-btn.is-active { background: var(--ws-deep) !important; color: #fff !important; box-shadow: none !important; }
-:root:root:root :is(body > header, .app-header) .adm-lang-thumb { background: var(--ws-deep) !important; box-shadow: none !important; }
+:root:root:root:root :is(.wl-lang-toggle:not(.detail-lang-toggle) .wl-lang-btn, .adm-lang-option, .hub-lang-btn) {
+  position: relative; z-index: 1; display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 6px !important;
+  width: auto !important; min-width: 0 !important; height: 100% !important; min-height: 0 !important; padding: 0 6px !important; margin: 0 !important;
+  border: 0 !important; border-radius: var(--ws-radius-xs) !important; background: transparent !important; box-shadow: none !important; transform: none !important;
+  color: var(--ws-label) !important; font: 800 11.5px/1 'Montserrat', 'Noto Sans KR', sans-serif !important; letter-spacing: .03em !important;
+  transition: background-color .18s, color .18s !important; cursor: pointer;
+}
+:root:root:root:root :is(.wl-lang-toggle:not(.detail-lang-toggle) .wl-lang-btn, .adm-lang-option, .hub-lang-btn) img {
+  display: block !important; flex: none !important; width: 18px !important; height: 13px !important; border-radius: 3px !important;
+  box-shadow: 0 0 0 1px rgba(11, 36, 48, .14) !important; object-fit: cover;
+}
+:root:root:root:root :is(.wl-lang-toggle:not(.detail-lang-toggle) .wl-lang-btn, .hub-lang-btn):hover { color: var(--ws-navy) !important; }
+:root:root:root:root :is(.wl-lang-toggle:not(.detail-lang-toggle) .wl-lang-btn, .hub-lang-btn).is-active { background: var(--ws-deep) !important; color: #fff !important; }
+:root:root:root:root :is(.wl-lang-toggle .wl-lang-btn, .adm-lang-switch, .hub-lang-btn):focus-visible { outline: 2px solid var(--ws-deep) !important; outline-offset: 2px !important; }
+/* 관리자 페이지는 버튼 하나짜리 스위치 — 진한 칸이 고른 쪽 아래로 미끄러진다 */
+:root:root:root:root .adm-lang-thumb {
+  position: absolute !important; top: 3px !important; bottom: 3px !important; left: 3px !important; width: calc(50% - 4px) !important; height: auto !important;
+  border-radius: var(--ws-radius-xs) !important; background: var(--ws-deep) !important; box-shadow: none !important; transition: transform .2s ease !important;
+}
+:root:root:root:root .adm-lang-switch[data-lang="en"] .adm-lang-thumb { transform: translateX(calc(100% + 2px)) !important; }
+:root:root:root:root .adm-lang-switch[data-lang="ko"] .adm-lang-ko, :root:root:root:root .adm-lang-switch[data-lang="en"] .adm-lang-en { color: #fff !important; }
+@media (max-width: 640px) {
+  :root:root:root:root :is(.wl-lang-toggle:not(.detail-lang-toggle), .adm-lang-switch, .hub-lang-toggle) { width: 72px !important; height: 34px !important; min-height: 34px !important; }
+  :root:root:root:root :is(.wl-lang-toggle:not(.detail-lang-toggle) .wl-lang-btn, .adm-lang-option, .hub-lang-btn) { padding: 0 !important; }
+  :root:root:root:root :is(.wl-lang-toggle:not(.detail-lang-toggle) .wl-lang-btn, .adm-lang-option, .hub-lang-btn) > span { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:root:root:root :is(.wl-lang-btn, .adm-lang-option, .hub-lang-btn, .adm-lang-thumb) { transition: none !important; }
+}
 /* 알림 종(CRS) · 햄버거 */
 :root:root:root .app-header .crs-bell { background: #fff !important; border: 1px solid var(--ws-field) !important; border-radius: var(--ws-radius-sm) !important; color: var(--ws-navy) !important; }
 @media (max-width: 899px) {
@@ -233,9 +264,6 @@ body > aside:not(.apanel) nav a.on, #drawer nav a.on { background: rgba(255, 255
 #drawer .drawer-x { border-radius: var(--ws-radius-sm) !important; }
 body > aside:not(.apanel) nav a::before, #drawer nav a::before { display: none !important; } /* 왼쪽 색 띠는 쓰지 않는다 */
 
-/* ── 언어 토글: 국기와 글자를 칸 가운데에 ── */
-:root:root:root .wl-lang-btn { display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 6px !important; }
-:root:root:root .wl-lang-btn img { display: block; flex: none; }
 
 /* ── 포탈 첫 화면 하늘 배너 인사말: 위의 제목 규칙(남색)을 덮는다. 하늘은 낮이든 밤이든 진한 편이라 흰 글자,
    옅은 하늘(낮의 안개 · 눈)에서는 그림자를 더 진하게 줘서 글자가 묻히지 않게 ── */

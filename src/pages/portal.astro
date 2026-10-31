@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=81">
+  <link rel="stylesheet" href="/hub.css?v=82">
   <link rel="stylesheet" href="/hub-sky.css?v=13">
   <script src="/hub-sky.js?v=6" defer></script>
   <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
@@ -28,8 +28,8 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=5">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
   <link rel="stylesheet" href="/wolko-rail.css?v=24">
-  <link rel="stylesheet" href="/wolko-site.css?v=4">
-  <script src="/wolko-rail.js?v=46" defer></script>
+  <link rel="stylesheet" href="/wolko-site.css?v=5">
+  <script src="/wolko-rail.js?v=47" defer></script>
   <link rel="manifest" href="/portal-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -201,18 +201,29 @@
           <span class="hub-install-label" data-t="installApp">앱 설치</span>
         </button>
         <div class="hub-lang-toggle" role="group" aria-label="Language">
-          <button class="hub-lang-btn" id="langKoBtn" onclick="setHubLang('ko')" aria-label="한국어" title="한국어">
+          <button class="hub-lang-btn" id="langKoBtn" data-hub-lang="ko" onclick="setHubLang('ko')" aria-label="한국어" title="한국어">
             <img src="/images/flags/kr.svg" alt="" width="16" height="12"><span>KO</span>
           </button>
-          <button class="hub-lang-btn" id="langEnBtn" onclick="setHubLang('en')" aria-label="English" title="English">
+          <button class="hub-lang-btn" id="langEnBtn" data-hub-lang="en" onclick="setHubLang('en')" aria-label="English" title="English">
             <img src="/images/flags/us.svg" alt="" width="16" height="12"><span>EN</span>
           </button>
         </div>
-        <button class="hub-sidebar-lang" onclick="doLogout()" data-t="logout">로그아웃</button>
+        <button class="hub-sidebar-lang hub-foot-logout" onclick="doLogout()" data-t="logout">로그아웃</button>
       </div>
     </nav>
 
     <main class="hub-main">
+      <!-- 컴퓨터 화면: 다른 포탈 페이지와 같은 위쪽 머리글(오른쪽에 계정 · 언어 · 로그아웃). 폰에서는 위의 가로 바가 대신한다 -->
+      <header class="app-header hub-topbar">
+        <a class="app-brand hub-topbar-brand" href="/portal"><img src="/images/WOLKO Circle.png" alt="WOLKO"><span data-t="homeTitle">포탈 홈</span></a>
+        <div class="hub-topbar-right">
+          <div class="wl-lang-toggle" role="group" aria-label="Language">
+            <button type="button" class="wl-lang-btn" data-hub-lang="ko" onclick="setHubLang('ko')" aria-label="한국어" title="한국어"><img src="/images/flags/kr.svg" alt=""><span>KO</span></button>
+            <button type="button" class="wl-lang-btn" data-hub-lang="en" onclick="setHubLang('en')" aria-label="English" title="English"><img src="/images/flags/us.svg" alt=""><span>EN</span></button>
+          </div>
+          <button type="button" class="btn-logout" onclick="doLogout()" data-t="logout">로그아웃</button>
+        </div>
+      </header>
       <div class="hub-wrap">
         <section class="hub-sky" id="hubSky" data-kind="none" data-day="1" aria-label="오늘">
           <canvas class="hub-sky-canvas" id="hubSkyCanvas" aria-hidden="true"></canvas>
@@ -328,7 +339,7 @@
 
     const HUB_T = {
       ko: {
-        headerTitle: 'WOLKO Portal',
+        headerTitle: 'WOLKO Portal', homeTitle: '포탈 홈',
         navLabel: '도구',
         kicker: 'WOLKO 내부용',
         pageTitle: '이번 주 월코',
@@ -409,7 +420,7 @@
         roleRequiredToast: '역할을 선택해 주세요.',
       },
       en: {
-        headerTitle: 'WOLKO Portal',
+        headerTitle: 'WOLKO Portal', homeTitle: 'Portal Home',
         navLabel: 'Tools',
         kicker: 'WOLKO Internal',
         pageTitle: 'This Week at WOLKO',
@@ -1058,8 +1069,7 @@
       $('signupPhoneInput').placeholder = t('phonePlaceholder');
       $('signupPwInput').placeholder = t('signupPwPlaceholder');
       updateSignupMode(); // 언어를 바꾸면 data-t 가 버튼 글자를 되돌리므로 가입 방식에 맞는 글자로 다시 맞춘다
-      $('langKoBtn').classList.toggle('is-active', hubLang === 'ko');
-      $('langEnBtn').classList.toggle('is-active', hubLang === 'en');
+      document.querySelectorAll('[data-hub-lang]').forEach(b => { b.classList.toggle('is-active', b.dataset.hubLang === hubLang); b.setAttribute('aria-pressed', String(b.dataset.hubLang === hubLang)); });
       renderNav();
       renderDash();
       loadExpenseBadge();

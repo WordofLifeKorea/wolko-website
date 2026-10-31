@@ -1149,3 +1149,19 @@ body.hub-modal-open { overflow: hidden; }
 
 /* 모바일 안전장치 — 포탈 홈도 옆으로 끌려다니지 않게 */
 @media (max-width: 899px) { html, body { overflow-x: clip; } }
+
+/* ── 컴퓨터 화면 위쪽 머리글: 다른 포탈 페이지와 같은 자리 · 같은 모양(흰 바탕 · 왼쪽 로고와 제목 · 오른쪽 계정 · 언어 · 로그아웃).
+   폰(767px 이하)에서는 숨기고, 위의 가로 바(사이드바)가 언어 · 로그아웃을 그대로 맡는다. ── */
+.hub-topbar { display: none; }
+@media (min-width: 768px) {
+  .hub-topbar {
+    position: sticky; top: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    height: 60px; padding: 0 clamp(28px, 2.4vw, 64px);
+  }
+  .hub-topbar-brand { display: flex; align-items: center; gap: 10px; min-width: 0; font-size: 15px; text-decoration: none; }
+  .hub-topbar-brand img { width: 30px; height: 30px; border-radius: 50%; flex: none; }
+  .hub-topbar-right { display: flex; align-items: center; gap: 8px; }
+  .hub-topbar .btn-logout { height: 36px; padding: 0 14px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+  :root:root:root:root:root .hub-sidebar-foot :is(.hub-lang-toggle, .hub-foot-logout) { display: none !important; }   /* 공용 토글 규칙(wolko-site.css)보다 강하게 */
+}

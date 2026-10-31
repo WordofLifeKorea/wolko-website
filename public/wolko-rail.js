@@ -383,7 +383,7 @@
     var path = window.location.pathname.replace(/\/+$/, '') || '/';
     checkPasswordReset();
     mountAccess();
-    if (path === '/portal') return; // 포탈 런처 자체 사이드바와 중복 방지
+    if (path === '/portal') { if (document.querySelector('.hub-topbar')) mountUserChip(); return; } // 포탈 첫 화면은 자체 사이드바 — 위쪽 머리글에 계정 칩만 다른 페이지처럼 붙인다
     mountUserChip();
     mountLogout();
 

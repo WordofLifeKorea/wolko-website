@@ -118,11 +118,11 @@ const {
         <div class="lang-slider" id="langSlider"></div>
         <div class="lang-side is-active" id="langKo">
           <img src="/images/flags/kr.svg" alt="KR">
-          <span>한국어</span>
+          <span>KO</span>
         </div>
         <div class="lang-side is-inactive" id="langEn">
           <img src="/images/flags/us.svg" alt="US">
-          <span>English</span>
+          <span>EN</span>
         </div>
       </div>
       <div class="nav-hamburger" id="hamburger" onclick="toggleMobile()">
@@ -300,8 +300,8 @@ const {
         return;
       }
       const toggle = document.getElementById('langToggle');
-      const sliderW = slider.offsetWidth || (window.innerWidth <= 1500 ? 32 : 78);
-      slider.style.left = (toggle.offsetWidth - sliderW - 3) + 'px';
+      const sliderW = slider.offsetWidth || (window.innerWidth <= 1500 ? 31 : 55);
+      slider.style.left = (toggle.clientWidth - sliderW - 3) + 'px';   // 테두리를 뺀 안쪽 폭 기준 — 양쪽 여백이 3px로 같게
     }
 
     function applyLang(en) {
