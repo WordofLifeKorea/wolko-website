@@ -575,15 +575,13 @@
         <div class="signup-guide" id="signupGuide" hidden>
           <div class="signup-guide-title">카운슬러 계정 만들기</div>
           <div class="signup-guide-steps" aria-label="Sign-up steps">
-            <span class="signup-step">1. 캠프</span>
-            <span class="signup-step">2. 이름</span>
+            <span class="signup-step">1. 이름</span>
+            <span class="signup-step">2. 신청 이메일</span>
             <span class="signup-step">3. 비밀번호</span>
           </div>
         </div>
         <select id="authCampSelect" hidden></select>
-        <select id="authName" hidden>
-          <option value="">담당 캠프를 먼저 선택해주세요</option>
-        </select>
+        <input id="authName" type="text" placeholder="이름 (직접 입력)" autocomplete="name" maxlength="40" hidden>
         <div class="login-roster-hint" id="rosterHint" hidden></div>
         <input id="authEmail" type="email" placeholder="email@example.com" autocomplete="email">
         <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
@@ -813,11 +811,6 @@
       $('loadAccountsBtn').addEventListener('click', loadAccounts);
       $('accountSaveBtn').addEventListener('click', upsertAccount);
       document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => setAuthMode(btn.dataset.mode)));
-      $('authCampSelect').addEventListener('change', loadCounselorRoster);
-      $('authName').addEventListener('change', () => {
-        const opt = $('authName').selectedOptions[0];
-        $('authEmail').value = opt?.value || '';
-      });
       // Enter 키로 로그인/가입 제출
       ['authEmail', 'authPassword', 'authName'].forEach(id => {
         $(id).addEventListener('keydown', e => {
@@ -856,71 +849,30 @@
       authMode = mode;
       document.querySelectorAll('.tab').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
       $('signupGuide').hidden = mode !== 'signup';
-      $('authEmail').hidden = mode === 'adminLogin' || mode === 'signup';
-      // signup 모드: 캠프/이름 셀렉트 노출 + 명단 로드
+      $('authEmail').hidden = mode === 'adminLogin';
+      // signup 모드: 이름은 직접 입력, 이메일은 스태프 신청 때 쓴 것(서버가 상담자 팀 신청 이메일과 맞는지 확인한다)
       const showSignupFields = mode === 'signup';
-      $('authCampSelect').hidden = !showSignupFields;
+      $('authCampSelect').hidden = true;
       $('authName').hidden = !showSignupFields;
-      $('rosterHint').hidden = !showSignupFields;
-      if (showSignupFields) {
-        populateAuthCampSelect();
-        loadCounselorRoster();
-      }
+      $('rosterHint').hidden = true;
+      $('authEmail').placeholder = showSignupFields ? '스태프 신청 때 쓴 이메일' : 'email@example.com';
       $('authPassword').autocomplete = mode === 'signup' ? 'new-password' : 'current-password';
       $('authPassword').placeholder = mode === 'signup' ? '사용할 비밀번호를 입력하세요' : 'Password';
       $('authBtn').textContent = mode === 'signup' ? '가입하기' : mode === 'adminLogin' ? '관리자 로그인' : '로그인';
       $('loginError').textContent = '';
     }
 
-    function populateAuthCampSelect() {
-      const sel = $('authCampSelect');
-      if (sel.options.length === CAMPS.length) return;
-      sel.innerHTML = CAMPS.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
-    }
-
-    async function loadCounselorRoster() {
-      const campId = $('authCampSelect').value || CAMPS[0].id;
-      const sel = $('authName');
-      const hint = $('rosterHint');
-      sel.innerHTML = '<option value="">불러오는 중…</option>';
-      sel.disabled = true;
-      hint.classList.remove('is-error');
-      hint.textContent = '본인 이름을 선택하면 등록된 이메일로 자동 채워집니다.';
-      try {
-        const res = await fetch(`/api/camp-progress/counselor-roster?campId=${encodeURIComponent(campId)}`);
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || '명단 불러오기 실패');
-        const list = data.counselors || [];
-        if (!list.length) {
-          sel.innerHTML = '<option value="">상담자 신청자가 없습니다</option>';
-          hint.classList.add('is-error');
-          hint.textContent = '이 캠프에 상담자 팀으로 신청한 분이 아직 없습니다.';
-          sel.disabled = true;
-          $('authEmail').value = '';
-          return;
-        }
-        sel.innerHTML = '<option value="">— 본인 이름을 선택해주세요 —</option>'
-          + list.map((c, i) => `<option value="${esc(c.email)}" data-name="${esc(c.name)}">${esc(c.name)}</option>`).join('');
-        sel.disabled = false;
-      } catch (e) {
-        sel.innerHTML = '<option value="">불러오기 실패</option>';
-        hint.classList.add('is-error');
-        hint.textContent = e.message;
-      }
-    }
-
     async function submitAuth() {
       $('loginError').textContent = '';
       $('authBtn').disabled = true;
       try {
-        // signup: 이름 select의 selected option에서 이메일+이름 추출
+        // signup: 이름은 직접 입력, 이메일은 스태프 신청 때 쓴 이메일
         let email = $('authEmail').value.trim();
         let name = '';
         if (authMode === 'signup') {
-          const opt = $('authName').selectedOptions[0];
-          email = opt?.value || '';
-          name = opt?.dataset?.name || '';
-          if (!email) throw new Error('본인 이름을 선택해주세요.');
+          name = $('authName').value.trim();
+          if (!name) throw new Error('이름을 입력해주세요.');
+          if (!email) throw new Error('스태프 신청 때 쓴 이메일을 입력해주세요.');
         }
         const res = await fetch('/api/camp-progress/auth', {
           method:'POST',
