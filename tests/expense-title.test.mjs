@@ -9,15 +9,17 @@ runInNewContext(src, ctx);
 const { kstWeek, autoTitle, isAutoTitle } = ctx.window.ExpenseTitle;
 const at = d => Date.parse(d + 'T12:00:00+09:00');
 
-test('경비 리포트 제목: 몇째 주는 월요일 시작, 1일이 든 주가 1째 주', () => {
+test('경비 리포트 제목: 몇째 주는 일요일 시작, 1일이 든 주가 1째 주', () => {
   assert.equal(kstWeek(at('2026-10-01')).week, 1);   // 목요일
-  assert.equal(kstWeek(at('2026-10-04')).week, 1);   // 일요일까지 1째 주
-  assert.equal(kstWeek(at('2026-10-05')).week, 2);   // 월요일부터 2째 주
+  assert.equal(kstWeek(at('2026-10-03')).week, 1);   // 토요일까지 1째 주
+  assert.equal(kstWeek(at('2026-10-04')).week, 2);   // 일요일부터 2째 주
   assert.equal(kstWeek(at('2026-10-31')).week, 5);
-  assert.equal(kstWeek(at('2026-11-01')).week, 1);   // 일요일에 시작하는 달: 1일 하루만 1째 주
-  assert.equal(kstWeek(at('2026-11-02')).week, 2);
-  assert.equal(kstWeek(at('2026-11-30')).week, 6);   // 6째 주
-  assert.equal(kstWeek(at('2027-02-28')).week, 4);   // 2027-02-01 월요일 → 딱 4주
+  assert.equal(kstWeek(at('2026-11-01')).week, 1);   // 일요일에 시작하는 달
+  assert.equal(kstWeek(at('2026-11-07')).week, 1);
+  assert.equal(kstWeek(at('2026-11-08')).week, 2);
+  assert.equal(kstWeek(at('2026-11-30')).week, 5);
+  assert.equal(kstWeek(at('2027-02-28')).week, 5);   // 2027-02-01 월요일 → 28일(일)은 5째 주
+  assert.equal(kstWeek(at('2026-05-31')).week, 6);   // 2026-05-01 금요일 → 31일(일)은 6째 주
   // 한국 시간 자정 직후도 그날로 센다
   assert.equal(kstWeek(Date.parse('2026-10-31T15:30:00Z')).d, 1);
 });
