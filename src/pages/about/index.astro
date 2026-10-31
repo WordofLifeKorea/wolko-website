@@ -110,11 +110,13 @@ const ministries = [
   .intro-card p:not(.intro-greet) { font-size:17.5px; line-height:2.15; color:var(--ink); word-break:keep-all; }
   .intro-card p + p { margin-top:18px; }
   .intro-closing { margin-top:34px !important; font-size:16.5px !important; color:#5b6c75 !important; font-style:normal; }
-  .intro-card-sig { margin-top:10px; display:flex; flex-direction:column; align-items:flex-end; gap:4px; color:var(--teal); }
-  .intro-sign-name { font-family:'Playfair Display', 'Gowun Batang', 'Noto Serif KR', serif; font-style:italic; font-weight:500; font-synthesis:none; font-size:34px; line-height:1.25; letter-spacing:.005em; color:#0a4c63; transform:rotate(-2deg); transform-origin:right bottom; }
-  .intro-sign-name .wl-ko { font-family:'Playfair Display', 'Gowun Batang', 'Noto Serif KR', serif; }
-  .intro-sign-line { width:150px; height:2px; border-radius:2px; background:linear-gradient(90deg, transparent, rgba(0,79,104,0.45)); }
-  .intro-sign-small { font:600 11px/1 Montserrat, sans-serif; letter-spacing:.2em; color:#7b8e98; }
+  /* 편지 끝 서명 — 영문 서명 · 가는 선 · "월코 드림", 오른쪽에 공식 로고를 도장처럼 */
+  .intro-card-sig { margin-top:22px; display:flex; justify-content:flex-end; align-items:center; gap:18px; color:var(--teal); }
+  .intro-sign-text { display:flex; flex-direction:column; align-items:flex-end; }
+  .intro-sign-name { font-family:'Playfair Display', 'Noto Serif KR', serif; font-style:italic; font-weight:500; font-synthesis:none; font-size:32px; line-height:1.2; letter-spacing:.005em; color:#0a4c63; }
+  .intro-sign-by { align-self:stretch; margin-top:10px; padding-top:9px; border-top:1px solid rgba(0,79,104,0.28); text-align:right; font-family:'Noto Serif KR', 'Nanum Myeongjo', serif; font-size:15px; font-weight:600; letter-spacing:.12em; color:#5b6c75; }
+  .intro-sign-by .wl-en { font:600 11px/1.4 Montserrat, sans-serif; letter-spacing:.22em; }
+  .intro-sign-seal { flex:none; width:58px; height:58px; padding:5px; box-sizing:border-box; border-radius:50%; background:#fff; border:1px solid rgba(0,79,104,0.18); box-shadow:0 4px 10px rgba(16,32,40,0.08); }
 
   /* ── HISTORY ── */
   .history-grid { max-width:1240px; margin:56px auto 0; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
@@ -258,12 +260,12 @@ const ministries = [
     .intro-card::before { inset:9px; }
     .intro-card p:not(.intro-greet) { font-size:15.5px; line-height:2; }
     .intro-greet { font-size:18px; }
-    .intro-sign-name { font-size:28px; }
+    .intro-sign-name { font-size:26px; }
+    .intro-sign-seal { width:48px; height:48px; }
     .commit-grid { grid-template-columns:1fr; }
     .commit-card { grid-template-columns:1fr; padding:28px 24px; }
     .commit-num { grid-row:auto; font-size:46px; margin-bottom:6px; }
     .commit-card h4, .commit-card p { grid-column:1; }
-    .intro-sign-name { font-size:28px; }
   }
 
   /* ── 모바일: 카드 박스를 걷어내고 구분선과 번호 위주의 한 줄기 목록으로 — 읽기 편하게 ── */
@@ -363,9 +365,11 @@ const ministries = [
         <p class="wl-en">Please take a moment to look closely at what God is doing through WOLKO.</p>
         <p class="intro-closing"><span class="wl-ko">하나님의 은혜 안에서,</span><span class="wl-en">In Christ,</span></p>
         <div class="intro-card-sig">
-          <span class="intro-sign-name"><span class="wl-ko">Word of Life Korea 드림</span><span class="wl-en">Word of Life Korea</span></span>
-          <span class="intro-sign-line"></span>
-          <span class="intro-sign-small">WOLKO</span>
+          <div class="intro-sign-text">
+            <span class="intro-sign-name">Word of Life Korea</span>
+            <span class="intro-sign-by"><span class="wl-ko">월코 드림</span><span class="wl-en">WOLKO</span></span>
+          </div>
+          <img class="intro-sign-seal" src="/images/WOLKO%20Circle.png" alt="" aria-hidden="true">
         </div>
       </div>
       </div>
