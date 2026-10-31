@@ -77,3 +77,17 @@ test('팀 사무실: 명단에 없는 고정 관리자는 접속해 있을 때�
   j = await J(await call('onRequestGet', env, U.mem));
   assert.ok(j.members.some((m) => m.id === publicId(email) && m.seated), '접속하면 자리가 생기고 앉는다');
 });
+
+test('팀 사무실: 오늘 부재(휴가)인 팀원에게 ooo 표시가 붙고, 이메일은 나가지 않는다 (직접 접속하면 앉은 채로 표시는 유지 — 화면이 「재택」으로 바꾼다)', async () => {
+  const env = makeEnv(fakeD1()), today = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+  const m = env.DB.sqlite.prepare('SELECT email, name FROM camp_members WHERE active = 1 ORDER BY name LIMIT 1').get();
+  env.DB.sqlite.prepare("INSERT INTO events (id,title,kind,startDate,endDate,createdAt,updatedAt,createdBy) VALUES ('ev-of-ooo',?1,'out',?2,?2,'2026-10-30','2026-10-30','t')").run(m.name + ' OOO', today);
+  let j = await J(await call('onRequestGet', env, U.mem)), raw = JSON.stringify(j);
+  const row = j.members.find((x) => x.name === (/[가-힣]/.test(m.name) ? m.name : m.name.split(/\s+/)[0]));
+  assert.ok(row && row.ooo === true && row.seated === false, '부재인 사람은 자리가 비어 있고 ooo 표시');
+  assert.equal(j.members.filter((x) => x.ooo).length, 1, '다른 사람에게는 표시가 없다');
+  assert.ok(!raw.includes(m.email), '이메일은 응답에 없다');
+  await call('onRequestPost', env, m.email, {});
+  j = await J(await call('onRequestGet', env, U.mem));
+  assert.equal(j.members.find((x) => x.ooo).seated, true, '휴가 날 직접 접속하면 앉는다(화면에서 재택 표시)');
+});

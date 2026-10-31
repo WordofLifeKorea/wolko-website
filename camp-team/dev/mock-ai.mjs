@@ -10,6 +10,11 @@ const fileSuggestion = (name) => ({ titles: [{ ko: '2027 겨울 월코 영어 �
 const campNames = { names: [{ ko: '2027 겨울 월코 영어 캠프', en: '2027 Winter WOLKO English Camp' }, { ko: '2027 겨울 월코 주니어 영어 캠프', en: '2027 Winter WOLKO Junior English Camp' }] };
 http.createServer((req, res) => {
   let body = ''; req.on('data', c => body += c); req.on('end', () => {
+    // 캠프 도우미 챗(스트리밍 아님: stream 항목이 없거나 false): 사용법 질문에 가짜 답 + 맞는 화면 안내 번호
+    try { const j0 = JSON.parse(body); if (!j0.stream && String(j0.system || '').includes('in-app helper')) {
+      const last = String((j0.messages || []).slice(-1)[0]?.content || ''), g = /자료|파일|upload|file/i.test(last) ? 'addFile' : /업무|task/i.test(last) ? 'addTask' : '';
+      const text = g ? '「+ 자료 추가」(또는 업무 추가) 버튼으로 할 수 있어요. (가짜 AI 답)\n[[guide:' + g + ']]' : '안녕하세요! 사용법을 짧게 알려 드릴게요. (가짜 AI 답)';
+      res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ content: [{ type: 'text', text }] })); return; } } catch (e) { /* 아래로 */ }
     res.writeHead(200, { 'Content-Type': 'text/event-stream' }); let payload = draft;
     try { const j = JSON.parse(body), sys = String(j.system || ''); if (sys.includes('NO document')) { const m = /Typed title: ([^\n"]*)/.exec(JSON.stringify(j.messages).replace(/\\n/g, '\n')); const ty = m ? m[1].trim() : ''; payload = { titles: [{ ko: ty + ' 수업자료 (가짜 AI)', en: ty + ' Class Materials (mock)' }, { ko: ty + ' 안내문', en: ty + ' Notice' }], description: '', category: 'program', topic: '수업', year: null, season: '', campId: '', campReason: '' }; } else if (sys.includes('file a document')) { const m = /File name: ([^\n]*)/.exec(JSON.stringify(j.messages)) ; payload = fileSuggestion(m ? m[1].replace(/\\n.*/, '') : 'file'); } else if (sys.includes('suggest names for a camp')) payload = campNames; } catch (e) { /* 회의록 초안 */ }
     const text = JSON.stringify(payload); let i = 0;
