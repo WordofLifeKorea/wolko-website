@@ -18,7 +18,8 @@ const { variant = 'photo', image, pos = '50% 40%', mpos, id } = Astro.props;
 const style = image ? `--ph-img:url("${image}");--ph-pos:${pos};--ph-mpos:${mpos || pos}` : undefined;
 const hasBar = Astro.slots.has('bar');
 ---
-<section class={`ph ph--${variant}`} id={id} style={style}>
+{image && <link rel="preload" as="image" href={image} fetchpriority="high" />}
+<section class={`ph ph--${variant}`} id={id} style={style} data-img={image}>
   <div class="ph-inner">
     <slot name="before" />
     <div class="ph-eyebrow"><slot name="eyebrow" /></div>
@@ -129,23 +130,41 @@ const hasBar = Astro.slots.has('bar');
     .ph-cta { width: 100%; justify-content: space-between; padding: 0 20px; }
   }
 
-  /* 움직임 — 자바스크립트가 html 에 .wl-motion 을 붙일 때만 (움직임 줄이기 설정이면 처음부터 다 보인다) */
-  @keyframes phZoom { from { transform: scale(1.08); } to { transform: none; } }
+  /* 움직임 — 자바스크립트가 html 에 .wl-motion 을 붙일 때만 (움직임 줄이기 설정이면 처음부터 다 보인다).
+     사진을 다 받은 뒤(.is-ready) 사진 → 작은 표시 → 제목 → 설명 줄 순서로 시작한다. 글이 먼저 다 나온 뒤 사진이 툭 바뀌는 일이 없게. */
+  @keyframes phZoom { from { opacity: 0; transform: scale(1.08); } 20% { opacity: 1; } to { opacity: 1; transform: none; } }
   @keyframes phRise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
   @keyframes phLine { from { width: 0; } to { width: 28px; } }
-  .wl-motion .ph--photo::before, .wl-motion .ph--band::before { animation: phZoom 3.8s cubic-bezier(.2,.6,.2,1) both; }
-  .wl-motion .ph-eyebrow { animation: phRise 1.2s .25s cubic-bezier(.2,.7,.2,1) both; }
-  .wl-motion .ph-eyebrow::before { animation: phLine 1s .55s ease-out both; }
-  .wl-motion .ph-title { animation: phRise 1.3s .5s cubic-bezier(.2,.7,.2,1) both; }
-  .wl-motion .ph-bar, .wl-motion .ph-desc { animation: phRise 1.3s .95s cubic-bezier(.2,.7,.2,1) both; }
+  .wl-motion .ph:not(.is-ready)::before,
+  .wl-motion .ph:not(.is-ready) :is(.ph-eyebrow, .ph-title, .ph-bar, .ph-desc) { opacity: 0; }
+  .wl-motion .ph--photo.is-ready::before, .wl-motion .ph--band.is-ready::before { animation: phZoom 3.8s cubic-bezier(.2,.6,.2,1) both; }
+  .wl-motion .ph.is-ready .ph-eyebrow { animation: phRise 1.2s .35s cubic-bezier(.2,.7,.2,1) both; }
+  .wl-motion .ph.is-ready .ph-eyebrow::before { animation: phLine 1s .65s ease-out both; }
+  .wl-motion .ph.is-ready .ph-title { animation: phRise 1.3s .6s cubic-bezier(.2,.7,.2,1) both; }
+  .wl-motion .ph.is-ready .ph-bar, .wl-motion .ph.is-ready .ph-desc { animation: phRise 1.3s 1.05s cubic-bezier(.2,.7,.2,1) both; }
 </style>
 
 <script is:inline>
-  // 배너 움직임: 사진이 천천히 자리 잡고 글이 차례로 떠오르며, [data-count-from] 숫자는 시작값부터 올라간다.
+  // 배너 움직임: 사진을 다 받으면(.is-ready) 사진이 천천히 자리 잡고 글이 차례로 떠오르며, [data-count-from] 숫자는 그 뒤에 시작값부터 올라간다.
+  // 사진이 2.5초 넘게 안 오면 기다리지 않고 시작한다.
   (function () {
     if (!('IntersectionObserver' in window)) return;
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     document.documentElement.classList.add('wl-motion');
+    [].forEach.call(document.querySelectorAll('.ph:not(.is-ready)'), function (h) {
+      var done = false, src = h.getAttribute('data-img');
+      function go() { if (done) return; done = true; h.classList.add('is-ready'); h.dispatchEvent(new Event('ph:ready')); }
+      if (!src) return go();
+      var img = new Image();
+      img.onload = img.onerror = go;
+      img.src = src;
+      if (img.complete) go();
+      setTimeout(go, 2500);
+    });
+    function whenReady(el, fn) {
+      var h = el.closest('.ph');
+      if (!h || h.classList.contains('is-ready')) fn(); else h.addEventListener('ph:ready', fn, { once: true });
+    }
     var counters = [].slice.call(document.querySelectorAll('.ph [data-count-from]'));
     counters.forEach(function (el) { el.dataset.countTo = el.textContent.trim(); el.textContent = el.dataset.countFrom; });
     function count(el) {
@@ -157,10 +176,10 @@ const hasBar = Astro.slots.has('bar');
           el.textContent = Math.round(from + (to - from) * e);
           if (k < 1) setTimeout(step, 30);
         })();
-      }, 1400);
+      }, 1500);                                   // 아래 줄이 떠오른 뒤에
     }
     var cio = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) { if (en.isIntersecting) { cio.unobserve(en.target); count(en.target); } });
+      entries.forEach(function (en) { if (en.isIntersecting) { cio.unobserve(en.target); whenReady(en.target, function () { count(en.target); }); } });
     }, { threshold: 0.6 });
     counters.forEach(function (el) { cio.observe(el); });
   })();

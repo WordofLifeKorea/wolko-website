@@ -301,7 +301,7 @@ const ministries = [
 </style>
 
 <!-- ══ HERO ══ -->
-<PageHero image="https://wolko.synology.me/Web_Contents/Photos/Youth_Ministry/Banner%202.png" pos="50% 30%" mpos="62% 0">
+<PageHero image="/images/heroes/banner2.jpg" pos="50% 30%" mpos="62% 0">
   <Fragment slot="eyebrow"><span class="wl-ko">월코 소개</span><span class="wl-en">About WOLKO</span></Fragment>
   <Fragment slot="title">
     <span class="wl-ko">복음으로 <br class="ph-br">다음 세대를 세웁니다</span>
@@ -593,11 +593,19 @@ const ministries = [
     counters.forEach(function (el) { cio.observe(el); });
 
     // 섹션 떠오르기 — 편지(봉투)는 따로 움직이니 뺀다
+    // 순서: 한 섹션 안에서 작은 표시 → 제목 → 설명 → (조금 뒤) 카드가 왼쪽부터 하나씩. 같이 화면에 들어와도 이 차례대로 떠오른다.
     var groups = ['.history-grid', '.values-grid', '.vismis-grid', '.commit-grid', '.ministry-list'];
-    var items = [].slice.call(document.querySelectorAll('.section .section-badge, .section .section-title, .section .section-desc, .who-title-rule, .ministry-stage'));
-    groups.forEach(function (g) {
-      [].slice.call(document.querySelectorAll(g + ' > *')).forEach(function (el, i) { el.style.setProperty('--d', (i % 4) * 0.18 + 's'); items.push(el); });
+    var items = [];
+    [].forEach.call(document.querySelectorAll('.section'), function (sec) {
+      [].forEach.call(sec.querySelectorAll('.section-badge, .section-title, .who-title-rule, .section-desc'), function (el, i) {
+        el.style.setProperty('--d', i * 0.14 + 's'); items.push(el);
+      });
     });
+    groups.forEach(function (g) {
+      [].slice.call(document.querySelectorAll(g + ' > *')).forEach(function (el, i) { el.style.setProperty('--d', 0.35 + Math.min(i, 5) * 0.14 + 's'); items.push(el); });
+    });
+    var stageEl = document.querySelector('.ministry-stage');
+    if (stageEl) { stageEl.style.setProperty('--d', '0.35s'); items.push(stageEl); }
     var rio = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('is-in'); rio.unobserve(en.target); } });
     }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
