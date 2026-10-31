@@ -1,0 +1,118 @@
+/* WOLKO 포탈 로그인 화면 공용 디자인 — 포탈(첫 화면 로그인 · 가입 · 비밀번호 재설정)과 스태프 포탈이 같이 쓴다.
+   차분한 깊은 청록 바탕 위에 흰 카드 한 장: 같은 로고 · 같은 제목 글씨 · 같은 입력칸(8px) · 같은 버튼 · 조용한 보조 링크.
+   다른 로그인 화면(wolko-auth.css)보다 나중에 읽히고, :root 를 겹쳐 페이지 안 스타일보다 앞선다. */
+:root:root .login-screen {
+  background-color: #0b2430;
+  background-image:
+    radial-gradient(60vmax 45vmax at 12% -8%, rgba(255, 255, 255, .11), transparent 62%),
+    radial-gradient(55vmax 40vmax at 108% 108%, rgba(94, 196, 226, .16), transparent 64%),
+    linear-gradient(160deg, #0b2430 0%, #004f68 100%);
+  background-size: 140% 140%, 140% 140%, 100% 100%;
+  background-position: 0% 0%, 100% 100%, 0 0;
+  animation: wl-login-drift 26s ease-in-out infinite alternate;
+}
+@keyframes wl-login-drift {
+  from { background-position: 0% 0%, 100% 100%, 0 0; }
+  to { background-position: 18% 10%, 82% 88%, 0 0; }
+}
+
+/* 카드 */
+:root:root .login-screen .login-card {
+  width: min(400px, 100%); max-width: 400px;
+  padding: 40px 36px 30px;
+  border: 0; border-radius: 12px; background: #fff;
+  box-shadow: 0 32px 64px -32px rgba(0, 12, 20, .55), 0 2px 8px rgba(0, 12, 20, .08);
+  text-align: center;
+  animation: wl-login-in .6s cubic-bezier(.2, .7, .2, 1) both;
+}
+@keyframes wl-login-in { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: none; } }
+
+/* 로고 · 제목 · 설명 */
+:root:root .login-screen .login-logo { justify-content: center; gap: 12px; margin: 0 0 26px; }
+:root:root .login-screen .login-logo img { width: 44px !important; height: 44px !important; }
+:root:root .login-screen .login-logo-name { color: #0b2430; font: 800 16px/1.05 'Montserrat', 'Noto Sans KR', sans-serif; letter-spacing: .05em; }
+:root:root .login-screen .login-logo-sub { margin-top: 4px; color: #7b919c; font: 700 10.5px/1 'Montserrat', sans-serif; letter-spacing: .08em; }
+:root:root .login-screen .login-title { margin: 0 0 6px; color: #0b2430; font: 800 21px/1.3 'Noto Sans KR', sans-serif; letter-spacing: -.02em; }
+:root:root .login-screen .login-description { margin: 0 0 26px; color: #5a7380; font-size: 13.5px; font-weight: 500; line-height: 1.6; word-break: keep-all; }
+
+/* 입력칸 */
+:root:root .login-screen :is(.login-input, .login-form input, .login-form select) {
+  height: 48px; padding: 0 15px;
+  border: 1px solid #d3dde3; border-radius: 8px; background: #f7fafb;
+  color: #0b2430; font: 500 15px/1.3 'Noto Sans KR', -apple-system, sans-serif;
+  box-shadow: none; transition: border-color .18s, background-color .18s, box-shadow .18s;
+}
+:root:root .login-screen :is(.login-input, .login-form input, .login-form select)::placeholder { color: #9aacb5; }
+:root:root .login-screen :is(.login-input, .login-form input, .login-form select):hover { border-color: #b9c9d1; }
+:root:root .login-screen :is(.login-input, .login-form input, .login-form select):focus {
+  border-color: #004f68; background: #fff; box-shadow: 0 0 0 3px rgba(0, 79, 104, .12); outline: none;
+}
+:root:root .login-screen .login-input-wrap { margin-bottom: 10px; }
+:root:root .login-screen .login-form { gap: 10px; }
+
+/* 아이디 저장 · 로그인 유지 — 한 줄에 나란히, 작고 조용하게 */
+:root:root .login-screen .remember-email { display: inline-flex; min-height: 28px; margin: 2px 18px 6px 2px; color: #5a7380; font-size: 13px; vertical-align: middle; }
+:root:root .login-screen .remember-email input { width: 16px; height: 16px; accent-color: #004f68; }
+
+/* 오류 · 안내 글 */
+:root:root .login-screen .login-error { min-height: 18px; margin: 4px 0 6px; font-size: 12.5px; font-weight: 700; text-align: left; }
+
+/* 주 버튼 */
+:root:root .login-screen .login-btn {
+  width: 100%; height: 48px; padding: 0 16px;
+  background: #004f68 !important; border: 1px solid #004f68 !important; border-radius: 8px !important; color: #fff !important;
+  font: 800 15px/1 'Noto Sans KR', sans-serif; letter-spacing: .01em;
+  box-shadow: 0 10px 22px -14px rgba(0, 79, 104, .9) !important;
+  transition: background-color .18s, transform .12s, box-shadow .18s;
+}
+:root:root .login-screen .login-btn:hover:not(:disabled) { background: #0b2430 !important; border-color: #0b2430 !important; }
+:root:root .login-screen .login-btn:active:not(:disabled) { transform: translateY(1px) !important; }
+:root:root .login-screen .login-btn:focus-visible { outline: 2px solid #004f68; outline-offset: 3px; }
+
+/* 보조 링크: 비밀번호 찾기 · 돌아가기 — 밑줄 없는 작은 글씨 */
+:root:root .login-screen .login-link-btn {
+  display: inline-block; width: auto; margin: 16px auto 0; padding: 6px 8px;
+  color: #4a6470; font: 600 13px/1.3 'Noto Sans KR', sans-serif; text-decoration: none; border-radius: 6px;
+}
+:root:root .login-screen .login-link-btn:hover { color: #004f68; text-decoration: underline; text-underline-offset: 3px; opacity: 1; }
+
+/* 가입 안내: 큰 테두리 상자 대신 카드 맨 아래 가는 선 위의 한 줄 */
+:root:root .login-screen .login-signup-btn {
+  flex-direction: row; justify-content: center; gap: 8px; width: calc(100% + 72px); margin: 22px -36px -30px; padding: 18px 16px;
+  border: 0; border-top: 1px solid #e6edf1; border-radius: 0 0 12px 12px; background: #f7fafb; color: #004f68;
+}
+:root:root .login-screen .login-signup-btn:hover { background: #eef5f8; }
+:root:root .login-screen .login-signup-hint { color: #5a7380; font-size: 13px; font-weight: 500; opacity: 1; }
+:root:root .login-screen .login-signup-main { font-size: 13.5px; font-weight: 800; }
+
+/* 가입 화면의 평택 · 제주 / 멤버 · 관리자 고르기 */
+:root:root .login-screen .signup-campus-opt span { border-radius: 8px; }
+
+/* 스태프 포탈: 카운슬러 로그인 · 가입 두 칸만 위에, 관리자는 아래 작은 링크 */
+:root:root .login-screen .tabs.wl-auth-seg {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px; margin: 0 0 18px; padding: 3px;
+  border: 1px solid #e1e8ec; border-radius: 8px; background: #f1f5f7;
+}
+:root:root .login-screen .tabs.wl-auth-seg .tab {
+  height: 36px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; color: #5a7380;
+  font: 700 13px/1 'Noto Sans KR', sans-serif; letter-spacing: 0; box-shadow: none; cursor: pointer; transition: background-color .18s, color .18s, box-shadow .18s;
+}
+:root:root .login-screen .tabs.wl-auth-seg .tab:hover { color: #0b2430; }
+:root:root .login-screen .tabs.wl-auth-seg .tab.active { background: #fff; color: #004f68; font-weight: 800; box-shadow: 0 1px 3px rgba(11, 36, 48, .12); }
+:root:root .login-screen .wl-auth-foot { margin: 20px -36px -30px; padding: 14px 16px; border-top: 1px solid #e6edf1; border-radius: 0 0 12px 12px; background: #f7fafb; }
+:root:root .login-screen .wl-auth-foot .tab-admin {
+  padding: 6px 10px; border: 0; border-radius: 6px; background: transparent; color: #5a7380;
+  font: 600 13px/1.3 'Noto Sans KR', sans-serif; cursor: pointer;
+}
+:root:root .login-screen .wl-auth-foot .tab-admin:hover { color: #004f68; text-decoration: underline; text-underline-offset: 3px; }
+:root:root .login-screen .wl-auth-foot .tab-admin.active { color: #004f68; font-weight: 800; }
+
+@media (max-width: 520px) {
+  :root:root .login-screen .login-card { padding: 32px 22px 24px; }
+  :root:root .login-screen .login-signup-btn { width: calc(100% + 44px); margin: 20px -22px -24px; }
+  :root:root .login-screen .wl-auth-foot { margin: 18px -22px -24px; }
+  :root:root .login-screen .login-title { font-size: 19px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:root .login-screen, :root:root .login-screen .login-card { animation: none; }
+}
