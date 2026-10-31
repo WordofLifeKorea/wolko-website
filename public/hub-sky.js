@@ -1,13 +1,15 @@
 /* 포탈 첫 화면 맨 위 "하늘" — 오늘 날씨(맑음 · 구름 · 안개 · 비 · 눈 · 천둥)에 맞춰 하늘색과 움직임이 바뀌고,
    비 · 눈은 캔버스로 내리면서 이름 인사 · 날짜 · 버튼 글자에 부딪혀 튀거나 쌓인다.
    움직임 줄이기 설정이면 움직이지 않고 정지한 하늘만 보인다.
-   HubSky.setWeather({ kind, isDay }) — 종류와 낮/밤을 알려 주면 바뀐다. */
-/* 시간대 하늘(계산만) — 평택의 해 뜨고 지는 시각을 따라 하늘색 · 해 높이 · 노을 · 별빛을 정한다(갤럭시 날씨처럼).
+   HubSky.setWeather({ kind, isDay }, campus) — 종류와 낮/밤, 어느 곳(wolko · jeju)의 날씨인지 알려 주면 바뀐다. */
+/* 시간대 하늘(계산만) — 보고 있는 곳(평택 · 제주)의 해 뜨고 지는 시각을 따라 하늘색 · 해 높이 · 노을 · 별빛을 정한다(갤럭시 날씨처럼).
    ?sky=17:30 을 붙이면 그 시각 하늘을, ?sky=demo 면 새벽 4시 반부터 하루를 1분에 돌려 볼 수 있다(미리보기용). */
 (function () {
   var NIGHT = [[14, 28, 62], [42, 63, 120]];
+  var PLACES = { wolko: [36.99, 127.09], jeju: [33.44, 126.37] }, place = PLACES.wolko; // 평택 월코센터 · 제주 월비연수원
+  function setPlace(campus) { place = PLACES[campus] || PLACES.wolko; }
   function sunTimes(ms) { // 한국 시간 0시부터 몇 분째 (wolko-rail.js와 같은 계산)
-    var lat = 36.99, lon = 127.09, rad = Math.PI / 180, d = new Date(ms + 9 * 3600000);
+    var lat = place[0], lon = place[1], rad = Math.PI / 180, d = new Date(ms + 9 * 3600000);
     var n = Math.floor((Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - Date.UTC(d.getUTCFullYear(), 0, 0)) / 86400000);
     var g = 2 * Math.PI / 365 * (n - 1);
     var eqt = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g) - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
@@ -59,7 +61,7 @@
     if (param === 'demo') return kstMidnight(started) + 270 * 60000 + (Date.now() - started) * 1440; // 1초 = 24분
     return Date.now();
   }
-  window.WolkoSkyTime = { sunTimes: sunTimes, skyAt: skyAt, nowMs: nowMs, demo: param === 'demo' };
+  window.WolkoSkyTime = { sunTimes: sunTimes, skyAt: skyAt, nowMs: nowMs, setPlace: setPlace, demo: param === 'demo' };
 })();
 
 (function () {
@@ -221,7 +223,8 @@
   }
 
   window.HubSky = {
-    setWeather: function (w) {
+    setWeather: function (w, campus) {
+      if (window.WolkoSkyTime) window.WolkoSkyTime.setPlace(campus);   // 해 뜨고 지는 시각도 그곳 기준으로
       kind = w && w.kind ? w.kind : '';
       // 낮/밤은 날씨 응답보다 해 뜨고 지는 시각 계산을 따른다(메뉴 색 · 하늘색과 맞추려고). 계산이 없으면 날씨 응답대로.
       isDay = timed ? isDay : (!w || w.isDay !== false);

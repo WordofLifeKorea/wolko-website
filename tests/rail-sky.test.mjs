@@ -100,3 +100,11 @@ test('하늘 배너 미리보기: ?sky=17:30 은 오늘 그 시각, ?sky=demo �
   assert.equal(loadSkyTime('?sky=demo').demo, true);
   assert.equal(loadSkyTime('').demo, false);
 });
+
+test('하늘 배너: 제주를 고르면 해 뜨고 지는 시각도 제주 기준', () => {
+  const T = loadSkyTime(), ms = Date.parse('2026-10-31T12:00:00+09:00');
+  const pt = T.sunTimes(ms); T.setPlace('jeju'); const jj = T.sunTimes(ms);
+  assert.ok(Math.abs(pt.set - (17 * 60 + 37)) < 2 && Math.abs(jj.set - (17 * 60 + 45)) < 2, '10월 31일 해 지는 시각: 평택 5:37 · 제주 5:45');
+  T.setPlace('wolko'); assert.equal(T.sunTimes(ms).set, pt.set);
+  T.setPlace('unknown'); assert.equal(T.sunTimes(ms).set, pt.set, '모르는 곳이면 평택');
+});
