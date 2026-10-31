@@ -11,6 +11,8 @@ const visibleAll = allSchedules
 const schedules = visibleAll.filter(s => !s.data.public_card_hidden); // 공개 캠프 카드
 
 const jejuCamps   = schedules.filter(s => s.data.camp_type === 'jeju');
+// 카드의 일정·신청 기간 값: ' · ' 자리에서 줄을 바꿔 '5박 / 6일'처럼 말 중간에서 끊기지 않게 하고, 'N박 N일'은 한 덩어리로 묶는다
+const metaLines = (v) => String(v || '').replace(/ · /g, '\n').replace(/(\d+박) (\d+일)/g, '$1\u00a0$2').replace(/(\d+ nights?) \/ (\d+ days?)/g, '$1\u00a0/\u00a0$2');
 const inlandCamps = schedules.filter(s => s.data.camp_type !== 'jeju');
 // 스태프 지원의 체크박스 목록은 카드에서 숨긴 캠프(예: 우리학교 캠프)도 포함한다
 const staffInland = visibleAll.filter(s => s.data.camp_type !== 'jeju');
@@ -1299,7 +1301,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                     <div class="crp-reg-meta">
                       <div class="crp-reg-meta-row">
                         <span class="crp-reg-meta-label"><span class="wl-ko">일정</span><span class="wl-en">Dates</span></span>
-                        <span class="crp-reg-meta-value"><span class="wl-ko">{d.date_ko}</span><span class="wl-en">{d.date_en}</span></span>
+                        <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.date_ko)}</span><span class="wl-en">{metaLines(d.date_en)}</span></span>
                       </div>
                       <div class="crp-reg-meta-row">
                         <span class="crp-reg-meta-label"><span class="wl-ko">대상</span><span class="wl-en">For</span></span>
@@ -1308,7 +1310,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                       {(d.deadline_ko || d.deadline_en) && (
                         <div class="crp-reg-meta-row">
                           <span class="crp-reg-meta-label"><span class="wl-ko">신청 기간</span><span class="wl-en">Registration</span></span>
-                          <span class="crp-reg-meta-value"><span class="wl-ko">{d.deadline_ko}</span><span class="wl-en">{d.deadline_en}</span></span>
+                          <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.deadline_ko)}</span><span class="wl-en">{metaLines(d.deadline_en)}</span></span>
                         </div>
                       )}
                       {(d.price_ko || d.price_en) && (
@@ -1526,7 +1528,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                     <div class="crp-reg-meta">
                       <div class="crp-reg-meta-row">
                         <span class="crp-reg-meta-label"><span class="wl-ko">일정</span><span class="wl-en">Dates</span></span>
-                        <span class="crp-reg-meta-value"><span class="wl-ko">{d.date_ko}</span><span class="wl-en">{d.date_en}</span></span>
+                        <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.date_ko)}</span><span class="wl-en">{metaLines(d.date_en)}</span></span>
                       </div>
                       <div class="crp-reg-meta-row">
                         <span class="crp-reg-meta-label"><span class="wl-ko">대상</span><span class="wl-en">For</span></span>
@@ -1535,7 +1537,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                       {(d.deadline_ko || d.deadline_en) && (
                         <div class="crp-reg-meta-row">
                           <span class="crp-reg-meta-label"><span class="wl-ko">신청 기간</span><span class="wl-en">Registration</span></span>
-                          <span class="crp-reg-meta-value"><span class="wl-ko">{d.deadline_ko}</span><span class="wl-en">{d.deadline_en}</span></span>
+                          <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.deadline_ko)}</span><span class="wl-en">{metaLines(d.deadline_en)}</span></span>
                         </div>
                       )}
                       {(d.price_ko || d.price_en) && (
@@ -1551,19 +1553,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                         <span class="wl-en">{d.notes_en}</span>
                       </p>
                     )}
-                    {/* 정원 바 — 제주 캠프는 외부 신청이므로 항상 회색으로 표시 */}
-                    <div class="crp-cap crp-cap--gray">
-                      <div class="crp-cap-info">
-                        <span>
-                          <span class="wl-ko">전체 정원</span>
-                          <span class="wl-en">Total Capacity</span>
-                        </span>
-                        <strong>{d.capacity ?? 40}<span class="wl-ko">명</span></strong>
-                      </div>
-                      <div class="crp-cap-track">
-                        <div class="crp-cap-fill"></div>
-                      </div>
-                    </div>
+                    {/* 제주 캠프는 외부 신청이라 정원은 표시하지 않는다(카드는 꼭 필요한 정보만) */}
                     {canRegister ? (
                       <>
                       <a href={d.registration_url} target="_blank" rel="noopener" class="crp-reg-btn crp-reg-btn-primary"
@@ -1599,10 +1589,6 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                             <svg class="crp-arrow" aria-hidden="true" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
                           </a>
                         )}
-                        <p class="crp-countdown-notice">
-                          <span class="wl-ko">신청 버튼이 활성화되지 않을 시 서버 지연 문제이므로 5~10분 후에 다시 시도 부탁드립니다.</span>
-                          <span class="wl-en">If the button doesn't appear, it may be due to server delay — please try again in 5–10 minutes.</span>
-                        </p>
                       </div>
                     ) : d.status === 'upcoming' ? (
                       <span class="crp-reg-btn crp-reg-btn-disabled">
