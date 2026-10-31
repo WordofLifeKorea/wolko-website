@@ -3106,6 +3106,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       detailMap = new naver.maps.Map(mapEl, {
         center: position,
         zoom: 14,
+        scrollWheel: false,   // 마우스 휠로는 확대 · 축소하지 않는다(페이지를 내리다 지도가 커지지 않게) — 오른쪽 위 +/− 단추로
         zoomControl: true,
         zoomControlOptions: {
           position: naver.maps.Position.TOP_RIGHT,
@@ -3145,6 +3146,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     crsMap = new naver.maps.Map(mapEl, {
       center: new naver.maps.LatLng(36.5, 127.8),
       zoom: 7,
+      scrollWheel: false,   // 마우스 휠 확대 · 축소 잠금 — +/− 단추로
       zoomControl: true,
       zoomControlOptions: {
         position: naver.maps.Position.TOP_RIGHT,
