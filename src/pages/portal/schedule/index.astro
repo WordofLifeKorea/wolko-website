@@ -276,6 +276,69 @@
       .sc-card { padding:12px 12px 12px 15px; }
       .sc-card-title { font-size:13px; }
     }
+    /* ── 캠프팀 달력과 같은 모양 (2026-10-31) ──
+       날짜마다 떨어진 둥근 칸 · 칸 안의 옅은 색 알약 일정 · 오늘은 진한 테두리 + 옅은 바탕 · 색 범례는 달력 아래 알약으로.
+       여러 날에 걸친 일정은 칸 사이 틈을 건너 이어지는 막대 그대로 둔다. */
+    .sc-calendar { padding:16px 16px 14px; border-radius:12px; }
+    .cal-header { padding:0 0 12px; gap:8px; }
+    .cal-nav-btn {
+      width:40px; height:40px; border-radius:10px; border:1px solid var(--border); font-size:20px; color:var(--mid);
+      min-height:0 !important;
+    }
+    .cal-month-label { order:0; font:800 19px/1 var(--body); letter-spacing:-.01em; color:var(--text); }
+    .cal-header .cal-nav-btn:first-child { order:-1; }
+    .cal-header .cal-nav-btn:nth-of-type(2) { order:1; }
+    .cal-today-btn { order:2; height:40px; padding:0 16px; border-radius:10px; font:700 13px/1 var(--body); color:var(--text); }
+    .cal-weekdays { border-top:none; gap:6px; margin-bottom:6px; }
+    .cal-weekdays span { font:700 12.5px/1 var(--body); color:var(--mid); padding:6px 0; }
+    .cal-week { border-top:none; column-gap:6px; margin-bottom:6px; }
+    .cal-daynum-cell {
+      justify-content:flex-start; border:1px solid var(--border) !important; border-radius:10px; background:#fff;
+      padding:8px 9px; min-height:132px !important; transition:background-color .15s, border-color .15s;
+    }
+    .cal-daynum-cell:hover { background:#f7fafb; border-color:#cfdbe1 !important; }
+    .cal-daynum-cell.is-outside { background:transparent; border-color:transparent !important; }
+    .cal-daynum-cell.is-outside .cal-daynum { color:#c3d0d7; }
+    .cal-daynum { font:700 13px/1 var(--body); color:#4a5d66; }
+    .cal-daynum-cell.is-selected { background:#f2f7f9; border-color:#b9cdd6 !important; }
+    .cal-daynum-cell.is-today { background:#eef5f8; border:2px solid var(--blue) !important; }
+    .cal-daynum-cell.is-today .cal-daynum { width:auto; height:auto; border-radius:0; background:none; color:var(--blue); font-weight:800; }
+    .cal-bar, .cal-timed {
+      margin:2px 5px; padding:3px 7px; border-radius:6px;
+      background:color-mix(in srgb, var(--ev, var(--blue)) 14%, #fff) !important;
+      color:color-mix(in srgb, var(--ev, var(--blue)) 78%, #0b2430);
+      font:700 11px/1.45 var(--body);
+    }
+    .cal-timed { gap:5px; }
+    .cal-timed-dot { width:6px; height:6px; }
+    .cal-timed-time { color:inherit; opacity:.75; }
+    .cal-more-cell { margin:1px 6px; }
+    .sc-cal-legend { margin:8px 0 0; gap:6px; font:700 12px/1 var(--body); }
+    .sc-cal-legend label {
+      gap:6px; padding:6px 10px; border-radius:8px;
+      background:color-mix(in srgb, var(--cal-color, var(--blue)) 13%, #fff);
+      color:color-mix(in srgb, var(--cal-color, var(--blue)) 78%, #0b2430);
+      transition:background-color .15s, color .15s;
+    }
+    .sc-cal-legend label:has(input:not(:checked)) { background:#f1f4f6; color:#8fa3ad; }
+    .sc-cal-legend input { width:13px; height:13px; }
+    .sc-cal-legend .sc-cal-dot { display:none; }
+    @media (max-width:680px) {
+      .sc-calendar { padding:10px 8px; }
+      .cal-header { padding:0 0 8px; gap:6px; }
+      .cal-nav-btn { width:34px; height:34px; font-size:17px; }
+      .cal-today-btn { height:34px; padding:0 11px; font-size:12px; }
+      .cal-month-label { font-size:15px; }
+      .cal-weekdays { gap:3px; }
+      .cal-weekdays span { font-size:10.5px; }
+      .cal-week { column-gap:3px; margin-bottom:3px; }
+      .cal-daynum-cell { min-height:76px !important; padding:4px 5px; border-radius:7px; }
+      .cal-daynum-cell.is-today { border-width:1.5px !important; }
+      .cal-daynum { font-size:11px; }
+      .cal-bar, .cal-timed { margin:1px 2px; padding:1.5px 4px; font-size:9px; border-radius:4px; }
+      .cal-timed-time { display:none; }
+      .sc-cal-legend label { padding:5px 8px; font-size:11px; }
+    }
   </style>
   <script is:inline src="/wolko-session.js?v=2"></script>
 </head>
@@ -311,7 +374,6 @@
 
     <!-- 캘린더 본체 -->
     <div id="calendarBody" class="hidden">
-      <div class="sc-cal-legend hidden" id="calLegend" aria-label="calendars"></div>
       <div class="sc-layout">
         <div class="sc-calendar">
           <div class="cal-header">
@@ -326,6 +388,7 @@
             <button type="button" class="sc-btn" onclick="jumpToPickedMonth()" data-t="jumpBtn">이동</button>
           </div>
           <div id="calGrid"></div>
+          <div class="sc-cal-legend hidden" id="calLegend" aria-label="calendars"></div>
         </div>
 
         <aside class="sc-day-panel" id="dayPanel" aria-live="polite">
@@ -722,9 +785,9 @@
           const title = esc(item.ev.summary || (scLang === 'en' ? '(No title)' : '(제목 없음)'));
           const color = eventColor(item.ev);
           if (item.type === 'bar') {
-            itemsHtml += `<div class="cal-bar" style="${gridArea};background:${color}" onclick="selectDate('${weekDateStrs[item.startCol]}')" title="${title}">${title}</div>`;
+            itemsHtml += `<div class="cal-bar" style="${gridArea};--ev:${color}" onclick="selectDate('${weekDateStrs[item.startCol]}')" title="${title}">${title}</div>`;
           } else {
-            itemsHtml += `<div class="cal-timed" style="${gridArea}" onclick="selectDate('${weekDateStrs[item.startCol]}')" title="${title}">
+            itemsHtml += `<div class="cal-timed" style="${gridArea};--ev:${color}" onclick="selectDate('${weekDateStrs[item.startCol]}')" title="${title}">
               <span class="cal-timed-dot" style="background:${color}"></span>
               <span class="cal-timed-time">${esc(formatEventStartTime(item.ev))}</span><span>${title}</span>
             </div>`;
