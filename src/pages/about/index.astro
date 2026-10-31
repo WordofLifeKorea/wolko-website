@@ -74,18 +74,17 @@ const ministries = [
   }
   .who-title-rule { width:64px; height:5px; margin:22px auto 0; border-radius:99px; background:linear-gradient(90deg, #004f68, #73d1f5); }
 
-  /* ── 봉투 → 편지 (스크롤) ── */
+  /* ── 봉투 → 편지: 화면에 들어오면 한 번, 정해진 순서로 재생 (봉인 → 덮개 → 편지가 나옴 → 펼쳐짐) ── */
   .intro-single-wrap { position:relative; isolation:isolate; }
   .letter-anim { position:relative; z-index:2; transform-origin:50% 0; will-change:transform, clip-path; }
   .env { display:none; position:absolute; pointer-events:none; }
   .intro-single-wrap.is-anim .env { display:block; }
-  .env-back, .env-front, .env-flap { position:absolute; opacity:var(--env-o,1); translate:0 var(--env-y,0px); }
+  .env-back, .env-front, .env-flap { position:absolute; }
   .env-back { inset:0; z-index:1; border-radius:8px; background:linear-gradient(180deg,#e7d8b4,#dcc99f); box-shadow:0 30px 50px -26px rgba(70,45,10,0.5), 0 0 0 1px rgba(150,115,60,0.25); }
   .env-front { inset:0; z-index:3; border-radius:8px; background:linear-gradient(180deg,#f6ecd5,#efe1c0); clip-path:polygon(0 0,50% 56%,100% 0,100% 100%,0 100%); }
   .env-front svg { position:absolute; inset:0; width:100%; height:100%; }
-  .env-flap { left:0; right:0; top:0; height:56%; z-index:4; transform-origin:50% 0; transform:perspective(1100px) rotateX(calc(var(--flap,0) * -1deg)); background:linear-gradient(180deg,#f3e7ca,#e9d8b2); clip-path:polygon(0 0,100% 0,50% 100%); }
-  .env.flap-open .env-flap { z-index:0; background:linear-gradient(0deg,#d9c698,#cdb88a); }
-  .env-seal { position:absolute; z-index:5; left:50%; top:56%; width:54px; height:54px; margin:-27px 0 0 -27px; border-radius:50%; background:#fff url('/images/WOLKO%20Circle.png') center/38px no-repeat; border:3px solid #f6ecd5; box-shadow:0 8px 16px -6px rgba(0,79,104,0.5), 0 0 0 1px rgba(0,79,104,0.18); opacity:var(--seal-o,1); translate:0 var(--env-y,0px); }
+  .env-flap { left:0; right:0; top:0; height:56%; z-index:4; transform-origin:50% 0; transform:perspective(1100px) rotateX(0deg); background:linear-gradient(180deg,#f3e7ca,#e9d8b2); clip-path:polygon(0 0,100% 0,50% 100%); }
+  .env-seal { position:absolute; z-index:5; left:50%; top:56%; width:54px; height:54px; margin:-27px 0 0 -27px; border-radius:50%; background:#fff url('/images/WOLKO%20Circle.png') center/38px no-repeat; border:3px solid #f6ecd5; box-shadow:0 8px 16px -6px rgba(0,79,104,0.5), 0 0 0 1px rgba(0,79,104,0.18); }
   @media (max-width:640px) { .env-seal { width:44px; height:44px; margin:-22px 0 0 -22px; background-size:30px; } }
   /* ── INTRO: 초청장 같은 편지 ── */
   .intro-single-wrap { max-width:860px; margin:76px auto 0; }
@@ -651,52 +650,78 @@ const ministries = [
     }
   })();
 
-  // 월코소개 편지: 스크롤하면 봉투가 열리고 편지가 쓰윽 올라온다. 움직임 줄이기 설정이거나 자바스크립트가 꺼져 있으면 그냥 편지만 보인다.
+  // 월코소개 편지: 화면에 들어오면 봉투가 열리고 편지가 나와 펼쳐진다 — 스크롤 위치에 묶지 않고 한 번에 끝까지 재생한다
+  // (스크롤에 묶으면 멈춘 자리에서 덮개만 열린 어정쩡한 장면이 남았다). 움직임 줄이기 · 자바스크립트 꺼짐 · 이미 지나온 자리면 그냥 편지만 보인다.
   (function () {
     var stage = document.getElementById('letterStage'), letter = document.getElementById('letterAnim'), env = document.getElementById('env');
-    if (!stage || !letter || !env) return;
+    if (!stage || !letter || !env || !letter.animate || !('IntersectionObserver' in window)) return;
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    var m = null, raf = 0, done = false;
-    var clamp = function (v) { return Math.max(0, Math.min(1, v)); };
-    var ease = function (t) { return 1 - Math.pow(1 - t, 3); };
+    if (stage.getBoundingClientRect().top < (window.innerHeight || 800) * 0.8) return;   // 새로고침 등으로 이미 보이는 자리면 재생하지 않는다
+    var flap = env.querySelector('.env-flap'), seal = env.querySelector('.env-seal');
+    var m = null, played = false;
+    var EASE = 'cubic-bezier(.22,.8,.24,1)';
+    // 단계별 시간(ms) — 모두 한 시작점에서 지연으로 건다(타이머를 안 써서 백그라운드 탭에서도 순서가 어긋나지 않는다)
+    var T = { seal: 380, flapAt: 240, flap: 620, riseAt: 760, rise: 620, spread: 900 };
     function measure() {
-      var W = stage.clientWidth, H = letter.offsetHeight;
-      var Ew = Math.min(W * 0.72, 540), Eh = Ew * 0.62, left = (W - Ew) / 2, top = (H - Eh) / 2;
-      var s0 = Math.min(0.62, (Ew * 0.82) / W);
-      m = { W: W, H: H, Ew: Ew, Eh: Eh, ty0: top + Eh * 0.16, s0: s0, Lv0: (Eh * 0.7) / s0 };
-      env.style.left = left + 'px'; env.style.top = top + 'px'; env.style.width = Ew + 'px'; env.style.height = Eh + 'px';
+      var W = stage.clientWidth, H = letter.offsetHeight, narrow = W < 560;
+      var Ew = Math.min(W * (narrow ? 0.86 : 0.7), 520), Eh = Ew * 0.62;
+      var top = Eh * 0.66;                                  // 봉투는 편지 칸 위쪽에 — 폰에서 편지가 길어도 봉투가 화면에 보이고, 빠져나온 편지가 위 제목에 닿지 않는다
+      var s0 = (Ew * 0.82) / W;                             // 봉투 안에 들어갈 만큼 줄인 편지
+      m = { W: W, H: H, Eh: Eh, s0: s0,
+            vis0: (Eh * 0.72) / s0,                         // 봉투 안에 있을 때 보이는 편지 높이(줄이기 전 단위)
+            yIn: top + Eh * 0.18, yOut: top - Eh * 0.62 };  // 봉투 속 → 봉투 위로 빠져나온 자리
+      env.style.left = (W - Ew) / 2 + 'px'; env.style.top = top + 'px'; env.style.width = Ew + 'px'; env.style.height = Eh + 'px';
     }
-    function update() {
-      raf = 0;
-      if (!m) measure();
-      var r = stage.getBoundingClientRect(), vh = window.innerHeight || 800;
-      var cy = r.top + m.H / 2;                        // 봉투(편지 한가운데)가 화면에서 있는 높이 — 이게 화면 아래쪽에 있을 때는 아직 닫혀 있고, 더 내려와 중간쯤 오면 열린다
-      var p = clamp((vh * 0.78 - cy) / (vh * 0.5));
-      var flapK = clamp(p / 0.22), riseK = ease(clamp((p - 0.16) / 0.64)), exitK = clamp((p - 0.5) / 0.4);
-      if (p >= 1) {                                   // 다 열렸다 — 편지만 남기고 봉투는 치운다
-        done = true;
-        stage.classList.remove('is-anim'); letter.style.transform = 'none'; letter.style.clipPath = 'none'; letter.style.zIndex = '';
-        return;
-      }
-      done = false;
+    function pose(y, s, vis) {
+      return { transform: 'translateY(' + y.toFixed(1) + 'px) scale(' + s.toFixed(4) + ')', clipPath: 'inset(-70px -60px ' + Math.max(0, m.H - vis).toFixed(1) + 'px -60px)' };
+    }
+    function setInitial() {
+      measure();
       stage.classList.add('is-anim');
-      stage.style.setProperty('--flap', (flapK * 180).toFixed(1));
-      stage.style.setProperty('--seal-o', (1 - clamp(flapK * 2.2)).toFixed(2));
-      stage.style.setProperty('--env-o', (1 - exitK).toFixed(2));
-      stage.style.setProperty('--env-y', (exitK * 60).toFixed(1) + 'px');
-      env.classList.toggle('flap-open', flapK > 0.5);
-      var s = m.s0 + (1 - m.s0) * riseK, ty = m.ty0 * (1 - riseK), Lv = m.Lv0 + (m.H - m.Lv0) * riseK;
-      letter.style.zIndex = riseK > 0.3 ? 6 : 2;       // 편지가 봉투 위로 올라오면 봉투 앞면보다 위에 그린다
-      letter.style.transform = 'translateY(' + ty.toFixed(1) + 'px) scale(' + s.toFixed(3) + ')';
-      letter.style.clipPath = 'inset(-70px -60px ' + Math.max(0, m.H - Lv).toFixed(1) + 'px -60px)';
+      var p = pose(m.yIn, m.s0, m.vis0);
+      letter.style.transform = p.transform; letter.style.clipPath = p.clipPath; letter.style.zIndex = 2;
     }
-    function request() { if (!raf) raf = requestAnimationFrame(update); }
-    function relayout() { var wasDone = done; stage.classList.add('is-anim'); letter.style.transform = 'none'; letter.style.clipPath = 'none'; measure(); request(); }
-    window.addEventListener('scroll', request, { passive: true });
-    window.addEventListener('resize', relayout);
-    window.addEventListener('load', relayout);
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
-    relayout();
+    function finish() {
+      stage.classList.remove('is-anim');
+      letter.style.transform = 'none'; letter.style.clipPath = 'none'; letter.style.zIndex = '';
+      if (letter.getAnimations) letter.getAnimations().forEach(function (a) { a.cancel(); });
+    }
+    function play() {
+      if (played) return; played = true;
+      setInitial();
+      var spreadAt = T.riseAt + T.rise, total = spreadAt + T.spread;
+      var CLOSED = 'linear-gradient(180deg,#f3e7ca,#e9d8b2)', INNER = 'linear-gradient(0deg,#d9c698,#cdb88a)';
+      // 1) 봉인이 살짝 눌렸다 사라진다
+      seal.animate([{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(1.12)', opacity: 1, offset: 0.35 }, { transform: 'scale(.6)', opacity: 0 }],
+        { duration: T.seal, easing: 'ease-in', fill: 'forwards' });
+      // 2) 덮개가 뒤로 젖혀진다 — 절반을 넘기면 안쪽 면(어두운 색)이 보이고 편지 뒤로 간다
+      flap.animate([
+        { transform: 'perspective(1100px) rotateX(0deg)', zIndex: 4, background: CLOSED, easing: 'cubic-bezier(.45,.05,.55,.95)' },
+        { transform: 'perspective(1100px) rotateX(-90deg)', zIndex: 4, background: CLOSED, offset: 0.5 },
+        { transform: 'perspective(1100px) rotateX(-90deg)', zIndex: 0, background: INNER, offset: 0.501, easing: 'cubic-bezier(.3,.6,.3,1)' },
+        { transform: 'perspective(1100px) rotateX(-180deg)', zIndex: 0, background: INNER }
+      ], { duration: T.flap, delay: T.flapAt, fill: 'both' });
+      // 3) 편지가 봉투 앞면 뒤에서 위로 빠져나오고, 4) 앞으로 꺼내져 제 크기로 펼쳐진다
+      var a = pose(m.yIn, m.s0, m.vis0), b = pose(m.yOut, m.s0, m.vis0), c = pose(0, 1, m.H);
+      var k = function (o, at, z, easing) { var f = { transform: o.transform, clipPath: o.clipPath, zIndex: z, offset: at / total }; if (easing) f.easing = easing; return f; };
+      var run = letter.animate([
+        k(a, 0, 2), k(a, T.riseAt, 2, 'cubic-bezier(.3,.6,.25,1)'), k(b, spreadAt, 2), k(b, spreadAt + 1, 6, EASE), k(c, total, 6)
+      ], { duration: total, fill: 'forwards' });
+      // 봉투는 편지가 펼쳐지기 시작할 때 아래로 내려가며 사라진다 — 봉투 전체(.env)에 투명도를 걸면 한 덩어리 층이 되어
+      // 편지 아래로 깔리므로, 조각마다 따로 건다
+      var drop = Math.round(m.Eh * 0.35) + 'px';
+      [].forEach.call(env.querySelectorAll('.env-back, .env-front, .env-flap'), function (el) {
+        el.animate([{ opacity: 1, translate: '0 0' }, { opacity: 0, translate: '0 ' + drop }], { duration: 520, delay: spreadAt, easing: 'ease-in', fill: 'forwards' });
+      });
+      run.onfinish = finish;
+    }
+    setInitial();
+    var io = new IntersectionObserver(function (entries) {
+      if (entries[0].isIntersecting) { io.disconnect(); play(); }
+    }, { rootMargin: '0px 0px -22% 0px' });                  // 편지 칸 윗부분(봉투)이 화면 아래 1/5을 넘어 올라오면 시작
+    io.observe(stage);
+    window.addEventListener('resize', function () { if (!played) setInitial(); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (!played) setInitial(); });
   })();
 </script>
 
