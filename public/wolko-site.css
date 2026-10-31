@@ -295,3 +295,17 @@ html body .hub-sky[data-day="1"]:is([data-kind="fog"], [data-kind="snow"], [data
 @media (prefers-reduced-motion: reduce) {
   :is(.wolko-rail-item, .wolko-drawer-item, .hub-nav-item) :is(.wolko-rail-item-icon, .wolko-drawer-icon, .hub-nav-item-icon)::after { animation: none; transform: scale(.7); }
 }
+
+/* ── 상단 바 왼쪽 페이지 제목: 로고 없이 제목 글자만, 조금 크게 (포탈 모든 페이지 · 포탈 첫 화면 같은 모양) ── */
+:root:root:root:root body > header > :first-child > img,
+:root:root:root:root .app-header > .app-brand > img { display: none !important; }
+:root:root:root:root body > header > :first-child,
+:root:root:root:root body > header > :first-child :is(span, h1, b),
+:root:root:root:root .app-header > .app-brand,
+:root:root:root:root .app-header > .app-brand :is(span, h1, b) { font-size: 19px !important; letter-spacing: -.02em !important; line-height: 1.2 !important; }
+@media (max-width: 640px) {
+  :root:root:root:root body > header > :first-child,
+  :root:root:root:root body > header > :first-child :is(span, h1, b),
+  :root:root:root:root .app-header > .app-brand,
+  :root:root:root:root .app-header > .app-brand :is(span, h1, b) { font-size: 17px !important; }
+}
