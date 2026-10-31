@@ -948,7 +948,7 @@ test('expense form labels: Description and Expense Report Title each carry an (i
   assert.match(page, /\$\{t\('lblDesc'\)\}\$\{infoIcon\('tipDesc'\)\}/);
   assert.match(page, /\$\{t\('lblProject'\)\}\$\{infoIcon\('tipTitle'\)\}/);
   assert.match(page, /lblProject: 'Expense Report Title<span class="ko">경비 리포트 제목/);
-  assert.match(page, /lblProject: 'Expense Report Title<span class="ko">remembers last value/);
+  assert.match(page, /lblProject: 'Expense Report Title<span class="ko">filled in from today's date/);
   assert.match(page, /tipDesc: 'Name of the person this expense report is for\. Normally this is the person filling out this report\.'/);
   assert.match(page, /tipTitle: 'This is what you would like to name this particular expense report\./);
   assert.match(page, /tipDesc: '이 경비 리포트의 대상이 되는 사람의 이름입니다/);

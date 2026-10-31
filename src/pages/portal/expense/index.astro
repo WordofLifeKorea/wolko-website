@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=124">
+  <link rel="stylesheet" href="/expense.css?v=125">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=24">
   <link rel="stylesheet" href="/wolko-header.css?v=16">
@@ -29,6 +29,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <meta name="theme-color" content="#004f68">
   <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
   <script is:inline src="/wolko-session.js?v=2"></script>
+  <script is:inline src="/expense-title.js?v=1"></script>
 </head>
 <body>
   <header class="ex-header">
@@ -84,7 +85,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         titleNew: '새 경비 리포트', titleEdit: '경비 리포트 수정',
         subNew: n => n + ' 님 명의로 제출됩니다.', fxBase: '기준 통화', fxBaseVal: '₩ 원화', fxAuto: '외화는 영수 날짜 환율로 자동 환산돼요',
         lblDesc: 'Description<span class="ko">설명</span>', descPh: '예: 9월 캠프 준비 경비',
-        lblProject: 'Expense Report Title<span class="ko">경비 리포트 제목 (마지막 값 기억)</span>', projPh: '예: 10월 전도 사역 (October evangelism)',
+        lblProject: 'Expense Report Title<span class="ko">경비 리포트 제목 (날짜로 자동 입력)</span>', projPh: '예: 10월 전도 사역 (October evangelism)',
         tipInfo: '설명', tipDesc: '이 경비 리포트의 대상이 되는 사람의 이름입니다. 보통은 리포트를 작성하는 본인의 이름을 적습니다.',
         tipTitle: '이 경비 리포트에 붙일 이름입니다. 예를 들어 10월 전도 사역의 주유 영수증을 제출한다면 "October evangelism"(10월 전도 사역)처럼 이름을 붙일 수 있습니다.',
         addRow: '＋ 항목 추가', resetDraft: '작성 내용 지우기', cResetDraft: '작성 중인 내용을 모두 지울까요?', tDraftRestored: '작성 중이던 내용을 불러왔어요.', draftSaving: '저장 중…', draftSaved: '계정에 자동 저장됨', draftFailed: '자동 저장 실패 — 연결을 확인해 주세요', cancelEdit: '수정 취소', submitEdit: '수정 후 다시 제출', submit: '경비 리포트 제출', totalKrw: '합계 (KRW)',
@@ -141,7 +142,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         titleNew: 'New expense report', titleEdit: 'Edit expense report',
         subNew: n => 'Submitted under ' + n + '.', fxBase: 'Base currency', fxBaseVal: '₩ KRW', fxAuto: 'Foreign amounts are converted at the receipt-date rate',
         lblDesc: 'Description', descPh: 'e.g. September camp supplies',
-        lblProject: 'Expense Report Title<span class="ko">remembers last value</span>', projPh: 'e.g. October evangelism',
+        lblProject: 'Expense Report Title<span class="ko">filled in from today's date</span>', projPh: 'e.g. October evangelism',
         tipInfo: 'More info', tipDesc: 'Name of the person this expense report is for. Normally this is the person filling out this report.',
         tipTitle: 'This is what you would like to name this particular expense report. For example, if you are turning in gas receipts for October evangelism ministry, you can call it "October evangelism".',
         addRow: '+ Add item', resetDraft: 'Clear draft', cResetDraft: 'Clear everything you have entered?', tDraftRestored: 'Restored your unsent draft.', draftSaving: 'Saving…', draftSaved: 'Auto-saved to your account', draftFailed: 'Auto-save failed — check your connection', cancelEdit: 'Cancel edit', submitEdit: 'Save & resubmit', submit: 'Submit expense report', totalKrw: 'Total (KRW)',
@@ -244,9 +245,17 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
     }
     // 이름이 등록되지 않아 이메일이 이름 자리에 들어온 경우는 설명 기본값에서 제외
     const myName = () => (me?.name && !String(me.name).includes('@') ? me.name : '');
+    // 제목은 오늘 날짜로 "2026년 10월 5째 주 리포트"처럼 자동으로 채운다(public/expense-title.js). 사람이 고쳐 쓰면 projectAuto 가 false 가 되어 그대로 둔다
+    const autoTitle = () => (window.ExpenseTitle ? window.ExpenseTitle.autoTitle(lang) : '');
     function newForm() {
-      // 마지막으로 쓴 값이 있으면 그걸, 없으면 로그인한 어카운트 홀더 이름을 기본값으로 채운다
-      return { editingId: null, description: myName() ? myName() + ' ' : '', project: myName() || lsGet(LS.project), rows: [blankRow()] };
+      return { editingId: null, description: myName() ? myName() + ' ' : '', project: autoTitle(), projectAuto: true, rows: [blankRow()] };
+    }
+    // 이어 쓰는 초안: 제목이 비었거나, 예전에 자동으로 넣은 제목이거나, 예전 "마지막 값 기억"으로 들어간 제목이면 이번 주 제목으로 바꾼다. 사람이 쓴 제목은 둔다
+    function freshTitle(f) {
+      const p = String(f.project || '').trim();
+      const stale = !p || (window.ExpenseTitle && window.ExpenseTitle.isAutoTitle(p)) || (f.projectAuto !== false && p === lsGet(LS.project).trim());
+      if (f.projectAuto === false && p) return f;
+      return stale ? { ...f, project: autoTitle(), projectAuto: true } : f;
     }
     /* ─────────── 작성 중 자동 저장 — 로그인한 계정에 저장(서버)하고, 이 브라우저에도 복사본을 둔다 ─────────── */
     // 서버 초안은 어느 기기·브라우저에서 로그인해도 이어 쓸 수 있고, 임시 영수증 파일과 같은 60일 동안 보관한다. 수정 중인 리포트는 저장하지 않는다.
@@ -1195,6 +1204,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       if (next === lang) return;
       lang = next;
       try { localStorage.setItem('wolko-lang', lang); } catch {}
+      if (form && form.projectAuto && !form.editingId) form.project = autoTitle();   // 자동 제목은 화면 언어를 따라간다
       applyStatic();
       if (!me) return;
       paintUser(); renderTabs();
@@ -1452,7 +1462,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       if (el.dataset.anoteI !== undefined) { el.closest('.ex-nico')?.classList.toggle('empty', !el.value.trim()); return; }
       if (el.dataset.amemo !== undefined) { const st = catState[el.dataset.repid]; if (st) { st.memos[+el.dataset.amemo] = el.value; paintApproval(el.dataset.repid); } return; }
       if (el.id === 'fDesc') form.description = el.value;
-      else if (el.id === 'fProject') form.project = el.value;
+      else if (el.id === 'fProject') { form.project = el.value; form.projectAuto = false; }
       else if (el.dataset.f) {
         const rowEl = el.closest('.ex-row'); if (!rowEl) return;
         const r = form.rows[+rowEl.dataset.i], f = el.dataset.f;
@@ -1501,7 +1511,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         await loadFixed();
         form = newForm();
         const draft = await pickDraft();
-        if (draft) { form = draft; await show('new'); history.replaceState(navState(), ''); toast(t('tDraftRestored')); return; }
+        if (draft) { form = freshTitle(draft); await show('new'); history.replaceState(navState(), ''); toast(t('tDraftRestored')); return; }
         await show(counts.approve > 0 && me.isApprover ? 'approve' : (counts.accounting > 0 && me.isAccountant ? 'accounting' : 'new'));
         history.replaceState(navState(), '');
       } catch (e) { toast(e.message, true); }
