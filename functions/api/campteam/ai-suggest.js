@@ -47,7 +47,11 @@ export async function onRequestPost({ env, request }) {
   if (kind === 'image' && data.length > LIMITS.imageBase64) return json({ error: '사진이 너무 커요 (5MB 까지).', code: 'too_large' }, 413);
   // 관련 캠프 후보: 지워지지 않은 캠프(이름만) — AI 가 번호를 지어내지 못하게 목록 안에서만 고르게 한다
   const camps = await env.DB.prepare('SELECT id, nameKo, nameEn FROM camps WHERE deletedAt IS NULL ORDER BY updatedAt DESC LIMIT ?1').bind(LIMITS.camps).all().then((r) => r.results).catch(() => []);
-  const r = await suggestForFile(env, { name, kind, text: b.text, data, mime: b.mime }, { camps });
+  // 이미 쓰고 있는 태그(금액 자료 제외, 자주 쓰인 순) — AI 가 같은 뜻의 새 태그를 또 만들지 않고 기존 태그를 고르게 한다
+  const tagCount = new Map();
+  for (const x of ((await env.DB.prepare(`SELECT tags FROM files WHERE deletedAt IS NULL AND restricted = 0 AND tags <> '' ORDER BY updatedAt DESC LIMIT 1500`).all().catch(() => ({ results: [] }))).results)) for (const t of String(x.tags).split(',')) if (t) tagCount.set(t, (tagCount.get(t) || 0) + 1);
+  const tags = [...tagCount.entries()].sort((a, c) => c[1] - a[1]).slice(0, 40).map((x) => x[0]);
+  const r = await suggestForFile(env, { name, kind, text: b.text, data, mime: b.mime }, { camps, tags });
   if (!r.ok) return json({ error: failText(r), code: r.code }, r.code === 'ai_failed' ? 502 : 422);
   // 금액 분류는 금액 권한이 있는 사람만 고를 수 있다 — 권한이 없으면 종류 추천은 비운다
   if (r.suggestion.category && restrictedFor(r.suggestion.category) && !s.perms.moneyWrite) r.suggestion.category = '';
