@@ -1,6 +1,6 @@
 ---
 // 섬기는이 — Claude Design 'A · 갤러리형' 시안을 옮긴 페이지.
-// 남색 첫 화면(큰 제목 · 숫자) → 거르기 막대(사역 거점 · 역할, 화면을 내려도 따라온다)
+// 남색 첫 화면(큰 제목 · 숫자 · 점 지도 위 두 거점) → 거르기 막대(사역 거점 · 역할, 화면을 내려도 따라온다)
 // → 두 거점의 대표 → 거점별 사진 카드 → 함께 섬기기 띠.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
@@ -31,26 +31,97 @@ const counts = {
   missionary: allTeam.filter(p => p.data.category === 'missionary').length,
   stw: allTeam.filter(p => p.data.category === 'stw').length,
 };
+
+// 첫 화면 지도 — 남한 윤곽을 대략의 경위도로 적고, 그 안에 드는 격자점만 찍는다(제주는 타원)
+const KOREA = [[126.1,37.75],[126.6,37.75],[127.1,38.3],[128.35,38.62],[128.6,38.2],[128.9,37.8],[129.1,37.5],[129.4,37.0],[129.45,36.5],[129.4,36.05],[129.57,36.08],[129.45,35.6],[129.35,35.4],[129.1,35.1],[128.6,34.9],[128.0,34.82],[127.6,34.68],[127.3,34.5],[126.9,34.4],[126.5,34.3],[126.3,34.6],[126.4,35.0],[126.5,35.5],[126.7,35.9],[126.5,36.3],[126.15,36.7],[126.5,37.0],[126.8,36.95],[126.6,37.3],[126.6,37.5]];
+const MAP_W = 340, MAP_H = 600, STEP = 10;
+const proj = (lon, lat) => [(lon - 125.6) * 81, (38.9 - lat) * 100];
+const inKorea = (lon, lat) => {
+  if (((lon - 126.55) / 0.42) ** 2 + ((lat - 33.38) / 0.19) ** 2 <= 1) return true;
+  let inside = false;
+  for (let i = 0, j = KOREA.length - 1; i < KOREA.length; j = i++) {
+    const [xi, yi] = KOREA[i], [xj, yj] = KOREA[j];
+    if ((yi > lat) !== (yj > lat) && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+};
+const pins = {
+  pt: proj(127.11, 36.99),
+  jj: proj(126.37, 33.44),
+};
+const mapRows = [];
+for (let y = STEP / 2, r = 0; y < MAP_H; y += STEP, r++) {
+  const dots = [];
+  for (let x = STEP / 2 + (r % 2 ? STEP / 2 : 0); x < MAP_W; x += STEP) {
+    if (!inKorea(x / 81 + 125.6, 38.9 - y / 100)) continue;
+    const near = Math.min(...Object.values(pins).map(([px, py]) => Math.hypot(px - x, py - y)));
+    dots.push({ x, y, hot: near < 34, tw: (r * 7 + Math.round(x)) % 29 === 0 });
+  }
+  if (dots.length) mapRows.push({ d: (y / MAP_H * 0.9 + 0.2).toFixed(2), dots });
+}
+const [ptX, ptY] = pins.pt, [jjX, jjY] = pins.jj;
+const arcPath = `M${ptX.toFixed(1)} ${ptY.toFixed(1)} Q${(ptX - 150).toFixed(1)} ${((ptY + jjY) / 2).toFixed(1)} ${jjX.toFixed(1)} ${jjY.toFixed(1)}`;
+const pct = (v, total) => `${(v / total * 100).toFixed(2)}%`;
+const facesOf = (loc) => allTeam.filter(p => locOf(p) === loc && p.data.photo_url).sort(byOrder).slice(0, 3);
+const mapPlaces = [
+  { loc: 'pt', x: ptX, y: ptY, ko: '평택 월코센터', en: 'Pyeongtaek', coord: '36.99°N', n: counts.pt, faces: facesOf('pt'), href: '#wp-pyeongtaek' },
+  { loc: 'jj', x: jjX, y: jjY, ko: '제주 월비', en: 'Jeju', coord: '33.44°N', n: counts.jj, faces: facesOf('jj'), href: '#wp-jeju' },
+];
 ---
 
 <BaseLayout title="섬기는이 — WOLKO 월코" activeNav="about">
   <div class="pp">
 
     <header class="pp-hero">
+      <span class="pp-glow pp-glow--a" aria-hidden="true"></span>
+      <span class="pp-glow pp-glow--b" aria-hidden="true"></span>
       <div class="pp-shell pp-hero-grid">
         <div class="pp-hero-text">
-          <p class="pp-eyebrow"><span class="wl-ko">섬기는이 · OUR TEAM</span><span class="wl-en">OUR TEAM</span></p>
-          <h1><span class="wl-ko">함께 섬기는<br>사람들</span><span class="wl-en">Meet Our<br>Ministry Team</span></h1>
-          <p class="pp-lead-copy">
+          <p class="pp-eyebrow pp-rise" style="--i:0"><span class="wl-ko">섬기는이 · OUR TEAM</span><span class="wl-en">OUR TEAM</span></p>
+          <h1 class="pp-rise" style="--i:1"><span class="wl-ko">함께 섬기는<br><em class="pp-hl">사람들</em></span><span class="wl-en">Meet Our<br><em class="pp-hl">Ministry Team</em></span></h1>
+          <p class="pp-lead-copy pp-rise" style="--i:2">
             <span class="wl-ko">하나님의 부르심을 따라 다음 세대를 위해 헌신하는 월코의 사역자들을 소개합니다.</span>
             <span class="wl-en">Called by God and committed to the next generation, meet the people of Word of Life Korea.</span>
           </p>
+          <dl class="pp-stats pp-rise" style="--i:3">
+            <div><dt><span class="wl-ko">선교사</span><span class="wl-en">Missionaries</span></dt><dd data-count-to={counts.missionary}>{counts.missionary}</dd></div>
+            <div><dt><span class="wl-ko">단기 사역자</span><span class="wl-en">Short-term</span></dt><dd data-count-to={counts.stw}>{counts.stw}</dd></div>
+            <div><dt><span class="wl-ko">사역 거점</span><span class="wl-en">Locations</span></dt><dd data-count-to="2">2</dd></div>
+          </dl>
         </div>
-        <dl class="pp-stats">
-          <div><dt><span class="wl-ko">선교사</span><span class="wl-en">Missionaries</span></dt><dd>{counts.missionary}</dd></div>
-          <div><dt><span class="wl-ko">단기 사역자</span><span class="wl-en">Short-term</span></dt><dd>{counts.stw}</dd></div>
-          <div><dt><span class="wl-ko">사역 거점</span><span class="wl-en">Locations</span></dt><dd>2</dd></div>
-        </dl>
+
+        <div class="pp-map" aria-label="사역 거점 지도: 평택 월코센터와 제주 월비">
+          <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} aria-hidden="true">
+            {mapRows.map((row) => (
+              <g class="pp-map-row" style={`--d:${row.d}s`}>
+                {row.dots.map((dt) => <circle cx={dt.x} cy={dt.y} r="2.3" class={dt.hot ? 'is-hot' : dt.tw ? 'is-tw' : undefined} />)}
+              </g>
+            ))}
+            <path class="pp-arc-base" d={arcPath} />
+            <path class="pp-arc" d={arcPath} pathLength="100" />
+            <circle class="pp-arc-dot" r="3.6">
+              <animateMotion dur="5.5s" begin="1.6s" repeatCount="indefinite" path={arcPath} keyPoints="0;1;0" keyTimes="0;.5;1" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" />
+            </circle>
+            {mapPlaces.map((m) => (
+              <g class={`pp-pin pp-pin--${m.loc}`} transform={`translate(${m.x.toFixed(1)} ${m.y.toFixed(1)})`}>
+                <circle class="pp-pin-ring" r="9" />
+                <circle class="pp-pin-ring pp-pin-ring--late" r="9" />
+                <circle class="pp-pin-core" r="5.5" />
+              </g>
+            ))}
+          </svg>
+          {mapPlaces.map((m, i) => (
+            <a href={m.href} class={`pp-place pp-place--${m.loc}`} style={`left:${pct(m.x, MAP_W)};top:${pct(m.y, MAP_H)};--i:${i}`}>
+              <span class="pp-faces" aria-hidden="true">
+                {m.faces.map((p) => <img src={p.data.photo_url} alt="" loading="lazy" style={p.data.photo_position ? `object-position: ${p.data.photo_position}` : undefined} />)}
+              </span>
+              <span class="pp-place-text">
+                <span class="pp-place-name"><span class="wl-ko">{m.ko}</span><span class="wl-en">{m.en}</span></span>
+                <span class="pp-place-meta">{m.coord} · <span class="wl-ko">{m.n}명</span><span class="wl-en">{m.n} people</span></span>
+              </span>
+            </a>
+          ))}
+        </div>
       </div>
     </header>
 
@@ -135,6 +206,22 @@ const counts = {
   </div>
 
   <script is:inline>
+    // 첫 화면 숫자: 0부터 올라간다(움직임 줄이기 설정이면 그대로 둔다)
+    (function () {
+      if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      document.querySelectorAll('.pp-stats [data-count-to]').forEach(function (el, i) {
+        var to = +el.dataset.countTo, t0 = 0, delay = 600 + i * 120, dur = 1100;
+        el.textContent = '0';
+        function step(t) {
+          if (!t0) t0 = t;
+          var k = Math.min(1, Math.max(0, (t - t0 - delay) / dur));
+          el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3)));
+          if (k < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      });
+    })();
+
     // 거르기: 사역 거점(전체 · 평택 · 제주) × 역할(모두 · 선교사 · 단기 사역자). 사람이 없는 칸은 통째로 숨긴다
     (function () {
       var root = document.querySelector('.pp'); if (!root) return;
@@ -166,19 +253,57 @@ const counts = {
       background: var(--pp-cream); color: #10252e; font-family: var(--ff-sans); word-break: keep-all; overflow: clip; }
     .pp-shell { width: min(1240px, calc(100% - 96px)); margin-inline: auto; }
 
-    /* 첫 화면 */
-    .pp-hero { background: var(--pp-navy); color: #fff; padding-top: 168px; }
-    .pp-hero-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 56px; align-items: end; padding-bottom: 72px; }
-    .pp-hero-text { display: flex; flex-direction: column; gap: 22px; }
+    /* 첫 화면 — 은은하게 움직이는 빛, 차례로 떠오르는 글, 점으로 찍은 지도 위의 두 거점 */
+    .pp-hero { position: relative; overflow: hidden; isolation: isolate; background: radial-gradient(120% 90% at 85% 10%, #123a4a 0%, var(--pp-navy) 55%, #08202a 100%); color: #fff; padding-top: 150px; }
+    .pp-glow { position: absolute; z-index: -1; border-radius: 50%; filter: blur(70px); pointer-events: none; will-change: transform; }
+    .pp-glow--a { width: 520px; height: 520px; right: 4%; top: 6%; background: rgba(46,150,180,.32); animation: pp-drift-a 18s ease-in-out infinite alternate; }
+    .pp-glow--b { width: 420px; height: 420px; left: -6%; bottom: -30%; background: rgba(233,185,95,.14); animation: pp-drift-b 22s ease-in-out infinite alternate; }
+    @keyframes pp-drift-a { to { transform: translate(-90px, 60px) scale(1.15); } }
+    @keyframes pp-drift-b { to { transform: translate(120px, -50px) scale(.9); } }
+    .pp-hero-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 48px; align-items: center; padding-bottom: 64px; }
+    .pp-hero-text { display: flex; flex-direction: column; gap: 24px; }
+    .pp-rise { animation: pp-rise .9s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i, 0) * .12s + .1s); }
+    @keyframes pp-rise { from { opacity: 0; transform: translateY(22px); } }
     .pp-eyebrow { display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 800; letter-spacing: .16em; color: #8fd0e4; }
-    .pp-eyebrow::before { content: ''; width: 28px; height: 1px; background: currentColor; }
-    .pp-hero h1 { font-family: var(--ff-serif); font-size: clamp(42px, 5vw, 64px); font-weight: 900; line-height: 1.12; letter-spacing: -.035em; color: #fff; }
-    .pp-lead-copy { max-width: 520px; font-size: 17px; line-height: 1.8; color: rgba(255,255,255,.78); }
-    .pp-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid rgba(255,255,255,.18); }
+    .pp-eyebrow::before { content: ''; width: 28px; height: 1px; background: currentColor; transform-origin: left; animation: pp-line .8s .2s cubic-bezier(.2,.7,.2,1) both; }
+    @keyframes pp-line { from { transform: scaleX(0); } }
+    .pp-hero h1 { font-family: var(--ff-serif); font-size: clamp(42px, 5vw, 66px); font-weight: 900; line-height: 1.14; letter-spacing: -.035em; color: #fff; }
+    .pp-hl { font-style: normal; color: #fff; background: linear-gradient(90deg, #e9c27a, #f3dca6) no-repeat 0 92% / 0% 5px; padding-bottom: 4px; animation: pp-mark 1s .9s cubic-bezier(.6,0,.2,1) forwards; }
+    @keyframes pp-mark { to { background-size: 100% 5px; } }
+    .pp-lead-copy { max-width: 500px; font-size: 17px; line-height: 1.8; color: rgba(255,255,255,.78); }
+    .pp-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 520px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,.18); }
     .pp-stats > div { padding: 18px 0 0 20px; border-left: 1px solid rgba(255,255,255,.14); }
     .pp-stats > div:first-child { padding-left: 0; border-left: 0; }
     .pp-stats dt { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.6); }
-    .pp-stats dd { margin: 8px 0 0; font-family: var(--ff-serif); font-size: 44px; font-weight: 900; line-height: 1; }
+    .pp-stats dd { margin: 8px 0 0; font-family: var(--ff-serif); font-size: 44px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+
+    .pp-map { position: relative; justify-self: center; height: 500px; aspect-ratio: 340 / 600; margin-right: 120px; }
+    .pp-map svg { display: block; width: 100%; height: 100%; overflow: visible; }
+    .pp-map-row { animation: pp-dots .7s ease-out both; animation-delay: var(--d); }
+    @keyframes pp-dots { from { opacity: 0; transform: translateY(6px); } }
+    .pp-map circle { fill: rgba(143,208,228,.3); }
+    .pp-map circle.is-hot { fill: rgba(170,224,240,.62); }
+    .pp-map circle.is-tw { animation: pp-tw 3.6s ease-in-out infinite; }
+    .pp-map-row:nth-child(3n) circle.is-tw { animation-delay: 1.2s; }
+    .pp-map-row:nth-child(3n+1) circle.is-tw { animation-delay: 2.4s; }
+    @keyframes pp-tw { 50% { fill: rgba(233,215,160,.95); } }
+    .pp-arc-base { fill: none; stroke: rgba(143,208,228,.22); stroke-width: 1.2; stroke-dasharray: 2 5; }
+    .pp-arc { fill: none; stroke: #e9c27a; stroke-width: 1.8; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; animation: pp-draw 1.6s 1s cubic-bezier(.6,0,.2,1) forwards; }
+    @keyframes pp-draw { to { stroke-dashoffset: 0; } }
+    .pp-map .pp-arc-dot { fill: #fff3d6; filter: drop-shadow(0 0 5px rgba(233,194,122,.9)); }
+    .pp-map .pp-pin-core { fill: #fff; stroke: #e9c27a; stroke-width: 2.5; }
+    .pp-map .pp-pin-ring { fill: none; stroke: rgba(233,194,122,.8); stroke-width: 1.4; transform-box: fill-box; transform-origin: center; animation: pp-ring 2.8s ease-out infinite; }
+    .pp-map .pp-pin-ring--late { animation-delay: 1.4s; }
+    @keyframes pp-ring { from { transform: scale(.6); opacity: 1; } to { transform: scale(3.2); opacity: 0; } }
+    .pp-place { position: absolute; display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 8px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: #fff; text-decoration: none; white-space: nowrap; transform: translate(22px, -50%); animation: pp-pop .7s cubic-bezier(.2,.9,.3,1.3) both; animation-delay: calc(1.5s + var(--i) * .25s); transition: background-color .25s, border-color .25s, transform .25s; }
+    @keyframes pp-pop { from { opacity: 0; transform: translate(8px, -50%) scale(.9); } }
+    .pp-place:hover { background: rgba(255,255,255,.16); border-color: rgba(233,194,122,.6); transform: translate(26px, -50%); color: #fff; }
+    .pp-faces { display: flex; }
+    .pp-faces img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; object-position: top; border: 2px solid var(--pp-navy); background: #23495a; }
+    .pp-faces img + img { margin-left: -9px; }
+    .pp-place-text { display: flex; flex-direction: column; gap: 2px; }
+    .pp-place-name { font-size: 14px; font-weight: 800; line-height: 1.2; }
+    .pp-place-meta { font-size: 11.5px; font-weight: 700; color: rgba(255,255,255,.62); letter-spacing: .02em; }
 
     /* 거르기 막대 — 위 메뉴 아래에 붙어 따라온다 */
     .pp-bar { position: sticky; top: 84px; z-index: 20; background: rgba(244,241,234,.94); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid var(--pp-line); }
@@ -251,9 +376,14 @@ const counts = {
     @media (max-width: 900px) { .pp-bar { top: 72px; } }
     @media (max-width: 760px) {
       .pp-shell { width: calc(100% - 40px); }
-      .pp-hero { padding-top: 120px; }
-      .pp-hero-grid { grid-template-columns: 1fr; gap: 28px; padding-bottom: 36px; }
+      .pp-hero { padding-top: 116px; }
+      .pp-hero-grid { grid-template-columns: 1fr; gap: 12px; padding-bottom: 32px; }
       .pp-stats dd { font-size: 34px; }
+      .pp-map { height: 320px; margin-right: 110px; }
+      .pp-place { padding: 6px 12px 6px 6px; gap: 8px; transform: translate(14px, -50%); }
+      .pp-faces img { width: 24px; height: 24px; }
+      .pp-place-name { font-size: 12.5px; }
+      .pp-place-meta { font-size: 10.5px; }
       .pp-bar-inner { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
       .pp-bar-inner::-webkit-scrollbar { display: none; }
       .pp-seg, .pp-chips { flex: none; flex-wrap: nowrap; }
@@ -270,6 +400,13 @@ const counts = {
       .pp-join-btns { justify-content: flex-start; }
     }
     @media (hover: none) { .pp-card:hover { transform: none; } .pp-card:hover img { transform: none; } }
-    @media (prefers-reduced-motion: reduce) { .pp-card, .pp-card img, .pp-go { transition: none; } }
+    @media (max-width: 1100px) and (min-width: 761px) { .pp-map { height: 420px; margin-right: 100px; } }
+    @media (prefers-reduced-motion: reduce) {
+      .pp-card, .pp-card img, .pp-go { transition: none; }
+      .pp-hero *, .pp-hero *::before { animation: none !important; }
+      .pp-hl { background-size: 100% 5px; }
+      .pp-arc { stroke-dashoffset: 0; }
+      .pp-arc-dot { display: none; }
+    }
   </style>
 </BaseLayout>
