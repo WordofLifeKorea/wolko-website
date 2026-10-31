@@ -262,7 +262,8 @@ const campuses = [
     /* 사진 목록 */
     .wp-grid { list-style: none; margin-top: 32px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 48px 24px; }
     .wp-card { display: flex; flex-direction: column; height: 100%; color: var(--wp-ink); text-decoration: none; }
-    .wp-card-photo { position: relative; display: block; aspect-ratio: 4 / 5; overflow: hidden; background: var(--wp-fill); }
+    /* 사진 액자 — 포탈 카드처럼 모서리를 살짝 둥글게(12px). isolation 은 사파리에서 확대될 때도 모서리가 잘려 보이게 한다 */
+    .wp-card-photo { position: relative; display: block; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 12px; isolation: isolate; background: var(--wp-fill); }
     .wp-campus--alt .wp-card-photo { background: #e9f0f3; }
     .wp-card-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; transition: transform .9s cubic-bezier(.2,.7,.2,1); }
     .wp-card:hover .wp-card-photo img { transform: scale(1.04); }

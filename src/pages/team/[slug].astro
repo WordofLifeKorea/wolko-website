@@ -122,7 +122,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 }
 .mp-back a:hover { color: var(--c-deep); gap: 14px; }
 .mp-hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 72px; align-items: center; }
-.mp-hero-photo { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: #e6eef2; }
+/* 사진 액자 — 섬기는이 목록 · 포탈 카드처럼 모서리를 살짝 둥글게 */
+.mp-hero-photo { position: relative; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 12px; isolation: isolate; background: #e6eef2; }
 .mp-hero-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; animation: mp-zoom-in 1.4s cubic-bezier(.2,.7,.2,1) both; }
 .mp-hero-initial { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--ff-serif); font-size: 96px; font-weight: 700; color: #a3b6c0; }
 @keyframes mp-zoom-in { from { transform: scale(1.06); } to { transform: none; } }
@@ -193,7 +194,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 .mp-story-block--no-photo .mp-story-empty { grid-column: 2; grid-row: 1 / span 3; }
 .mp-story-block--no-photo .mp-bio-toggle { grid-column: 2; grid-row: 4; justify-self: start; }
 
-.mp-story-photo { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--c-fill); }
+.mp-story-photo { position: relative; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 12px; isolation: isolate; background: var(--c-fill); }
 .mp-story-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .mp-story-figure { margin: 0; }
 .mp-story-caption { margin-top: 14px; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--c-label); }
@@ -240,8 +241,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 
 /* ── 함께 사역하는 배우자 ───────────────────────────── */
 .mp-spouse { padding: 0 0 104px; }
-.mp-spouse-card { display: flex; align-items: center; gap: 40px; padding: 40px; background: var(--c-soft); border: 1px solid var(--c-line); }
-.mp-spouse-photo-wrap { flex: none; width: 128px; aspect-ratio: 4 / 5; overflow: hidden; background: #e6eef2; }
+.mp-spouse-card { display: flex; align-items: center; gap: 40px; padding: 40px; background: var(--c-soft); border: 1px solid var(--c-line); border-radius: 12px; }
+.mp-spouse-photo-wrap { flex: none; width: 128px; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 8px; background: #e6eef2; }
 .mp-spouse-photo-wrap img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
 .mp-spouse-avatar { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
 .mp-spouse-avatar svg { width: 52px; height: 52px; }
