@@ -7,7 +7,7 @@
 import { appendRow } from '../lib/googleSheets.js';
 import { sendAlimtalk } from '../lib/solapi.js';
 import { normalizePhone } from '../lib/phone.js';
-import { STAFF_ROLES, ROLE_LABEL, GUARDIAN_RELATIONS, newConsentToken, consentKey, consentAppKey, sendConsentRequest, updateApplicationRegs } from '../lib/staffCrew.js';
+import { STAFF_ROLES, ROLE_LABEL, GUARDIAN_RELATIONS, newConsentToken, consentKey, consentAppKey, sendConsentRequest, updateApplicationRegs, isCrewClosedCamp } from '../lib/staffCrew.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -222,6 +222,9 @@ export async function onRequestPost(context) {
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return Response.json({ error: '이메일 주소 형식이 올바르지 않습니다.' }, { status: 400, headers: CORS });
+    }
+    if (role === 'crew' && availableCamps.some(isCrewClosedCamp)) {
+      return Response.json({ error: '연합캠프는 크루 지원을 받지 않습니다. 연합캠프를 빼고 다시 지원해 주세요.' }, { status: 400, headers: CORS });
     }
     if (role === 'crew') {
       if (!guardianName || !guardianRelation || (!guardianPhone && !guardianEmail)) {

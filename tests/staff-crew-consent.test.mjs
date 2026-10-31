@@ -114,3 +114,26 @@ test('보호자 문자에 동의 링크가 들어간다', () => {
   const text = consentSmsText({ applicantName: '김크루', token: 'a'.repeat(48) });
   assert.match(text, /https:\/\/wolko\.org\/camp-register\/consent\/\?t=a{48}/);
 });
+
+import { isCrewClosedCamp } from '../functions/lib/staffCrew.js';
+import { readdirSync, readFileSync } from 'node:fs';
+test('연합캠프는 크루 지원을 받지 않는다 — 연합캠프(제목에 "연합")만 막고, 서버도 막는다', async () => {
+  // 우리학교 캠프 · 테스트 캠프도 camp_type 이 union 이라 종류로 가르지 않고 연합캠프 id(union/unity)로 가른다
+  const dir = new URL('../src/content/camp_schedules/', import.meta.url);
+  for (const f of readdirSync(dir).filter(n => n.endsWith('.json'))) {
+    const id = f.replace(/\.json$/, ''), camp = JSON.parse(readFileSync(new URL(f, dir), 'utf8'));
+    assert.equal(isCrewClosedCamp(id), /연합/.test(camp.title_ko || ''), `${id}: 연합캠프 판별이 캠프 제목과 같아야 한다`);
+  }
+  const t = setup();
+  try {
+    const crew = { ...base, role: 'crew', guardianName: '김엄마', guardianRelation: '모', guardianPhone: '010-4444-5555' };
+    const blocked = await register.onRequestPost(t.ctx(post('https://x/api/staff-register', { ...crew, availableCamps: ['2027-wolko-winter', '2027-unity-winter'], availableCampNames: ['겨울 월코 영어 캠프', '겨울 연합 캠프'] })));
+    assert.equal(blocked.status, 400);
+    assert.match((await blocked.json()).error, /연합캠프는 크루 지원을 받지 않습니다/);
+    const staff = await register.onRequestPost(t.ctx(post('https://x/api/staff-register', { ...base, email: 'adult@example.com', birthDate: '1995-01-01', availableCamps: ['2027-unity-winter'], availableCampNames: ['겨울 연합 캠프'] })));
+    assert.equal(staff.status, 200, '스태프(성인)는 연합캠프에 지원할 수 있다');
+  } finally { t.restore(); }
+  const page = readFileSync(new URL('../src/pages/camp-register/index.astro', import.meta.url), 'utf8');
+  assert.match(page, /data-crew-closed=\{isCrewClosedCamp\(s\.id\) \? 'true' : undefined\}/);
+  assert.match(page, /li\.dataset\.crewClosed !== 'true'/);
+});

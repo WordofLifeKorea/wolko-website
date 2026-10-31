@@ -38,6 +38,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   full:     { ko: '정원 마감', en: 'Full',               cls: 'status-full' },
 };
 import { REGISTRATION_WINDOWS } from '../../../functions/lib/winterCampPolicy.js';
+import { isCrewClosedCamp } from '../../../functions/lib/staffCrew.js';   // 연합캠프는 크루 지원을 받지 않는다(서버와 같은 판단)
 ---
 
 <BaseLayout
@@ -370,6 +371,7 @@ body.lang-en .crp-countdown-notice {
   .staff-camp-option-date { flex-basis: 100%; text-align: left; padding-left: 29px; }
 }
 #staffCampChips.is-invalid .staff-camp-option { border-color: var(--c-error); }
+.staff-camp-note { margin: 10px 0 0; font-size: 13px; line-height: 1.6; color: var(--c-label, #5a7380); }
 .staff-commitment { margin-top: 10px; padding: 14px 16px; background: var(--c-fill); border: 1px solid var(--c-line); font-size: 13px; line-height: 1.65; color: var(--c-ink); word-break: keep-all; }
 .staff-commitment label { display: flex; gap: 10px; align-items: flex-start; margin-top: 10px; font-weight: 700; cursor: pointer; color: var(--c-navy); }
 .crp-field .staff-commitment input { width: 17px !important; height: 17px !important; min-height: 0 !important; padding: 0; margin: 2px 0 0; accent-color: var(--c-deep); flex-shrink: 0; }
@@ -1661,6 +1663,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               data-training-en={s.data.staff_training_en ?? ''}
               data-start-date={s.data.start_date ?? ''}
               data-staff-registration-open={s.data.staff_registration_open ? 'true' : 'false'}
+              data-crew-closed={isCrewClosedCamp(s.id) ? 'true' : undefined}
             ></li>
           ))}
         </ul>
@@ -4027,6 +4030,8 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
     byId('staffModalTitle').innerHTML = '<span class="wl-ko">' + ROLE_TITLE[staffRole][0] + '</span><span class="wl-en">' + ROLE_TITLE[staffRole][1] + '</span>';
     var submitKo = staffSubmitBtn.querySelector('.crp-submit-label .wl-ko');
     if (submitKo) submitKo.textContent = staffRole === 'crew' ? '크루 지원하기' : '스태프 지원하기';
+    // 크루는 연합캠프에 지원할 수 없다 — 캠프 목록을 다시 그린다(고른 것은 남기되 연합캠프는 빠진다)
+    if (byId('staffCampChips').dataset.ready) { renderCampChips(checkedCampInputs().map(function (i) { return i.value; })); syncCommitmentBox(); }
   }
   document.querySelectorAll('.staff-role-tabs .crp-type-tab').forEach(function(tab) {
     tab.addEventListener('click', function() {
@@ -4100,7 +4105,10 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
   // "섬길 수 있는 캠프" — 열려 있는 캠프를 지역별로 묶어 날짜와 함께 보여준다.
   var REGION_LABEL = { inland: ['월코 센터 캠프', 'WOLKO Center Camps'], partner: ['교회 및 학교 캠프', 'Church and School Camps'], jeju: ['제주캠프 · 월비캠퍼스', 'Jeju Camp · WOLBI Campus'] };
   function renderCampChips(checkedIds) {
-    var options = staffCampOptions();
+    var crewMode = staffRole === 'crew';
+    var all = staffCampOptions();
+    // 연합캠프는 크루 지원을 받지 않는다(서버도 막는다)
+    var options = crewMode ? all.filter(function(li) { return li.dataset.crewClosed !== 'true'; }) : all;
     var html = '';
     ['inland', 'partner', 'jeju'].forEach(function(region) {
       var items = options.filter(function(li) { return li.dataset.group === region; });
@@ -4115,8 +4123,12 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       });
       html += '</div></div>';
     });
+    if (crewMode && options.length < all.length) {
+      html += '<p class="staff-camp-note"><span class="wl-ko">연합캠프는 크루 지원을 받지 않습니다.</span><span class="wl-en">Unity Camp does not accept crew applications.</span></p>';
+    }
     byId('staffCampChips').innerHTML = html ||
       '<span class="staff-camp-empty"><span class="wl-ko">지금 지원할 수 있는 캠프가 없습니다.</span><span class="wl-en">No camps are open right now.</span></span>';
+    byId('staffCampChips').dataset.ready = 'true';
   }
 
   // 2주 헌신 안내는 준비 주간이 있는 캠프(staff_commitment_required)를 체크했을 때만 보여준다.

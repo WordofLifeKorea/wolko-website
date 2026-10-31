@@ -14,6 +14,10 @@ export const STAFF_ROLES = ['staff', 'crew'];
 export const ROLE_LABEL = { staff: '스태프', crew: '크루' };
 export const GUARDIAN_RELATIONS = ['부', '모', '조부모', '기타'];
 
+/** 연합캠프는 크루(미성년자) 지원을 받지 않는다. 연합캠프 id 에는 union 또는 unity 가 들어간다
+ *  (예: 2026-inland-union, 2027-unity-winter — 캠프 목록과 어긋나지 않는지 테스트가 확인한다) */
+export const isCrewClosedCamp = id => /(^|-)(union|unity)(-|$)/.test(String(id || ''));
+
 // 보호자 동의 문자는 캠프 업무 휴대폰 번호로 보낸다(캠프 안내에 이미 공개된 번호). 솔라피에 발신번호로 등록돼 있어야 실제로 나간다.
 // 운영에서 바꿔야 하면 CAMP_SMS_SENDER_PHONE 환경 변수로 덮어쓴다.
 export const CAMP_SMS_SENDER_DEFAULT = '01073109216';
