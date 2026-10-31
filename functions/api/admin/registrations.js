@@ -32,6 +32,7 @@ const TRASH_TTL_SECONDS = 30 * 24 * 60 * 60;
 const trashKey = (campId, regId) => `trash:camp:${campId}:reg:${regId}`;
 
 import { WINTER_CAMP_POLICY, winterCampQuote } from '../../lib/winterCampPolicy.js';
+import { backfillFormTranslations, campBackfillItems } from '../../lib/formTranslate.js';
 
 function winterQuoteForRegistration(reg, values, spots) {
   if (reg.scholarshipPolicyVersion !== WINTER_CAMP_POLICY.version) return null;
@@ -324,6 +325,8 @@ export async function onRequestGet(context) {
     }
 
     allRegs.sort((a, b) => new Date(b.registeredAt) - new Date(a.registeredAt));
+    // 자동 번역 전에 들어온 신청서(캠프 · 스태프)는 목록을 열 때마다 몇 건씩 뒤에서 번역한다(응답은 기다리지 않는다)
+    if (context.waitUntil) context.waitUntil(backfillFormTranslations(env, campBackfillItems(allRegs)));
     return Response.json({ registrations: allRegs }, { headers: CORS });
   } catch (e) {
     console.error('admin registrations error:', e);

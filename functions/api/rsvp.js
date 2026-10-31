@@ -9,7 +9,7 @@
 import { parseHubSessionToken, portalSession } from '../lib/hubAccounts.js';
 import { normalizePhone } from '../lib/phone.js';
 import { canAddRsvp } from '../lib/rsvpAccess.js';
-import { attachFormTranslation } from '../lib/formTranslate.js';
+import { attachFormTranslation, backfillFormTranslations } from '../lib/formTranslate.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -169,12 +169,14 @@ export async function onRequestGet(context) {
 
   const eventId = clean(new URL(request.url).searchParams.get('eventId') || 'thanksgiving-night', 60);
   const list = await env.CAMP_KV.list({ prefix: `rsvp:${eventId}:` });
-  const rsvps = [];
+  const rsvps = [], backfill = [];
   for (const key of list.keys) {
     if (key.name.includes(':email:')) continue;
     const raw = await env.CAMP_KV.get(key.name);
-    if (raw) { try { rsvps.push(JSON.parse(raw)); } catch (e) { /* 손상된 값은 건너뛴다 */ } }
+    if (raw) { try { const r = JSON.parse(raw); rsvps.push(r); backfill.push({ kind: 'rsvp', key: key.name, record: r }); } catch (e) { /* 손상된 값은 건너뛴다 */ } }
   }
+  // 자동 번역 전에 들어온 메모는 목록을 열 때마다 몇 건씩 뒤에서 번역한다(응답은 기다리지 않는다)
+  if (context.waitUntil) context.waitUntil(backfillFormTranslations(env, backfill));
   rsvps.sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
   const totalGuests = rsvps.reduce((sum, r) => sum + (Number(r.partySize) || 0), 0);
 

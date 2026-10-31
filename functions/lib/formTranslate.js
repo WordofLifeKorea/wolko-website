@@ -100,3 +100,45 @@ export async function attachFormTranslation(env, kind, keys, record, opts = {}) 
     return null;
   }
 }
+
+/* ── 예전 신청서 채우기 — 자동 번역이 생기기 전에 들어온 신청서는 관리자가 목록을 열 때마다 몇 건씩 뒤에서 번역한다.
+   목록 응답은 기다리지 않는다(context.waitUntil). 원문은 그대로, 번역(tr)만 붙인다. 실패하면 6시간 뒤 다시 해 본다. ── */
+export const BACKFILL_LIMIT = 12;
+const RETRY_MS = 6 * 3600 * 1000;
+const LOCK_KEY = 'formtr:backfill:lock';
+
+/** 번역할 칸이 있는데 아직 번역이 없는 칸이 하나라도 있으면 true */
+export function needsFormTranslation(kind, record) {
+  const keys = Object.keys(pickFormFields(kind, record));
+  return keys.length > 0 && keys.some(k => !record?.tr?.[k]);
+}
+
+/** items: [{ kind, key, record }] → 번역한 건수. 동시에 두 번 돌지 않도록 1분짜리 잠금을 건다 */
+export async function backfillFormTranslations(env, items, { limit = BACKFILL_LIMIT, now = Date.now(), ...opts } = {}) {
+  try {
+    if (!env?.ANTHROPIC_API_KEY || !env?.CAMP_KV) return 0;
+    const todo = (items || []).filter(it => it?.key && needsFormTranslation(it.kind, it.record)
+      && !(it.record.trTriedAt && now - Date.parse(it.record.trTriedAt) < RETRY_MS)).slice(0, limit);
+    if (!todo.length) return 0;
+    if (await env.CAMP_KV.get(LOCK_KEY)) return 0;
+    await env.CAMP_KV.put(LOCK_KEY, '1', { expirationTtl: 60 });
+    let done = 0;
+    for (const it of todo) {
+      const tr = await attachFormTranslation(env, it.kind, it.key, it.record, opts);
+      if (tr) { done++; continue; }
+      // 실패: 다음에 다시 해 보도록 시도 시각만 적는다(원문 · 다른 칸은 그대로)
+      const raw = await env.CAMP_KV.get(it.key);
+      if (!raw) continue;
+      try { const cur = JSON.parse(raw); await env.CAMP_KV.put(it.key, JSON.stringify({ ...cur, trTriedAt: new Date(now).toISOString() })); } catch { /* 손상된 값은 건너뛴다 */ }
+    }
+    await env.CAMP_KV.delete(LOCK_KEY);
+    return done;
+  } catch (error) {
+    console.error('form translate backfill failed:', error.message);
+    return 0;
+  }
+}
+
+/** 캠프 신청 · 스태프 지원 기록 → 채우기 목록 (스태프 지원은 캠프마다 따로 저장되므로 기록마다 번역한다) */
+export const campBackfillItems = regs => (regs || []).filter(r => r?.campId && r?.regId)
+  .map(r => ({ kind: r.registrationType === 'staff' ? 'staff' : 'camp', key: `camp:${r.campId}:reg:${r.regId}`, record: r }));
