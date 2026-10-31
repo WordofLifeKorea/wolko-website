@@ -4,6 +4,69 @@ import { getCollection } from 'astro:content';
 // 제주 캠퍼스 데이 안내 팝업: 일정 파일의 접수(status: open)가 열려 있을 때만 만든다 (시작일이 지나면 화면에서 자동으로 숨긴다)
 const campusDayEntry = (await getCollection('camp_schedules')).find((c) => String(c.id).startsWith('2026-jeju-campus-day'));
 const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? campusDayEntry.data : null;
+
+// 맨 위 사진 — 6초마다 바뀌고, 오른쪽 아래 숫자(01 / 05)와 막대가 함께 바뀐다. 막대를 누르면 그 사진으로 간다.
+const heroSlides = [
+  { src: '/images/heroes/worship.jpg' },
+  { src: '/images/heroes/outdoor.jpg' },
+  { src: '/images/heroes/books.jpg', pos: 'center 20%' },
+  { src: '/images/heroes/cross.jpg' },
+  { src: '/images/heroes/samuel.jpg', pos: 'center 15%' },
+];
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
+// 월코 비전 다섯 가지 — 펼치기 없이 다섯 칸에 글을 모두 보여 준다
+const visions = [
+  {
+    ko: '성경중심', en: 'Bible-Centered',
+    dKo: '성경은 우리 삶의 기초이며, 많은 사람의 삶에 변화를 가져왔습니다.',
+    dEn: 'At the heart of every WOLKO ministry is the unchanging truth of Scripture. The Bible is not merely a book — it is our foundation, our guide for life, and our unshakeable source of hope. From summer camps to the deep Bible studies at WOLBI Jeju, everything we do is firmly built on the Word of God.',
+  },
+  {
+    ko: '청소년 사역 중심', en: 'Youth-Focused',
+    dKo: '월코를 움직이는 힘은 다음 세대를 향한 열정입니다. 그들 안에는 그리스도를 위해 세상을 바꿀 놀라운 가능성이 있습니다. 그 가능성을 믿기에, 월코는 오늘도 청소년 사역에 온 힘을 쏟습니다.',
+    dEn: 'The driving force behind WOLKO is a passion for the next generation. Young people hold incredible potential to change the world for Christ. Because we believe in that potential, WOLKO pours everything into every ministry we do.',
+  },
+  {
+    ko: '복음전파', en: 'Evangelism',
+    dKo: '월코는 복음을 통해 예수 그리스도가 삶의 해답이라는 것을 전합니다.',
+    dEn: 'The message WOLKO carries is simple, yet life-changing: Jesus Christ is the answer. Through dynamic youth ministry, Bible school campuses, international missions, and youth camps, WOLKO is committed to sharing the Gospel with every generation.',
+  },
+  {
+    ko: '제자훈련', en: 'Discipleship',
+    dKo: '월코는 주님께서 주신 지상명령에 순종하기위해 제자훈련을 합니다. 참 제자는 또 다른 제자를 세웁니다.',
+    dEn: 'In obedience to the Great Commission, WOLKO makes disciples — and true disciples make more disciples.',
+  },
+  {
+    ko: '열정과 헌신', en: 'Passion-Driven',
+    dKo: '월코의 정신은 열정과 목적, 그리고 복음을 전하려는 공동의 헌신 위에 세워져 있습니다. 우리는 그리스도를 위해 사는 것이 최고의 삶이라 여기며, 그 열정이 모든 사역의 원동력이 됩니다.',
+    dEn: 'WOLKO was built on passion, purpose, and a unified devotion to sharing the Gospel. Living for Christ is the greatest adventure we know — and that excitement and conviction drives everything we do.',
+  },
+];
+
+// 사역 소개 네 칸 — 사진(4:3) · 번호 · 이름 · 한 줄 설명
+const ministries = [
+  {
+    href: '/camp', img: '/images/ministries/camp.jpg', ko: '캠프 사역', en: 'Camp Ministry',
+    dKo: '청소년과 다음 세대가 복음을 듣고 삶의 전환점을 경험하도록 돕는 월코의 대표 사역입니다.',
+    dEn: "WOLKO's flagship ministry — helping youth and the next generation hear the Gospel and experience life-changing encounters.",
+  },
+  {
+    href: '/youth', img: '/images/ministries/youth.jpg', ko: '청소년 사역', en: 'Youth Ministry',
+    dKo: '교회와 삶 속에서 청소년들이 말씀 위에 세워지고 예수 그리스도를 따르도록 섬깁니다.',
+    dEn: "Serving youth in churches and communities, helping them build their lives on God's Word and follow Jesus Christ.",
+  },
+  {
+    href: '/wolbi-jeju', img: '/images/ministries/wolbi.jpg', ko: '제주 월비', en: 'WOLBI Jeju',
+    dKo: '깊이 있는 성경 연구와 훈련을 통해 복음을 삶으로 살아내는 제자를 세워갑니다.',
+    dEn: 'Through in-depth Bible study and training, we raise disciples who live out the Gospel in everyday life.',
+  },
+  {
+    href: '/give', img: '/images/ministries/syme.jpg', ko: '선교 및 참여', en: 'Missions & Giving',
+    dKo: '기도와 후원, 재능기부와 직접 참여를 통해 더 많은 다음 세대에게 복음이 흘러가게 합니다.',
+    dEn: 'Through prayer, giving, volunteering, and direct involvement, help the Gospel reach more of the next generation.',
+  },
+];
 ---
 
 <BaseLayout
@@ -12,6 +75,7 @@ const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? camp
   activeNav="home"
 >
 <Fragment slot="head">
+  <link rel="preload" as="image" href={heroSlides[0].src} fetchpriority="high" />
   <script type="application/ld+json" set:html={JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -28,486 +92,244 @@ const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? camp
 
 <style>
 /* ═══════════════════════════
-   공통
+   공통 — 사역 페이지(/ministry)와 같은 규칙: 1200px 폭, 앞에 가는 선이 붙은 작은 표시,
+   G마켓 산스 제목, 각진 버튼(52px), 둥근 카드·그림자·색 띠 없음
 ═══════════════════════════ */
-.wh-home-combined,
-.wh-home-combined * { box-sizing: border-box; word-break: keep-all; }
-.wh-home-combined { background: #ffffff; overflow: hidden; font-family: var(--ff-sans); }
+.hm-home {
+  --hm-deep: #004f68;
+  --hm-navy: #0b2430;
+  --hm-ink: #10252e;
+  --hm-text: #3e535d;
+  --hm-text-2: #4a5d66;
+  --hm-muted: #587383;
+  --hm-label: #5a7380;
+  --hm-line: #d6dee2;
+  --hm-soft: #f6f9fb;
+  background: #fff;
+  color: var(--hm-ink);
+  font-family: var(--ff-sans);
+  word-break: keep-all;
+  overflow: hidden;
+}
+.hm-shell { width: min(1200px, calc(100% - 48px)); margin-inline: auto; }
+.hm-home svg { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: square; }
+.hm-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.hm-eyebrow { display: flex; align-items: center; gap: 12px; color: var(--hm-deep); font-size: 13px; font-weight: 700; line-height: 1.4; letter-spacing: .12em; text-transform: uppercase; }
+.hm-eyebrow::before { content: ''; width: 28px; height: 1px; background: currentColor; flex: none; }
+.hm-h2 { margin-top: 20px; font-family: var(--ff-serif); font-size: clamp(30px, 3.1vw, 44px); font-weight: 700; line-height: 1.22; letter-spacing: -.03em; color: var(--hm-navy); }
+.hm-h2--sm { font-size: clamp(28px, 2.5vw, 36px); }
+.hm-lead { margin-top: 24px; max-width: 560px; font-size: 17px; line-height: 1.85; color: var(--hm-text); }
+
+.hm-sec { padding: 120px 0; }
+.hm-sec--soft { background: var(--hm-soft); }
+
+/* 버튼 — 높이 52px, 모서리 2px, 화살표는 글자색 */
+.hm-actions { margin-top: 36px; display: flex; flex-wrap: wrap; gap: 10px; }
+.hm-btn {
+  height: 52px; padding: 0 24px; display: inline-flex; align-items: center; justify-content: space-between; gap: 12px;
+  border: 1px solid transparent; border-radius: 2px; font-size: 15px; font-weight: 700; line-height: 1; text-decoration: none; white-space: nowrap;
+  transition: background-color .2s, border-color .2s, color .2s, gap .25s;
+}
+.hm-btn:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.hm-btn--light { background: #fff; border-color: #fff; color: var(--hm-deep); }
+.hm-btn--light:hover { background: #e8f1f4; border-color: #e8f1f4; color: var(--hm-deep); gap: 16px; }
+.hm-btn--ghost { border-color: rgba(255,255,255,.55); color: #fff; }
+.hm-btn--ghost:hover { background: rgba(255,255,255,.12); color: #fff; }
+.hm-btn--primary { background: var(--hm-deep); border-color: var(--hm-deep); color: #fff; }
+.hm-btn--primary:hover { background: #00384a; border-color: #00384a; color: #fff; gap: 16px; }
+.hm-btn--outline { border-color: #9fb3bc; color: var(--hm-deep); }
+.hm-btn--outline:hover { background: #fff; border-color: var(--hm-deep); color: var(--hm-deep); }
+
+/* 구역 머리 — 왼쪽 표시·제목, 오른쪽 설명 또는 링크 */
+.hm-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 80px; }
+.hm-head-sub { max-width: 420px; font-size: 16px; line-height: 1.8; color: var(--hm-text-2); }
+.hm-textlink {
+  flex: none; display: inline-flex; align-items: center; gap: 10px; padding-bottom: 4px;
+  border-bottom: 1.5px solid var(--hm-deep); color: var(--hm-deep); font-size: 15px; font-weight: 700; text-decoration: none; white-space: nowrap;
+  transition: gap .25s, color .2s, border-color .2s;
+}
+.hm-textlink:hover { gap: 14px; color: #00384a; border-color: #00384a; }
 
 /* ═══════════════════════════
-   HERO SLIDESHOW
+   1. 히어로 — 사진 5장 교체, 아래쪽에 제목과 설명 · 버튼 · 사진 번호 줄 (다른 페이지 맨 위 배너와 같은 모양)
 ═══════════════════════════ */
-.wh-home-hero { position: relative; min-height: 100vh; background: #0d1e28; overflow: hidden; }
+.hm-hero { position: relative; display: flex; flex-direction: column; min-height: 100vh; min-height: 100svh; padding-top: 150px; overflow: hidden; background: #0b1e27; color: #fff; }
 .wh-hero-slide {
   position: absolute; inset: 0;
-  background-size: cover; background-position: center 30%;
+  background-size: cover; background-position: 50% 30%; background-repeat: no-repeat;
   opacity: 0; transition: opacity 2s cubic-bezier(0.4,0,0.2,1); will-change: opacity;
 }
 .wh-hero-slide.wh-slide-active { opacity: 1; animation: whSlideKenBurns 8s ease-out forwards; }
 @keyframes whSlideKenBurns { from { transform: scale(1.08); } to { transform: scale(1.00); } }
-.wh-home-hero-overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(4,14,20,0.30) 0%, rgba(4,14,20,0.15) 25%, rgba(4,14,20,0.50) 65%, rgba(4,14,20,0.82) 100%);
-  pointer-events: none;
-}
-.wh-home-hero-inner {
-  position: relative; z-index: 2; min-height: 100vh;
-  display: flex; align-items: center; justify-content: center;
-  padding: 140px 24px 110px;
-}
-.wh-home-hero-content {
-  width: 100%; max-width: 820px;
-  margin: 0 auto; text-align: center; color: #ffffff;
-  display: flex; flex-direction: column; align-items: center;
-}
-.wh-home-hero-title {
-  margin: 0 0 22px;
-  font-family: var(--ff-serif);
-  font-size: clamp(40px, 6.4vw, 76px);
-  font-weight: 800;
-  line-height: 1.08;
-  letter-spacing: -0.04em;
-  color: #ffffff;
-  text-shadow: 0 4px 24px rgba(0,0,0,0.45);
-  opacity: 0; transform: translateY(18px);
-  animation: whHomeFadeUp 0.9s ease 0.25s forwards;
-}
-.wh-home-hero-desc {
-  max-width: 580px; margin: 0 0 44px;
-  font-family: var(--ff-sans);
-  font-size: var(--fs-body-l);
-  font-weight: 400;
-  line-height: var(--lh-body);
-  color: rgba(255,255,255,0.75);
-  opacity: 0; transform: translateY(18px);
-  animation: whHomeFadeUp 0.9s ease 0.4s forwards;
-}
-.wh-home-hero-buttons {
-  display: flex; justify-content: center; align-items: center;
-  gap: 14px; flex-wrap: wrap;
-  opacity: 0; transform: translateY(18px);
-  animation: whHomeFadeUp 0.9s ease 0.55s forwards;
-}
-.wh-home-btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-width: 180px; min-height: 56px; padding: 15px 30px;
-  border-radius: 999px; text-decoration: none !important;
-  font-family: var(--ff-sans);
-  font-size: 14px; font-weight: 700; letter-spacing: 0.02em;
-  transition: transform 0.22s ease, box-shadow 0.22s ease;
-}
-.wh-home-btn-primary, .wh-home-btn-primary:link, .wh-home-btn-primary:visited {
-  background: #ffffff; color: #004f68 !important; box-shadow: 0 12px 30px rgba(0,0,0,0.25);
-}
-.wh-home-btn-secondary, .wh-home-btn-secondary:link, .wh-home-btn-secondary:visited {
-  background: rgba(255,255,255,0.10); color: #ffffff !important;
-  border: 1.5px solid rgba(255,255,255,0.40);
-}
-.wh-home-btn:hover { transform: translateY(-2px); }
-.wh-home-btn-primary:hover { box-shadow: 0 18px 40px rgba(0,0,0,0.30); }
-.wh-home-btn-secondary:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.65); }
-.wh-home-btn:active { transform: translateY(1px) scale(0.98); }
-@keyframes whHomeFadeUp { to { opacity: 1; transform: translateY(0); } }
+.hm-hero-shade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(0deg, rgba(5,20,28,0.9) 0%, rgba(5,20,28,0.6) 40%, rgba(5,20,28,0.1) 72%, rgba(5,20,28,0.32) 100%); }
+.hm-hero-inner { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 64px; }
+.hm-hero-eyebrow { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,.86); font-size: 13px; font-weight: 700; line-height: 1.4; letter-spacing: .12em; text-transform: uppercase; }
+.hm-hero-eyebrow::before { content: ''; width: 28px; height: 1px; background: currentColor; flex: none; }
+.hm-hero-title { margin-top: 20px; font-family: var(--ff-serif); font-size: clamp(40px, 5.2vw, 76px); font-weight: 700; line-height: 1.14; letter-spacing: -.04em; color: #fff; }
+.hm-hero-title .wl-en { font-size: .78em; }
+.hm-hero-bar { margin-top: 40px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,.3); display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 0 56px; align-items: center; }
+.hm-hero-desc { font-size: 17px; line-height: 1.75; color: rgba(255,255,255,.84); }
+.hm-hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.hm-hero-pager { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.hm-hero-count { font-family: var(--ff-serif); font-size: 14px; line-height: 1; letter-spacing: .04em; font-variant-numeric: tabular-nums; color: #fff; }
+.hm-hero-total { color: rgba(255,255,255,.5); }
+.hm-hero-segs { display: flex; gap: 6px; }
+.hm-hero-seg { position: relative; width: 28px; height: 16px; min-width: 0 !important; min-height: 0 !important; padding: 0; border: 0; border-radius: 0; background: none; cursor: pointer; }
+.hm-hero-seg::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; background: rgba(255,255,255,.35); transition: background-color .3s; }
+.hm-hero-seg:hover::before { background: rgba(255,255,255,.7); }
+.hm-hero-seg.is-on::before { background: #fff; }
+.hm-hero-seg:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* 등장 움직임 — 맨 위 배너(PageHero)와 같은 순서: 사진 → 작은 표시 → 제목 → 아래 줄. 스크립트가 .hm-motion 을 붙일 때만 */
+@keyframes hmRise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+@keyframes hmLine { from { width: 0; } to { width: 28px; } }
+.hm-hero.hm-motion:not(.is-ready) .wh-hero-slide { opacity: 0; animation: none; }
+.hm-hero.hm-motion:not(.is-ready) .hm-hero-eyebrow,
+.hm-hero.hm-motion:not(.is-ready) .hm-hero-title,
+.hm-hero.hm-motion:not(.is-ready) .hm-hero-bar { opacity: 0; }
+.hm-hero.hm-motion.is-ready .hm-hero-eyebrow { animation: hmRise 1.2s .35s cubic-bezier(.2,.7,.2,1) both; }
+.hm-hero.hm-motion.is-ready .hm-hero-eyebrow::before { animation: hmLine 1s .65s ease-out both; }
+.hm-hero.hm-motion.is-ready .hm-hero-title { animation: hmRise 1.3s .6s cubic-bezier(.2,.7,.2,1) both; }
+.hm-hero.hm-motion.is-ready .hm-hero-bar { animation: hmRise 1.3s 1.05s cubic-bezier(.2,.7,.2,1) both; }
 
 /* ═══════════════════════════
-   PARTNERSHIP
+   3. 왜 지금인가 — 왼쪽 글 · 오른쪽 큰 숫자
 ═══════════════════════════ */
-.wolko-partnership-v2 {
-  padding: 120px 20px 128px;
-  background:
-    radial-gradient(circle at 14% 12%, rgba(115,209,245,0.08), transparent 30%),
-    radial-gradient(circle at 86% 82%, rgba(0,79,104,0.05), transparent 24%),
-    linear-gradient(180deg, #f9fcfd 0%, #ffffff 100%);
-}
-.wolko-partnership-v2__inner { max-width: 1180px; margin: 0 auto; }
-.wolko-partnership-v2__top { max-width: 720px; margin: 0 auto 64px; text-align: center; }
-.wolko-partnership-v2__badge {
-  display: inline-flex; align-items: center; justify-content: center;
-  padding: 8px 18px; margin-bottom: 20px; border-radius: 999px;
-  background: rgba(0,79,104,0.05); border: 1px solid rgba(0,79,104,0.10);
-  color: #006f90;
-  font-family: var(--ff-sans);
-  font-size: var(--fs-label); font-weight: 800; letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-}
-.wolko-partnership-v2__title {
-  margin: 0 0 18px;
-  color: #004f68;
-  font-family: var(--ff-serif);
-  font-size: clamp(36px, 4.6vw, 56px);
-  font-weight: 800;
-  line-height: var(--lh-head);
-  letter-spacing: var(--ls-head);
-}
-.wolko-partnership-v2__subtitle {
-  margin: 0;
-  color: #647983;
-  font-family: var(--ff-sans);
-  font-size: var(--fs-body-l);
-  font-weight: 400;
-  line-height: var(--lh-body);
-}
-.wolko-partnership-v2__grid { display: grid; grid-template-columns: 1.06fr 0.94fr; gap: 24px; align-items: start; }
-.wolko-partnership-v2__copy, .wolko-partnership-v2__side { display: flex; flex-direction: column; gap: 16px; }
-.wolko-partnership-v2__panel, .wolko-partnership-v2__stat-card {
-  background: #ffffff; border: 1px solid rgba(0,79,104,0.08); border-radius: 24px;
-  box-shadow: 0 2px 8px rgba(18,55,72,0.04), 0 12px 32px rgba(18,55,72,0.06);
-}
-.wolko-partnership-v2__panel {
-  padding: 40px 38px 36px;
-  background: linear-gradient(145deg, #002f42 0%, #004f68 55%, #005f7c 100%);
-  border: none;
-  position: relative; overflow: hidden;
-}
-.wolko-partnership-v2__panel::before {
-  content: '"';
-  position: absolute; top: -10px; right: 24px;
-  font-family: 'GmarketSans', 'Pretendard Variable', sans-serif; font-size: 160px; line-height: 1;
-  color: rgba(115,209,245,0.07); pointer-events: none; user-select: none;
-}
-.wolko-partnership-v2__eyebrow {
-  margin: 0 0 18px;
-  color: #73d1f5;
-  font-family: var(--ff-sans);
-  font-size: var(--fs-label); font-weight: 800; letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-}
-.wolko-partnership-v2__panel-title {
-  margin: 0 0 20px;
-  color: #ffffff;
-  font-family: var(--ff-serif);
-  font-size: clamp(18px, 1.9vw, 22px);
-  font-weight: 700;
-  line-height: 1.6;
-  letter-spacing: var(--ls-head);
-}
-.wolko-partnership-v2__text {
-  margin: 0;
-  color: rgba(255,255,255,0.68);
-  font-family: var(--ff-sans);
-  font-size: var(--fs-body-m);
-  font-weight: 400;
-  line-height: var(--lh-body);
-}
-.wolko-partnership-v2__stat-card { padding: 40px 32px 36px; text-align: center; }
-.wolko-partnership-v2__stat-label {
-  margin: 0 0 16px;
-  color: #00708f;
-  font-family: var(--ff-sans);
-  font-size: var(--fs-label); font-weight: 800; letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-}
-.wolko-partnership-v2__stat-value {
-  margin: 0 0 12px;
-  color: #c42a36;
-  font-family: var(--ff-sans);
-  font-size: clamp(56px, 9vw, 88px);
-  line-height: 1; font-weight: 900; letter-spacing: -0.05em;
-}
-.wolko-partnership-v2__stat-value span {
-  margin-left: 2px;
-  font-size: clamp(22px, 3vw, 32px);
-  font-weight: 700; letter-spacing: -0.02em;
-  color: #c42a36;
-}
-.wolko-partnership-v2__stat-desc {
-  margin: 0;
-  color: #667b84;
-  font-family: var(--ff-sans);
-  font-size: var(--fs-body-s);
-  font-weight: 400;
-  line-height: 1.7;
-}
-.wolko-partnership-v2__stat-desc strong {
-  color: #c42a36;
-  font-weight: 800;
-}
-.wolko-partnership-v2__stat-source {
-  margin: 14px 0 0;
-  color: #9aabb3;
-  font-family: var(--ff-sans);
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 1.5;
-}
-.wolko-partnership-v2__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.wolko-partnership-v2__btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-height: 54px; padding: 15px 20px; border-radius: 999px;
-  text-decoration: none !important;
-  font-family: var(--ff-sans);
-  font-size: 14px; font-weight: 700; letter-spacing: 0.02em;
-  transition: transform 0.22s ease, box-shadow 0.22s ease;
-}
-.wolko-partnership-v2__btn.is-primary, .wolko-partnership-v2__btn.is-primary:link, .wolko-partnership-v2__btn.is-primary:visited {
-  background: linear-gradient(135deg, #004f68 0%, #0d6f8c 44%, #73d1f5 100%);
-  color: #ffffff !important; box-shadow: 0 12px 28px rgba(0,79,104,0.22);
-}
-.wolko-partnership-v2__btn.is-primary:hover { transform: translateY(-2px); box-shadow: 0 18px 36px rgba(0,79,104,0.28); }
-.wolko-partnership-v2__btn.is-secondary, .wolko-partnership-v2__btn.is-secondary:link, .wolko-partnership-v2__btn.is-secondary:visited {
-  background: #ffffff; color: #004f68; border: 1px solid rgba(0,79,104,0.14); box-shadow: 0 4px 14px rgba(20,50,70,0.06);
-}
-.wolko-partnership-v2__btn.is-secondary:hover { transform: translateY(-2px); background: #f4f9fc; }
-.wolko-partnership-v2__video { margin-top: 72px; padding-top: 64px; border-top: 1px solid rgba(0,79,104,0.08); text-align: center; }
-.wolko-partnership-v2__video-label {
-  margin: 0 0 20px;
-  color: #00708f;
-  font-family: var(--ff-sans);
-  font-size: var(--fs-label); font-weight: 800; letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-}
-.wolko-partnership-v2__video-wrap {
-  position: relative; width: 100%; max-width: 900px; margin: 0 auto;
-  padding-bottom: 50.6%; border-radius: 20px; overflow: hidden; background: #0a1e28;
-  box-shadow: 0 24px 56px rgba(0,79,104,0.14), 0 4px 14px rgba(0,79,104,0.06);
-}
-.wolko-partnership-v2__video-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-.wolko-partnership-v2__video-caption {
-  margin: 20px 0 0;
-  color: #8a9ea7;
-  font-family: var(--ff-sans);
-  font-size: 15px; font-weight: 400; line-height: 1.7;
-}
+.hm-why-inner { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 96px; align-items: end; }
+.hm-stat { border-top: 2px solid var(--hm-navy); padding-top: 24px; }
+.hm-stat-label { font-size: 13px; font-weight: 700; line-height: 1.5; color: var(--hm-label); }
+.hm-stat-value { margin-top: 8px; font-family: var(--ff-serif); font-size: clamp(96px, 9.2vw, 132px); font-weight: 700; line-height: 1; letter-spacing: -.05em; color: var(--hm-deep); }
+.hm-stat-value span { font-size: .485em; letter-spacing: -.02em; }
+.hm-stat-desc { margin-top: 18px; font-size: 15.5px; line-height: 1.8; color: var(--hm-text); }
+.hm-stat-desc strong { color: var(--hm-navy); font-weight: 700; }
+.hm-stat-source { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--hm-line); font-size: 12.5px; line-height: 1.6; color: var(--hm-muted); }
 
 /* ═══════════════════════════
-   VISION
+   4. 우리의 이야기 — 누르면 재생되는 영상
 ═══════════════════════════ */
-.wh-vision-section {
-  padding: 120px 20px;
-  background:
-    radial-gradient(ellipse at 18% 8%, rgba(115,209,245,0.09), transparent 36%),
-    radial-gradient(ellipse at 84% 88%, rgba(0,79,104,0.05), transparent 28%),
-    linear-gradient(180deg, #ffffff 0%, #f8fbfc 100%);
-  overflow: hidden;
-}
-.wh-vision-inner { max-width: 860px; margin: 0 auto; }
-.wh-vision-head { text-align: center; margin-bottom: 64px; }
-.wh-badge {
-  display: inline-block; padding: 7px 16px; border-radius: 999px;
-  background: rgba(0,79,104,0.05); border: 1px solid rgba(0,79,104,0.10);
-  color: #00708f;
-  font-family: var(--ff-sans);
-  font-size: var(--fs-label); font-weight: 800; letter-spacing: var(--ls-label);
-  text-transform: uppercase; margin-bottom: 18px;
-}
-.wh-vision-title {
-  margin: 0 0 12px;
-  font-family: var(--ff-serif);
-  font-size: clamp(32px, 4vw, 50px);
-  font-weight: 800;
-  line-height: var(--lh-head);
-  letter-spacing: var(--ls-head);
-  color: #004f68;
-}
-.wh-vision-subtitle {
-  margin: 0;
-  color: #7a909a;
-  font-family: var(--ff-sans);
-  font-size: var(--fs-body-l);
-  font-weight: 400;
-  line-height: var(--lh-body);
-}
-.wh-vision-list { display: flex; flex-direction: column; }
-.wh-vision-item {
-  position: relative; border-bottom: 1px solid rgba(0,79,104,0.08);
-  opacity: 0; transform: translateY(16px);
-  animation: whItemReveal 0.55s cubic-bezier(0.23,1,0.32,1) forwards;
-  animation-delay: calc(0.08s * var(--wh-i));
-}
-.wh-vision-item:first-child { border-top: 1px solid rgba(0,79,104,0.08); }
-@keyframes whItemReveal { to { opacity: 1; transform: translateY(0); } }
-.wh-vision-accent {
-  position: absolute; left: 0; top: 0; width: 3px; height: 100%;
-  background: linear-gradient(180deg, #004f68, #73d1f5); border-radius: 0 3px 3px 0;
-  transform: scaleY(0); transform-origin: top center;
-  transition: transform 0.35s cubic-bezier(0.23,1,0.32,1); pointer-events: none;
-}
-.wh-vision-item.is-active .wh-vision-accent { transform: scaleY(1); }
-.wh-vision-trigger {
-  width: 100%; display: flex; align-items: center; gap: 24px;
-  padding: 28px 16px 28px 20px; border: none; background: transparent;
-  cursor: pointer; text-align: left; transition: background 0.2s ease; position: relative;
-}
-.wh-vision-trigger:hover { background: rgba(0,79,104,0.018); }
-.wh-vision-item.is-active .wh-vision-trigger { background: rgba(0,79,104,0.025); }
-.wh-vision-num {
-  flex: 0 0 auto;
-  font-family: var(--ff-sans);
-  font-size: 20px; font-weight: 800; letter-spacing: 0.02em;
-  color: rgba(0,79,104,0.12); min-width: 40px; transition: color 0.3s;
-}
-.wh-vision-item.is-active .wh-vision-num { color: #73d1f5; }
-.wh-vision-titles { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-.wh-vision-label {
-  font-family: var(--ff-sans);
-  font-size: 19px; font-weight: 700;
-  letter-spacing: var(--ls-sub);
-  line-height: 1.3;
-  color: #1a2e38; transition: color 0.3s;
-}
-.wh-vision-item.is-active .wh-vision-label { color: #004f68; }
-.wh-vision-chevron {
-  flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; position: relative;
-  margin-left: auto;
-  background: rgba(0,79,104,0.06);
-  border: 1.5px solid rgba(0,79,104,0.15);
-  transition: background 0.25s, border-color 0.25s, transform 0.35s cubic-bezier(0.23,1,0.32,1);
-}
-.wh-vision-item.is-active .wh-vision-chevron {
-  background: #004f68;
-  border-color: #004f68;
-}
-.wh-vision-chevron::before, .wh-vision-chevron::after {
-  content: ""; position: absolute;
-  top: 50%; left: 50%;
-  background: #6b8fa0; border-radius: 2px;
-  transition: background 0.25s, transform 0.3s cubic-bezier(0.23,1,0.32,1), opacity 0.25s;
-}
-.wh-vision-chevron::before { width: 12px; height: 2px; transform: translate(-50%, -50%); }
-.wh-vision-chevron::after  { width: 2px; height: 12px; transform: translate(-50%, -50%); }
-.wh-vision-item.is-active .wh-vision-chevron::before,
-.wh-vision-item.is-active .wh-vision-chevron::after { background: #fff; }
-.wh-vision-item.is-active .wh-vision-chevron::after { transform: translate(-50%, -50%) scaleY(0); opacity: 0; }
-.wh-vision-body { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.23,1,0.32,1), opacity 0.3s; opacity: 0; }
-.wh-vision-body p {
-  margin: 0; padding: 4px 20px 32px 84px;
-  font-family: var(--ff-sans);
-  font-size: var(--fs-body-m);
-  font-weight: 400;
-  line-height: var(--lh-body);
-  color: #5a6f79;
-}
-.wh-vision-item.is-active .wh-vision-body { max-height: 400px; opacity: 1; }
+.hm-story-inner { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 72px; align-items: center; }
+.hm-story-text { margin-top: 22px; font-size: 16px; line-height: 1.85; color: var(--hm-text); }
+.hm-video { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: #0b1e27; }
+.hm-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+.hm-video-poster { position: absolute; inset: 0; display: block; width: 100%; height: 100%; min-height: 0 !important; padding: 0; border: 0; border-radius: 0; background: #0b1e27; color: #fff; font: inherit; text-align: left; cursor: pointer; }
+.hm-video-poster img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: .72; transition: opacity .3s; }
+.hm-video-play { position: absolute; left: 50%; top: 50%; width: 84px; height: 84px; margin: -42px 0 0 -42px; display: grid; place-items: center; background: #fff; transition: background-color .2s; }
+.hm-home .hm-video-play svg { width: 26px; height: 26px; margin-left: 3px; fill: var(--hm-deep); stroke: none; }
+.hm-video-title { position: absolute; left: 28px; right: 28px; bottom: 24px; font-size: 14px; font-weight: 600; line-height: 1.5; color: #fff; }
+.hm-video-poster:hover img { opacity: .8; }
+.hm-video-poster:hover .hm-video-play { background: #e8f1f4; }
+.hm-video-poster:focus-visible { outline: 3px solid var(--hm-deep); outline-offset: 3px; }
 
 /* ═══════════════════════════
-   MINISTRY
+   5. 비전 — 다섯 칸 (펼치기 없음)
 ═══════════════════════════ */
-.wh-ministry-section {
-  padding: 120px 20px 130px;
-  background:
-    radial-gradient(circle at 12% 14%, rgba(115,209,245,0.10), transparent 24%),
-    radial-gradient(circle at 86% 82%, rgba(0,79,104,0.06), transparent 24%),
-    linear-gradient(180deg, #f8fbfc 0%, #ffffff 100%);
-}
-.wh-ministry-inner { max-width: 1180px; margin: 0 auto; }
-.wh-ministry-head { text-align: center; max-width: 720px; margin: 0 auto 56px; }
-.wh-ministry-title {
-  margin: 0 0 16px;
-  color: #004f68;
-  font-family: var(--ff-serif);
-  font-size: clamp(32px, 4vw, 52px);
-  font-weight: 800;
-  line-height: var(--lh-head);
-  letter-spacing: var(--ls-head);
-}
-.wh-ministry-subtitle {
-  margin: 0;
-  color: #6d8089;
-  font-family: var(--ff-sans);
-  font-size: var(--fs-body-l);
-  font-weight: 400;
-  line-height: var(--lh-body);
-}
-.wh-ministry-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-.wh-ministry-card {
-  display: flex; flex-direction: column; justify-content: space-between;
-  min-height: 280px; padding: 32px 28px 28px; border-radius: 20px;
-  text-decoration: none !important; position: relative; overflow: hidden;
-  background: #ffffff; border: 1px solid rgba(0,79,104,0.08);
-  box-shadow: 0 2px 8px rgba(18,55,72,0.04), 0 12px 32px rgba(18,55,72,0.06);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-.wh-ministry-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, #004f68 0%, #007ea1 55%, #73d1f5 100%);
-  opacity: 0.55; transition: opacity 0.25s ease;
-}
-.wh-ministry-card:hover { transform: translateY(-5px); box-shadow: 0 6px 16px rgba(18,55,72,0.07), 0 24px 48px rgba(18,55,72,0.11); }
-.wh-ministry-card:hover::before { opacity: 1; }
-.wh-ministry-card-top { margin-bottom: 20px; }
-.wh-ministry-card-num {
-  display: inline-block; margin-bottom: 14px;
-  color: rgba(0,79,104,0.28);
-  font-family: var(--ff-sans);
-  font-size: var(--fs-label); font-weight: 800; letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-}
-.wh-ministry-card-title {
-  margin: 0;
-  color: #0d1e28;
-  font-family: var(--ff-serif);
-  font-size: 21px; font-weight: 700;
-  letter-spacing: var(--ls-head);
-  line-height: 1.3;
-}
-.wh-ministry-card-text {
-  margin: 0 0 24px;
-  color: #677c86;
-  font-family: var(--ff-sans);
-  font-size: var(--fs-body-s);
-  font-weight: 400;
-  line-height: var(--lh-body);
-}
-.wh-ministry-card-link {
-  display: inline-flex; align-items: center; gap: 7px;
-  color: #004f68;
-  font-family: var(--ff-sans);
-  font-size: 12px; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase;
-}
-.wh-ministry-card-link::after { content: "→"; transition: transform 0.2s; }
-.wh-ministry-card:hover .wh-ministry-card-link::after { transform: translateX(4px); }
+.hm-vision-list { list-style: none; margin-top: 56px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0 28px; }
+.hm-vision-item { padding-top: 22px; border-top: 2px solid var(--hm-navy); }
+.hm-vision-num { display: block; font-family: var(--ff-serif); font-size: 15px; line-height: 1.2; color: var(--hm-deep); }
+.hm-vision-name { margin-top: 14px; font-family: var(--ff-serif); font-size: 22px; font-weight: 700; line-height: 1.3; letter-spacing: -.02em; color: var(--hm-navy); }
+.hm-vision-text { margin-top: 12px; font-size: 14.5px; line-height: 1.8; color: var(--hm-text-2); }
+
+/* ═══════════════════════════
+   6. 사역 — 네 칸 (사진 4:3)
+═══════════════════════════ */
+.hm-min-grid { margin-top: 56px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; }
+.hm-min-card { display: flex; flex-direction: column; min-width: 0; color: inherit; text-decoration: none; }
+.hm-min-card:focus-visible { outline: 2px solid var(--hm-deep); outline-offset: 4px; }
+.hm-min-media { display: block; aspect-ratio: 4 / 3; overflow: hidden; background: #e3eaee; }
+.hm-min-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 1.2s cubic-bezier(.2,.7,.2,1); }
+.hm-min-card:hover .hm-min-media img { transform: scale(1.03); }
+.hm-min-num { margin-top: 20px; font-family: var(--ff-serif); font-size: 14px; line-height: 1.2; color: var(--hm-deep); }
+.hm-min-title { margin-top: 8px; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-family: var(--ff-serif); font-size: 22px; font-weight: 700; line-height: 1.3; letter-spacing: -.02em; color: var(--hm-navy); }
+.hm-min-title svg { color: var(--hm-deep); transition: transform .25s; }
+.hm-min-card:hover .hm-min-title svg { transform: translateX(4px); }
+.hm-min-text { margin-top: 10px; font-size: 14.5px; line-height: 1.75; color: var(--hm-muted); }
+
+/* ═══════════════════════════
+   8. 마무리 — 남색 띠
+═══════════════════════════ */
+.hm-closing { padding: 104px 0; background: var(--hm-navy); color: #fff; }
+.hm-closing-inner { display: flex; justify-content: space-between; align-items: flex-end; gap: 60px; }
+.hm-closing .hm-eyebrow { color: rgba(255,255,255,.78); }
+.hm-closing .hm-h2 { color: #fff; }
+.hm-closing-sub { margin-top: 20px; font-size: 17px; line-height: 1.8; color: rgba(255,255,255,.8); }
+.hm-closing .hm-actions { margin-top: 0; flex: none; }
+
+/* 스크롤하면 떠오르기 — 스크립트가 .hm-rv 를 붙일 때만 (작은 표시 → 제목 → 글 → 왼쪽부터 칸 순서) */
+.hm-rv { opacity: 0; transform: translateY(28px); transition: opacity 1.1s cubic-bezier(.2,.7,.2,1) var(--d, 0s), transform 1.1s cubic-bezier(.2,.7,.2,1) var(--d, 0s); }
+.hm-rv.is-in { opacity: 1; transform: none; }
 
 /* ═══════════════════════════
    반응형
 ═══════════════════════════ */
-@media (max-width: 1100px) { .wh-ministry-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 980px) { .wolko-partnership-v2__grid { grid-template-columns: 1fr; } }
-@media (max-width: 768px) {
-  .wh-home-hero { min-height: auto; }
-  .wh-home-hero-inner { min-height: 100svh; padding: 120px 20px 100px; }
-  .wh-home-hero-title { font-size: clamp(30px, 7.5vw, 38px); }
-  .wh-home-hero-desc { font-size: 16px; margin-bottom: 36px; }
-  .wh-home-btn { width: 100%; max-width: 280px; min-height: 52px; }
-  .wolko-partnership-v2 { padding: 80px 20px 90px; }
-  .wolko-partnership-v2__top { margin-bottom: 44px; }
-  .wolko-partnership-v2__title { font-size: clamp(28px, 7vw, 36px); }
-  .wolko-partnership-v2__subtitle { font-size: 15px; }
-  .wolko-partnership-v2__panel { padding: 28px 26px 26px; }
-  .wolko-partnership-v2__panel-title { font-size: 18px; }
-  .wolko-partnership-v2__text { font-size: 16px; }
-  .wolko-partnership-v2__stat-card { padding: 32px 24px 28px; }
-  .wolko-partnership-v2__stat-value { font-size: 80px; }
-  .wolko-partnership-v2__actions { grid-template-columns: 1fr; }
-  .wolko-partnership-v2__video { margin-top: 52px; padding-top: 48px; }
-  .wolko-partnership-v2__video-wrap { border-radius: 14px; padding-bottom: 56.25%; }
-  .wh-vision-section { padding: 80px 20px; }
-  .wh-vision-head { margin-bottom: 44px; }
-  .wh-vision-title { font-size: clamp(26px, 6.5vw, 32px); }
-  .wh-vision-subtitle { font-size: 15px; }
-  .wh-vision-trigger { gap: 16px; padding: 22px 12px 22px 16px; }
-  .wh-vision-num { font-size: 18px; min-width: 32px; }
-  .wh-vision-label { font-size: 16px; }
-  .wh-vision-body p { padding: 4px 12px 28px 52px; font-size: 16px; line-height: 1.9; }
-  .wh-vision-item.is-active .wh-vision-body { max-height: 480px; }
-  .wh-ministry-section { padding: 80px 20px 90px; }
-  .wh-ministry-head { margin-bottom: 36px; }
-  .wh-ministry-title { font-size: clamp(26px, 6.5vw, 32px); }
-  .wh-ministry-subtitle { font-size: 15px; }
-  .wh-ministry-grid { grid-template-columns: 1fr; gap: 12px; }
-  .wh-ministry-card { min-height: auto; padding: 28px 22px 24px; border-radius: 16px; }
-  .wh-ministry-card-title { font-size: 19px; }
-  .wh-ministry-card-text { font-size: 16px; margin-bottom: 16px; }
+@media (max-width: 1100px) {
+  .hm-hero-bar { grid-template-columns: minmax(0, 1fr) auto; }
+  .hm-hero-pager { grid-column: 1 / -1; margin-top: 28px; flex-direction: row; justify-content: space-between; align-items: center; }
+}
+@media (max-width: 1050px) {
+  .hm-vision-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 44px 28px; }
+}
+@media (max-width: 980px) {
+  .hm-why-inner { grid-template-columns: 1fr; gap: 56px; align-items: start; }
+  .hm-story-inner { grid-template-columns: 1fr; gap: 40px; }
+  .hm-closing-inner { flex-direction: column; align-items: flex-start; gap: 36px; }
+}
+@media (max-width: 900px) {
+  .hm-hero-bar { display: block; }
+  .hm-hero-actions { margin-top: 24px; }
+  .hm-hero-pager { margin-top: 24px; }
+}
+@media (max-width: 860px) {
+  .hm-head { flex-direction: column; align-items: flex-start; gap: 20px; }
+  .hm-min-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 44px 24px; }
+}
+@media (max-width: 740px) {
+  .hm-shell { width: calc(100% - 40px); }
+  .hm-sec { padding: 72px 0; }
+  .hm-h2 { font-size: 30px; }
+  .hm-h2--sm { font-size: 28px; }
+  .hm-lead, .hm-closing-sub { font-size: 15.5px; }
+  .hm-actions { flex-direction: column; }
+  .hm-btn { width: 100%; padding: 0 20px; }
+
+  /* 휴대폰 히어로: 위쪽은 사진, 아래로 남색에 이어진 뒤 글이 놓인다 (맨 위 배너 photo 와 같은 모양) */
+  .hm-hero { padding-top: 0; }
+  .wh-hero-slide { bottom: auto; height: 62%; }
+  .hm-hero-shade { background: linear-gradient(180deg, rgba(5,20,28,0.35) 0%, rgba(5,20,28,0) 14%, rgba(5,20,28,0) 32%, #0b1e27 62%); }
+  .hm-hero-inner { padding-bottom: 28px; }
+  .hm-hero-title { margin-top: 18px; font-size: 34px; line-height: 1.25; }
+  .hm-hero-bar { margin-top: 24px; padding-top: 22px; }
+  .hm-hero-desc { font-size: 15.5px; }
+  .hm-hero-desc br { display: none; }
+  .hm-hero-actions { flex-direction: column; }
+
+  .hm-stat-value { font-size: 96px; }
+  .hm-stat-desc { font-size: 15px; }
+  .hm-video-play { width: 64px; height: 64px; margin: -32px 0 0 -32px; }
+  .hm-home .hm-video-play svg { width: 22px; height: 22px; }
+  .hm-video-title { left: 16px; right: 16px; bottom: 12px; font-size: 13px; }
+
+  /* 비전: 한 줄씩 — 번호 왼쪽, 이름과 글 오른쪽, 줄 사이 가는 선 */
+  .hm-vision-list { margin-top: 36px; grid-template-columns: 1fr; gap: 0; border-top: 2px solid var(--hm-navy); }
+  .hm-vision-item { display: grid; grid-template-columns: 44px minmax(0, 1fr); padding: 20px 0 22px; border-top: 0; border-bottom: 1px solid var(--hm-line); }
+  .hm-vision-num { grid-column: 1; grid-row: 1 / span 2; padding-top: 5px; }
+  .hm-vision-name { grid-column: 2; margin-top: 0; font-size: 20px; }
+  .hm-vision-text { grid-column: 2; margin-top: 8px; font-size: 15px; }
+
+  .hm-min-grid { margin-top: 40px; }
+  .hm-min-title { font-size: 20px; }
+  .hm-closing { padding: 72px 0; }
+  .hm-closing .hm-actions { width: 100%; }
+}
+@media (max-width: 540px) {
+  .hm-min-grid { grid-template-columns: 1fr; gap: 40px; }
 }
 @media (hover: none) {
-  .wh-home-btn:hover { transform: none; }
-  .wh-vision-trigger:hover { background: transparent; }
-  .wh-ministry-card:hover { transform: none; }
+  .hm-min-card:hover .hm-min-media img { transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .wh-home-hero-title, .wh-home-hero-desc, .wh-home-hero-buttons, .wh-vision-item {
-    animation: none !important; transition: none !important;
-    opacity: 1 !important; transform: none !important;
-  }
+  .wh-hero-slide, .wh-hero-slide.wh-slide-active { animation: none !important; transform: none !important; }
+  .hm-btn, .hm-textlink, .hm-min-media img, .hm-min-title svg, .hm-video-poster img, .hm-video-play, .hm-hero-seg::before { transition: none; }
 }
 
 /* ═══════════════════════════
@@ -653,42 +475,74 @@ const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? camp
   </div>
 </div>
 
-<div class="wh-home-combined">
+<div class="hm-home">
 
-  <!-- ══ HERO ══ -->
-  <div class="wh-home-hero" id="heroSection">
-    <div class="wh-hero-slide wh-slide-active" style="background-image:url('/images/heroes/worship.jpg')"></div>
-    <div class="wh-hero-slide" style="background-image:url('/images/heroes/outdoor.jpg')"></div>
-    <div class="wh-hero-slide" style="background-image:url('/images/heroes/books.jpg'); background-position: center 20%;"></div>
-    <div class="wh-hero-slide" style="background-image:url('/images/heroes/cross.jpg')"></div>
-    <div class="wh-hero-slide" style="background-image:url('/images/heroes/samuel.jpg'); background-position: center 15%;"></div>
-    <div class="wh-home-hero-overlay"></div>
-    <div class="wh-home-hero-inner">
-      <div class="wh-home-hero-content">
-        <h1 class="wh-home-hero-title">
-          <span class="wl-ko">한국의 다음 세대에게<br>복음을 전합니다</span>
-          <span class="wl-en">Bringing the Hope of the Gospel<br>to the Next Generation in Korea</span>
-        </h1>
-        <p class="wh-home-hero-desc">
-          <span class="wl-ko">캠프, 청소년 사역, 제자훈련, 성경교육을 통해<br>다음 세대를 예수님과 동행하며 복음을 전하는 리더로 세웁니다.</span>
-          <span class="wl-en">Through camps, youth ministry, discipleship, and Bible education,<br>we raise up the next generation to hear, live, and share the Gospel.</span>
+  <!-- ══ 1. HERO — 사진 5장이 6초마다 바뀌고, 아래 줄 오른쪽 숫자·막대가 함께 바뀐다 ══ -->
+  <section class="hm-hero" id="heroSection">
+    {heroSlides.map((s, i) => (
+      <div
+        class:list={['wh-hero-slide', { 'wh-slide-active': i === 0 }]}
+        style={`background-image:url('${s.src}')${s.pos ? `; background-position: ${s.pos};` : ''}`}
+      ></div>
+    ))}
+    <div class="hm-hero-shade" aria-hidden="true"></div>
+    <div class="hm-shell hm-hero-inner">
+      <p class="hm-hero-eyebrow">Word of Life Korea</p>
+      <h1 class="hm-hero-title">
+        <span class="wl-ko">한국의 다음 세대에게<br>복음을 전합니다</span>
+        <span class="wl-en">Bringing the Hope of the Gospel<br>to the Next Generation in Korea</span>
+      </h1>
+      <div class="hm-hero-bar">
+        <p class="hm-hero-desc">
+          <span class="wl-ko">캠프, 청소년 사역, 제자훈련, 성경교육을 통해 <br>다음 세대를 예수님과 동행하며 복음을 전하는 리더로 세웁니다.</span>
+          <span class="wl-en">Through camps, youth ministry, discipleship, and Bible education, <br>we raise up the next generation to hear, live, and share the Gospel.</span>
         </p>
-        <div class="wh-home-hero-buttons">
-          <a class="wh-home-btn wh-home-btn-primary" href="/give">
-            <span class="wl-ko">후원하기</span>
-            <span class="wl-en">Partner With Us</span>
+        <div class="hm-hero-actions">
+          <a class="hm-btn hm-btn--light" href="/give">
+            <span><span class="wl-ko">후원하기</span><span class="wl-en">Partner With Us</span></span>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
           </a>
-          <a class="wh-home-btn wh-home-btn-secondary" href="/about">
-            <span class="wl-ko">월코 소개</span>
-            <span class="wl-en">Learn About WOLKO</span>
+          <a class="hm-btn hm-btn--ghost" href="/about">
+            <span><span class="wl-ko">월코 소개</span><span class="wl-en">Learn About WOLKO</span></span>
           </a>
+        </div>
+        <div class="hm-hero-pager">
+          <span class="hm-hero-count" aria-hidden="true"><span class="hm-hero-cur">01</span> <span class="hm-hero-total">/ {pad2(heroSlides.length)}</span></span>
+          <span class="hm-hero-segs">
+            {heroSlides.map((_, i) => (
+              <button
+                type="button"
+                class:list={['hm-hero-seg', { 'is-on': i === 0 }]}
+                aria-label={`${i + 1} / ${heroSlides.length}`}
+                aria-current={i === 0 ? 'true' : 'false'}
+              ></button>
+            ))}
+          </span>
         </div>
       </div>
     </div>
-  </div>
+  </section>
+  <script is:inline>
+    // 히어로 등장: 첫 사진을 다 받은 뒤(.is-ready) 사진 → 작은 표시 → 제목 → 아래 줄 순서로 떠오른다(맨 위 배너와 같은 움직임).
+    // 움직임 줄이기 설정이거나 IntersectionObserver 가 없으면 아무것도 하지 않는다 — 처음부터 그대로 다 보인다. 사진이 2.5초 넘게 안 오면 기다리지 않는다.
+    (function () {
+      var h = document.getElementById('heroSection');
+      if (!h || !('IntersectionObserver' in window)) return;
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      h.classList.add('hm-motion');
+      var done = false, first = h.querySelector('.wh-hero-slide'), m = first && /url\(['"]?([^'")]+)/.exec(first.style.backgroundImage);
+      function go() { if (done) return; done = true; h.classList.add('is-ready'); }
+      if (!m) return go();
+      var img = new Image();
+      img.onload = img.onerror = go;
+      img.src = m[1];
+      if (img.complete) go();
+      setTimeout(go, 2500);
+    })();
+  </script>
 
-  <!-- ══ 히어로 바로 아래 한 줄 띠 — 협력 교회가 있다는 것을 바로 알리고, 누르면 아래 전체 목록으로 이동 (목록을 읽으면 나타남) ══ -->
-  <link rel="stylesheet" href="/partner-churches.css?v=24">
+  <!-- ══ 2. 히어로 바로 아래 한 줄 띠 — 협력 교회 수를 알리고, 누르면 아래 목록으로 이동 (목록을 읽으면 나타남, /partner-churches.js) ══ -->
+  <link rel="stylesheet" href="/partner-churches.css?v=25">
   <div class="pc-strip" id="pcStrip" hidden>
     <a class="pc-strip-link" href="#partnerChurches">
       <span class="pc-strip-live" aria-hidden="true"></span>
@@ -696,332 +550,264 @@ const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? camp
         <span class="wl-ko">월코는 현재 <b class="pc-count"></b>개의 교회와 함께하고 있습니다.</span>
         <span class="wl-en">WOLKO is currently serving alongside <b class="pc-count"></b> churches.</span>
       </span>
-      <span class="pc-strip-go" aria-hidden="true"></span>
+      <span class="pc-strip-go">
+        <span class="pc-strip-go-label"><span class="wl-ko">협력 교회 보기</span><span class="wl-en">View partner churches</span></span>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+      </span>
     </a>
   </div>
 
-
-  <!-- ══ PARTNERSHIP ══ -->
-  <section class="wolko-partnership-v2">
-    <div class="wolko-partnership-v2__inner">
-      <div class="wolko-partnership-v2__top">
-        <span class="wolko-partnership-v2__badge">
-          <span class="wl-ko">사역 참여</span>
-          <span class="wl-en">WOLKO PARTNERSHIP</span>
-        </span>
-        <h2 class="wolko-partnership-v2__title">
-          <span class="wl-ko">여러분의 참여가<br>다음 세대를 바꿉니다</span>
-          <span class="wl-en">Your Partnership<br>Changes the Next Generation</span>
+  <!-- ══ 3. 왜 지금인가 ══ -->
+  <section class="hm-sec hm-sec--soft hm-why" data-rv-group>
+    <div class="hm-shell hm-why-inner">
+      <div>
+        <p class="hm-eyebrow" data-rv><span class="wl-ko">왜 지금인가 · WHY IT MATTERS</span><span class="wl-en">Why It Matters</span></p>
+        <h2 class="hm-h2" data-rv>
+          <span class="wl-ko">지금도 많은 청소년들이<br>복음을 듣지 못한 채<br>살아가고 있습니다.</span>
+          <span class="wl-en">Countless young people in Korea<br>have never heard the Gospel.</span>
         </h2>
-        <p class="wolko-partnership-v2__subtitle">
-          <span class="wl-ko">한 사람의 변화가 또 다른 삶을 변화시키는<br>복음의 흐름에 함께해 주세요.</span>
-          <span class="wl-en">One life changed leads to another.<br>Join the movement of the Gospel.</span>
+        <p class="hm-lead" data-rv>
+          <span class="wl-ko">월코는 다음 세대를 향해 복음을 전하고, 제자를 세우며, 삶의 변화가 이어지는 복음 배가운동을 감당하고 있습니다.</span>
+          <span class="wl-en">WOLKO reaches the next generation with the Gospel, raises disciples, and sustains a movement of life-transforming faith.</span>
         </p>
-      </div>
-      <div class="wolko-partnership-v2__grid">
-        <div class="wolko-partnership-v2__copy">
-          <div class="wolko-partnership-v2__panel">
-            <p class="wolko-partnership-v2__eyebrow">
-              <span class="wl-ko">이 사역에 왜 참여해야 할까요?</span>
-              <span class="wl-en">WHY IT MATTERS</span>
-            </p>
-            <h3 class="wolko-partnership-v2__panel-title">
-              <span class="wl-ko">지금도 많은 청소년들이<br>복음을 듣지 못한 채<br>살아가고 있습니다.</span>
-              <span class="wl-en">Countless young people in Korea<br>have never heard the Gospel.</span>
-            </h3>
-            <p class="wolko-partnership-v2__text">
-              <span class="wl-ko">월코는 다음 세대를 향해 복음을 전하고, 제자를 세우며, 삶의 변화가 이어지는 복음 배가운동을 감당하고 있습니다.</span>
-              <span class="wl-en">WOLKO reaches the next generation with the Gospel, raises disciples, and sustains a movement of life-transforming faith.</span>
-            </p>
-          </div>
-        </div>
-        <div class="wolko-partnership-v2__side">
-          <div class="wolko-partnership-v2__stat-card">
-            <p class="wolko-partnership-v2__stat-label">
-              <span class="wl-ko">한국 청소년 무종교율</span>
-              <span class="wl-en">KOREAN YOUTH WITHOUT RELIGIOUS AFFILIATION</span>
-            </p>
-            <div class="wolko-partnership-v2__stat-value">83<span>%</span></div>
-            <p class="wolko-partnership-v2__stat-desc">
-              <span class="wl-ko">한국 청소년 10명 중 8명 이상이 종교가 없습니다. 종교가 있다고 답한 17%마저 개신교·불교·천주교 등 <strong>모든 종교를 합한 수치</strong>입니다.</span>
-              <span class="wl-en">More than 8 in 10 Korean teens have no religion — and even the 17% who do represent <strong>all religions combined</strong> (Protestant, Buddhist, Catholic, and others).</span>
-            </p>
-            <p class="wolko-partnership-v2__stat-source">
-              <span class="wl-ko">한국갤럽 「한국인의 종교 1983–2025」 · 만 13~18세 기준</span>
-              <span class="wl-en">Gallup Korea, “Religion of Koreans 1983–2025” · ages 13–18</span>
-            </p>
-          </div>
-          <div class="wolko-partnership-v2__actions">
-            <a href="/give" class="wolko-partnership-v2__btn is-primary">
-              <span class="wl-ko">함께하기</span>
-              <span class="wl-en">Partner Now</span>
-            </a>
-            <a href="/contact" class="wolko-partnership-v2__btn is-secondary">
-              <span class="wl-ko">문의하기</span>
-              <span class="wl-en">Contact Us</span>
-            </a>
-          </div>
+        <div class="hm-actions" data-rv>
+          <a class="hm-btn hm-btn--primary" href="/give">
+            <span><span class="wl-ko">함께하기</span><span class="wl-en">Partner Now</span></span>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+          </a>
+          <a class="hm-btn hm-btn--outline" href="/contact">
+            <span><span class="wl-ko">문의하기</span><span class="wl-en">Contact Us</span></span>
+          </a>
         </div>
       </div>
-      <div class="wolko-partnership-v2__video">
-        <p class="wolko-partnership-v2__video-label">
-          <span class="wl-ko">우리의 이야기</span>
-          <span class="wl-en">OUR STORY</span>
+      <div class="hm-stat" data-rv>
+        <p class="hm-stat-label">
+          <span class="wl-ko">한국 청소년 무종교율</span>
+          <span class="wl-en">Korean youth without religious affiliation</span>
         </p>
-        <div class="wolko-partnership-v2__video-wrap">
-          <iframe
-            src="https://www.youtube.com/embed/pDTo4oNcAMg?cc_load_policy=1&cc_lang_pref=ko&hl=ko"
-            title="Word of Life Korea"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen
-            loading="lazy"
-          ></iframe>
-        </div>
-        <p class="wolko-partnership-v2__video-caption">
-          <span class="wl-ko">월코가 걸어온 길, 그리고 함께 만들어갈 다음 세대의 이야기</span>
-          <span class="wl-en">The story of WOLKO — and the next generation we're building together</span>
+        <p class="hm-stat-value">83<span>%</span></p>
+        <p class="hm-stat-desc">
+          <span class="wl-ko">한국 청소년 10명 중 8명 이상이 종교가 없습니다. 종교가 있다고 답한 17%마저 개신교·불교·천주교 등 <strong>모든 종교를 합한 수치</strong>입니다.</span>
+          <span class="wl-en">More than 8 in 10 Korean teens have no religion — and even the 17% who do represent <strong>all religions combined</strong> (Protestant, Buddhist, Catholic, and others).</span>
+        </p>
+        <p class="hm-stat-source">
+          <span class="wl-ko">한국갤럽 「한국인의 종교 1983–2025」 · 만 13~18세 기준</span>
+          <span class="wl-en">Gallup Korea, “Religion of Koreans 1983–2025” · ages 13–18</span>
         </p>
       </div>
     </div>
   </section>
 
-  <!-- ══ VISION ══ -->
-  <section class="wh-vision-section">
-    <div class="wh-vision-inner">
-      <div class="wh-vision-head">
-        <span class="wh-badge">
-          <span class="wl-ko">월코 비전</span>
-          <span class="wl-en">WOLKO VISION</span>
-        </span>
-        <h2 class="wh-vision-title">
-          <span class="wl-ko">월코 사역목표 및 비전</span>
-          <span class="wl-en">Our Mission & Vision</span>
+  <!-- ══ 4. 우리의 이야기 — 사진을 누르면 그 자리에서 유튜브 영상이 재생된다 ══ -->
+  <section class="hm-sec hm-story" data-rv-group>
+    <div class="hm-shell hm-story-inner">
+      <div>
+        <p class="hm-eyebrow" data-rv><span class="wl-ko">우리의 이야기 · OUR STORY</span><span class="wl-en">Our Story</span></p>
+        <h2 class="hm-h2 hm-h2--sm" data-rv>
+          <span class="wl-ko">월코가 걸어온 길,<br>함께 만들어 갈<br>다음 세대의 이야기</span>
+          <span class="wl-en">The Story of WOLKO<br>and the Next Generation<br>We're Building Together</span>
         </h2>
-        <p class="wh-vision-subtitle">
+        <p class="hm-story-text" data-rv>
+          <span class="wl-ko">영상으로 월코의 사역과 사람들을 만나 보세요.</span>
+          <span class="wl-en">Meet WOLKO's ministry and people in this video.</span>
+        </p>
+      </div>
+      <div class="hm-video" id="homeVideo" data-rv data-src="https://www.youtube.com/embed/pDTo4oNcAMg?cc_load_policy=1&cc_lang_pref=ko&hl=ko&autoplay=1">
+        <button type="button" class="hm-video-poster">
+          <img src="/images/heroes/campgroup.jpg" alt="" loading="lazy" decoding="async">
+          <span class="hm-video-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          <span class="hm-sr"><span class="wl-ko">영상 재생: </span><span class="wl-en">Play video: </span></span>
+          <span class="hm-video-title">
+            <span class="wl-ko">한국생명의말씀협회 소개 | Word of Life Korea Intro</span>
+            <span class="wl-en">Word of Life Korea Intro</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 5. 비전 — 다섯 칸에 글을 모두 보여 준다 ══ -->
+  <section class="hm-sec hm-sec--soft hm-vision" data-rv-group>
+    <div class="hm-shell">
+      <div class="hm-head">
+        <div>
+          <p class="hm-eyebrow" data-rv><span class="wl-ko">월코 비전 · WOLKO VISION</span><span class="wl-en">WOLKO Vision</span></p>
+          <h2 class="hm-h2" data-rv>
+            <span class="wl-ko">월코 사역목표 및 비전</span>
+            <span class="wl-en">Our Mission &amp; Vision</span>
+          </h2>
+        </div>
+        <p class="hm-head-sub" data-rv>
           <span class="wl-ko">하나님의 말씀 위에 다음 세대를 세우기 위한 월코의 핵심 사역 방향입니다.</span>
           <span class="wl-en">The core pillars that guide WOLKO in raising the next generation on God's Word.</span>
         </p>
       </div>
-      <div class="wh-vision-list" id="visionList">
+      <ol class="hm-vision-list">
+        {visions.map((v, i) => (
+          <li class="hm-vision-item" data-rv>
+            <span class="hm-vision-num">{pad2(i + 1)}</span>
+            <h3 class="hm-vision-name"><span class="wl-ko">{v.ko}</span><span class="wl-en">{v.en}</span></h3>
+            <p class="hm-vision-text"><span class="wl-ko">{v.dKo}</span><span class="wl-en">{v.dEn}</span></p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
 
-        <div class="wh-vision-item" style="--wh-i:0">
-          <button class="wh-vision-trigger" type="button">
-            <span class="wh-vision-accent"></span>
-            <span class="wh-vision-num">01</span>
-            <div class="wh-vision-titles">
-              <span class="wh-vision-label">
-                <span class="wl-ko">성경중심</span><span class="wl-en">Bible-Centered</span>
-              </span>
-            </div>
-            <span class="wh-vision-chevron"></span>
-          </button>
-          <div class="wh-vision-body"><p>
-            <span class="wl-ko">성경은 우리 삶의 기초이며, 많은 사람의 삶에 변화를 가져왔습니다.</span>
-            <span class="wl-en">At the heart of every WOLKO ministry is the unchanging truth of Scripture. The Bible is not merely a book — it is our foundation, our guide for life, and our unshakeable source of hope. From summer camps to the deep Bible studies at WOLBI Jeju, everything we do is firmly built on the Word of God.</span>
-          </p></div>
+  <!-- ══ 6. 사역 소개 — 네 칸 ══ -->
+  <section class="hm-sec hm-ministry" data-rv-group>
+    <div class="hm-shell">
+      <div class="hm-head">
+        <div>
+          <p class="hm-eyebrow" data-rv><span class="wl-ko">사역 소개 · OUR MINISTRY</span><span class="wl-en">Our Ministry</span></p>
+          <h2 class="hm-h2" data-rv>
+            <span class="wl-ko">다음 세대를 세우는<br>월코의 사역</span>
+            <span class="wl-en">WOLKO Ministries<br>for the Next Generation</span>
+          </h2>
         </div>
-
-        <div class="wh-vision-item" style="--wh-i:1">
-          <button class="wh-vision-trigger" type="button">
-            <span class="wh-vision-accent"></span>
-            <span class="wh-vision-num">02</span>
-            <div class="wh-vision-titles">
-              <span class="wh-vision-label">
-                <span class="wl-ko">청소년 사역 중심</span><span class="wl-en">Youth-Focused</span>
-              </span>
-            </div>
-            <span class="wh-vision-chevron"></span>
-          </button>
-          <div class="wh-vision-body"><p>
-            <span class="wl-ko">월코를 움직이는 힘은 다음 세대를 향한 열정입니다. 그들 안에는 그리스도를 위해 세상을 바꿀 놀라운 가능성이 있습니다. 그 가능성을 믿기에, 월코는 오늘도 청소년 사역에 온 힘을 쏟습니다.</span>
-            <span class="wl-en">The driving force behind WOLKO is a passion for the next generation. Young people hold incredible potential to change the world for Christ. Because we believe in that potential, WOLKO pours everything into every ministry we do.</span>
-          </p></div>
-        </div>
-
-        <div class="wh-vision-item" style="--wh-i:2">
-          <button class="wh-vision-trigger" type="button">
-            <span class="wh-vision-accent"></span>
-            <span class="wh-vision-num">03</span>
-            <div class="wh-vision-titles">
-              <span class="wh-vision-label">
-                <span class="wl-ko">복음전파</span><span class="wl-en">Evangelism</span>
-              </span>
-            </div>
-            <span class="wh-vision-chevron"></span>
-          </button>
-          <div class="wh-vision-body"><p>
-            <span class="wl-ko">월코는 복음을 통해 예수 그리스도가 삶의 해답이라는 것을 전합니다.</span>
-            <span class="wl-en">The message WOLKO carries is simple, yet life-changing: Jesus Christ is the answer. Through dynamic youth ministry, Bible school campuses, international missions, and youth camps, WOLKO is committed to sharing the Gospel with every generation.</span>
-          </p></div>
-        </div>
-
-        <div class="wh-vision-item" style="--wh-i:3">
-          <button class="wh-vision-trigger" type="button">
-            <span class="wh-vision-accent"></span>
-            <span class="wh-vision-num">04</span>
-            <div class="wh-vision-titles">
-              <span class="wh-vision-label">
-                <span class="wl-ko">제자훈련</span><span class="wl-en">Discipleship</span>
-              </span>
-            </div>
-            <span class="wh-vision-chevron"></span>
-          </button>
-          <div class="wh-vision-body"><p>
-            <span class="wl-ko">월코는 주님께서 주신 지상명령에 순종하기위해 제자훈련을 합니다. 참 제자는 또 다른 제자를 세웁니다.</span>
-            <span class="wl-en">In obedience to the Great Commission, WOLKO makes disciples — and true disciples make more disciples.</span>
-          </p></div>
-        </div>
-
-        <div class="wh-vision-item" style="--wh-i:4">
-          <button class="wh-vision-trigger" type="button">
-            <span class="wh-vision-accent"></span>
-            <span class="wh-vision-num">05</span>
-            <div class="wh-vision-titles">
-              <span class="wh-vision-label">
-                <span class="wl-ko">열정과 헌신</span><span class="wl-en">Passion-Driven</span>
-              </span>
-            </div>
-            <span class="wh-vision-chevron"></span>
-          </button>
-          <div class="wh-vision-body"><p>
-            <span class="wl-ko">월코의 정신은 열정과 목적, 그리고 복음을 전하려는 공동의 헌신 위에 세워져 있습니다. 우리는 그리스도를 위해 사는 것이 최고의 삶이라 여기며, 그 열정이 모든 사역의 원동력이 됩니다.</span>
-            <span class="wl-en">WOLKO was built on passion, purpose, and a unified devotion to sharing the Gospel. Living for Christ is the greatest adventure we know — and that excitement and conviction drives everything we do.</span>
-          </p></div>
-        </div>
-
+        <a class="hm-textlink" href="/ministry" data-rv>
+          <span><span class="wl-ko">사역 전체 보기</span><span class="wl-en">View All Ministries</span></span>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+        </a>
+      </div>
+      <div class="hm-min-grid">
+        {ministries.map((m, i) => (
+          <a class="hm-min-card" href={m.href} data-rv>
+            <span class="hm-min-media"><img src={m.img} alt="" loading="lazy" decoding="async"></span>
+            <span class="hm-min-num">{pad2(i + 1)}</span>
+            <h3 class="hm-min-title">
+              <span><span class="wl-ko">{m.ko}</span><span class="wl-en">{m.en}</span></span>
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+            </h3>
+            <span class="hm-min-text"><span class="wl-ko">{m.dKo}</span><span class="wl-en">{m.dEn}</span></span>
+          </a>
+        ))}
       </div>
     </div>
   </section>
 
-  <!-- ══ MINISTRY ══ -->
-  <section class="wh-ministry-section">
-    <div class="wh-ministry-inner">
-      <div class="wh-ministry-head">
-        <span class="wh-badge">
-          <span class="wl-ko">사역 소개</span>
-          <span class="wl-en">OUR MINISTRY</span>
-        </span>
-        <h2 class="wh-ministry-title">
-          <span class="wl-ko">다음 세대를 세우는 월코의 사역</span>
-          <span class="wl-en">WOLKO Ministries for the Next Generation</span>
-        </h2>
-        <p class="wh-ministry-subtitle">
-          <span class="wl-ko">복음을 전하고, 제자를 세우며, 삶의 현장 속으로 이어지는 사역을 감당합니다.</span>
-          <span class="wl-en">We share the Gospel, raise disciples, and carry the mission into every area of life.</span>
-        </p>
-      </div>
-      <div class="wh-ministry-grid">
-
-        <a class="wh-ministry-card" href="/camp">
-          <div class="wh-ministry-card-top">
-            <span class="wh-ministry-card-num">01</span>
-            <h3 class="wh-ministry-card-title"><span class="wl-ko">캠프 사역</span><span class="wl-en">Camp Ministry</span></h3>
-          </div>
-          <p class="wh-ministry-card-text">
-            <span class="wl-ko">청소년과 다음 세대가 복음을 듣고 삶의 전환점을 경험하도록 돕는 월코의 대표 사역입니다.</span>
-            <span class="wl-en">WOLKO's flagship ministry — helping youth and the next generation hear the Gospel and experience life-changing encounters.</span>
-          </p>
-          <span class="wh-ministry-card-link"><span class="wl-ko">자세히 보기</span><span class="wl-en">Learn More</span></span>
-        </a>
-
-        <a class="wh-ministry-card" href="/youth">
-          <div class="wh-ministry-card-top">
-            <span class="wh-ministry-card-num">02</span>
-            <h3 class="wh-ministry-card-title"><span class="wl-ko">청소년 사역</span><span class="wl-en">Youth Ministry</span></h3>
-          </div>
-          <p class="wh-ministry-card-text">
-            <span class="wl-ko">교회와 삶 속에서 청소년들이 말씀 위에 세워지고 예수 그리스도를 따르도록 섬깁니다.</span>
-            <span class="wl-en">Serving youth in churches and communities, helping them build their lives on God's Word and follow Jesus Christ.</span>
-          </p>
-          <span class="wh-ministry-card-link"><span class="wl-ko">자세히 보기</span><span class="wl-en">Learn More</span></span>
-        </a>
-
-        <a class="wh-ministry-card" href="/wolbi-jeju">
-          <div class="wh-ministry-card-top">
-            <span class="wh-ministry-card-num">03</span>
-            <h3 class="wh-ministry-card-title"><span class="wl-ko">제주 월비</span><span class="wl-en">WOLBI Jeju</span></h3>
-          </div>
-          <p class="wh-ministry-card-text">
-            <span class="wl-ko">깊이 있는 성경 연구와 훈련을 통해 복음을 삶으로 살아내는 제자를 세워갑니다.</span>
-            <span class="wl-en">Through in-depth Bible study and training, we raise disciples who live out the Gospel in everyday life.</span>
-          </p>
-          <span class="wh-ministry-card-link"><span class="wl-ko">자세히 보기</span><span class="wl-en">Learn More</span></span>
-        </a>
-
-        <a class="wh-ministry-card" href="/give">
-          <div class="wh-ministry-card-top">
-            <span class="wh-ministry-card-num">04</span>
-            <h3 class="wh-ministry-card-title"><span class="wl-ko">선교 및 참여</span><span class="wl-en">Missions & Giving</span></h3>
-          </div>
-          <p class="wh-ministry-card-text">
-            <span class="wl-ko">기도와 후원, 재능기부와 직접 참여를 통해 더 많은 다음 세대에게 복음이 흘러가게 합니다.</span>
-            <span class="wl-en">Through prayer, giving, volunteering, and direct involvement, help the Gospel reach more of the next generation.</span>
-          </p>
-          <span class="wh-ministry-card-link"><span class="wl-ko">자세히 보기</span><span class="wl-en">Learn More</span></span>
-        </a>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ══ 월코와 함께 협력하는 교회 — 사역 소개 다음(우리가 누구인지 · 무엇을 하는지 → 누가 함께하는지). 히어로 아래의 한 줄 띠(#pcStrip)에서 여기로 이동한다. 다른 구역과 같은 머리말 스타일, 카드 없이 이름만 (CRS 교회 이름만, 목록이 없으면 숨김) ══ -->
-  <section class="pc-band" id="partnerChurches" aria-labelledby="pcTitle" hidden>
+  <!-- ══ 7. 월코와 함께 협력하는 교회 — 히어로 아래 한 줄 띠(#pcStrip)에서 여기로 이동한다. 이름은 /partner-churches.js 가 채운다 (CRS 교회 이름만, 목록이 없으면 숨김) ══ -->
+  <section class="pc-band" id="partnerChurches" aria-labelledby="pcTitle" data-rv-group hidden>
     <div class="pc-inner">
-      <div class="wolko-partnership-v2__top">
-        <span class="wolko-partnership-v2__badge">
-          <span class="wl-ko">협력 교회</span>
-          <span class="wl-en">PARTNER CHURCHES</span>
-        </span>
-        <h2 class="wolko-partnership-v2__title" id="pcTitle">
+      <div class="pc-head">
+        <p class="hm-eyebrow" data-rv><span class="wl-ko">협력 교회 · PARTNER CHURCHES</span><span class="wl-en">Partner Churches</span></p>
+        <h2 class="hm-h2 hm-h2--sm" id="pcTitle" data-rv>
           <span class="wl-ko">월코와 함께<br>협력하는 교회</span>
           <span class="wl-en">Churches Partnering<br>with WOLKO</span>
         </h2>
-        <p class="wolko-partnership-v2__subtitle">
-          <span class="wl-ko"><b class="pc-count"></b>개의 교회가 한 마음으로<br>다음 세대를 함께 섬기고 있어요.</span>
-          <span class="wl-en"><b class="pc-count"></b> churches serving<br>the next generation together.</span>
+        <p class="pc-sub" data-rv>
+          <span class="wl-ko"><b class="pc-count"></b>개의 교회가 한 마음으로 다음 세대를 함께 섬기고 있어요.</span>
+          <span class="wl-en"><b class="pc-count"></b> churches serving the next generation together.</span>
         </p>
       </div>
-      <ul class="pc-names" id="pcNames" aria-label="Partner churches"></ul>
+      <ul class="pc-names" id="pcNames" aria-label="Partner churches" data-rv></ul>
     </div>
   </section>
   <script is:inline src="/partner-churches.js?v=18" defer></script>
+
+  <!-- ══ 8. 마무리 — 사역 참여 ══ -->
+  <section class="hm-closing" data-rv-group>
+    <div class="hm-shell hm-closing-inner">
+      <div>
+        <p class="hm-eyebrow" data-rv><span class="wl-ko">사역 참여 · PARTNERSHIP</span><span class="wl-en">Partnership</span></p>
+        <h2 class="hm-h2" data-rv>
+          <span class="wl-ko">여러분의 참여가<br>다음 세대를 바꿉니다</span>
+          <span class="wl-en">Your Partnership<br>Changes the Next Generation</span>
+        </h2>
+        <p class="hm-closing-sub" data-rv>
+          <span class="wl-ko">한 사람의 변화가 또 다른 삶을 변화시키는 복음의 흐름에 함께해 주세요.</span>
+          <span class="wl-en">One life changed leads to another. Join the movement of the Gospel.</span>
+        </p>
+      </div>
+      <div class="hm-actions" data-rv>
+        <a class="hm-btn hm-btn--light" href="/give">
+          <span><span class="wl-ko">후원하기</span><span class="wl-en">Partner With Us</span></span>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+        </a>
+        <a class="hm-btn hm-btn--ghost" href="/contact">
+          <span><span class="wl-ko">문의하기</span><span class="wl-en">Contact Us</span></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <script is:inline>
+    // 스크롤하면 떠오르기: 구역([data-rv-group])마다 [data-rv] 를 문서 순서대로(작은 표시 → 제목 → 글 → 왼쪽부터 칸) 조금씩 늦춰 띄운다.
+    // 움직임 줄이기 설정이거나 IntersectionObserver 가 없으면 아무것도 하지 않는다 — 처음부터 그대로 다 보인다.
+    (function () {
+      if (!('IntersectionObserver' in window)) return;
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var items = [];
+      [].forEach.call(document.querySelectorAll('.hm-home [data-rv-group]'), function (g) {
+        [].forEach.call(g.querySelectorAll('[data-rv]'), function (el, i) {
+          el.style.setProperty('--d', Math.min(i, 6) * 0.08 + 's');
+          el.classList.add('hm-rv');
+          items.push(el);
+        });
+      });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); } });
+      }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+      items.forEach(function (el) { io.observe(el); });
+    })();
+  </script>
 
 </div>
 
 
 <script>
-  // ── Hero Slideshow ──────────────────────────────────────
+  // ── 히어로 사진 교체 ─────────────────────────────────────
+  // 6초마다 다음 사진으로. 아래 줄의 숫자(01 / 05)와 막대가 함께 바뀌고, 막대를 누르면 그 사진으로 가서 6초를 새로 센다.
   (function() {
-    const slides = document.querySelectorAll('#heroSection .wh-hero-slide');
+    const hero = document.getElementById('heroSection');
+    if (!hero) return;
+    const slides = hero.querySelectorAll('.wh-hero-slide');
     if (!slides.length) return;
+    const segs = hero.querySelectorAll('.hm-hero-seg');
+    const cur = hero.querySelector('.hm-hero-cur');
     let current = 0;
+    let timer = 0;
 
-    function nextSlide() {
+    function show(idx) {
       slides[current].classList.remove('wh-slide-active');
-      current = (current + 1) % slides.length;
+      current = (idx + slides.length) % slides.length;
       const next = slides[current];
       next.classList.add('wh-slide-active');
       // re-trigger Ken Burns animation
       next.style.animation = 'none';
       void next.offsetWidth;
       next.style.animation = '';
+      if (cur) cur.textContent = String(current + 1).padStart(2, '0');
+      segs.forEach(function(s, i) {
+        s.classList.toggle('is-on', i === current);
+        s.setAttribute('aria-current', i === current ? 'true' : 'false');
+      });
     }
-
-    setInterval(nextSlide, 6000);
+    function restart() {
+      clearInterval(timer);
+      timer = setInterval(function() { show(current + 1); }, 6000);
+    }
+    segs.forEach(function(s, i) {
+      s.addEventListener('click', function() { if (i !== current) show(i); restart(); });
+    });
+    restart();
   })();
 
-// ── Vision Accordion ────────────────────────────────────
+  // ── 우리의 이야기 영상: 사진을 누르면 그 자리에 유튜브 영상을 넣고 바로 재생 ──
   (function() {
-    const items = document.querySelectorAll('#visionList .wh-vision-item');
-    items.forEach(function(item) {
-      const trigger = item.querySelector('.wh-vision-trigger');
-      if (!trigger) return;
-      trigger.addEventListener('click', function() {
-        const isOpen = item.classList.contains('is-active');
-        items.forEach(function(i) { i.classList.remove('is-active'); });
-        if (!isOpen) item.classList.add('is-active');
-      });
+    const box = document.getElementById('homeVideo');
+    const poster = box && box.querySelector('.hm-video-poster');
+    if (!box || !poster) return;
+    poster.addEventListener('click', function() {
+      const frame = document.createElement('iframe');
+      frame.src = box.getAttribute('data-src') || '';
+      frame.title = 'Word of Life Korea';
+      frame.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+      frame.setAttribute('allowfullscreen', '');
+      frame.setAttribute('frameborder', '0');
+      while (box.firstChild) box.removeChild(box.firstChild);
+      box.appendChild(frame);
+      frame.focus();
     });
   })();
 

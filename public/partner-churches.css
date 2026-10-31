@@ -1,60 +1,67 @@
-/* 홈페이지 "월코와 함께 협력하는 교회" — 다음 구역(사역 참여)과 같은 머리말 스타일을 쓰고, 카드 없이 교회 이름만 가운데 정렬로 늘어놓는다.
-   이름만 깔끔하게 늘어놓는다(색 점·움직임 없음). 머리말(배지·제목·부제)은 index.astro 의 wolko-partnership-v2__* 규칙을 그대로 쓴다. */
-.pc-band { padding: 112px 20px 104px; background: radial-gradient(circle at 86% 18%, rgba(115, 209, 245, .09), transparent 30%), linear-gradient(180deg, #ffffff 0%, #fbfdfe 100%); }
-.pc-band[hidden] { display: none; }
-.pc-inner { max-width: 1180px; margin: 0 auto; }
-.pc-band .wolko-partnership-v2__top { margin-bottom: 52px; }
-.pc-count { color: #006f90; font-weight: 800; margin-right: 1px; }
-.pc-names { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px 38px; max-width: 1040px; margin: 0 auto; padding: 38px 8px; list-style: none; border-top: 1px solid rgba(0, 79, 104, .12); border-bottom: 1px solid rgba(0, 79, 104, .12); }
+/* 홈페이지 "월코와 함께 협력하는 교회" — 히어로 바로 아래 남색 한 줄 띠(#pcStrip)와, 아래쪽 협력 교회 구역(#partnerChurches).
+   교회 이름은 /partner-churches.js 가 <li class="pc-item"><span class="pc-text"><span class="pc-name"> (+ <small class="pc-en">) 로 채운다.
+   다른 구역과 같은 규칙: 1200px 폭, 각진 모양, 둥근 카드·그림자 없음. 머리말(작은 표시·제목)은 index.astro 의 hm-eyebrow · hm-h2 를 쓴다. */
 
-.pc-item { display: inline-flex; align-items: center; color: #29505f; font: 700 clamp(16px, 1.45vw, 19px)/1.4 var(--ff-sans, 'Pretendard Variable', Pretendard, 'Noto Sans KR', sans-serif); letter-spacing: -.02em; word-break: keep-all; cursor: default; }
-/* ── 히어로 바로 아래 한 줄 띠 ── */
-.pc-strip { background: #fff; border-bottom: 1px solid rgba(0, 79, 104, .09); text-align: center; }
+/* ── 히어로 바로 아래 한 줄 띠 (남색, 높이 64px) ── */
+.pc-strip { position: relative; overflow: hidden; background: #0b2430; color: #fff; }
 .pc-strip[hidden] { display: none; }
-.pc-strip-link { display: inline-flex; align-items: center; gap: 12px; padding: 17px 20px; color: #29505f; text-decoration: none; font: 700 15px/1.4 var(--ff-sans, 'Pretendard Variable', Pretendard, 'Noto Sans KR', sans-serif); letter-spacing: -.01em; }
-.pc-strip-text b { color: #006f90; font-weight: 800; }
-.pc-strip-go { width: 8px; height: 8px; border-top: 2px solid #006f90; border-right: 2px solid #006f90; transform: rotate(45deg); transition: transform .2s; }
-.pc-strip-link:hover .pc-strip-go { transform: translateX(4px) rotate(45deg); }
-.pc-strip-link:hover .pc-strip-text { color: #004f68; }
-.pc-strip-link:focus-visible { outline: 2px solid #004f68; outline-offset: -4px; border-radius: 12px; }
-.pc-band { scroll-margin-top: 72px; }
-@media (max-width: 640px) { .pc-strip-link { padding: 14px 16px; font-size: 14px; gap: 10px; } }
-@media (prefers-reduced-motion: reduce) { .pc-strip-go { transition: none; } }
+.pc-strip-link { width: min(1200px, calc(100% - 48px)); min-height: 64px; margin: 0 auto; display: flex; align-items: center; gap: 14px; color: #fff; text-decoration: none; font: 500 15px/1.5 var(--ff-sans, 'Pretendard Variable', Pretendard, 'Noto Sans KR', sans-serif); letter-spacing: -.01em; word-break: keep-all; }
+.pc-strip-link:hover, .pc-strip-link:visited { color: #fff; }
+.pc-strip-text { flex: 1; min-width: 0; color: #fff; }   /* 글자는 늘 단색 — 글자 모양으로 배경을 오려 칠하는 방식은 숫자가 바뀔 때 Safari 에서 글자가 비어 보여서 쓰지 않는다 */
+/* 숫자가 올라가는 동안 줄이 좌우로 밀리지 않도록 숫자 칸의 폭을 처음부터 고정한다(폭이 바뀌면 Safari 가 움직이는 줄의 일부를 다시 그리지 못해 글자가 비어 보였다) */
+.pc-strip-text b { display: inline-block; margin: 0 2px; text-align: center; font-variant-numeric: tabular-nums; font-family: var(--ff-serif, 'GmarketSans', sans-serif); font-size: 18px; font-weight: 700; line-height: 1; color: #fff; }
+.pc-strip-go { flex: none; display: inline-flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: #fff; }
+.pc-strip-go svg { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: square; }
+.pc-strip-link:hover .pc-strip-go-label { text-decoration: underline; text-underline-offset: 4px; }
+.pc-strip-link:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
 
 /* ── 띠 애니메이션: 처음 나타날 때 떠오르고, 숫자가 올라가며, 화살표가 주기적으로 앞을 가리킨다 ── */
 .pc-strip:not([hidden]) .pc-strip-link { animation: pc-rise .8s cubic-bezier(.2, .8, .3, 1) backwards; }   /* backwards: 끝난 뒤에는 효과가 풀려 그래픽 레이어가 남지 않는다 */
 @keyframes pc-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-.pc-strip-text { color: #29505f; }   /* 글자는 늘 단색 — 글자 모양으로 배경을 오려 칠하는 방식은 숫자가 바뀔 때 Safari 에서 글자가 비어 보여서 쓰지 않는다 */
-/* 숫자가 올라가는 동안 줄이 좌우로 밀리지 않도록 숫자 칸의 폭을 처음부터 고정한다(폭이 바뀌면 Safari 가 움직이는 줄의 일부를 다시 그리지 못해 글자가 비어 보였다) */
-.pc-strip-text b { display: inline-block; text-align: center; font-variant-numeric: tabular-nums; }
 /* 글자와 겹치지 않는 별도 요소로만 움직인다(transform·opacity 만) — 글자 자체는 칠하지도 다시 배치하지도 않는다 */
-.pc-strip { position: relative; overflow: hidden; }
-.pc-strip-live { position: relative; flex: none; width: 8px; height: 8px; border-radius: 50%; background: #1fa4cf; }
-.pc-strip-live::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: #1fa4cf; animation: pc-ping 2.6s cubic-bezier(0, 0, .2, 1) 1.2s infinite; }
-@keyframes pc-ping { 0% { transform: scale(1); opacity: .55; } 70%, 100% { transform: scale(3.4); opacity: 0; } }
-.pc-strip:not([hidden])::after { content: ''; position: absolute; left: 0; bottom: 0; width: 30%; height: 2px; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(31, 164, 207, .6), transparent); transform: translateX(-100%); animation: pc-travel 6s ease-in-out 1.6s infinite; }
+.pc-strip-live { position: relative; flex: none; width: 6px; height: 6px; background: #73d1f5; }
+.pc-strip-live::after { content: ''; position: absolute; inset: 0; background: #73d1f5; animation: pc-ping 2.6s cubic-bezier(0, 0, .2, 1) 1.2s infinite; }
+@keyframes pc-ping { 0% { transform: scale(1); opacity: .5; } 70%, 100% { transform: scale(3.2); opacity: 0; } }
+.pc-strip:not([hidden])::after { content: ''; position: absolute; left: 0; bottom: 0; width: 30%; height: 1px; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(115, 209, 245, .5), transparent); transform: translateX(-100%); animation: pc-travel 6s ease-in-out 1.6s infinite; }
 @keyframes pc-travel { 0% { transform: translateX(-100%); } 55%, 100% { transform: translateX(340%); } }
 /* 숫자 톡 — 다 올라간 뒤(.is-counted)부터 7초에 한 번 크기만 잠깐 튄다. 크기(transform)만 바뀌어서 줄 배치는 그대로다 */
 .pc-strip.is-counted .pc-strip-text b { transform-origin: 50% 80%; animation: pc-pop 7s ease-in-out 1.4s infinite; }
 @keyframes pc-pop { 0%, 15%, 100% { transform: none; } 4% { transform: translateY(-3px) scale(1.3); } 8% { transform: translateY(0) scale(.94); } 11.5% { transform: scale(1.07); } }
-.pc-strip-go { animation: pc-nudge 3.2s ease-in-out 2s infinite; }
-@keyframes pc-nudge { 0%, 62%, 100% { transform: translateX(0) rotate(45deg); } 72% { transform: translateX(6px) rotate(45deg); } 82% { transform: translateX(1px) rotate(45deg); } 90% { transform: translateX(4px) rotate(45deg); } }
-.pc-strip-link:hover .pc-strip-go { animation: none; }
+.pc-strip-go svg { animation: pc-nudge 3.2s ease-in-out 2s infinite; }
+@keyframes pc-nudge { 0%, 62%, 100% { transform: none; } 72% { transform: translateX(6px); } 82% { transform: translateX(1px); } 90% { transform: translateX(4px); } }
+.pc-strip-link:hover .pc-strip-go svg { animation: none; transform: translateX(4px); }
 @media (prefers-reduced-motion: reduce) {
-  .pc-strip:not([hidden]) .pc-strip-link, .pc-strip-go, .pc-strip-live::after, .pc-strip:not([hidden])::after { animation: none; }
+  .pc-strip:not([hidden]) .pc-strip-link, .pc-strip-go svg, .pc-strip-live::after, .pc-strip:not([hidden])::after { animation: none; }
   .pc-strip-live::after, .pc-strip:not([hidden])::after { display: none; }
   .pc-strip.is-counted .pc-strip-text b { animation: none; }
 }
 
+/* ── 협력 교회 구역: 왼쪽 머리말, 오른쪽 이름 세 줄 목록 (위 굵은 선 + 줄마다 가는 선) ── */
+.pc-band { padding: 104px 0; background: #f6f9fb; scroll-margin-top: 72px; }
+.pc-band[hidden] { display: none; }
+.pc-inner { width: min(1200px, calc(100% - 48px)); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 72px; align-items: start; }
+.pc-sub { margin-top: 20px; font-size: 16px; line-height: 1.8; color: #4a5d66; }
+.pc-band .pc-count { font-family: var(--ff-serif, 'GmarketSans', sans-serif); font-weight: 700; color: #004f68; margin-right: 1px; }
+.pc-names { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 32px; border-top: 2px solid #0b2430; }
+.pc-item { display: flex; align-items: center; min-width: 0; max-width: 100%; padding: 16px 0; border-bottom: 1px solid #d6dee2; color: #10252e; font: 600 15px/1.5 var(--ff-sans, 'Pretendard Variable', Pretendard, 'Noto Sans KR', sans-serif); letter-spacing: -.01em; word-break: keep-all; overflow-wrap: anywhere; cursor: default; }
 /* 영문 병기 이름 — 한글 이름 아래에 작게 */
 .pc-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.pc-en { color: #6d8795; font: 600 12.5px/1.35 var(--ff-sans, 'Pretendard Variable', Pretendard, 'Noto Sans KR', sans-serif); letter-spacing: 0; word-break: normal; overflow-wrap: anywhere; }
-.pc-item { max-width: 100%; }
-@media (max-width: 640px) {
-  .pc-band { padding: 80px 20px 72px; }
-  .pc-band .wolko-partnership-v2__top { margin-bottom: 36px; }
-  .pc-names { gap: 14px 24px; padding: 28px 4px; }
-  .pc-item { gap: 9px; }
+.pc-en { color: #587383; font: 500 12.5px/1.4 var(--ff-sans, 'Pretendard Variable', Pretendard, 'Noto Sans KR', sans-serif); letter-spacing: 0; word-break: normal; overflow-wrap: anywhere; }
+
+@media (max-width: 980px) {
+  .pc-inner { grid-template-columns: 1fr; gap: 40px; }
+}
+@media (max-width: 740px) {
+  .pc-strip-link { width: calc(100% - 40px); min-height: 56px; padding: 12px 0; gap: 12px; font-size: 14px; }
+  .pc-strip-text b { font-size: 16px; }
+  .pc-band { padding: 72px 0; }
+  .pc-inner { width: calc(100% - 40px); gap: 32px; }
+  .pc-sub { font-size: 15.5px; }
+  .pc-names { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; }
+  .pc-item { padding: 14px 0; font-size: 14.5px; }
+}
+@media (max-width: 600px) {
+  .pc-strip-go-label { display: none; }   /* 좁은 화면에서는 화살표만 남긴다(띠 전체가 링크) */
 }
 
 /* 목록으로 미끄러져 내려가는 동안 다른 애니메이션을 잠시 멈춘다(Safari 에서 스크롤이 뚝뚝 끊기지 않게) */
