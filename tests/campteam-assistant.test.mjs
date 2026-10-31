@@ -26,7 +26,7 @@ test('질문하면 답이 오고, 답 끝의 [[guide:번호]] 는 맞는 번호�
   await withAi('「+ 자료 추가」를 누르세요.\n[[guide:addFile]]', async (calls) => {
     const d = await (await post(e, U.mem, q('자료는 어떻게 올려요?'))).json();
     assert.equal(d.reply, '「+ 자료 추가」를 누르세요.'); assert.equal(d.guide, 'addFile');
-    assert.equal(calls[0].messages.at(-1).content, '자료는 어떻게 올려요?'); assert.ok(calls[0].system.includes('/portal/campteam/files/'), '지금 화면이 전달된다');
+    assert.equal(calls[0].model, 'claude-sonnet-5-5', '다른 AI 기능과 같은 모델(소넷)'); assert.equal(calls[0].messages.at(-1).content, '자료는 어떻게 올려요?'); assert.ok(calls[0].system.includes('/portal/campteam/files/'), '지금 화면이 전달된다');
     assert.ok(calls[0].system.includes('포털 자료를 볼 수 없다') && calls[0].system.includes('성경 구절 본문을 인용하지 않는다'), '자료를 못 보고 성경 본문은 쓰지 않는다는 규칙');
   });
   await withAi('답이에요 [[guide:hackedGuide]]', async () => { const d = await (await post(e, U.mem, q('x'))).json(); assert.equal(d.guide, '', '모르는 번호는 버린다'); assert.equal(d.reply, '답이에요'); });

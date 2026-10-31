@@ -30,7 +30,7 @@ export async function onRequestPost({ env, request }) {
   const used = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE actor = ?1 AND action = 'assistant' AND at >= ?2`).bind(s.email, since).first().catch(() => null))?.n || 0;
   if (used >= DAILY_LIMIT) return json({ error: `오늘 질문 한도(${DAILY_LIMIT}개)를 다 썼어요. 내일 다시 물어봐 주세요.`, code: 'limit' }, 429);
   try {
-    const out = await chatClaude({ apiKey: env.ANTHROPIC_API_KEY, model: env.CAMPTEAM_ASSIST_MODEL || DEFAULT_ASSIST_MODEL, system: buildAssistSystem({ lang: b.lang === 'en' ? 'en' : 'ko', path: b.path }), messages, ...anthropicRoute(env, env.CAMPTEAM_AI_URL || undefined) });
+    const out = await chatClaude({ apiKey: env.ANTHROPIC_API_KEY, model: env.CAMPTEAM_ASSIST_MODEL || env.CAMPTEAM_AI_MODEL || DEFAULT_ASSIST_MODEL, system: buildAssistSystem({ lang: b.lang === 'en' ? 'en' : 'ko', path: b.path }), messages, ...anthropicRoute(env, env.CAMPTEAM_AI_URL || undefined) });
     await audit(env, s.email, 'assistant', 'chat', '', '');
     const r = parseReply(out);
     if (!r.reply) return json({ error: '답을 만들지 못했어요. 다시 물어봐 주세요.', code: 'empty' }, 422);

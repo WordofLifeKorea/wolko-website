@@ -4,7 +4,9 @@
  * 그래서 다른 사람의 정보나 금액을 말할 수 없고, ESV 본문 같은 저작권 있는 글도 이 길에는 들어오지 않는다.
  * 화면 안내(어두워지고 화살표가 나오는 안내)는 AI 가 지어내지 않는다: 미리 만들어 둔 안내 번호(GUIDE_IDS) 중에서만 고르게 한다.
  */
-export const DEFAULT_ASSIST_MODEL = 'claude-haiku-5-5';
+import { DEFAULT_MODEL } from './campteamAi.js';
+/** 다른 AI 기능(회의록·번역·추천)과 같은 모델·같은 키를 쓴다. 챗만 따로 바꾸려면 CAMPTEAM_ASSIST_MODEL 을 넣는다. */
+export const DEFAULT_ASSIST_MODEL = DEFAULT_MODEL;
 export const DAILY_LIMIT = 60;                       // 사람마다 하루 질문 수
 export const MAX_TURNS = 8, MAX_CHARS = 600;         // 보내는 대화 길이 제한
 /** 미리 만든 화면 안내 — 번호는 public/portal/campteam/assistant-guides.js 와 같아야 한다(시험이 확인한다) */
