@@ -901,7 +901,7 @@ test('승인 대기·회계 업무: 항목마다 아주 옅은 배경', async ()
   const { readFileSync } = await import('node:fs');
   const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
   assert.match(css, /\.ex-card \.ex-table tbody td \{ background: #f7fafc;/);
-  assert.match(css, /\.ex-d-item \{ background: #f7fafc; border-radius: 10px;/);
+  assert.match(css, /\.ex-d-item \{ background: #f7fafc; border-radius: 2px;/); // 홈페이지 디자인: 각진 모서리
 });
 
 test('회계 업무: 코드 확인·노트 저장 버튼과 리포트별 삭제 버튼은 없고, 바꾸면 자동 저장 · 카드 머리 [관리]로 선택 삭제', async () => {

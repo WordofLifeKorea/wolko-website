@@ -3,7 +3,7 @@ const CACHE_NAME = 'wolko-portal-v2';
 const PRECACHE = [
   '/portal/',
   '/portal-manifest.json',
-  '/hub.css?v=15',
+  '/hub.css?v=16',
   '/images/portal-icon.svg',
   '/images/WOLKO Circle.png',
 ];

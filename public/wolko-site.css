@@ -1,0 +1,227 @@
+/* WOLKO 포탈 — 홈페이지(wolko.org)와 같은 디자인 언어
+   각진 모서리(2px), 가는 선, 그림자 없음, 남색 제목(G마켓 산스) · Pretendard 본문 · 앞에 가는 선이 붙은 작은 표시 · 진한 청록 네모 버튼.
+   모든 포탈 화면에서 맨 마지막에 불러와 각 화면 CSS · 공용 규격(wolko-header/rail/ui/layout.css)의 모양만 덮어쓴다(배치·크기는 그대로).
+   값을 바꾸려면 아래 토큰만 고친다. */
+@import url('https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
+@font-face {
+  font-family: 'GmarketSans';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'GmarketSans';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+
+:root {
+  --ws-deep: #004f68;
+  --ws-deep-dk: #003d52;
+  --ws-navy: #0b2430;
+  --ws-ink: #10252e;
+  --ws-body: #3e535d;
+  --ws-sub: #4a5d66;
+  --ws-label: #5a7380;
+  --ws-line: #d6dee2;
+  --ws-field: #cdd7dc;
+  --ws-rule: #e3e9ec;
+  --ws-soft: #f6f9fb;
+  --ws-fill: #f3f7f9;
+  --ws-radius: 2px;
+  --ws-sans: 'Pretendard Variable', Pretendard, -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  --ws-serif: 'GmarketSans', 'Pretendard Variable', Pretendard, sans-serif;
+
+  /* 공용 레이아웃 토큰(wolko-layout.css)을 홈페이지 값으로 */
+  --wl-ink: var(--ws-ink);
+  --wl-text-muted: var(--ws-sub);
+  --wl-accent: var(--ws-deep);
+  --wl-line: var(--ws-line);
+  --wl-card-radius: var(--ws-radius);
+  --wl-card-shadow: none;
+  --wl-field-line: var(--ws-field);
+  --wl-control-radius: var(--ws-radius);
+}
+
+/* ── 글꼴: 본문 Pretendard, 제목 G마켓 산스 (화면마다 박혀 있던 Noto Sans KR · Montserrat 를 덮는다) ── */
+html body, html body :not(svg, svg *, code, pre, kbd, samp, .mono, [class*="mono"], .gf-d, .gf-d *) {
+  font-family: var(--ws-sans) !important;
+}
+html body :is(h1, .wl-page-head h1, .sc-title, .car-title, .events-heading h1, .log-intro h1, .hero h2, .hero-copy h1, .section-head h2) {
+  font-family: var(--ws-serif) !important;
+  font-weight: 700 !important;
+  letter-spacing: -.03em !important;
+  color: var(--ws-navy) !important;
+}
+
+/* ── 상단 바: 홈페이지 메뉴처럼 흰 바탕 · 아래 가는 선 · 남색 글자 ── */
+:root:root:root :is(body > header, .app-header) {
+  background: #fff !important;
+  background-image: none !important;
+  color: var(--ws-navy) !important;
+  border-bottom: 1px solid var(--ws-line) !important;
+  box-shadow: none !important;
+}
+:root:root:root body > header > :first-child, :root:root:root .app-header > .app-brand {
+  color: var(--ws-navy) !important;
+  font-family: var(--ws-serif) !important;
+  font-weight: 700 !important;
+  letter-spacing: -.01em !important;
+}
+:root:root:root body > header > :first-child :is(span, h1, b, div), :root:root:root .app-header .app-brand :is(span, h1, b) {
+  font-family: var(--ws-serif) !important; color: var(--ws-navy) !important;
+}
+/* 상단 바 버튼 · 선택칸: 흰 바탕 · 가는 테두리 · 각진 모서리 */
+:root:root:root :is(body > header, .app-header) :where(button, a.adm-header-control, a.back-link, .admin-btn):where(:not(.wl-lang-btn, .wl-user-chip, .adm-lang-switch, .adm-lang-option, .crs-bell, .wolko-burger)),
+:root:root:root :is(body > header, .app-header) select {
+  background: #fff !important;
+  background-color: #fff !important;
+  border: 1px solid var(--ws-field) !important;
+  border-radius: var(--ws-radius) !important;
+  color: var(--ws-navy) !important;
+  font-weight: 600 !important;
+}
+:root:root:root :is(body > header, .app-header) :where(button, a.adm-header-control, a.back-link, .admin-btn):where(:not(.wl-lang-btn, .wl-user-chip, .adm-lang-switch, .adm-lang-option, .crs-bell, .wolko-burger)):hover {
+  background: var(--ws-fill) !important; border-color: var(--ws-deep) !important; color: var(--ws-deep) !important;
+}
+:root:root:root :is(body > header, .app-header) select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23004f68' stroke-width='1.5' stroke-linecap='square'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important; background-position: right 10px center !important; background-size: 10px 6px !important;
+  -webkit-appearance: none; appearance: none; padding-right: 28px !important;
+}
+:root:root:root :is(body > header, .app-header) select option { color: var(--ws-ink); }
+/* 계정 칩 */
+:root:root:root :is(body > header, .app-header) .wl-user-chip {
+  background: #fff !important; border: 1px solid var(--ws-field) !important; border-radius: var(--ws-radius) !important; color: var(--ws-navy) !important;
+}
+:root:root:root :is(body > header, .app-header) .wl-user-chip:hover { background: var(--ws-fill) !important; }
+:root:root:root .wl-user-avatar { border-radius: var(--ws-radius) !important; background: var(--ws-navy) !important; color: #fff !important; }
+:root:root:root .wl-user-text small { color: var(--ws-label) !important; }
+/* 언어 토글: 옅은 바탕 두 칸, 고른 쪽만 진한 청록 */
+:root:root:root :is(body > header, .app-header) :is(.wl-lang-toggle, .adm-lang-switch) {
+  background: var(--ws-fill) !important; border: 1px solid var(--ws-field) !important; border-radius: var(--ws-radius) !important;
+}
+:root:root:root :is(body > header, .app-header) :is(.wl-lang-btn, .adm-lang-option, .adm-lang-thumb) { border-radius: 1px !important; }
+:root:root:root :is(body > header, .app-header) .wl-lang-btn { color: var(--ws-label) !important; }
+:root:root:root :is(body > header, .app-header) .wl-lang-btn.is-active { background: var(--ws-deep) !important; color: #fff !important; box-shadow: none !important; }
+:root:root:root :is(body > header, .app-header) .adm-lang-thumb { background: var(--ws-deep) !important; box-shadow: none !important; }
+/* 알림 종(CRS) · 햄버거 */
+:root:root:root .app-header .crs-bell { background: #fff !important; border: 1px solid var(--ws-field) !important; border-radius: var(--ws-radius) !important; color: var(--ws-navy) !important; }
+@media (max-width: 899px) {
+  :root:root:root body > header .wolko-burger, :root:root:root .wolko-burger {
+    background: #fff !important; border: 1px solid var(--ws-field) !important; border-radius: var(--ws-radius) !important; box-shadow: none !important;
+  }
+  :root:root:root .wolko-burger span { background: var(--ws-navy) !important; }
+}
+
+/* ── 왼쪽 메뉴(PC) · 서랍(폰): 홈페이지 아래쪽 바닥글과 같은 남색, 그라데이션 없이 평평하게 ── */
+.wolko-rail, .wolko-drawer {
+  background: var(--ws-navy) !important;
+  background-image: none !important;
+}
+.wolko-rail-logo-link { border-bottom-color: rgba(255, 255, 255, .10) !important; }
+.wolko-rail-logo { border-radius: 50% !important; box-shadow: none !important; }
+.wolko-rail-logo-name { font-family: var(--ws-serif) !important; font-weight: 700 !important; letter-spacing: 0 !important; }
+.wolko-rail-logo-sub { letter-spacing: .14em !important; color: rgba(255, 255, 255, .45) !important; }
+.wolko-rail-group, .wolko-drawer-group {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 700 !important; letter-spacing: .12em !important; color: rgba(255, 255, 255, .42) !important;
+}
+.wolko-rail-group::before, .wolko-drawer-group::before { content: ''; width: 16px; height: 1px; background: currentColor; flex: none; }
+.wolko-rail-item, .wolko-drawer-item { border-radius: var(--ws-radius) !important; font-weight: 600 !important; }
+.wolko-rail-item-icon, .wolko-drawer-icon { border-radius: var(--ws-radius) !important; }
+.wolko-rail-item:hover, .wolko-drawer-item:hover { background: rgba(255, 255, 255, .06) !important; }
+.wolko-rail-item.is-active, .wolko-drawer-item.is-active { background: rgba(255, 255, 255, .10) !important; color: #fff !important; font-weight: 700 !important; }
+.wolko-rail-item.is-active .wolko-rail-item-icon, .wolko-drawer-item.is-active .wolko-drawer-icon { background: #fff !important; box-shadow: none !important; }
+.wolko-rail-hub { border-top-color: rgba(255, 255, 255, .10) !important; }
+.wolko-drawer-close { border-radius: var(--ws-radius) !important; }
+
+/* ── 페이지 제목 블록: 앞에 가는 선이 붙은 작은 표시 + 남색 제목 ── */
+html body :is(.wl-eyebrow, .events-eyebrow, .log-kicker) {
+  display: flex !important; align-items: center; gap: 12px;
+  font-family: var(--ws-sans) !important; font-weight: 700 !important; font-size: 12px !important;
+  letter-spacing: .12em !important; text-transform: uppercase; color: var(--ws-deep) !important;
+}
+html body :is(.wl-eyebrow, .events-eyebrow, .log-kicker)::before { content: ''; width: 28px; height: 1px; background: currentColor; flex: none; }
+html body :is(.wl-page-head h1, .sc-title, .car-title, .events-heading h1, .log-intro h1) { font-size: clamp(26px, 3vw, 34px) !important; line-height: 1.22 !important; }
+
+/* ── 카드: 흰 바탕 · 가는 선 · 각진 모서리 · 그림자 없음 ── */
+html body :is(.ex-card, .ex-person, .table-section, .log-panel, .events-stat, .sc-notice-card, .hero, .hero-panel, .section, .car-calendar, .drive-week, .gc-card, .gs-panel, .crp-card, .kt-week, .pr-card, .mp-card) {
+  border-radius: var(--ws-radius) !important;
+  box-shadow: none !important;
+}
+html body :is(.hero, .hero-panel) { background: #fff !important; background-image: none !important; border: 1px solid var(--ws-line) !important; }
+
+/* ── 입력창 · 선택창 ── */
+html body :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]), select, textarea):not(body > header *, .app-header *) {
+  border-radius: var(--ws-radius) !important;
+}
+html body :is(input, select, textarea):focus-visible { outline: 0 !important; border-color: var(--ws-deep) !important; box-shadow: 0 0 0 1px var(--ws-deep) !important; }
+
+/* ── 버튼: 각진 진한 청록(주 버튼) · 흰 바탕 가는 테두리(보조 버튼) ── */
+html body :is(.log-primary, .add-resource, .btn-primary, .primary-btn, .login-btn, .ex-btn.primary, .wl-prof-primary, .btn-confirm-primary) {
+  background: var(--ws-deep) !important; border: 1px solid var(--ws-deep) !important; color: #fff !important;
+  border-radius: var(--ws-radius) !important; box-shadow: none !important;
+}
+html body :is(.log-primary, .add-resource, .btn-primary, .primary-btn, .login-btn, .ex-btn.primary, .wl-prof-primary):hover:not(:disabled) {
+  background: var(--ws-deep-dk) !important; border-color: var(--ws-deep-dk) !important; transform: none !important;
+}
+html body :is(.log-secondary, .secondary-btn, .ghost-btn, .btn-edit-mode, .btn-print, .btn-csv, .events-export, .events-refresh, .ex-btn:not(.primary):not(.danger), .log-clear, .wl-prof-secondary) {
+  background: #fff !important; border: 1px solid var(--ws-field) !important; color: var(--ws-navy) !important;
+  border-radius: var(--ws-radius) !important; box-shadow: none !important;
+}
+html body :is(.log-secondary, .secondary-btn, .ghost-btn, .btn-edit-mode, .btn-print, .btn-csv, .events-export, .events-refresh, .ex-btn:not(.primary):not(.danger), .log-clear, .wl-prof-secondary):hover:not(:disabled) {
+  background: var(--ws-fill) !important; border-color: var(--ws-deep) !important;
+}
+html body .wl-page-actions :is(.car-fab, .sc-fab) { border-radius: var(--ws-radius) !important; box-shadow: none !important; background: var(--ws-deep) !important; }
+
+/* 내 정보 창 */
+html body .wl-prof-card { border-radius: var(--ws-radius) !important; box-shadow: 0 16px 40px rgba(11, 36, 48, .18) !important; }
+html body .wl-prof-card h3 { font-family: var(--ws-serif) !important; color: var(--ws-navy) !important; }
+html body .wl-prof-field input { border-radius: var(--ws-radius) !important; border-color: var(--ws-field) !important; }
+
+/* ══ 포탈 첫 화면(/portal) — 자체 사이드바 · 하늘 배너 · 대시보드 카드 ══ */
+.hub-sidebar { background: var(--ws-navy) !important; background-image: none !important; }
+.hub-sidebar-brand { border-bottom-color: rgba(255, 255, 255, .10) !important; }
+.hub-sidebar-brand img { border-radius: 50% !important; box-shadow: none !important; }
+.hub-sidebar-brand-name { font-family: var(--ws-serif) !important; font-weight: 700 !important; letter-spacing: 0 !important; }
+.hub-nav-label { display: flex; align-items: center; gap: 10px; font-weight: 700 !important; letter-spacing: .12em !important; color: rgba(255, 255, 255, .42) !important; }
+.hub-nav-label::before { content: ''; width: 16px; height: 1px; background: currentColor; flex: none; }
+.hub-nav-item { border-radius: var(--ws-radius) !important; font-weight: 600 !important; }
+.hub-nav-item::before { display: none !important; } /* 왼쪽 색 띠는 쓰지 않는다 */
+.hub-nav-item:hover { background: rgba(255, 255, 255, .06) !important; }
+.hub-nav-item.is-active, .hub-nav-item[aria-current="page"] { background: rgba(255, 255, 255, .10) !important; color: #fff !important; font-weight: 700 !important; }
+.hub-nav-item-icon { border-radius: var(--ws-radius) !important; }
+.hub-sidebar-lang, .hub-lang-toggle { border-radius: var(--ws-radius) !important; }
+.hub-lang-btn { border-radius: 1px !important; }
+.hub-lang-btn.is-active { background: #fff !important; color: var(--ws-navy) !important; }
+
+.hub-sky { border-radius: var(--ws-radius) !important; box-shadow: none !important; }
+.hub-wx-card { border-radius: var(--ws-radius) !important; box-shadow: none !important; }
+.hub-campus-switch, .hub-campus-switch button { border-radius: var(--ws-radius) !important; }
+
+.hub-dash-date-ic { border-radius: var(--ws-radius) !important; }
+.hub-dcard {
+  border: 1px solid var(--ws-line) !important;
+  border-radius: var(--ws-radius) !important;
+  box-shadow: none !important;
+}
+.hub-dcard:hover { box-shadow: none !important; border-color: #b9c8cf !important; transform: none !important; }
+.hub-dcard-head h2 { font-family: var(--ws-serif) !important; font-weight: 700 !important; font-size: 17px !important; color: var(--ws-navy) !important; letter-spacing: -.02em !important; }
+.hub-dicon, .hub-dempty-ic { border-radius: var(--ws-radius) !important; }
+.hub-dcard-more { border-radius: var(--ws-radius) !important; background: #fff !important; border: 1px solid var(--ws-field) !important; }
+.hub-dcard-more:hover { border-color: var(--ws-deep) !important; color: var(--ws-deep) !important; }
+.hub-chip { border-radius: var(--ws-radius) !important; }
+.hub-notices li { border-radius: var(--ws-radius) !important; }
+/* 공지 카드: 그라데이션 대신 홈페이지 바닥글과 같은 남색 */
+.hub-dcard-notice { background: var(--ws-navy) !important; background-image: none !important; border-color: var(--ws-navy) !important; box-shadow: none !important; }
+.hub-dcard-notice .hub-dcard-head h2 { color: #fff !important; }
+.hub-dcard-notice:hover { border-color: var(--ws-navy) !important; }
+.hub-toast { border-radius: var(--ws-radius) !important; }
+html body :is(.hub-modal, .hub-modal-card, .hub-pop) { border-radius: var(--ws-radius) !important; }
+
+/* ══ 캠프 & 아웃리치 팀(/portal/campteam) — 자체 왼쪽 메뉴 · 폰 서랍 ══ */
+body > aside:not(.apanel), #drawer { background: var(--ws-navy) !important; background-image: none !important; }
+body > aside:not(.apanel) .logo { border-bottom-color: rgba(255, 255, 255, .10) !important; }
+body > aside:not(.apanel) nav a.on, #drawer nav a.on { background: rgba(255, 255, 255, .10) !important; font-weight: 700 !important; }
+#drawer .drawer-x { border-radius: var(--ws-radius) !important; }
+body > aside:not(.apanel) nav a::before, #drawer nav a::before { display: none !important; } /* 왼쪽 색 띠는 쓰지 않는다 */
