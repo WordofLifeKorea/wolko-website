@@ -19,7 +19,7 @@ role_badge: Missionaries
 campus: pyeongtaek
 category: missionary
 order: 2
-photo_url: /images/uploads/kim-photo_url-1778337099072.jpg
+photo_url: "/images/uploads/kim-photo_url-1793419496894.jpg"
 photo_story: /images/uploads/hwankyu.jpeg
 photo_url_2: /images/uploads/cynthia.jpg
 hero_tagline_ko: "\"복음을 담은\" "
@@ -77,5 +77,6 @@ prayer_en: |-
   "Please pray that the U.S. visa application process goes smoothly."
   "We need wisdom to help and guide our kids to know Jesus Christ as their savior.
 report_url: "https://us6.campaign-archive.com/home/?u=3e8c5b6ead0327ca6e63027e1&id=94a43edcd2"
+
 
 ---
