@@ -207,3 +207,13 @@ test('기도제목 목록 CSS: 목록·폼 열 폭을 minmax(0,1fr)로 고정해
   }
   assert.match(css, /\.pr-item \{[^}]*min-width:\s*0/);
 });
+
+import { applyGlossary, fixTranslation, NAME_GLOSSARY } from '../functions/lib/prayerTranslate.js';
+test('호칭 용어집: Mrs. Han 은 한권사님으로 옮기고, 잘못 옮긴 "한 여사님"도 바로잡는다', () => {
+  assert.ok(NAME_GLOSSARY.some(g => g.en === 'Mrs. Han' && g.ko === '한권사님'));
+  assert.equal(applyGlossary('-한 여사님께서 10/29(목요일)에 오십니다', 'ko'), '-한권사님께서 10/29(목요일)에 오십니다');
+  assert.equal(applyGlossary('Mrs. Han will cook', 'ko'), '한권사님 will cook');
+  assert.equal(applyGlossary('한권사님께서 오십니다', 'en'), 'Mrs. Han께서 오십니다');
+  assert.deepEqual(fixTranslation({ lang: 'ko', title: '공지', text: '한 여사님' }), { lang: 'ko', title: '공지', text: '한권사님' });
+  assert.match(buildPrayerPrompt({ title: '', text: 'x' }, 'ko', 'notice').system, /"Mrs\. Han" = "한권사님"/);
+});

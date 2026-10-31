@@ -1,5 +1,5 @@
 /* 포탈 첫 화면 맨 위 하늘 — 오늘 날씨에 따라 하늘색 · 해 · 달 · 구름 · 안개가 바뀌고, 비 · 눈은 hub-sky.js 의 캔버스가 내린다 */
-.hub-sky { --sky-a: #0a6a8f; --sky-b: #2f9fc9; position: relative; isolation: isolate; overflow: hidden; margin: 0 0 22px; padding: 30px 32px 24px; min-height: 176px; border-radius: 2px; color: #fff; background: linear-gradient(160deg, var(--sky-a), var(--sky-b)); box-shadow: 0 26px 50px -30px rgba(0, 60, 90, .6); transition: background .6s; }
+.hub-sky { --sky-a: #0a6a8f; --sky-b: #2f9fc9; position: relative; isolation: isolate; overflow: hidden; margin: 0 0 22px; padding: 30px 32px 24px; min-height: 176px; border-radius: var(--ws-radius-sm, 8px); color: #fff; background: linear-gradient(160deg, var(--sky-a), var(--sky-b)); box-shadow: 0 26px 50px -30px rgba(0, 60, 90, .6); transition: background .6s; }
 .hub-sky[data-kind="clear"][data-day="1"] { --sky-a: #1f7fe2; --sky-b: #74c6f8; }
 .hub-sky[data-kind="partly"][data-day="1"] { --sky-a: #3b84d8; --sky-b: #8ec2ea; }
 .hub-sky[data-kind="cloudy"][data-day="1"] { --sky-a: #5a7690; --sky-b: #a2b5c6; }
@@ -67,14 +67,14 @@
 /* 날씨 카드 — 오른쪽 위 유리 카드: 기온 · 상태 · 체감/최고/최저/강수 */
 .hub-wx { position: absolute; z-index: 2; right: 28px; top: 24px; }
 .hub-wx[hidden] { display: none; }
-.hub-wx-card { display: grid; gap: 2px; min-width: 188px; padding: 12px 18px 12px; border: 1px solid rgba(255, 255, 255, .3); border-radius: 2px; background: rgba(8, 36, 76, .3); text-align: right; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: none; animation: gl-rise .7s .35s both; }
+.hub-wx-card { display: grid; gap: 2px; min-width: 188px; padding: 12px 18px 12px; border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--ws-radius-sm, 8px); background: rgba(8, 36, 76, .3); text-align: right; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: none; animation: gl-rise .7s .35s both; }
 .hub-wx-temp { font: 800 44px/1 Montserrat, var(--f-sans); letter-spacing: -.04em; text-shadow: 0 2px 12px rgba(0, 30, 60, .25); }
 .hub-wx-temp sup { font-size: 22px; vertical-align: top; margin-left: 1px; }
 .hub-wx-label { font: 800 15px/1.3 var(--f-body); }
 .hub-wx-sub { color: rgba(255, 255, 255, .86); font: 600 12.5px/1.5 var(--f-body); }
 @media (min-width: 900px) { .hub-sky-content { padding-right: 250px; } }
 @media (max-width: 899px) {
-  .hub-sky { padding: 24px 20px 20px; border-radius: 2px; }
+  .hub-sky { padding: 24px 20px 20px; border-radius: var(--ws-radius-sm, 8px); }
   .hub-wx { position: relative; right: auto; top: auto; margin-top: 14px; }
   .hub-wx-card { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: flex-start; gap: 4px 12px; min-width: 0; text-align: left; padding: 10px 16px; }
   .hub-wx-temp { font-size: 32px; }
@@ -92,15 +92,15 @@
 .hub-bell svg { display: block; transform-origin: 50% 10%; filter: drop-shadow(0 2px 3px rgba(0, 30, 70, .34)); }
 .hub-bell.has-new svg { animation: bell-ring 4.6s ease-in-out 1.2s infinite; }
 @keyframes bell-ring { 0%, 22%, 100% { transform: rotate(0); } 3% { transform: rotate(16deg); } 6% { transform: rotate(-14deg); } 9% { transform: rotate(10deg); } 12% { transform: rotate(-7deg); } 15% { transform: rotate(4deg); } 18% { transform: rotate(-2deg); } }
-.hub-bell-badge { position: absolute; top: -4px; right: -5px; min-width: 17px; height: 17px; padding: 0 4px; box-sizing: border-box; border: 2px solid #fff; border-radius: 2px; background: #f0456a; color: #fff; font: 800 10px/13px var(--f-body); text-align: center; box-shadow: none; }
+.hub-bell-badge { position: absolute; top: -4px; right: -5px; min-width: 17px; height: 17px; padding: 0 4px; box-sizing: border-box; border: 2px solid #fff; border-radius: var(--ws-radius-sm, 8px); background: #f0456a; color: #fff; font: 800 10px/13px var(--f-body); text-align: center; box-shadow: none; }
 
-.hub-bell-panel { position: fixed; z-index: 9500; max-height: min(70vh, 420px); overflow: auto; padding: 8px; border: 1px solid #dbe6ec; border-radius: 2px; background: #fff; color: #102a38; box-shadow: none; animation: bell-pop .18s ease-out; }
+.hub-bell-panel { position: fixed; z-index: 9500; max-height: min(70vh, 420px); overflow: auto; padding: 8px; border: 1px solid #dbe6ec; border-radius: var(--ws-radius-sm, 8px); background: #fff; color: #102a38; box-shadow: none; animation: bell-pop .18s ease-out; }
 .hub-bell-panel[hidden] { display: none; }
 @keyframes bell-pop { from { opacity: 0; transform: translateY(-6px) scale(.98); } to { opacity: 1; transform: none; } }
 .hub-bell-head { padding: 8px 10px 6px; color: #5f7681; font: 800 12.5px/1.2 var(--f-body); letter-spacing: .04em; }
 .hub-bell-head b { margin-left: 4px; color: #f0456a; }
 .hub-bell-panel ul { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
-.hub-bell-panel a { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 12px 11px 30px; position: relative; border-radius: 2px; color: #102a38; font: 700 14px/1.4 var(--f-body); text-decoration: none; }
+.hub-bell-panel a { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 12px 11px 30px; position: relative; border-radius: var(--ws-radius-sm, 8px); color: #102a38; font: 700 14px/1.4 var(--f-body); text-decoration: none; }
 .hub-bell-panel a:hover { background: #f1f6f9; }
 .hub-bell-panel a::before { content: ''; position: absolute; left: 12px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: #7a8c96; }
 .hub-bell-panel a.is-kitchen::before { background: #e08a1e; }
@@ -109,7 +109,7 @@
 /* 항목 안의 행동 버튼(보고하기 →) — 눈에 띄는 알약 버튼 */
 .hub-bell-panel a { flex-wrap: wrap; row-gap: 8px; }
 .hub-bell-panel a > span { flex: 1 1 150px; min-width: 0; }
-.hub-bell-panel a em { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px 8px 16px; border-radius: 2px; background: linear-gradient(135deg, #1596c4, #0a6a8f); color: #fff; font-style: normal; font-weight: 800; font-size: 13px; line-height: 1; box-shadow: 0 8px 16px -8px rgba(10, 106, 143, .75), inset 0 1px 0 rgba(255, 255, 255, .28); transition: transform .15s, box-shadow .15s, filter .15s; }
+.hub-bell-panel a em { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px 8px 16px; border-radius: var(--ws-radius-sm, 8px); background: linear-gradient(135deg, #1596c4, #0a6a8f); color: #fff; font-style: normal; font-weight: 800; font-size: 13px; line-height: 1; box-shadow: 0 8px 16px -8px rgba(10, 106, 143, .75), inset 0 1px 0 rgba(255, 255, 255, .28); transition: transform .15s, box-shadow .15s, filter .15s; }
 .hub-bell-panel a em::after { content: '→'; display: inline-block; font-weight: 800; transition: transform .18s; }
 .hub-bell-panel a:hover em { transform: translateY(-1px); box-shadow: 0 12px 20px -9px rgba(10, 106, 143, .85), inset 0 1px 0 rgba(255, 255, 255, .32); filter: brightness(1.06); }
 .hub-bell-panel a:hover em::after { transform: translateX(3px); }

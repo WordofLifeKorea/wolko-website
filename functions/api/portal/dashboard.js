@@ -8,7 +8,7 @@ import { buildDashboard, translateMissingNotices } from '../../lib/portalDashboa
 import { campusOf, CAMPUSES } from '../../lib/campus.js';
 import { toolsFor } from '../../lib/portalAccess.js';
 import { translateMissingPrayers } from '../../lib/prayers.js';
-import { needsTranslation } from '../../lib/prayerTranslate.js';
+import { needsTranslation, fixTranslation, applyGlossary } from '../../lib/prayerTranslate.js';
 
 const H = { 'Cache-Control': 'no-store' };
 
@@ -23,5 +23,8 @@ export async function onRequestGet({ env, request, waitUntil }) {
     if ((body.notices || []).some(n => needsTranslation(n.title || '', n.body || '', n.tr?.lang))) waitUntil(translateMissingNotices(env).catch(() => 0));
     if ((body.prayers || []).some(p => needsTranslation(p.title || '', p.text || '', p.trLang))) waitUntil(translateMissingPrayers(env).catch(() => 0));
   }
+  // 예전에 저장된 번역도 호칭 용어집대로 바로잡아 보여 준다(예: Mrs. Han → 한권사님)
+  (body.notices || []).forEach(n => { if (n.tr) n.tr = fixTranslation(n.tr); });
+  (body.prayers || []).forEach(p => { if (p.trLang) { p.trTitle = applyGlossary(p.trTitle, p.trLang); p.trText = applyGlossary(p.trText, p.trLang); } });
   return Response.json(body, { headers: H });
 }

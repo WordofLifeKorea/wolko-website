@@ -49,7 +49,7 @@
     .sc-logo span { font:800 15px/1 var(--sans); letter-spacing:.02em; }
     .sc-btn {
       display:inline-flex; align-items:center; gap:6px; height:34px; padding:0 14px;
-      border:1.5px solid var(--border); border-radius: 2px; background:#fff; color:var(--blue);
+      border:1.5px solid var(--border); border-radius: var(--ws-radius-sm, 8px); background:#fff; color:var(--blue);
       font:800 12px/1 var(--sans); text-decoration:none; cursor:pointer;
     }
     .sc-btn:hover { border-color:var(--blue); background:#f4fbfd; }
@@ -60,17 +60,17 @@
 
     /* ── 안내 화면(로그인 필요 / 설정 필요 / 에러) ── */
     .sc-notice-card {
-      border:1.5px dashed var(--border); border-radius: 2px; background:#fff;
+      border:1.5px dashed var(--border); border-radius: var(--ws-radius-sm, 8px); background:#fff;
       padding:48px 24px; text-align:center; color:var(--mid); font-size:13.5px; line-height:1.6;
     }
     .sc-notice-card .sc-btn { margin-top:14px; display:inline-flex; }
 
     /* ── 캘린더(구글 캘린더 월간 뷰 스타일 — 여러 날짜에 걸친 일정은 막대로, 시간 지정 일정은 한 줄로) ── */
-        .sc-calendar { flex:1; min-width:0; margin-bottom:0; border-radius: 2px; border:1px solid var(--border); background:var(--card); overflow:hidden; }
+        .sc-calendar { flex:1; min-width:0; margin-bottom:0; border-radius: var(--ws-radius-sm, 8px); border:1px solid var(--border); background:var(--card); overflow:hidden; }
 
     /* ── 왼쪽 월간 캘린더 + 오른쪽 선택한 날짜의 상세 일정 ── */
     .sc-layout { display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:18px; align-items:start; margin-bottom:16px; }
-    .sc-day-panel { position:sticky; top:84px; min-width:0; padding:14px; border-radius: 2px; border:1px solid var(--border); background:#fff; max-height:calc(100vh - 108px); overflow:auto; }
+    .sc-day-panel { position:sticky; top:84px; min-width:0; padding:14px; border-radius: var(--ws-radius-sm, 8px); border:1px solid var(--border); background:#fff; max-height:calc(100vh - 108px); overflow:auto; }
     .sc-day-panel .sc-selected-date-bar { margin-bottom:12px; }
     .sc-day-panel .sc-selected-date-bar button { display:none; }
     .sc-day-panel .sc-empty { padding:36px 12px; }
@@ -91,17 +91,17 @@
     .cal-nav-btn:hover { border-color:var(--blue); color:var(--blue); }
     .cal-month-label {
       flex:1; text-align:center; font:800 15px/1 var(--body); color:var(--text);
-      background:none; border:none; padding:4px 8px; border-radius: 2px; cursor:pointer;
+      background:none; border:none; padding:4px 8px; border-radius: var(--ws-radius-sm, 8px); cursor:pointer;
     }
     .cal-month-label:hover { background:var(--bg); }
     .cal-month-picker { display:flex; align-items:center; justify-content:center; gap:8px; padding:0 14px 12px; }
     .cal-month-picker select, .cal-month-picker input[type="number"] {
-      padding:6px 8px; border-radius: 2px; border:1px solid var(--border); font:600 12.5px/1 var(--body);
+      padding:6px 8px; border-radius: var(--ws-radius-sm, 8px); border:1px solid var(--border); font:600 12.5px/1 var(--body);
       color:var(--text); background:#fff; outline:none;
     }
     .cal-month-picker input[type="number"] { width:72px; }
     .cal-today-btn {
-      flex-shrink:0; padding:5px 10px; border-radius: 2px; border:1px solid var(--border); background:#fff;
+      flex-shrink:0; padding:5px 10px; border-radius: var(--ws-radius-sm, 8px); border:1px solid var(--border); background:#fff;
       color:var(--mid); font:700 11px/1 var(--body); cursor:pointer;
       min-height:0 !important; height:28px; display:inline-flex; align-items:center; justify-content:center;
     }
@@ -152,11 +152,11 @@
 
     .sc-selected-date-bar {
       display:flex; align-items:center; justify-content:space-between; padding:10px 14px; margin-bottom:12px;
-      border-radius: 2px; background:#eef4f6;
+      border-radius: var(--ws-radius-sm, 8px); background:#eef4f6;
     }
     .sc-selected-date-bar span { font:800 12.5px/1 var(--body); color:var(--blue); }
     .sc-selected-date-bar button {
-      flex-shrink:0; padding:5px 10px; border-radius: 2px; border:none; background:#fff; color:var(--mid);
+      flex-shrink:0; padding:5px 10px; border-radius: var(--ws-radius-sm, 8px); border:none; background:#fff; color:var(--mid);
       font:700 11px/1 var(--body); cursor:pointer;
     }
     .sc-selected-date-bar button:hover { color:var(--blue); }
@@ -172,7 +172,7 @@
     .sc-empty svg { display:block; margin:0 auto 10px; opacity:.5; }
 
     .sc-card {
-      position:relative; display:flex; gap:10px; padding:14px 14px 14px 18px; margin-bottom:8px; border-radius: 2px;
+      position:relative; display:flex; gap:10px; padding:14px 14px 14px 18px; margin-bottom:8px; border-radius: var(--ws-radius-sm, 8px);
       border:1px solid var(--border); background:var(--card); box-shadow:0 1px 3px rgba(16,42,56,.04);
     }
     .sc-card::before { content:''; position:absolute; left:0; top:12px; bottom:12px; width:4px; border-radius:3px; background:var(--card-color, var(--blue)); }
@@ -194,7 +194,7 @@
     /* ── FAB(새 일정 등록) ── */
     .sc-fab {
       position:fixed; right:20px; bottom:24px; z-index:25; display:inline-flex; align-items:center; gap:8px;
-      padding:14px 20px; border-radius: 2px; border:none; background:var(--blue); color:#fff;
+      padding:14px 20px; border-radius: var(--ws-radius-sm, 8px); border:none; background:var(--blue); color:#fff;
       font:800 13.5px/1 var(--body); cursor:pointer; box-shadow:0 10px 26px rgba(0,79,104,.35); transition:transform .12s;
     }
     .sc-fab:hover { transform:translateY(-1px); }
@@ -205,10 +205,10 @@
       position:fixed; inset:0; z-index:40; display:flex; align-items:flex-end; justify-content:center;
       background:rgba(10,24,32,.5);
     }
-    .sc-modal { width:100%; max-width:480px; max-height:92vh; overflow-y:auto; background:#fff; border-radius: 2px 2px 0 0; padding:20px 20px calc(20px + env(safe-area-inset-bottom, 0px)); }
+    .sc-modal { width:100%; max-width:480px; max-height:92vh; overflow-y:auto; background:#fff; border-radius: var(--ws-radius-sm, 8px) var(--ws-radius-sm, 8px) 0 0; padding:20px 20px calc(20px + env(safe-area-inset-bottom, 0px)); }
     @media (min-width:640px) {
       .sc-modal-overlay { align-items:center; padding:24px; }
-      .sc-modal { border-radius: 2px; max-height:88vh; }
+      .sc-modal { border-radius: var(--ws-radius-sm, 8px); max-height:88vh; }
     }
     .sc-modal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
     .sc-modal-title { margin:0; font:800 16px/1.3 var(--body); color:var(--text); }
@@ -219,7 +219,7 @@
     .sc-field { margin-bottom:13px; }
     .sc-field label { display:block; margin-bottom:5px; font:700 12px/1 var(--body); color:var(--mid); }
     .sc-field input, .sc-field textarea {
-      width:100%; padding:10px 12px; border-radius: 2px; border:1.5px solid var(--border); background:var(--bg);
+      width:100%; padding:10px 12px; border-radius: var(--ws-radius-sm, 8px); border:1.5px solid var(--border); background:var(--bg);
       color:var(--text); font:500 14px/1.4 var(--body); outline:none; transition:border-color .15s, background .15s;
     }
     .sc-field input:focus, .sc-field textarea:focus { border-color:var(--blue); background:#fff; }
@@ -229,12 +229,12 @@
     .sc-field-check input { width:auto; }
     .sc-field-check label { margin:0; }
     .sc-modal-error {
-      margin:0 0 12px; padding:10px 12px; border-radius: 2px; background:#fdecec; color:var(--red);
+      margin:0 0 12px; padding:10px 12px; border-radius: var(--ws-radius-sm, 8px); background:#fdecec; color:var(--red);
       font:700 12.5px/1.5 var(--body); display:none;
     }
     .sc-modal-error.is-visible { display:block; }
     .sc-modal-foot { display:flex; gap:8px; margin-top:18px; }
-    .sc-modal-btn { flex:1; padding:12px; border-radius: 2px; border:none; font:800 14px/1 var(--body); cursor:pointer; transition:opacity .15s, transform .1s; }
+    .sc-modal-btn { flex:1; padding:12px; border-radius: var(--ws-radius-sm, 8px); border:none; font:800 14px/1 var(--body); cursor:pointer; transition:opacity .15s, transform .1s; }
     .sc-modal-btn:active { transform:scale(.98); }
     .sc-modal-btn-primary { background:var(--blue); color:#fff; }
     .sc-modal-btn-primary:hover { background:var(--blue-lt); }
