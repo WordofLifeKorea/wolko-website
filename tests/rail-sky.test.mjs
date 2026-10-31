@@ -50,3 +50,17 @@ test('가장 밝은 아침·낮 색도 흰 글자와 대비 4.5:1 이상', () =>
     assert.ok(1.05 / (lum(rgb) + 0.05) >= 4.5, name);
   }
 });
+
+test('이번 주 공지 카드도 같은 시간대 색 — 안쪽 공지 칸의 흰 글자가 하루 내내 4.5:1 이상', () => {
+  const { noticeColor, props } = loadRailSky();
+  assert.match(props['--ws-notice-bg'], /^rgb\(/);
+  const lum = c => c.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((s, v, i) => s + v * [0.2126, 0.7152, 0.0722][i], 0);
+  const over = (c, a) => c.map(v => v * (1 - a) + 255 * a); // 반투명 흰 칸을 얹은 색
+  for (let h = 0; h < 24; h += 0.25) {
+    const ms = Date.parse('2026-06-21T00:00:00+09:00') + h * 3600000;
+    const rgb = noticeColor(ms).match(/\d+/g).map(Number);
+    for (const a of [0.1, 0.16]) assert.ok(1.05 / (lum(over(rgb, a)) + 0.05) >= 4.5, `${h}시 · 칸 ${a}`);
+  }
+  const css = readFileSync(new URL('../public/wolko-site.css', import.meta.url), 'utf8');
+  assert.match(css, /\.hub-dcard-notice \{ background: var\(--ws-notice-bg, var\(--ws-navy\)\) !important;/);
+});

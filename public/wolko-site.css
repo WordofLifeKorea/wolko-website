@@ -216,10 +216,13 @@ html body .wl-prof-field input { border-radius: var(--ws-radius-sm) !important; 
 .hub-dcard-more:hover { border-color: var(--ws-deep) !important; color: var(--ws-deep) !important; }
 .hub-chip { border-radius: var(--ws-radius-sm) !important; }
 .hub-notices li { border-radius: var(--ws-radius-sm) !important; }
-/* 공지 카드: 그라데이션 대신 홈페이지 바닥글과 같은 남색 */
-.hub-dcard-notice { background: var(--ws-navy) !important; background-image: none !important; border-color: var(--ws-navy) !important; box-shadow: none !important; }
+/* 공지 카드: 왼쪽 메뉴처럼 시간대 색(wolko-rail.js가 넣는 --ws-notice-bg, 메뉴 색을 남색 쪽으로 조금 섞은 색) — 없으면 남색.
+   안쪽 공지 칸은 흰 글자가 밝은 낮 색에서도 읽히도록 반투명을 조금 낮춘다 */
+.hub-dcard-notice { background: var(--ws-notice-bg, var(--ws-navy)) !important; background-image: none !important; border-color: var(--ws-notice-bg, var(--ws-navy)) !important; box-shadow: none !important; transition: background-color 2s ease, border-color 2s ease; }
 .hub-dcard-notice .hub-dcard-head h2 { color: #fff !important; }
-.hub-dcard-notice:hover { border-color: var(--ws-navy) !important; }
+.hub-dcard-notice:hover { border-color: var(--ws-notice-bg, var(--ws-navy)) !important; }
+.hub-dcard-notice .hub-notices li { background: rgba(255, 255, 255, .1) !important; }
+.hub-dcard-notice .hub-notices li.is-pinned { background: rgba(255, 255, 255, .16) !important; }
 .hub-toast { border-radius: var(--ws-radius) !important; }
 html body :is(.hub-modal, .hub-modal-card, .hub-pop) { border-radius: var(--ws-radius) !important; }
 

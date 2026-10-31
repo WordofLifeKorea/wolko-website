@@ -16,7 +16,7 @@
     var ha = Math.acos(Math.cos(90.833 * rad) / (Math.cos(lat * rad) * Math.cos(decl)) - Math.tan(lat * rad) * Math.tan(decl)) / rad;
     return { rise: 720 - 4 * (lon + ha) - eqt + 540, set: 720 - 4 * (lon - ha) - eqt + 540 }; // 한국 시간 0시부터 몇 분째
   }
-  function railColor(ms) {
+  function railRgb(ms) {
     var sun = sunTimesKst(ms, 36.99, 127.09); // 평택 월코센터
     var now = ((ms / 60000) + 540) % 1440;
     var stops = [[0, NIGHT], [sun.rise - 70, NIGHT], [sun.rise - 15, DAWN], [sun.rise + 45, MORNING], [sun.rise + 150, DAY], [sun.set - 80, DAY],
@@ -24,12 +24,23 @@
     for (var i = 1; i < stops.length; i++) {
       if (now > stops[i][0]) continue;
       var a = stops[i - 1], b = stops[i], t = b[0] === a[0] ? 1 : (now - a[0]) / (b[0] - a[0]);
-      return 'rgb(' + [0, 1, 2].map(function (k) { return Math.round(a[1][k] + (b[1][k] - a[1][k]) * t); }).join(', ') + ')';
+      return [0, 1, 2].map(function (k) { return Math.round(a[1][k] + (b[1][k] - a[1][k]) * t); });
     }
-    return 'rgb(' + NIGHT.join(', ') + ')';
+    return NIGHT.slice();
   }
-  function paintRail() { document.documentElement.style.setProperty('--ws-rail-bg', railColor(Date.now())); }
-  window.WolkoRailSky = { railColor: railColor, sunTimesKst: sunTimesKst };
+  function css(rgb) { return 'rgb(' + rgb.join(', ') + ')'; }
+  function railColor(ms) { return css(railRgb(ms)); }
+  // 대시보드 "이번 주 공지" 카드: 같은 색을 남색 쪽으로 30% 섞는다 — 안쪽 반투명 공지 칸 위의 흰 글자도 낮에 4.5:1 이상 읽히게
+  function noticeColor(ms) {
+    var rgb = railRgb(ms);
+    return css(rgb.map(function (v, k) { return Math.round(v * 0.7 + NIGHT[k] * 0.3); }));
+  }
+  function paintRail() {
+    var now = Date.now(), root = document.documentElement.style;
+    root.setProperty('--ws-rail-bg', railColor(now));
+    root.setProperty('--ws-notice-bg', noticeColor(now));
+  }
+  window.WolkoRailSky = { railColor: railColor, noticeColor: noticeColor, sunTimesKst: sunTimesKst };
   paintRail();
   setInterval(paintRail, 5 * 60 * 1000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) paintRail(); });
