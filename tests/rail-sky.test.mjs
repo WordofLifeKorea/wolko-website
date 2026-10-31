@@ -108,3 +108,17 @@ test('하늘 배너: 제주를 고르면 해 뜨고 지는 시각도 제주 기�
   T.setPlace('wolko'); assert.equal(T.sunTimes(ms).set, pt.set);
   T.setPlace('unknown'); assert.equal(T.sunTimes(ms).set, pt.set, '모르는 곳이면 평택');
 });
+
+test('해가 지면 메뉴 아이콘 밤 모드 값(--ws-night)이 차오르고, 낮에는 0', () => {
+  const { nightAt, paintAt, props } = loadRailSky();
+  const at = t => nightAt(Date.parse('2026-10-31T' + t + ':00+09:00'));
+  assert.equal(at('12:00'), 0, '한낮');
+  assert.equal(at('23:00'), 1, '깊은 밤');
+  assert.equal(at('03:00'), 1, '새벽 3시');
+  assert.ok(at('17:50') > 0 && at('17:50') < 1, '해 질 녘에는 천천히');
+  assert.equal(at('08:00'), 0, '해 뜨고 나면 0');
+  paintAt(Date.parse('2026-10-31T22:00:00+09:00'));
+  assert.equal(props['--ws-night'], '1');
+  const css = readFileSync(new URL('../public/wolko-site.css', import.meta.url), 'utf8');
+  assert.match(css, /opacity: var\(--ws-night, 0\)/);
+});

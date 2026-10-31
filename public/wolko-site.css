@@ -270,3 +270,28 @@ body > aside:not(.apanel) nav a::before, #drawer nav a::before { display: none !
 html body .hub-sky .hub-greeting { color: #fff !important; }
 html body .hub-sky[data-day="1"]:is([data-kind="fog"], [data-kind="snow"], [data-kind="cloudy"]) .hub-greeting { text-shadow: 0 2px 16px rgba(10, 30, 50, .55) !important; }
 
+
+/* ── 해가 지면 메뉴 아이콘도 밤 모드 (--ws-night: 0 낮 ~ 1 깊은 밤, wolko-rail.js 가 해 시각으로 정한다) ──
+   아이콘 칸 둘레에 창가 불빛 같은 따뜻한 빛이 은은하게 번지고, 그림은 조금 차분해지며, 칸 오른쪽 위에 작은 별이 천천히 반짝인다.
+   낮에는 값이 0 이라 아무것도 보이지 않는다. 지금 고른 메뉴(흰 칸)는 그대로 둔다. */
+:is(.wolko-rail-item, .wolko-drawer-item, .hub-nav-item):not(.is-active) :is(.wolko-rail-item-icon, .wolko-drawer-icon, .hub-nav-item-icon) {
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgba(255, 214, 150, calc(.26 * var(--ws-night, 0))), 0 0 calc(14px * var(--ws-night, 0)) rgba(255, 190, 110, calc(.2 * var(--ws-night, 0)));
+  transition: background-color .15s, color .15s, box-shadow 2s ease;
+}
+:is(.wolko-rail-item, .wolko-drawer-item, .hub-nav-item):not(.is-active) svg.wolko-art {
+  filter: drop-shadow(0 1px 1.5px rgba(0, 20, 30, .35)) saturate(calc(1 - .18 * var(--ws-night, 0))) brightness(calc(1 + .05 * var(--ws-night, 0)));
+}
+:is(.wolko-rail-item, .wolko-drawer-item, .hub-nav-item):not(.is-active) :is(.wolko-rail-item-icon, .wolko-drawer-icon, .hub-nav-item-icon)::after {
+  content: ''; position: absolute; top: -2px; right: -2px; width: 4px; height: 4px; border-radius: 50%;
+  background: #fff7dc; box-shadow: 0 0 5px 1px rgba(255, 232, 160, .85);
+  opacity: var(--ws-night, 0); pointer-events: none;
+  animation: ws-night-twinkle 4.2s ease-in-out infinite; transition: opacity 2s ease;
+}
+:is(.wolko-rail-item, .wolko-drawer-item, .hub-nav-item):nth-child(3n+1) :is(.wolko-rail-item-icon, .wolko-drawer-icon, .hub-nav-item-icon)::after { animation-delay: -1.4s; }
+:is(.wolko-rail-item, .wolko-drawer-item, .hub-nav-item):nth-child(3n+2) :is(.wolko-rail-item-icon, .wolko-drawer-icon, .hub-nav-item-icon)::after { animation-delay: -2.8s; top: auto; bottom: -1px; right: -3px; }
+:is(.wolko-rail-item, .wolko-drawer-item, .hub-nav-item):hover :is(.wolko-rail-item-icon, .wolko-drawer-icon, .hub-nav-item-icon)::after { opacity: 0; }
+@keyframes ws-night-twinkle { 0%, 100% { transform: scale(.35); } 45% { transform: scale(1); } 60% { transform: scale(.7); } }
+@media (prefers-reduced-motion: reduce) {
+  :is(.wolko-rail-item, .wolko-drawer-item, .hub-nav-item) :is(.wolko-rail-item-icon, .wolko-drawer-icon, .hub-nav-item-icon)::after { animation: none; transform: scale(.7); }
+}

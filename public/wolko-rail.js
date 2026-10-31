@@ -35,13 +35,22 @@
     var rgb = railRgb(ms);
     return css(rgb.map(function (v, k) { return Math.round(v * 0.7 + NIGHT[k] * 0.3); }));
   }
+  // 밤 정도(0 = 낮, 1 = 깊은 밤): 해 지기 10분 전부터 해 지고 1시간 뒤까지 차오르고, 해 뜨기 1시간 전부터 해 뜨고 20분 뒤까지 빠진다.
+  // 메뉴 아이콘이 이 값을 따라 밤에는 창가 불빛처럼 은은하게 빛나고 작은 별이 반짝인다(wolko-site.css).
+  function nightAt(ms) {
+    var sun = sunTimesKst(ms, 36.99, 127.09), now = ((ms / 60000) + 540) % 1440, k = 0;
+    if (now >= sun.set - 10) k = (now - (sun.set - 10)) / 70;
+    else if (now <= sun.rise + 20) k = ((sun.rise + 20) - now) / 80;
+    return Math.round(Math.min(1, Math.max(0, k)) * 100) / 100;
+  }
   // 포탈 첫 화면에서는 하늘 배너(hub-sky.js)가 미리보기 시각(?sky=)까지 맞춰 paintAt 을 불러 준다
   function paintRail(ms) {
     var now = ms || (window.WolkoSkyTime ? window.WolkoSkyTime.nowMs() : Date.now()), root = document.documentElement.style;
     root.setProperty('--ws-rail-bg', railColor(now));
     root.setProperty('--ws-notice-bg', noticeColor(now));
+    root.setProperty('--ws-night', String(nightAt(now)));
   }
-  window.WolkoRailSky = { railColor: railColor, noticeColor: noticeColor, sunTimesKst: sunTimesKst, paintAt: paintRail };
+  window.WolkoRailSky = { railColor: railColor, noticeColor: noticeColor, nightAt: nightAt, sunTimesKst: sunTimesKst, paintAt: paintRail };
   paintRail();
   setInterval(function () { paintRail(); }, 5 * 60 * 1000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) paintRail(); });
