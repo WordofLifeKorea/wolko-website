@@ -42,7 +42,7 @@ test('시흥중앙성결교회 초등영어캠프는 스태프 선택지에만 �
 
 test('스태프 지원서: 섹션마다 옅은 배경, 한 줄 입력칸은 아래 선만, 서술형(textarea)만 박스', () => {
   const reg = read('src/pages/camp-register/index.astro');
-  assert.match(reg, /#staffForm \.crp-form-grid \{ background: #f6f9fb; border-radius: 14px;/);
+  assert.match(reg, /#staffForm \.crp-form-grid \{ background: #f6f9fb; border-radius: 2px;/);
   assert.match(reg, /#staffForm \.crp-field select\s*\{\s*border: 0; border-bottom: 1\.5px solid #d3e0e7;/);
   assert.match(reg, /#staffForm \.crp-field textarea \{ background: #fff; \}/);
 });
@@ -54,7 +54,7 @@ test('스태프 지원서 첫 섹션: 이름 | 성별 / 생년월일 전체 / �
   assert.match(reg, /width: 100% !important; field-sizing: fixed;/);
 });
 
-test('폰에서도 청록색 제출 버튼의 그림자는 청록색 (빨간 그림자가 겹치지 않는다)', () => {
+test('폰에서도 스태프 제출 버튼(옛 청록색)에 다른 색 그림자가 번지지 않는다 — 그림자 없음', () => {
   const reg = read('src/pages/camp-register/index.astro');
-  assert.match(reg, /\.crp-submit--teal \{ box-shadow: 0 10px 30px rgba\(13,148,136,0\.34\); \}/);
+  assert.match(reg, /\.crp-submit--teal \{ box-shadow: none; \}/);
 });
