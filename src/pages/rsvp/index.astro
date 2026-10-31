@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
 
 // 예정된 이벤트. 새 이벤트가 생기면 이 목록에 추가한다.
 // invite: 카카오톡 등으로 공유하는 전용 초대장 페이지 경로. 이 목록 페이지에서는
@@ -36,18 +37,6 @@ const events = [
     --f-sans:'Pretendard Variable',Pretendard,'Apple SD Gothic Neo',sans-serif;
   }
 
-  .rv-hero {
-    background: linear-gradient(135deg, #4a2d20 0%, #8c5132 60%, #b77842 100%);
-    padding: 140px 24px 96px; text-align: center; color: #fff;
-  }
-  .rv-hero-eyebrow {
-    display: inline-flex; align-items: center; gap: 10px;
-    font-size: 12px; font-weight: 700; letter-spacing: 0.16em;
-    text-transform: uppercase; color: rgba(255,236,204,0.9); margin-bottom: 18px;
-  }
-  .rv-hero-eyebrow::before { content:''; width:28px; height:1px; background:rgba(255,236,204,0.6); }
-  .rv-hero h1 { margin: 0 0 16px; font-size: clamp(30px, 5vw, 46px); font-weight: 800; line-height: 1.25; }
-  .rv-hero p { margin: 0 auto; max-width: 560px; font-size: 15px; line-height: 1.85; color: rgba(255,255,255,0.85); word-break: keep-all; }
 
   .rv-wrap { max-width: 620px; margin: 0 auto; padding: 72px 24px 96px; }
   .rv-section-title { display:flex; align-items:center; gap:12px; margin: 0 0 24px; font-size: 13px; font-weight: 800; letter-spacing: 0.12em; color: var(--r); text-transform: uppercase; }
@@ -96,7 +85,6 @@ const events = [
   .rv-empty p { margin: 0; font-size: 14px; line-height: 1.8; }
 
   @media (max-width: 640px) {
-    .rv-hero { padding: 116px 20px 72px; }
     .rv-wrap { padding: 52px 18px 72px; }
     .rv-card { padding: 24px 20px; }
     .rv-fact { grid-template-columns: 62px 1fr; font-size: 13.5px; }
@@ -106,17 +94,17 @@ const events = [
   }
 </style>
 
-<section class="rv-hero">
-  <div class="rv-hero-eyebrow">WOLKO EVENT · RSVP</div>
-  <h1>
+<PageHero variant="band" image="https://wolko.synology.me/Web_Contents/Photos/Camp_Ministry/Samuel.JPG" pos="50% 35%">
+  <Fragment slot="eyebrow">WOLKO EVENT · RSVP</Fragment>
+  <Fragment slot="title">
     <span class="wl-ko">이벤트 참석 신청</span>
     <span class="wl-en">Event RSVP</span>
-  </h1>
-  <p>
+  </Fragment>
+  <Fragment slot="desc">
     <span class="wl-ko">월코의 예정된 행사에 함께해 주세요. 참석 여부를 미리 알려주시면 자리를 준비하는 데 큰 도움이 됩니다.</span>
     <span class="wl-en">Join us at our upcoming events. Letting us know in advance helps us prepare a place for you.</span>
-  </p>
-</section>
+  </Fragment>
+</PageHero>
 
 <div class="rv-wrap">
   <h2 class="rv-section-title">

@@ -3,6 +3,7 @@
 //   photo : 큰 사진이 화면 높이를 꽉 채우고, 아래쪽에 큰 제목 + 구분선 위로 설명 · 숫자 · 버튼 (소개·사역 같은 대표 페이지)
 //   band  : 짧은 사진 띠 — 작은 표시 · 제목 · 한 줄 설명 (후원·선교보고·문의 같은 안내 페이지)
 //   plain : 사진 없이 옅은 바탕에 제목만 (자료실 같은 도구 페이지)
+//   band 와 plain 은 어느 페이지든 높이가 똑같다 — 데스크톱 460px, 휴대폰 400px.
 // 공통: 앞에 가는 선이 붙은 작은 표시, G마켓 산스 제목, 왼쪽 정렬, 같은 폭, 같은 등장 움직임.
 // 쓰는 쪽에서 넣는 칸: eyebrow, title, desc(설명 한 줄) 또는 bar(설명·숫자·버튼 줄), 기본 칸(빵부스러기 등 덧붙임).
 //   bar 안에서 쓰는 이름: .ph-sub(설명) .ph-stats > .ph-stat > dt/dd(숫자, 글자면 .ph-stats--text) .ph-actions > .ph-cta(.ph-cta--ghost)
@@ -58,7 +59,9 @@ const hasBar = Astro.slots.has('bar');
   .ph--photo .ph-title .wl-en { font-size: 0.78em; }
 
   /* band — 짧은 사진 띠 */
-  .ph--band { min-height: 460px; padding-top: 140px; }
+  /* 작은 페이지는 모두 같은 높이 (plain 도 같은 값) */
+  .ph--band, .ph--plain { height: 460px; }
+  .ph--band { padding-top: 140px; }
   .ph--band::after { background: linear-gradient(0deg, rgba(5,20,28,0.88) 0%, rgba(5,20,28,0.55) 50%, rgba(5,20,28,0.35) 100%); }
   .ph--band .ph-inner { padding: 0 24px 56px; }
   .ph--band .ph-title { font-size: clamp(36px, 4.2vw, 56px); line-height: 1.18; }
@@ -107,7 +110,8 @@ const hasBar = Astro.slots.has('bar');
     .ph--photo::after { background: linear-gradient(180deg, rgba(5,20,28,0.35) 0%, rgba(5,20,28,0) 14%, rgba(5,20,28,0) 32%, #0b1e27 62%); }
     .ph--photo .ph-inner { padding: 0 20px 28px; }
     .ph--photo .ph-title { margin-top: 18px; font-size: 34px; line-height: 1.25; }
-    .ph--band { min-height: 380px; padding-top: 120px; }
+    .ph--band, .ph--plain { height: 400px; }
+    .ph--band { padding-top: 116px; }
     .ph--band::before { background-position: var(--ph-mpos, 50% 40%); }
     .ph--band .ph-inner, .ph--plain .ph-inner { padding: 0 20px 36px; }
     .ph--band .ph-title { font-size: 32px; }
