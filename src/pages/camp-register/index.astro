@@ -1108,37 +1108,16 @@ body.lang-en .crp-modal-card .wl-ko { display: none !important; }
 body.lang-en .crp-modal-card span.wl-en { display: inline !important; }
 body.lang-en .crp-modal-card .wl-en { display: block !important; }
 
-/* ── 스태프 지원 모달 — 신청 모달과 같은 흰 머리말 ── */
+/* ── 스태프 지원 모달 — 신청 모달과 같은 흰 머리말 ──
+   신청 모달처럼 창 전체가 함께 스크롤된다: 머리말은 내리면 위로 사라지고, 닫기(×)와 아래 버튼 줄만 붙어 있다
+   (머리말을 고정해 두면 작성할 때 화면이 답답했다) */
 .crp-staff-modal-badge { color: var(--c-label); }
-#staffModal .crp-staff-modal-head {
-  flex: 0 0 auto;
-  width: 100%;
-}
-#staffModal .crp-modal-card {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-#staffModal .crp-staff-modal-body {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  background: #fff;
-}
 #staffModal .crp-staff-modal-desc {
   font-size: 14px;
   color: var(--c-sub);
   line-height: 1.7;
   margin-top: 8px;
   padding-right: 56px;
-}
-#staffModal .crp-modal-close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  margin: 0;
 }
 #staffModal .crp-modal-title { margin: 0; }
 .crp-staff-success { padding: 40px 40px 48px; }
@@ -1183,7 +1162,6 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
     border-radius: 0; box-shadow: none;
   }
   .crp-modal-close { margin: 12px 12px -52px auto; top: 12px; }
-  #staffModal .crp-modal-close { top: 12px; right: 12px; }
   .crp-modal-head,
   .crp-staff-modal-head { padding: 20px 20px 18px; }
   .crp-modal-badge, .crp-modal-title, #staffModal .crp-staff-modal-desc { padding-right: 52px; }
@@ -4243,6 +4221,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       staffSubmitBtn.disabled = false;
       staffSubmitBtn.classList.remove('loading');
       staffModal.hidden = false;
+      staffModal.querySelector('.crp-modal-card').scrollTop = 0;
       document.body.style.overflow = 'hidden';
     });
   });
