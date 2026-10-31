@@ -47,6 +47,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
   <link rel="stylesheet" href="/pdf-viewer-layout.css?v=8">
   <link rel="stylesheet" href="/wolko-layout.css?v=17">
   <link rel="stylesheet" href="/wolko-site.css?v=6">
+  <link rel="stylesheet" href="/resource-report.css?v=1">
   <style is:global>
     .file-context-menu { position:fixed; z-index:10000; width:min(230px,calc(100vw - 16px)); padding:6px; background:#fff; border:1px solid #dce8ed; border-radius: var(--ws-radius-sm, 8px); box-shadow:0 12px 36px rgba(16,41,54,.2); }
     .file-context-menu button { display:block; width:100%; min-height:42px; border:0; border-radius: var(--ws-radius-sm, 8px); background:transparent; text-align:left; padding:10px 14px; color:#102936; font-family:inherit; font-size:14px; font-weight:600; line-height:1.4; cursor:pointer; }
@@ -104,9 +105,13 @@ const pyeongtaekMissionaries = (await getCollection('team'))
   </header>
 
   <main class="portal-main" id="portalMain" hidden>
-    <section class="hero-panel">
-      <div class="hero-copy"><p class="eyebrow" data-t="heroEyebrow">RESOURCE REPORT</p><h1 data-t="heroTitle">자료 제작 진행 현황</h1><p data-t="heroDesc">번역과 제작 중인 자료를 한눈에 확인하고, 발표에 바로 사용할 수 있는 진행 리포트입니다.</p></div>
-      <div class="overall-progress" id="overallProgress"><div class="progress-ring progress-ring-lg" id="overallRing"><div class="ring-inner"><strong id="overallPercent">0%</strong><span data-t="overallLabel">전체 완성도</span></div></div><p id="overallCaption"></p></div>
+    <section class="hero-panel rr-hero rr-reveal" id="reportHero">
+      <div class="rr-hero-deco" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="rr-hero-main">
+        <div class="hero-copy"><p class="eyebrow" data-t="heroEyebrow">RESOURCE REPORT</p><h1 data-t="heroTitle">자료 제작 진행 현황</h1><p data-t="heroDesc">번역과 제작 중인 자료를 한눈에 확인하고, 발표에 바로 사용할 수 있는 진행 리포트입니다.</p></div>
+        <div class="rr-stages" id="stageBreakdown"></div>
+      </div>
+      <div class="overall-progress" id="overallProgress"><svg class="rr-orbit" viewBox="0 0 212 212" aria-hidden="true"><circle cx="106" cy="106" r="104"/><circle class="rr-orbit-dot" cx="106" cy="2" r="3.5"/></svg><div class="progress-ring progress-ring-lg" id="overallRing"><div class="ring-inner"><strong id="overallPercent">0%</strong><span data-t="overallLabel">전체 완성도</span></div></div><p id="overallCaption"></p></div>
     </section>
 
     <section class="summary-grid" id="summaryGrid"></section>
@@ -114,6 +119,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     <section class="report-section">
       <div class="section-head"><div><h2 data-t="sectionTitle">작업 중인 자료</h2></div><button class="add-resource" id="addResourceBtn" type="button" hidden onclick="openEditor()"><span>+</span> <span data-t="addResourceBtn">항목 추가</span></button></div>
       <p class="report-updated" id="updatedAt"></p>
+      <div class="rr-filters" id="resourceFilters" role="group"></div>
       <div class="resource-grid" id="resourceGrid"></div>
     </section>
   </main>
@@ -267,6 +273,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         sectionTitle: '작업 중인 자료', addResourceBtn: '항목 추가',
         detailEyebrow: '자료 상세', editorEyebrow: '자료 편집',
         stageActive1: '번역 중', stageActive2: '검토 중', stageActive3: '디자인·퍼블리시 중', stageComplete: '완료',
+        stageShort1: '번역', stageShort2: '검토', stageShort3: '디자인', stagesTitle: '단계별 현황', stagesTotal: n => `자료 ${n}개`, countUnit: '개', filterAll: '전체', filterLabel: '단계로 걸러 보기', filterEmpty: '이 단계에 있는 자료가 없습니다.',
         stage1Name: '번역', stage2Name: '검토', stage3Name: '디자인 및 퍼블리시', fieldStage: '진행 단계',
         noTranslation: '번역/제작 내용 미입력',
         emptyTitle: '아직 등록된 작업 항목이 없습니다.', emptyHintWrite: '오른쪽 위의 항목 추가 버튼으로 첫 리소스를 등록해보세요.', emptyHintRead: '관리자가 작업 항목을 등록하면 이곳에 표시됩니다.',
@@ -327,6 +334,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         sectionTitle: 'Active Resources', addResourceBtn: 'Add Item',
         detailEyebrow: 'RESOURCE DETAIL', editorEyebrow: 'RESOURCE EDITOR',
         stageActive1: 'Translating', stageActive2: 'Reviewing', stageActive3: 'Design & Publish', stageComplete: 'Complete',
+        stageShort1: 'Translate', stageShort2: 'Review', stageShort3: 'Design', stagesTitle: 'BY STAGE', stagesTotal: n => `${n} item${n === 1 ? '' : 's'}`, countUnit: '', filterAll: 'All', filterLabel: 'Filter by stage', filterEmpty: 'No resources in this stage.',
         stage1Name: 'Translation', stage2Name: 'Review', stage3Name: 'Design & Publish', fieldStage: 'Progress Stage',
         noTranslation: 'No translation info yet',
         emptyTitle: 'No work items registered yet.', emptyHintWrite: 'Use the Add Item button above to register your first resource.', emptyHintRead: "Items will appear here once an admin adds them.",
@@ -471,23 +479,95 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       if (!$('viewerOverlay').hidden) renderNotesList();
     }
 
+    /* ── 리포트 움직임: 화면에 들어오면 고리·막대가 차오르고 숫자가 세어 올라간다 ── */
+    const rrReduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    let rrObserver = null, resourceFilter = 'all';
+    const TILE_ICONS = {
+      items: '<path d="M12 3 3 7.5 12 12l9-4.5L12 3Z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/>',
+      avg: '<path d="M4 16a8 8 0 1 1 16 0"/><path d="m12 16 4.2-4.2"/><circle cx="12" cy="16" r="1.3"/>',
+      translating: '<path d="M4 6h9M8.5 4v2M6 6c1 3.5 3.5 6 7 7.5"/><path d="M11 6c-1 3.5-3.5 6-7 7.5"/><path d="m13 20 4-9 4 9M14.5 17h5"/>',
+      complete: '<circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.7 2.7L16.5 9"/>',
+    };
+    // 숫자를 지금 보이는 값에서 목표 값까지 부드럽게 바꾼다(움직임 줄이기면 바로)
+    function rrCount(el, delay = 0) {
+      const target = Number(el.dataset.count) || 0, suffix = el.dataset.suffix || '', from = Number(el.dataset.shown) || 0;
+      if (rrReduce || from === target) { el.textContent = target + suffix; el.dataset.shown = target; return; }
+      const dur = 900 + Math.min(Math.abs(target - from), 100) * 5; let start = 0;
+      const step = now => {
+        if (!start) start = now + delay;
+        const p = Math.min(1, Math.max(0, (now - start) / dur)), v = Math.round(from + (target - from) * (1 - Math.pow(1 - p, 3)));
+        el.textContent = v + suffix; el.dataset.shown = v;
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+      clearTimeout(el._rrDone); el._rrDone = setTimeout(() => { el.textContent = target + suffix; el.dataset.shown = target; }, delay + dur + 120);   // 탭이 뒤에 있어 그림이 멈춰도 끝값은 맞춘다
+    }
+    function rrSetCount(el, value, suffix = '') {
+      el.dataset.count = value; el.dataset.suffix = suffix;
+      const box = el.closest('.rr-reveal');
+      if (!box || box.classList.contains('is-in')) rrCount(el); else el.textContent = (Number(el.dataset.shown) || 0) + suffix;
+    }
+    function rrShow(el) {
+      el.classList.add('is-in');
+      const d = parseFloat(getComputedStyle(el).getPropertyValue('--d')) || 0;
+      el.querySelectorAll('[data-count]').forEach(n => rrCount(n, (d + .15) * 1000));
+    }
+    function rrReveal() {
+      const items = [...document.querySelectorAll('#portalMain .rr-reveal:not(.is-in)')];
+      if (rrReduce || !('IntersectionObserver' in window)) { items.forEach(rrShow); return; }
+      rrObserver = rrObserver || new IntersectionObserver(entries => entries.forEach(en => { if (en.isIntersecting) { rrObserver.unobserve(en.target); rrShow(en.target); } }), { threshold: .12, rootMargin: '0px 0px -4% 0px' });
+      items.forEach(el => rrObserver.observe(el));
+    }
+    function setResourceFilter(value) { resourceFilter = value; render(); }
+    function stageSteps(item, idx) {
+      const sp = Array.isArray(item.stagePercents) && item.stagePercents.length === STAGE_COUNT ? item.stagePercents : null;
+      if (!sp) return `<div class="resource-progress"><div class="bar"><i style="width:${item.progress}%"></i></div><span>${item.progress}%</span></div>`;
+      return `<div class="rr-steps">${sp.map((raw, i) => { const v = Math.max(0, Math.min(100, Number(raw) || 0)); return `<div class="rr-step${v >= 100 ? ' is-done' : ''}${i === idx ? ' is-now' : ''}" style="--c:${STAGE_COLORS[i]};--w:${v}%"><i><b></b></i><small><span>${esc(t('stageShort' + (i + 1)))}</span>${v}%</small></div>`; }).join('')}</div>`;
+    }
+
     function render() {
       $('updatedAt').textContent = formatUpdated(lastUpdatedAt);
       const total = resources.length;
       const overall = percent(resources);
-      const translating = resources.filter(item => currentStageIndex(item.stagePercents) === 0).length;
-      const complete = resources.filter(item => currentStageIndex(item.stagePercents) >= STAGE_COUNT).length;
-      $('overallRing').style.setProperty('--progress', overall); $('overallPercent').textContent = overall + '%';
+      const stageCounts = [0, 0, 0, 0];
+      resources.forEach(item => { stageCounts[Math.min(STAGE_COUNT, currentStageIndex(item.stagePercents))]++; });
+      const translating = stageCounts[0], complete = stageCounts[STAGE_COUNT];
+      $('overallRing').style.setProperty('--progress', overall); rrSetCount($('overallPercent'), overall, '%');
       $('overallCaption').textContent = total ? t('overallCaptionN')(total) : t('overallCaptionEmpty');
-      $('summaryGrid').innerHTML = [
-        [t('summaryItems'), total], [t('summaryAvg'), overall + '%'], [t('summaryTranslating'), translating], [t('summaryComplete'), complete],
-      ].map(([label, value]) => `<article class="summary-card"><strong>${value}</strong><span>${esc(label)}</span></article>`).join('');
-      $('resourceGrid').innerHTML = total ? resources.map(item => {
-        const color = stageColor(item.stagePercents);
-        const thumb = item.thumbnailData ? `<img src="${item.thumbnailData}" alt="">` : `<span class="thumb-placeholder">W<br>RESOURCE</span>`;
-        return `<article class="resource-card" onclick="openEditor('${item.id}')"><div class="resource-thumb">${thumb}</div><div class="resource-body"><div class="resource-top">${stageMarkup(item.stagePercents)}</div><h3>${esc(item.title)}</h3><p class="translation-line">${item.translation ? esc(item.translation) : esc(t('noTranslation'))}</p>${item.detail ? `<p class="detail-line">${esc(item.detail)}</p>` : ''}<div class="resource-progress"><div class="bar"><i style="width:${item.progress}%"></i></div><span>${item.progress}%</span></div></div><div class="card-ring">${ring(item.progress, color)}</div></article>`;
-      }).join('') : `<div class="empty-state"><strong>${esc(t('emptyTitle'))}</strong><span>${esc(canWrite ? t('emptyHintWrite') : t('emptyHintRead'))}</span></div>`;
+      // 맨 위: 단계별 현황 — 단계마다 자료 수만큼 한 줄 막대를 나눈다
+      const stageNames = [t('stageActive1'), t('stageActive2'), t('stageActive3'), t('stageComplete')];
+      $('stageBreakdown').innerHTML = `<p class="rr-stages-head"><b>${esc(t('stagesTitle'))}</b><span>${esc(t('stagesTotal')(total))}</span></p>`
+        + `<div class="rr-stack" aria-hidden="true">${stageCounts.map((n, i) => n ? `<i style="--n:${n};--c:${STAGE_COLORS[i]}"></i>` : '').join('')}</div>`
+        + `<ul class="rr-legend">${stageCounts.map((n, i) => `<li class="${n ? '' : 'is-zero'}" style="--c:${STAGE_COLORS[i]}"><small>${esc(stageNames[i])}</small><b><span data-legend="${i}">0</span><em>${esc(t('countUnit'))}</em></b></li>`).join('')}</ul>`;
+      $('stageBreakdown').querySelectorAll('[data-legend]').forEach(el => { const i = Number(el.dataset.legend); el.dataset.shown = render.legend?.[i] || 0; rrSetCount(el, stageCounts[i]); });
+      render.legend = stageCounts.slice();
+      // 숫자 네 칸
+      const ratio = n => (total ? Math.round(n / total * 100) : 0);
+      const tiles = [
+        ['items', '#004f68', t('summaryItems'), total, '', null],
+        ['avg', '#008e92', t('summaryAvg'), overall, '%', overall],
+        ['translating', '#6f55c9', t('summaryTranslating'), translating, '', ratio(translating)],
+        ['complete', '#16865a', t('summaryComplete'), complete, '', ratio(complete)],
+      ];
+      const tileSig = lang + JSON.stringify(tiles.map(x => x[3]));
+      if (render.tileSig !== tileSig) { render.tileSig = tileSig; $('summaryGrid').innerHTML = tiles.map(([key, c, label, value, suffix, bar], i) => `<article class="summary-card rr-tile rr-reveal" style="--c:${c};--d:${(i * .07).toFixed(2)}s"><strong data-count="${value}" data-suffix="${suffix}">0${suffix}</strong><span>${esc(label)}</span><span class="rr-tile-ic" aria-hidden="true"><svg viewBox="0 0 24 24">${TILE_ICONS[key]}</svg></span>${bar === null ? '' : `<i class="rr-tile-bar"><b style="--w:${bar}%"></b></i>`}</article>`).join(''); }   // 걸러 보기만 바꿀 때는 숫자 칸을 다시 세지 않는다
+      // 단계로 걸러 보기 — 자료가 있는 단계만 보인다
+      if (resourceFilter !== 'all' && !stageCounts[Number(resourceFilter)]) resourceFilter = 'all';
+      const chip = (value, label, n, c) => `<button type="button" class="rr-filter${resourceFilter === value ? ' is-on' : ''}" aria-pressed="${resourceFilter === value}" onclick="setResourceFilter('${value}')"${c ? ` style="--c:${c}"` : ''}>${c ? '<i></i>' : ''}${esc(label)}<em>${n}</em></button>`;
+      $('resourceFilters').setAttribute('aria-label', t('filterLabel'));
+      $('resourceFilters').innerHTML = total ? chip('all', t('filterAll'), total, '') + stageCounts.map((n, i) => n ? chip(String(i), stageNames[i], n, STAGE_COLORS[i]) : '').join('') : '';
+      // 자료 카드
+      const shown = resourceFilter === 'all' ? resources : resources.filter(item => Math.min(STAGE_COUNT, currentStageIndex(item.stagePercents)) === Number(resourceFilter));
+      $('resourceGrid').innerHTML = total ? shown.map((item, i) => {
+        const color = stageColor(item.stagePercents), idx = currentStageIndex(item.stagePercents), done = idx >= STAGE_COUNT;
+        const thumb = item.thumbnailData ? `<img src="${item.thumbnailData}" alt="">` : `<span class="thumb-placeholder"><img src="/images/WOLKO Circle.png" alt="">RESOURCE</span>`;
+        return `<article class="resource-card rr-card rr-reveal ${done ? 'is-done' : 'is-active'}" style="--status:${color};--d:${(Math.min(i, 7) * .07).toFixed(2)}s" tabindex="0" role="button" onclick="openEditor('${item.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openEditor('${item.id}')}">`
+          + `<div class="resource-thumb">${thumb}</div><div class="resource-body"><div class="resource-top">${stageMarkup(item.stagePercents)}</div><h3>${esc(item.title)}</h3><p class="translation-line">${item.translation ? esc(item.translation) : esc(t('noTranslation'))}</p>${item.detail ? `<p class="detail-line">${esc(item.detail)}</p>` : ''}${stageSteps(item, idx)}</div>`
+          + `<div class="card-ring"><div class="progress-ring" style="--progress:${item.progress};--ring-color:${color}"><div class="ring-inner"><strong data-count="${item.progress}" data-suffix="%">0%</strong></div></div></div></article>`;
+      }).join('') + (shown.length ? '' : `<div class="rr-empty"><span>${esc(t('filterEmpty'))}</span></div>`)
+        : `<div class="rr-empty"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg><strong>${esc(t('emptyTitle'))}</strong><span>${esc(canWrite ? t('emptyHintWrite') : t('emptyHintRead'))}</span></div>`;
       $('addResourceBtn').hidden = !canWrite;
+      rrReveal();
     }
 
     async function loadResources() {
