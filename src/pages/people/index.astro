@@ -222,6 +222,27 @@ const mapPlaces = [
       });
     })();
 
+    // 거르기 막대 자리: 위 메뉴 바로 아래에 붙인다(메뉴 높이는 기기·글자 크기마다 달라 실제 높이를 잰다)
+    (function () {
+      var bar = document.querySelector('.pp-bar'); if (!bar) return;
+      var nav = document.querySelector('.nav');
+      var small = window.matchMedia('(max-width: 900px)');
+      var lastY = window.scrollY, ticking = false;
+      function update() {
+        ticking = false;
+        if (nav) bar.style.setProperty('--pp-bar-top', Math.max(0, Math.round(nav.getBoundingClientRect().bottom)) + 'px');
+        var y = window.scrollY, hero = document.querySelector('.pp-hero');
+        var past = hero ? y > hero.offsetTop + hero.offsetHeight : y > 400;
+        if (!small.matches || !past || y < lastY - 4) bar.classList.remove('is-tucked');
+        else if (y > lastY + 4) bar.classList.add('is-tucked');
+        lastY = y;
+      }
+      window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+      window.addEventListener('resize', update);
+      bar.addEventListener('focusin', function () { bar.classList.remove('is-tucked'); });
+      update();
+    })();
+
     // 거르기: 사역 거점(전체 · 평택 · 제주) × 역할(모두 · 선교사 · 단기 사역자). 사람이 없는 칸은 통째로 숨긴다
     (function () {
       var root = document.querySelector('.pp'); if (!root) return;
@@ -306,7 +327,7 @@ const mapPlaces = [
     .pp-place-meta { font-size: 11.5px; font-weight: 700; color: rgba(255,255,255,.62); letter-spacing: .02em; }
 
     /* 거르기 막대 — 위 메뉴 아래에 붙어 따라온다 */
-    .pp-bar { position: sticky; top: 84px; z-index: 20; background: rgba(244,241,234,.94); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid var(--pp-line); }
+    .pp-bar { position: sticky; top: var(--pp-bar-top, 84px); z-index: 20; transition: transform .3s cubic-bezier(.2,.7,.2,1); background: rgba(244,241,234,.94); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid var(--pp-line); }
     .pp-bar-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 14px 0; }
     .pp-seg { display: inline-flex; gap: 4px; padding: 4px; background: #fff; border: 1px solid var(--pp-line); border-radius: 12px; }
     .pp-seg button { min-height: 40px; padding: 0 16px; border: 0; border-radius: 9px; background: transparent; color: var(--pp-text); font: 800 14px/1 var(--ff-sans); cursor: pointer; transition: background-color .2s, color .2s; }
@@ -373,7 +394,11 @@ const mapPlaces = [
     .pp-btn--ghost:hover { background: rgba(255,255,255,.1); color: #fff; }
 
     @media (max-width: 1100px) { .pp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-    @media (max-width: 900px) { .pp-bar { top: 72px; } }
+    @media (max-width: 900px) {
+      .pp-bar { top: var(--pp-bar-top, 72px); }
+      /* 휴대폰·태블릿: 내려 읽을 때는 거르기 막대를 위로 치워 화면을 넓게 쓰고, 조금이라도 올리면 다시 나온다 */
+      .pp-bar.is-tucked { transform: translateY(calc(-100% - var(--pp-bar-top, 72px))); }
+    }
     @media (max-width: 760px) {
       .pp-shell { width: calc(100% - 40px); }
       .pp-hero { padding-top: 116px; }
@@ -384,7 +409,8 @@ const mapPlaces = [
       .pp-faces img { width: 24px; height: 24px; }
       .pp-place-name { font-size: 12.5px; }
       .pp-place-meta { font-size: 10.5px; }
-      .pp-bar-inner { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+      .pp-bar-inner { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding: 8px 0; }
+      .pp-seg button, .pp-chips button { min-height: 36px; }
       .pp-bar-inner::-webkit-scrollbar { display: none; }
       .pp-seg, .pp-chips { flex: none; flex-wrap: nowrap; }
       .pp-seg button, .pp-chips button { white-space: nowrap; }
@@ -402,7 +428,7 @@ const mapPlaces = [
     @media (hover: none) { .pp-card:hover { transform: none; } .pp-card:hover img { transform: none; } }
     @media (max-width: 1100px) and (min-width: 761px) { .pp-map { height: 420px; margin-right: 100px; } }
     @media (prefers-reduced-motion: reduce) {
-      .pp-card, .pp-card img, .pp-go { transition: none; }
+      .pp-card, .pp-card img, .pp-go, .pp-bar { transition: none; }
       .pp-hero *, .pp-hero *::before { animation: none !important; }
       .pp-hl { background-size: 100% 5px; }
       .pp-arc { stroke-dashoffset: 0; }
