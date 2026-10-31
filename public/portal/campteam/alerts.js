@@ -102,7 +102,7 @@
     var ex = (window.CTHero && CTHero.todayExtra) ? CTHero.todayExtra() : { html: '', duties: 0, notices: 0 };
     // 카드 색: 마감 지난 일이 있으면 붉게, 오늘 할 일·듀티·새 공지가 있으면 주황, 모두 끝났으면 초록 — 한눈에 보이도록
     var cls = t.overdue.length ? 'is-over' : (t.today.length || ex.duties || ex.notices) ? 'is-today' : 'is-clear';
-    var h = '<div class="tdhd"><h2>' + esc(CT.t('tdTitle')) + CT.help('today') + '</h2><span class="tddate">' + esc(d.date.replace(/-/g, '.')) + '</span></div>';
+    var h = '<div class="tdhd"><h2>' + esc(CT.t('tdTitle')) + CT.help('today') + '</h2><span class="tddate">' + esc(d.date.replace(/-/g, '.')) + '</span>' + ((window.CTHero && CTHero.oooHtml) ? CTHero.oooHtml() : '') + '</div>';
     if (s.daily) h += '<div class="tdai"><span class="chip">' + esc(CT.t('tdAi')) + '</span>' + CT.help('aiSummary') + '<p>' + esc(s.daily) + '</p></div>';
     var body = ex.html + todaySection('tdOver', t.overdue, 'over', 5) + todaySection('tdToday', t.today, 'today', 5) + todaySection('tdSoon', t.soon, 'soon', 5) +
       todaySection('tdMeet', t.meetings.concat(t.events), 'meet', 5) + todaySection('tdDec', t.decisions, 'dec', 3);
