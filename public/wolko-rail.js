@@ -3,10 +3,10 @@
    라벨은 항상 펼쳐서 보여준다(예전엔 아이콘만 두고 호버해야 이름이 보였는데,
    페이지 사이 이동이 잘 안 보인다는 피드백으로 상시 펼침으로 바꿨다). */
 /* 왼쪽 메뉴 색이 하루 해를 따라 바뀐다 — 평택의 실제 해 뜨고 지는 시각(한국 시간)으로 계산한다.
-   밤은 원래 남색, 새벽은 남보라, 낮은 짙은 하늘색, 해 질 녘은 자두빛, 그 사이는 천천히 섞인다.
-   글자가 흰색이라 어느 시간대 색이든 충분히 어둡게 둔다. 5분마다 다시 계산한다. */
+   밤은 원래 남색, 새벽은 남보라, 아침은 맑은 청록빛 파랑, 한낮은 밝은 하늘색, 해 질 녘은 자두빛, 그 사이는 천천히 섞인다.
+   글자가 흰색이라 가장 밝은 낮 색도 흰 글자와 대비 4.5:1 이상으로 둔다. 5분마다 다시 계산한다. */
 (function () {
-  var NIGHT = [11, 36, 48], DAWN = [52, 49, 94], DAY = [21, 88, 128], SUNSET = [91, 48, 80], TWILIGHT = [44, 37, 73];
+  var NIGHT = [11, 36, 48], DAWN = [52, 49, 94], MORNING = [34, 124, 160], DAY = [30, 122, 176], SUNSET = [91, 48, 80], TWILIGHT = [44, 37, 73];
   function sunTimesKst(ms, lat, lon) {
     var rad = Math.PI / 180, d = new Date(ms + 9 * 3600000);
     var n = Math.floor((Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - Date.UTC(d.getUTCFullYear(), 0, 0)) / 86400000);
@@ -19,7 +19,7 @@
   function railColor(ms) {
     var sun = sunTimesKst(ms, 36.99, 127.09); // 평택 월코센터
     var now = ((ms / 60000) + 540) % 1440;
-    var stops = [[0, NIGHT], [sun.rise - 70, NIGHT], [sun.rise - 15, DAWN], [sun.rise + 50, DAY], [sun.set - 80, DAY],
+    var stops = [[0, NIGHT], [sun.rise - 70, NIGHT], [sun.rise - 15, DAWN], [sun.rise + 45, MORNING], [sun.rise + 150, DAY], [sun.set - 80, DAY],
       [sun.set - 10, SUNSET], [sun.set + 35, TWILIGHT], [sun.set + 90, NIGHT], [1440, NIGHT]];
     for (var i = 1; i < stops.length; i++) {
       if (now > stops[i][0]) continue;
