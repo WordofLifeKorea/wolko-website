@@ -7,6 +7,8 @@ name: Camp team weekly mail
 on:
   schedule:
     - cron: '0 0 * * 2'
+    # 오후 3시(한국) 한 번 더: 오전에 방해 금지 시간대에 걸렸거나 발송에 실패한 사람만 보낸다(이미 받은 사람은 발송 기록으로 건너뜀)
+    - cron: '0 6 * * 2'
   workflow_dispatch:
     inputs:
       dry_run:

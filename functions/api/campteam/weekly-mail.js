@@ -1,7 +1,7 @@
 import { json, badRequest, noDb, FIXED_ADMIN_EMAILS, applyOverrides } from '../../lib/campteamAuth.js';
 import { anthropicRoute } from '../../lib/anthropicRoute.js';
 import { todayKST } from '../../lib/campteamDb.js';
-import { buildWeek, weekEmpty, summaryPrompt, callSummary, summaryItems, SUMMARY_MODEL, tuesdayOf, mondayOf, nowIso } from '../../lib/campteamAlerts.js';
+import { buildWeek, weekEmpty, summaryPrompt, callSummary, summaryItems, SUMMARY_MODEL, tuesdayOf, mondayOf, nowIso, loadAllPrefs, isQuietNow } from '../../lib/campteamAlerts.js';
 import { buildWeeklyEmail, sendCampMail, fromAddress } from '../../lib/campteamMail.js';
 
 /**
@@ -9,7 +9,7 @@ import { buildWeeklyEmail, sendCampMail, fromAddress } from '../../lib/campteamM
  *   POST ?dryRun=1   받을 사람과 건수만 보여 준다 (아무것도 보내지 않음)
  *   POST ?force=1    화요일이 아니거나 이미 보냈어도 보낸다
  *   POST ?to=주소    그 한 사람에게만 시험 발송 (설정·발송 기록과 무관, 다른 사람에게는 보내지 않음)
- * 규칙: 이번 주에 보여 줄 게 없으면 보내지 않는다 · 받기를 끈 사람은 제외 · 같은 주에 두 번 보내지 않는다(mail_log) · 한 사람이 실패해도 나머지는 계속 보낸다.
+ * 규칙: 이번 주에 보여 줄 게 없으면 보내지 않는다 · 받기를 끈 사람은 제외 · 「방해 금지 시간대」(한국 시간)에 걸린 사람은 이번 실행에서 건너뛴다(발송 기록을 남기지 않으므로 같은 날 뒤 실행에서 보낸다. 강제 발송에도 적용, ?to= 시험 발송은 제외) · 같은 주에 두 번 보내지 않는다(mail_log) · 한 사람이 실패해도 나머지는 계속 보낸다.
  */
 async function same(a, b) {
   const enc = new TextEncoder(), [x, y] = await Promise.all([crypto.subtle.digest('SHA-256', enc.encode(String(a))), crypto.subtle.digest('SHA-256', enc.encode(String(b)))]);
@@ -29,12 +29,14 @@ export async function onRequestPost({ env, request }) {
   let ov = {}; try { for (const r of (await env.DB.prepare('SELECT email, area, level FROM member_perms').all()).results) (ov[r.email.toLowerCase()] ||= {})[r.area] = r.level; } catch { ov = {}; }
   for (const r of rows) { const e = r.email.toLowerCase(); if (!seen.has(e)) { seen.add(e); members.push({ email: e, name: r.name || '', perms: applyOverrides(r.role, ov[e]) }); } }
   for (const e of FIXED_ADMIN_EMAILS) if (!seen.has(e)) { seen.add(e); members.push({ email: e, name: '', perms: applyOverrides('admin', null) }); }
-  const prefs = new Map((await env.DB.prepare('SELECT email, weeklyEmail FROM notify_prefs').all()).results.map((r) => [r.email.toLowerCase(), r.weeklyEmail]));
+  const prefs = await loadAllPrefs(env), nowDate = new Date();
   const sent = new Set((await env.DB.prepare(`SELECT email FROM mail_log WHERE kind = 'weekly' AND weekKey = ?1 AND status = 'sent'`).bind(weekKey).all()).results.map((r) => r.email.toLowerCase()));
   const out = { today, weekKey, from: fromAddress(env), dryRun, planned: [], sent: 0, skipped: [], failed: [] }, base = env.CAMPTEAM_BASE_URL || 'https://wolko.org';
   for (const m of members) {
     if (only && m.email !== only) continue;
-    if (!only && prefs.get(m.email) === 0) { out.skipped.push({ email: m.email, why: 'opted-out' }); continue; }
+    const pf = prefs.get(m.email);
+    if (!only && pf && !pf.weeklyEmail) { out.skipped.push({ email: m.email, why: 'opted-out' }); continue; }
+    if (!only && isQuietNow(pf, nowDate)) { out.skipped.push({ email: m.email, why: 'quiet-hours' }); continue; }
     if (!only && !force && sent.has(m.email)) { out.skipped.push({ email: m.email, why: 'already-sent' }); continue; }
     const week = await buildWeek(env, m.email, today, m.perms);
     if (weekEmpty(week)) { out.skipped.push({ email: m.email, why: 'nothing-this-week' }); continue; }

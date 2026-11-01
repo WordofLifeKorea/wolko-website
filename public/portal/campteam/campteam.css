@@ -373,10 +373,9 @@ details > table,details > div{margin-left:2px}
 @media (max-width:900px){.bell{margin-left:auto}.tdr b{font-size:15px}}
 html.al-open{overflow:hidden}
 /* 알림공지 페이지 */
-.alpage{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px;align-items:start}.alpage .sec{background:#fff;border:1px solid var(--border);border-radius: var(--ws-radius-sm, 8px);padding:14px 16px}.alpage .sec h2{margin:0 0 10px;font-size:15px;display:flex;align-items:center;gap:6px}.alpage .stack{display:grid;gap:8px}
+.alpage{display:block}.alpage .sec{background:#fff;border:1px solid var(--border);border-radius: var(--ws-radius-sm, 8px);padding:14px 16px}.alpage .sec h2{margin:0 0 10px;font-size:15px;display:flex;align-items:center;gap:6px}.alpage .stack{display:grid;gap:8px}
 .alpage .pickgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px;margin-top:6px}.alpage .pickgrid label{display:flex;gap:6px;align-items:center;font-size:13px;border:1px solid var(--border);border-radius: var(--ws-radius-sm, 8px);padding:6px 8px}
 .alform label{display:grid;gap:4px;font-size:12.5px;color:var(--mid)}.alform input,.alform textarea,.alform select{border:1px solid var(--border);border-radius: var(--ws-radius-sm, 8px);padding:9px 11px;font:500 14px var(--f-body);background:#fff;color:var(--text)}.alform textarea{min-height:120px;resize:vertical}
-@media (max-width:900px){.alpage{grid-template-columns:1fr}}
 /* 캠프 공간 내 화면 편집 */
 .lywrap{position:relative;border:2px dashed var(--blue-lt,#9cc4ee);border-radius: var(--ws-radius-sm, 8px);padding:4px;background:rgba(59,143,240,.04)}.lywrap.full{grid-column:1/-1}.lywrap.off{opacity:.5}.lywrap>.card{margin:0}.lyc{display:flex;gap:6px;justify-content:flex-end;padding:4px 6px 6px}.lyc button{border:1px solid var(--border);background:#fff;border-radius: var(--ws-radius-sm, 8px);padding:5px 10px;font:600 12px var(--f-body);cursor:pointer;color:var(--text)}.lyc button:disabled{opacity:.35;cursor:default}
 /* 설정: 항목별 권한 표 */
@@ -944,3 +943,45 @@ dialog.fm-dlg[open]{display:flex;flex-direction:column}dialog.fm-dlg::backdrop{b
 
 /* 좁은 화면 카드의 쪽 표시: 마우스로도 누를 수 있는 화살표와 점 */
 @media(max-width:900px){.pgr i[data-pg]{cursor:pointer;padding:0;box-sizing:content-box;border:6px solid transparent;background-clip:padding-box;margin:0 -3px}.pgr .pgb{border:0;background:#eaf0f3;color:var(--blue);width:28px;height:26px;border-radius:8px;font:800 17px/1 var(--f-body);cursor:pointer;padding:0}.pgr .pgb:disabled{opacity:.35;cursor:default}}
+
+/* 알림 설정 팝오버: 「설정」 버튼 바로 아래. 폰(≤900px)에서는 아래에서 올라오는 시트 */
+.apwrap{position:relative}
+.appop{position:absolute;top:calc(100% + 8px);right:0;z-index:60;width:min(390px,92vw);max-height:min(76vh,680px);display:flex;flex-direction:column;background:#fff;border:1px solid var(--border);border-radius:var(--ws-radius,12px);box-shadow:0 14px 40px rgba(20,40,55,.22);overflow:hidden}
+.appop[hidden],.appopscrim[hidden]{display:none}
+.appopscrim{display:none}
+.appop .aphd{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border)}.appop .aphd b{font-size:15px}.appop .aphd .apmsg{margin:0 auto 0 4px;font-size:12px}
+.appop .apbody{overflow-y:auto;overscroll-behavior:contain;padding:4px 14px 16px;-webkit-overflow-scrolling:touch}
+.appop h3{margin:16px 0 6px;font:700 12px var(--f-body);color:var(--mid);letter-spacing:.02em;display:flex;align-items:center;gap:6px}
+.appop .hint{font-size:12px;color:var(--mid);margin:4px 0 0}
+.appop .aplist{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#fff}
+.appop .aplist>*+*{border-top:1px solid var(--border)}
+.appop .aprow.open{background:#f8fafb}
+.appop .aphead{display:flex;align-items:center;gap:8px;width:100%;min-height:46px;padding:8px 12px;background:transparent;border:0;text-align:left;font:600 14px var(--f-body);color:var(--text);cursor:pointer}
+.appop .aphead span{flex:none}.appop .aphead em{flex:1;min-width:0;text-align:right;font-style:normal;font-weight:500;font-size:13px;color:var(--mid);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.appop .apchev{flex:none;width:8px;height:8px;border-right:2px solid var(--mid);border-bottom:2px solid var(--mid);transform:rotate(-45deg);transition:transform .15s}.appop .aprow.open .apchev{transform:rotate(45deg)}
+.appop .apopts{max-height:250px;overflow-y:auto;border-top:1px solid var(--border);background:#fff}
+.appop .apopt{display:flex;align-items:center;gap:10px;width:100%;min-height:42px;padding:6px 12px;background:#fff;border:0;border-bottom:1px solid #eef2f4;text-align:left;font:500 14px var(--f-body);color:var(--text);cursor:pointer}
+.appop .apopt:hover:not(:disabled){background:#f4f8fa}.appop .apopt.lock{cursor:default;opacity:.85}
+.appop .apck{flex:none;width:22px;text-align:center;color:var(--blue);font-weight:800;font-size:16px}
+.appop .aptxt{display:grid;gap:1px;min-width:0}.appop .aptxt small{font-size:11.5px;color:var(--mid);font-weight:500}
+.appop .apcust{display:flex;align-items:center;gap:8px;padding:8px 12px;flex-wrap:wrap}.appop .apcust span{font-size:13px;flex:1 1 100%}.appop .apcust input{width:92px;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font:500 16px var(--f-body)}
+.appop .aperr{padding:0 12px 8px;margin:0;min-height:0}.appop .aperr:empty{display:none}
+.appop .apsw{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;min-height:50px;cursor:pointer;background:#fff}
+.appop .apsw b{font-size:14px;font-weight:600}
+.appop .apsw input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.appop .apsw-k{flex:none;position:relative;width:44px;height:26px;border-radius:13px;background:#cfd8de;transition:background .15s}
+.appop .apsw-k::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s}
+.appop .apsw input:checked+.apsw-k{background:var(--ok,#1f9d6b)}.appop .apsw input:checked+.apsw-k::after{transform:translateX(18px)}
+.appop .apsw input:focus-visible+.apsw-k{outline:2px solid var(--blue);outline-offset:2px}
+.appop .apquiet{display:flex;gap:10px;flex-wrap:wrap;padding:0 12px 12px;background:#fff}.appop .apquiet label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text)}.appop .apquiet input{border:1px solid var(--border);border-radius:8px;padding:7px 8px;font:500 16px var(--f-body)}
+.appop .aptest{margin-top:10px}.appop .aptest .btn{width:100%}
+.appop .apnum{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;font-size:13.5px;font-weight:600}.appop .apnum>span:last-child{display:flex;align-items:center;gap:6px;font-weight:500}.appop .apnum input{width:80px;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font:500 16px var(--f-body)}
+@media (max-width:900px){
+  .appopscrim{display:block;position:fixed;inset:0;z-index:59;background:rgba(15,30,40,.4)}
+  .appop{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;max-height:86vh;border-radius:16px 16px 0 0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom)}
+  .apwrap{position:static}
+  .appop .aphead{padding:14px 16px}.appop .apbody{padding:4px 16px 20px}
+  .appop .apopt,.appop .aphead{min-height:48px}
+  .alpage .sec{padding:12px}
+}
+@media (max-width:900px){html.ap-sheet-open{overflow:hidden}}
