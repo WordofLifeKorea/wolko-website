@@ -1,0 +1,64 @@
+---
+// 평가 설문 답하기 — 로그인 없이 링크(토큰)로 연다. 이름·연락처는 묻지 않는다.
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>WOLKO — Survey</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <style>
+    :root{--bg:#f4f6f8;--card:#fff;--text:#1a2d38;--mid:#5a7585;--blue:#004f68;--accent:#c42a36;--border:#dfe6ea;--ok:#1f9d6b}
+    @media (prefers-color-scheme:dark){:root{--bg:#10181d;--card:#18232a;--text:#e8eff3;--mid:#9fb4c0;--blue:#7fc4de;--border:#2a3a44}}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',system-ui,sans-serif;line-height:1.55}
+    main{max-width:640px;margin:0 auto;padding:20px 16px 60px}.lang{display:flex;gap:6px;justify-content:flex-end}.lang button{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:8px;padding:4px 10px;cursor:pointer}.lang button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+    h1{font-size:22px;margin:10px 0 4px}.sub{color:var(--mid);font-size:14px;margin-bottom:16px}.q{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin:12px 0}.q b{display:block;margin-bottom:8px}
+    .stars{display:flex;gap:6px}.stars label{flex:1}.stars input{position:absolute;opacity:0}.stars span{display:grid;place-items:center;height:46px;border:1px solid var(--border);border-radius:10px;cursor:pointer;font-weight:700;background:var(--bg)}.stars input:checked+span{background:var(--blue);color:#fff;border-color:var(--blue)}.stars small{display:flex;justify-content:space-between;color:var(--mid);font-size:12px;margin-top:4px}
+    .opt{display:flex;gap:8px;align-items:center;padding:9px 10px;border:1px solid var(--border);border-radius:10px;margin:6px 0;cursor:pointer;background:var(--bg)}textarea{width:100%;min-height:90px;font:inherit;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text)}
+    .go{width:100%;padding:14px;border:0;border-radius:12px;background:var(--accent);color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-top:10px}.go:disabled{opacity:.5}.msg{margin:12px 0;padding:12px;border-radius:10px}.err{background:#fde8ea;color:#8a1c25}.ok{background:#e3f6ee;color:#14663f}.hp{position:absolute;left:-9999px;opacity:0}.note{color:var(--mid);font-size:12.5px;margin-top:12px}
+  </style>
+</head>
+<body>
+<main id="main"><div class="lang"><button type="button" id="lko">한국어</button><button type="button" id="len">English</button></div><div id="app"></div></main>
+<script is:inline>
+(function () {
+  var T = { ko: { sub: '답은 익명으로 저장돼요. 이름·연락처는 묻지 않아요. 아는 만큼만 답해 주세요.', send: '보내기', sent: '고맙습니다! 답을 잘 받았어요.', closed: '이 설문은 닫혔거나 없는 링크예요.', fail: '보내지 못했어요. 잠시 뒤 다시 해 주세요.', pick: '답을 하나 이상 골라 주세요.', low: '아쉬웠어요', high: '아주 좋았어요', note: 'WOLKO 캠프 & 아웃리치 팀' },
+    en: { sub: 'Answers are saved anonymously. We do not ask for your name or contact. Answer what you can.', send: 'Send', sent: 'Thank you! We received your answers.', closed: 'This survey is closed or the link is not valid.', fail: 'Could not send. Please try again in a moment.', pick: 'Please answer at least one question.', low: 'Not good', high: 'Great', note: 'WOLKO Camp & Outreach Team' } };
+  var lang = /^ko/i.test(navigator.language || 'ko') ? 'ko' : 'en', t = new URLSearchParams(location.search).get('t') || '', data = null, app = document.getElementById('app');
+  try { var saved = localStorage.getItem('ct-survey-lang'); if (saved) lang = saved; } catch (e) {}
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function pick(o, k) { return lang === 'en' && o[k + 'En'] ? o[k + 'En'] : (lang === 'en' && o.en ? o.en : (o.ko || o.en || '')); }
+  function label(o) { return lang === 'en' && o.en ? o.en : (o.ko || o.en || ''); }
+  function setLang(l) { lang = l; try { localStorage.setItem('ct-survey-lang', l); } catch (e) {} document.documentElement.lang = l; document.getElementById('lko').className = l === 'ko' ? 'on' : ''; document.getElementById('len').className = l === 'en' ? 'on' : ''; if (data) render(); }
+  function render() {
+    var h = '<h1>' + esc(lang === 'en' && data.titleEn ? data.titleEn : data.title) + '</h1><div class="sub">' + esc(T[lang].sub) + '</div><form id="f" novalidate>';
+    data.questions.forEach(function (q) {
+      h += '<div class="q"><b>' + esc(label(q)) + '</b>';
+      if (q.type === 'rating') h += '<div class="stars">' + [1, 2, 3, 4, 5].map(function (n) { return '<label><input type="radio" name="' + q.id + '" value="' + n + '"><span>' + n + '</span></label>'; }).join('') + '</div><small style="display:flex;justify-content:space-between;color:var(--mid);font-size:12px;margin-top:4px"><span>' + esc(T[lang].low) + '</span><span>' + esc(T[lang].high) + '</span></small>';
+      else if (q.type === 'choice') h += q.options.map(function (o, i) { return '<label class="opt"><input type="radio" name="' + q.id + '" value="' + i + '"> ' + esc(label(o)) + '</label>'; }).join('');
+      else h += '<textarea name="' + q.id + '" maxlength="1000"></textarea>';
+      h += '</div>';
+    });
+    h += '<input class="hp" name="hp" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="go" type="submit">' + esc(T[lang].send) + '</button><div id="msg"></div><div class="note">' + esc(T[lang].note) + '</div></form>';
+    app.innerHTML = h; document.getElementById('f').onsubmit = submit;
+  }
+  async function submit(e) {
+    e.preventDefault(); var f = document.getElementById('f'), a = {}, fd = new FormData(f), any = false;
+    data.questions.forEach(function (q) { var v = fd.get(q.id); if (v !== null && String(v).trim() !== '') { a[q.id] = v; any = true; } });
+    var msg = document.getElementById('msg'); if (!any) { msg.className = 'msg err'; msg.textContent = T[lang].pick; return; }
+    f.querySelector('.go').disabled = true;
+    try { var r = await fetch('/api/campteam/survey-answer', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ t: t, answers: a, hp: fd.get('hp') || '' }) }); var j = await r.json().catch(function () { return {}; });
+      if (!r.ok) throw new Error(j.error || T[lang].fail); app.innerHTML = '<div class="msg ok">' + esc(T[lang].sent) + '</div>'; }
+    catch (er) { msg.className = 'msg err'; msg.textContent = er.message || T[lang].fail; f.querySelector('.go').disabled = false; }
+  }
+  document.getElementById('lko').onclick = function () { setLang('ko'); }; document.getElementById('len').onclick = function () { setLang('en'); };
+  fetch('/api/campteam/survey-answer?t=' + encodeURIComponent(t), { cache: 'no-store' }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+    .then(function (x) { if (!x.ok) { app.innerHTML = '<div class="msg err">' + esc(T[lang].closed) + '</div>'; return; } data = x.j; setLang(lang); })
+    .catch(function () { app.innerHTML = '<div class="msg err">' + esc(T[lang].fail) + '</div>'; });
+  setLang(lang);
+})();
+</script>
+</body>
+</html>

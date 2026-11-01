@@ -144,22 +144,25 @@
 
   /* ---- 틀 ---- */
   var TABS = [['timeline', 'tTimeline'], ['supplies', 'tSupplies'], ['contacts', 'tContacts'], ['series', 'tSeries']];
+  var EXT = {}; // 다른 파일(prep-extra.js)이 탭을 더할 수 있다: CTPrep.add(key, { label, needCamp, load })
+  function allTabs() { return TABS.concat(Object.keys(EXT).map(function (k) { return [k, EXT[k].label]; })); }
+  function needsCamp() { return S.tab === 'timeline' || S.tab === 'supplies' || !!(EXT[S.tab] && EXT[S.tab].needCamp); }
+  window.CTPrep = { S: S, api: api, dialog: dialog, field: field, del: del, esc: esc, campLabel: campLabel, canW: canW, add: function (k, o) { EXT[k] = o; }, show: function () { return show(); } };
   function head() {
-    $('pTabs').innerHTML = TABS.map(function (t) { return '<button class="tab ' + (t[0] === S.tab ? 'on' : '') + '" data-tab="' + t[0] + '">' + esc(CT.t(t[1])) + '</button>'; }).join('');
-    var needCamp = S.tab === 'timeline' || S.tab === 'supplies';
-    $('pCampWrap').hidden = !needCamp;
+    $('pTabs').innerHTML = allTabs().map(function (t) { return '<button class="tab ' + (t[0] === S.tab ? 'on' : '') + '" data-tab="' + t[0] + '">' + esc(CT.t(t[1])) + '</button>'; }).join('');
+    $('pCampWrap').hidden = !needsCamp();
     $('pCamp').innerHTML = S.camps.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === S.campId ? ' selected' : '') + '>' + esc(campLabel(c)) + '</option>'; }).join('');
   }
   async function show() {
-    head(); var needCamp = S.tab === 'timeline' || S.tab === 'supplies';
+    head(); var needCamp = needsCamp();
     if (needCamp && !S.campId) { $('pView').innerHTML = '<div class="empty">' + esc(CT.t('pNoCamp')) + '</div>'; return; }
-    try { if (S.tab === 'timeline') await loadTimeline(); else if (S.tab === 'supplies') await loadSupplies(); else if (S.tab === 'contacts') await loadContacts(); else await loadSeries(); }
+    try { if (S.tab === 'timeline') await loadTimeline(); else if (S.tab === 'supplies') await loadSupplies(); else if (S.tab === 'contacts') await loadContacts(); else if (EXT[S.tab]) await EXT[S.tab].load(); else await loadSeries(); }
     catch (e) { $('pView').innerHTML = '<div class="err">' + esc(e.message) + '</div>'; }
   }
   CT.boot(async function () {
     try { var d = await CT.api('/api/campteam/camps'); S.types = d.types; S.camps = []; d.types.forEach(function (t) { t.camps.forEach(function (c) { if (c.status !== 'canceled') S.camps.push(c); }); }); } catch (e) { /* 아래에서 안내 */ }
     S.camps.sort(function (a, b) { return String(b.startDate || '').localeCompare(String(a.startDate || '')); });
-    var up = new URLSearchParams(location.search); S.campId = (S.camps.filter(function (c) { return c.id === up.get('campId'); })[0] || S.camps[0] || {}).id || ''; if (['timeline', 'supplies', 'contacts', 'series'].indexOf(up.get('tab')) >= 0) S.tab = up.get('tab');
+    var up = new URLSearchParams(location.search); S.campId = (S.camps.filter(function (c) { return c.id === up.get('campId'); })[0] || S.camps[0] || {}).id || ''; if (allTabs().some(function (t) { return t[0] === up.get('tab'); })) S.tab = up.get('tab');
     CT.applyI18n(); await show();
     $('pTabs').onclick = function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; S.tab = b.dataset.tab; show(); };
     $('pCamp').onchange = function () { S.campId = $('pCamp').value; show(); };
