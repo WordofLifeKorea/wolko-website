@@ -844,6 +844,139 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .crs-drag-chip { position:fixed; z-index:3000; transform:translate(14px, 14px); padding:.38rem .8rem; border-radius: var(--ws-radius-sm, 8px); background:#004f68; color:#fff; font-size:.78rem; font-weight:800; box-shadow:0 8px 20px rgba(0,30,44,.28); pointer-events:none; white-space:nowrap; }
   .detail-layout-hint { display:flex; align-items:center; gap:.6rem; margin:.1rem 0 0; color:#8aa0a8; font-size:.74rem; }
   .btn-layout-reset { border:none; background:none; padding:0; color:#4a8a9a; font-size:.74rem; font-weight:700; cursor:pointer; text-decoration:underline; }
+
+  /* ══ 2026-11 새 디자인 — 포탈 첫 화면 · 안내 카드와 같은 말투: 둥근 카드(12~16px), 옅은 바탕, 진한 청록 · 남색 포인트, 넉넉한 여백.
+       기능 · 마크업 · 끌어서 순서 바꾸기는 그대로 두고 모양만 바꾼다. #crs-root 를 앞에 붙여 위쪽 옛 규칙보다 우선한다. ══ */
+  :root { --crs-bg:#f3f6f8; --crs-card-line:#e2eaee; --crs-deep:#004f68; --crs-navy:#0b2430; --crs-r:14px; --crs-r-sm:10px; }
+  #crs-root, #crs-root .app-body, #crs-root .list-panel { background:var(--crs-bg); }
+
+  /* 목록 위 도구 막대 */
+  #crs-root .top-bar { background:rgba(243,246,248,.94); padding:1.25rem 1.25rem 1rem; gap:.6rem; border-bottom:1px solid transparent; }
+  #crs-root .top-bar .campus-seg, #crs-root .top-bar .sort-seg { background:#e6eef1; border-radius:12px; }
+  #crs-root .top-bar .campus-seg button, #crs-root .top-bar .sort-seg button { border-radius:9px; }
+  #crs-root .top-bar .campus-seg button.on, #crs-root .top-bar .sort-seg button.on { background:#fff; color:var(--crs-deep); box-shadow:0 1px 3px rgba(11,36,48,.12); }
+  #crs-root .top-bar .search-input, #crs-root .top-bar .filter-select { border-color:var(--crs-card-line); border-radius:12px; background-color:#fff; }
+  #crs-root .top-bar .search-input { height:42px; }
+  #crs-root .top-bar .search-input:focus, #crs-root .top-bar .filter-select:focus { border-color:var(--crs-deep); box-shadow:0 0 0 3px rgba(0,79,104,.1); }
+  #crs-root .top-bar .btn-add { border-radius:12px; background:var(--crs-deep); padding:0 1.1rem; }
+  #crs-root .top-bar .btn-add:hover { background:#003b4e; }
+
+  /* 교회 카드 */
+  #crs-root .church-list { gap:.75rem; }
+  #crs-root .church-card { border:1px solid var(--crs-card-line); border-radius:var(--crs-r); overflow:hidden; transition:border-color .18s, box-shadow .18s, transform .18s; }
+  #crs-root .church-card:hover { border-color:#c6d8df; box-shadow:0 10px 24px -16px rgba(11,36,48,.35); transform:translateY(-2px); }
+  #crs-root .church-card-header { padding:1rem 1.1rem .7rem; border-bottom:0; background:#fff; }
+  #crs-root .church-card-body { background:#fff; padding:.2rem 1.1rem 1rem; }
+  #crs-root .church-card:not(.selected) .church-card-body { padding-top:.15rem; padding-bottom:1rem; }
+  #crs-root .rank-badge { width:30px; height:30px; min-width:30px; border-radius:10px; margin-top:0; box-shadow:inset 0 0 0 1px rgba(255,255,255,.25); }
+  #crs-root .church-name { font-size:1.02rem; font-weight:800; color:var(--crs-navy); letter-spacing:-.01em; }
+  #crs-root .pastor-name { color:#6c838c; font-size:.8rem; margin-top:.1rem; }
+  #crs-root .last-visit-summary { color:#6c838c; font-size:.76rem; }
+  #crs-root .step-badge { border:0; border-radius:999px; padding:.3rem .7rem; background:#e4f1f4; color:var(--crs-deep); font-size:.7rem; font-weight:800; }
+  #crs-root .step-badge.complete { background:#e3f4ec; color:#1b7a59; }
+  #crs-root .dday-badge { border-radius:999px; padding:.2rem .55rem; font-size:.66rem; }
+  #crs-root .step-bar-bg { height:6px; border-radius:999px; background:#e8eff2; }
+  #crs-root .step-bar-fill { border-radius:999px; background:linear-gradient(90deg, #00627f, #2d9fba); }
+  #crs-root .card-meta-divider { background:#edf2f4; }
+  #crs-root .meta-label, #crs-root .next-step-label { border-radius:6px; background:#eef5f7; color:#3f7383; padding:.14rem .42rem; }
+  #crs-root .church-card.selected { border-color:var(--crs-deep); box-shadow:0 0 0 3px rgba(0,79,104,.12); transform:none; }
+  #crs-root .church-card.selected .church-card-header { background:#fff; }
+  #crs-root .empty-state { margin-top:.5rem; padding:3rem 1.5rem; border:1px dashed #cfdde3; border-radius:var(--crs-r); background:#fff; color:#8aa0a8; }
+  #crs-root .empty-state svg { opacity:.6; stroke:#9db4bd; }
+
+  /* 지도 */
+  #crs-root .map-panel { background:var(--crs-bg); padding:1.25rem 1.25rem 1.25rem .4rem; }
+  #crs-root .map-panel-shell { border:1px solid var(--crs-card-line); border-radius:16px; overflow:hidden; }
+  #crs-root .map-panel-head { min-height:60px; padding:.75rem 1.1rem; background:#fff; border-bottom:1px solid #edf2f4; }
+  #crs-root .map-panel-head-icon { width:38px; height:38px; border-radius:11px; background:#e4f1f4; color:var(--crs-deep); }
+  #crs-root .map-panel-head-title { font-size:.95rem; font-weight:800; color:var(--crs-navy); }
+  #crs-root .map-panel-head-sub { font-size:.74rem; color:#7a8f97; }
+  #crs-root .map-search-input { border:1px solid var(--crs-card-line); border-radius:12px; box-shadow:0 6px 18px -10px rgba(11,36,48,.35); }
+  #crs-root .map-search-results { border-radius:12px; }
+
+  /* 상세 */
+  #crs-root .detail-panel, #crs-root .detail-panel-body, #crs-root .detail-panel-body .detail-actions { background:var(--crs-bg); }
+  #crs-root .app-body.split .detail-panel { border-left:1px solid var(--crs-card-line); }
+  #crs-root .detail-panel-head { padding:1.2rem 1.6rem 1rem; background:#fff; border-bottom:0; }
+  #crs-root .detail-panel-avatar { width:46px; height:46px; border:0; border-radius:13px; background:linear-gradient(135deg, #00627f, #2d9fba); color:#fff; font-size:1.15rem; font-weight:800; }
+  #crs-root .detail-panel-title { font-size:1.2rem; font-weight:800; color:var(--crs-navy); letter-spacing:-.02em; }
+  #crs-root .detail-panel-sub { font-size:.8rem; color:#6c838c; }
+  #crs-root .detail-panel-close { border:1px solid var(--crs-card-line); border-radius:11px; background:#fff; width:36px; height:36px; }
+  #crs-root .detail-panel-close:hover { background:#eef5f7; color:var(--crs-deep); }
+  /* 진행률: 숫자 줄 + 둥근 막대를 한 덩어리로 */
+  #crs-root .detail-panel-progress-meta { padding:.1rem 1.6rem .55rem; border:0; background:#fff; color:#55707a; font-size:.76rem; }
+  #crs-root .detail-panel-progress-meta strong { color:var(--crs-deep); font-size:.82rem; }
+  #crs-root .detail-panel-prog { height:6px; margin:0 1.6rem 1rem; border-radius:999px; background:#e6eef1; overflow:hidden; }
+  #crs-root .detail-panel-prog-fill { border-radius:999px; background:linear-gradient(90deg, #00627f, #2d9fba); }
+  #crs-root .detail-panel-body { padding:1.25rem 1.6rem 1.2rem; border-top:1px solid var(--crs-card-line); }
+  #crs-root .detail-map-preview { border:1px solid var(--crs-card-line); border-radius:16px; }
+  /* 카드 네 개(교회 정보 · 방문 기록 · 관계 발전 단계 · 관계 등급): 같은 둥근 흰 카드 */
+  #crs-root .detail-info, #crs-root .hq-section, #crs-root .visit-section, #crs-root .relationship-section[data-block] {
+    border:1px solid var(--crs-card-line); border-radius:var(--crs-r); background:#fff; box-shadow:none;
+  }
+  /* 교회 정보 카드는 둥근 모서리 밖으로 넘치는 것만 자른다(overflow:hidden 이면 높이가 고정된 상세 칸의 격자에서
+     자기 줄 높이가 0으로 접혀 아래 방문 기록 카드와 겹쳤다) */
+  #crs-root .detail-info { overflow:clip; }
+  #crs-root .hq-section, #crs-root .visit-section, #crs-root .relationship-section[data-block] { padding:1.15rem 1.2rem; }
+  #crs-root .detail-info-row { padding:.85rem 1rem; border-color:#eef3f5; }
+  #crs-root .detail-info-row strong { color:#8aa0a8; font-size:.66rem; letter-spacing:.06em; }
+  #crs-root .hq-title, #crs-root .visit-section-title, #crs-root .steps-title { font-size:.98rem; font-weight:800; color:var(--crs-navy); letter-spacing:-.01em; }
+  #crs-root .hq-sub { font-size:.76rem; color:#7a8f97; }
+  #crs-root .hq-grade { height:40px; min-width:52px; border-color:var(--crs-card-line); border-radius:11px; }
+  #crs-root .hq-grade.is-on { background:var(--crs-deep); border-color:var(--crs-deep); }
+  #crs-root .hq-step { border-radius:10px; border-color:var(--crs-card-line); }
+  #crs-root .hq-leaders { border-top:1px solid #eef3f5; }
+  #crs-root .visit-count { border-radius:999px; background:#e4f1f4; color:var(--crs-deep); padding:.14rem .5rem; }
+  #crs-root .btn-add-visit { border-radius:11px; background:var(--crs-deep); border-color:var(--crs-deep); padding:.55rem .85rem; }
+  #crs-root .visit-card { border:1px solid #e6eef1; border-radius:12px; background:#f8fbfc; padding:.85rem .95rem; }
+  #crs-root .visit-card-date { border-radius:999px; background:#e4f1f4; }
+  #crs-root .visit-card-person { border-radius:999px; background:#fff; border:1px solid #e2eaee; }
+  #crs-root .visit-form { border-radius:12px; border-color:#d6e6ea; box-shadow:none; }
+  #crs-root .visit-input { border-radius:10px; border-color:var(--crs-card-line); }
+  #crs-root .btn-visit-cancel, #crs-root .btn-visit-save { border-radius:10px; }
+  #crs-root .steps-header { border-bottom:0; padding-bottom:.25rem; margin-bottom:.6rem; }
+  #crs-root .steps-toggle { border-radius:999px; border-color:var(--crs-card-line); background:#fff; }
+  #crs-root .step-item { border:1px solid #e6eef1; border-radius:12px; background:#fff; padding:.7rem .8rem; }
+  #crs-root .step-item:hover { border-color:#c6d8df; background:#fbfdfe; }
+  #crs-root .step-item.done { background:#f1f8fa; border-color:#d3e7ec; }
+  #crs-root .step-count-btn { width:24px; height:24px; border-radius:8px; border-width:1.5px; font-size:10.5px; }
+  #crs-root .step-count-btn.has-count { background:var(--crs-deep); border-color:var(--crs-deep); }
+  #crs-root .step-num { color:#9db0b7; }
+  #crs-root .step-item.done .step-num { color:#2d9fba; }
+  #crs-root .btn-edit { border:1px solid var(--crs-card-line); border-radius:12px; background:#fff; color:var(--crs-navy); }
+  #crs-root .btn-edit:hover { background:#eef5f7; border-color:#c6d8df; }
+  #crs-root .detail-layout-hint { color:#8aa0a8; }
+
+  /* 창(교회 추가 · 수정 · 단계 기록 · 관리자) */
+  .modal { border-radius:18px; }
+  .modal-header { border-radius:18px 18px 0 0; background:#fff; padding:1.25rem 1.5rem 1rem; }
+  .modal-header::before { border-radius:0; background:linear-gradient(90deg, #00627f, #2d9fba); }
+  .modal-header h2 { font-size:1.1rem; font-weight:800; color:var(--crs-navy); }
+  .btn-close { border-radius:10px; }
+  .btn-save { border-radius:11px; background:var(--crs-deep); }
+  .btn-cancel { border-radius:11px; }
+  .form-group label { text-transform:none; letter-spacing:0; font-size:.8rem; color:#55707a; }
+
+  /* 목록 위 요약 세 칸 */
+  #crs-root .crs-stats { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:.6rem; padding-top:.2rem; }
+  #crs-root .crs-stats:empty { display:none; }
+  #crs-root .crs-stat { display:flex; flex-direction:column; gap:.3rem; min-width:0; padding:.8rem .9rem; border:1px solid var(--crs-card-line); border-radius:var(--crs-r); background:#fff; }
+  #crs-root .crs-stat span { color:#6c838c; font-size:.72rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #crs-root .crs-stat b { color:var(--crs-navy); font-size:1.45rem; font-weight:800; line-height:1; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+  #crs-root .crs-stat b small { margin-left:.15rem; color:#8aa0a8; font-size:.72rem; font-weight:700; letter-spacing:0; }
+  #crs-root .crs-stat.is-due b { color:#b5651c; }
+  @media(max-width:768px) {
+    #crs-root .top-bar { padding:1rem .9rem .8rem; }
+    #crs-root .map-panel { padding:0; }
+    #crs-root .map-panel-shell { border:0; border-radius:0; }
+    #crs-root .detail-panel-head { padding:.75rem .9rem; padding-top:calc(.75rem + env(safe-area-inset-top, 0px)); }
+    #crs-root .detail-panel-progress-meta { padding:.1rem 1rem .5rem; }
+    #crs-root .detail-panel-prog { margin:0 1rem .9rem; }
+    #crs-root .detail-panel-body { padding:1rem .9rem .8rem; }
+    #crs-root .detail-map-preview { border-radius:14px; }
+    #crs-root .hq-section, #crs-root .visit-section, #crs-root .relationship-section[data-block] { padding:1rem; }
+    #crs-root .detail-panel-close { width:auto; height:40px; }
+  }
 </style>
 
 <script type="module">
@@ -1526,6 +1659,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
             <button class="btn-add" id="addChurchBtn">${t('add_church')}</button>
           </div>
           <div class="list-panel-inner">
+            <div class="crs-stats" id="crsStats" aria-live="polite"></div>
             <div class="church-list" id="churchList" style="padding-top:.8rem">
               <div class="loading-wrap"><div class="spinner"></div></div>
             </div>
@@ -1942,8 +2076,23 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     churches.forEach(c => { n[churchCampus(c)]++; });
     return ['wolko', 'jeju'].map(k => `<button type="button" data-campus="${k}" class="${activeCampus === k ? 'on' : ''}" aria-pressed="${activeCampus === k}">${t(k === 'jeju' ? 'campus_jeju' : 'campus_wolko')} <span>${n[k]}</span></button>`).join('');
   }
+  // 목록 위 요약 세 칸: 지금 고른 지역의 교회 수 · 관계 발전 단계 평균 · 90일 넘게 방문하지 않은 교회 수(방문 기록이 없는 교회 포함)
+  function renderCrsStats() {
+    const box = document.getElementById('crsStats');
+    if (!box) return;
+    const list = campusChurches();
+    const isKo = getLang() === 'ko';
+    const avg = list.length ? Math.round(list.reduce((sum, c) => sum + STEPS.filter((_, i) => (c.steps || {})[i + 1]).length / STEPS.length, 0) / list.length * 100) : 0;
+    const due = list.filter(c => { const d = visitDays(c); return d == null || d >= 90; }).length;
+    const tile = (label, value, cls = '') => `<div class="crs-stat${cls}"><span>${esc(label)}</span><b>${value}</b></div>`;
+    box.innerHTML = tile(isKo ? '교회' : 'Churches', `${list.length}<small>${isKo ? '곳' : ''}</small>`)
+      + tile(isKo ? '평균 진행' : 'Avg. progress', `${avg}<small>%</small>`)
+      + tile(isKo ? '방문 90일 넘음' : 'No visit 90+ days', `${due}<small>${isKo ? '곳' : ''}</small>`, due ? ' is-due' : '');
+  }
+
   function renderChurchList() {
     renderContactAlerts();
+    renderCrsStats();
     const seg = document.getElementById('campusSeg'); if (seg) seg.innerHTML = campusSegHtml();
     const listEl = document.getElementById('churchList');
     if (!listEl) return;
