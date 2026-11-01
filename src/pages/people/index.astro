@@ -324,7 +324,7 @@ const mapPlaces = [
     .pp-stats dt { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.6); }
     .pp-stats dd { margin: 8px 0 0; font-family: var(--ff-serif); font-size: 44px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
 
-    .pp-map { position: relative; justify-self: center; height: 500px; aspect-ratio: 340 / 600; margin-right: 120px; }
+    .pp-map { position: relative; justify-self: center; height: 500px; aspect-ratio: 340 / 600; margin-right: 134px; }
     .pp-map svg { display: block; width: 100%; height: 100%; overflow: visible; }
     /* 평택·제주의 십자가에서 빛이 퍼진다: 점이 십자가 가까운 곳부터 나타나고, 7초마다 금빛 물결이 전국으로 번진 뒤 조금 더 밝은 청록으로 남는다 */
     .pp-map { --pp-wave-start: 1.4s; --pp-wave-cycle: 7s; }
@@ -345,9 +345,9 @@ const mapPlaces = [
     .pp-cross-mark { fill: none; stroke: #f6dc9f; stroke-width: 2.8; stroke-linecap: round; filter: drop-shadow(0 0 4px rgba(233,194,122,.9)); }
     .pp-map .pp-cross-glow { transform-box: fill-box; transform-origin: center; opacity: 0; animation: pp-glow var(--pp-wave-cycle) ease-out infinite; animation-delay: calc(var(--pp-wave-start) + var(--o)); }
     @keyframes pp-glow { 0% { transform: scale(.7); opacity: .6; } 8% { transform: scale(1.25); opacity: 1; } 40%, 100% { transform: scale(.85); opacity: .65; } }
-    .pp-place { position: absolute; display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 8px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: #fff; text-decoration: none; white-space: nowrap; transform: translate(22px, -50%); animation: pp-pop .7s cubic-bezier(.2,.9,.3,1.3) both; animation-delay: calc(1.5s + var(--i) * .25s); transition: background-color .25s, border-color .25s, transform .25s; }
-    @keyframes pp-pop { from { opacity: 0; transform: translate(8px, -50%) scale(.9); } }
-    .pp-place:hover { background: rgba(255,255,255,.16); border-color: rgba(233,194,122,.6); transform: translate(26px, -50%); color: #fff; }
+    .pp-place { position: absolute; display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 8px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: #fff; text-decoration: none; white-space: nowrap; transform: translate(36px, -50%); animation: pp-pop .7s cubic-bezier(.2,.9,.3,1.3) both; animation-delay: calc(1.5s + var(--i) * .25s); transition: background-color .25s, border-color .25s, transform .25s; }
+    @keyframes pp-pop { from { opacity: 0; transform: translate(22px, -50%) scale(.9); } }
+    .pp-place:hover { background: rgba(255,255,255,.16); border-color: rgba(233,194,122,.6); transform: translate(40px, -50%); color: #fff; }
     .pp-faces { display: flex; }
     .pp-faces img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; object-position: top; border: 2px solid var(--pp-navy); background: #23495a; }
     .pp-faces img + img { margin-left: -9px; }
@@ -427,7 +427,7 @@ const mapPlaces = [
       .pp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       /* 두 장을 나란히 두면 글 칸이 너무 좁아져 한 줄에 한 장씩 */
       .pp-leads { grid-template-columns: 1fr; }
-      .pp-lead { grid-template-columns: minmax(0, 360px) minmax(0, 1fr); }
+      .pp-lead { grid-template-columns: minmax(0, min(360px, 50%)) minmax(0, 1fr); }
     }
     @media (max-width: 900px) {
       .pp-bar { top: var(--pp-bar-top, 72px); }
@@ -437,10 +437,9 @@ const mapPlaces = [
     @media (max-width: 760px) {
       .pp-shell { width: calc(100% - 40px); }
       .pp-hero { padding-top: 116px; }
-      .pp-hero-grid { grid-template-columns: 1fr; gap: 12px; padding-bottom: 32px; }
+      .pp-hero-grid { padding-bottom: 32px; }
       .pp-stats dd { font-size: 34px; }
-      .pp-map { height: 320px; margin-right: 110px; }
-      .pp-place { padding: 6px 12px 6px 6px; gap: 8px; transform: translate(14px, -50%); }
+      .pp-place { padding: 6px 12px 6px 6px; gap: 8px; transform: translate(26px, -50%); }
       .pp-faces img { width: 24px; height: 24px; }
       .pp-place-name { font-size: 12.5px; }
       .pp-place-meta { font-size: 10.5px; }
@@ -453,7 +452,20 @@ const mapPlaces = [
       .pp-chips button { font-size: 13px; }
       .pp-seg-long { display: none; }
       .pp-main { gap: 56px; padding: 40px 0 72px; }
-      .pp-leads { grid-template-columns: 1fr; }
+      .pp-join { padding: 28px 22px; }
+      .pp-join-btns { justify-content: flex-start; }
+    }
+    @media (hover: none) { .pp-card:hover { transform: none; } .pp-card:hover img { transform: none; } }
+    /* 태블릿: 글과 지도를 나란히 두되, 지도는 제 크기만큼만 차지하고 나머지는 글이 쓴다 */
+    @media (max-width: 1100px) and (min-width: 641px) {
+      .pp-hero-grid { grid-template-columns: minmax(0, 1fr) auto; gap: 32px; }
+      .pp-map { height: 420px; margin-right: 114px; }
+    }
+    @media (max-width: 860px) and (min-width: 641px) { .pp-map { height: 360px; margin-right: 110px; } }
+    /* 휴대폰: 글 아래에 지도 */
+    @media (max-width: 640px) {
+      .pp-hero-grid { grid-template-columns: 1fr; gap: 12px; }
+      .pp-map { height: 320px; margin-right: 122px; }
       /* 휴대폰: 사진을 위에 화면 폭 가득(3:2), 글은 그 아래 — 가족 모두가 잘리지 않고 보인다 */
       .pp-lead { grid-template-columns: 1fr; }
       .pp-lead-body { padding: 18px; gap: 6px; }
@@ -461,11 +473,7 @@ const mapPlaces = [
       .pp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 12px; }
       .pp-name { font-size: 15.5px; }
       .pp-title { font-size: 12.5px; }
-      .pp-join { padding: 28px 22px; }
-      .pp-join-btns { justify-content: flex-start; }
     }
-    @media (hover: none) { .pp-card:hover { transform: none; } .pp-card:hover img { transform: none; } }
-    @media (max-width: 1100px) and (min-width: 761px) { .pp-map { height: 420px; margin-right: 100px; } }
     @media (prefers-reduced-motion: reduce) {
       .pp-card, .pp-card img, .pp-go, .pp-bar { transition: none; }
       .pp-hero *, .pp-hero *::before { animation: none !important; }
