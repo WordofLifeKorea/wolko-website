@@ -38,6 +38,8 @@ export async function onRequestGet({ env, request }) {
     db.prepare('SELECT email FROM camp_members WHERE active = 1').all().then((r) => r.results.map((x) => x.email)).catch(() => []),   // 팀 명단 이메일은 듀티가 팀원 것인지 가리는 데만 쓰고 응답에 넣지 않는다
   ]);
   const portal = await tvPortal(env, today, roster).catch(() => null);
+  // 오늘 진행표(캠프 준비 화면에서 만든 시간표) — 제목·시간·장소만(메모·담당 메모는 TV 에 안 보낸다). 0027 전 DB 에서는 빈 목록
+  const timeline = (await db.prepare(`SELECT t.startTime, t.endTime, t.title, t.titleEn, t.place, c.nameKo, c.nameEn FROM camp_timeline t JOIN camps c ON c.id = t.campId AND c.deletedAt IS NULL WHERE t.deletedAt IS NULL AND t.dayDate = ?1 ORDER BY (t.startTime = ''), t.startTime, t.sortOrder LIMIT 30`).bind(today).all().catch(() => ({ results: [] }))).results;
   const upcoming = camps.results.filter(c => c.startDate && c.startDate >= today)[0] || null, dayDiff = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
   const campers = [];
   for (const c of camps.results.filter(x => x.registrationCampId)) { const n = await readSubmissionCount(env, c.registrationCampId); if (n != null) campers.push({ nameKo: c.nameKo, nameEn: c.nameEn, count: n, capacity: c.capacity || null }); }
@@ -49,7 +51,7 @@ export async function onRequestGet({ env, request }) {
       dday: upcoming ? { nameKo: upcoming.nameKo, nameEn: upcoming.nameEn, startDate: upcoming.startDate, days: dayDiff(today, upcoming.startDate) } : null,
       progress: camps.results.map(c => ({ nameKo: c.nameKo, nameEn: c.nameEn, pct: c.total ? Math.round(c.done / c.total * 100) : 0, done: c.done, total: c.total })),
       theme: (camps.results.find(c => c.theme) || {}).theme || '', campers,
-      portal,
+      portal, timeline,
     },
   }), { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' } });
 }
