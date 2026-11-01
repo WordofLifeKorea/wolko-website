@@ -12,6 +12,7 @@ export async function GET() {
     deadlineKo: data.deadline_ko || '', targetKo: data.target_ko || '',
     // 「신청서」 탭에서 지난 캠프 카드 내용으로 새 신청서를 시작할 때 쓰는 항목 (홈페이지 카드에 이미 공개된 안내 글)
     campType: data.camp_type || '', titleEnFull: data.title_en || '', dateEn: data.date_en || '', targetEn: data.target_en || '', priceEn: data.price_en || '', deadlineEn: data.deadline_en || '', notesKo: data.notes_ko || '', notesEn: data.notes_en || '', contactPhone: data.contact_phone || '', contactEmail: data.contact_email || '',
+    raw: data,   // 홈페이지 캠프 파일의 모든 칸 — 새 신청서를 만들 때 지난 캠프 내용을 그대로 불러오는 데 쓴다(홈페이지 카드에 이미 공개된 안내 글)
   })).sort((a, b) => (b.startDate || '').localeCompare(a.startDate || ''));
   return new Response(JSON.stringify({ items }), { headers: { 'Content-Type': 'application/json; charset=utf-8' } });
 }

@@ -20,6 +20,7 @@ http.createServer((req, res) => {
     // 포털에게 물어보기 · 부탁 제안(스트리밍 아님)
     try { const j2 = JSON.parse(body); const sys2 = String(j2.system || '');
       if (!j2.stream && sys2.includes('numbered snippets')) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ content: [{ type: 'text', text: '포털에서 관련 자료를 찾았어요 [S1]. (가짜 AI 답)' }] })); return; }
+      if (!j2.stream && sys2.includes('missing language side')) { const todo = JSON.parse(String((j2.messages || []).slice(-1)[0]?.content || '[]')), o = {}; todo.forEach((t) => { o[t.key] = t.lang === 'English' ? '(AI) ' + t.from : '(AI 한국어) ' + t.from; }); res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ content: [{ type: 'text', text: JSON.stringify(o) }] })); return; }
       if (!j2.stream && sys2.includes('ONE proposed portal action')) { const raw = String((j2.messages || []).slice(-1)[0]?.content || ''), t = (/<request>\n([\s\S]*?)\n<\/request>/.exec(raw) || [, raw])[1];
         const out = (o) => { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ content: [{ type: 'text', text: JSON.stringify(o) }] })); };
         // 고치기·지우기(가짜): 목록의 첫 업무(T1)·첫 일정(E1)을 가리킨다
