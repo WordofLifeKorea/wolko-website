@@ -356,11 +356,12 @@ const mapPlaces = [
 
     /* 대표 */
     .pp-leads { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
-    .pp-lead { display: grid; grid-template-columns: 200px minmax(0, 1fr); background: #fff; border: 1px solid #e7e2d8; border-radius: 18px; overflow: hidden; }
+    /* 대표 사진은 가족 · 부부 가로 사진(3:2)이라 칸도 가로로 넓게 잡아 양옆이 잘리지 않게 한다.
+       글이 길어 카드가 길어지면 사진이 카드 높이를 끝까지 채운다 */
+    .pp-lead { display: grid; grid-template-columns: minmax(0, 52%) minmax(0, 1fr); background: #fff; border: 1px solid #e7e2d8; border-radius: 18px; overflow: hidden; }
     .pp-lead:hover { box-shadow: 0 22px 40px -22px rgba(11,36,48,.45); }
-    /* 사진은 카드 높이를 끝까지 채운다(글이 길어 카드가 길어져도 사진 아래가 비지 않게) */
-    .pp-lead-photo { position: relative; display: block; align-self: stretch; min-height: 250px; overflow: hidden; background: #e7e2d8; }
-    .pp-lead-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+    .pp-lead-photo { position: relative; display: block; align-self: stretch; width: 100%; aspect-ratio: 3 / 2; overflow: hidden; background: #e7e2d8; }
+    .pp-lead-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 30%; display: block; }
     .pp-lead-body { display: flex; flex-direction: column; justify-content: center; gap: 10px; padding: 28px; }
     .pp-lead-badge { align-self: flex-start; padding: 4px 10px; border-radius: 999px; background: var(--pp-navy); color: #fff; font-size: 11.5px; font-weight: 800; letter-spacing: .06em; }
     .pp-lead-name { font-family: var(--ff-serif); font-size: 26px; font-weight: 900; letter-spacing: -.02em; color: var(--pp-navy); line-height: 1.25; }
@@ -399,7 +400,12 @@ const mapPlaces = [
     .pp-btn--ghost { border: 1px solid rgba(255,255,255,.4); color: #fff; }
     .pp-btn--ghost:hover { background: rgba(255,255,255,.1); color: #fff; }
 
-    @media (max-width: 1100px) { .pp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 1100px) {
+      .pp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      /* 두 장을 나란히 두면 글 칸이 너무 좁아져 한 줄에 한 장씩 */
+      .pp-leads { grid-template-columns: 1fr; }
+      .pp-lead { grid-template-columns: minmax(0, 360px) minmax(0, 1fr); }
+    }
     @media (max-width: 900px) {
       .pp-bar { top: var(--pp-bar-top, 72px); }
       /* 휴대폰·태블릿: 내려 읽을 때는 거르기 막대를 위로 치워 화면을 넓게 쓰고, 조금이라도 올리면 다시 나온다 */
@@ -425,8 +431,8 @@ const mapPlaces = [
       .pp-seg-long { display: none; }
       .pp-main { gap: 56px; padding: 40px 0 72px; }
       .pp-leads { grid-template-columns: 1fr; }
-      .pp-lead { grid-template-columns: 120px minmax(0, 1fr); }
-      .pp-lead-photo { min-height: 160px; }
+      /* 휴대폰: 사진을 위에 화면 폭 가득(3:2), 글은 그 아래 — 가족 모두가 잘리지 않고 보인다 */
+      .pp-lead { grid-template-columns: 1fr; }
       .pp-lead-body { padding: 18px; gap: 6px; }
       .pp-lead-name { font-size: 20px; }
       .pp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 12px; }
