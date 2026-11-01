@@ -1378,3 +1378,72 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
   :root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-attach { grid-column: 6 / 7; padding: 0 8px !important; }
   :root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-more-btn { grid-column: 7 / 8; width: auto; }
 }
+
+/* v205 — 모든 화면: 구매 목적 · 메모는 접어 두고 [+ 목적 · 메모]로 연다(이미 적은 칸은 늘 보임).
+   컴퓨터는 한 줄(날짜 · 카테고리 · 구매 품목 · 금액 · 통화 · 영수증 · 열기), 태블릿은 두 줄. 열면 그 아래 줄에 구매 목적 · 메모 */
+:root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row[data-more="0"] :is(.ex-fld-purpose, .ex-fld-memo):not(.has-val) { display: none !important; }
+.ex-more-short { display: none; }
+:root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-more-dots { display: none !important; }
+@media (min-width: 641px) {
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row { display: grid !important; column-gap: 10px; row-gap: 8px; align-items: center; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row > :is(.ex-r1, .ex-r2) { display: contents !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row > :not(.ex-r1, .ex-r2) { grid-column: 2 / -2 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-more-short { display: inline; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-more-txt { display: none !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-more-btn { width: auto; padding: 0 14px !important; white-space: nowrap; background: transparent !important; border: 1px solid var(--ex-line) !important; color: var(--ex-deep) !important; font-size: 13px !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-more-btn:hover { background: var(--ex-fill) !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-more-btn[aria-expanded="true"] { color: #5b7480 !important; }
+}
+@media (min-width: 1101px) {
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row { grid-template-columns: 26px 140px minmax(150px, 210px) minmax(0, 1fr) 150px 108px auto auto 30px !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-num { grid-column: 1 !important; grid-row: 1 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-w-date { grid-column: 2 !important; grid-row: 1 !important; width: 100%; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-catsel { grid-column: 3 !important; grid-row: 1 !important; width: 100%; max-width: none; min-width: 0; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-item { grid-column: 4 !important; grid-row: 1 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-amt { grid-column: 5 !important; grid-row: 1 !important; width: 100%; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-cur { grid-column: 6 !important; grid-row: 1 !important; width: 100%; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-attach { grid-column: 7 !important; grid-row: 1 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-more-btn { grid-column: 8 !important; grid-row: 1 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row :is(.ex-x, .ex-x-space) { grid-column: 9 !important; grid-row: 1 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-purpose { grid-column: 2 / 5 !important; grid-row: 2 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-memo-in { grid-column: 5 / 9 !important; grid-row: 2 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row:has(> .ex-recline) :is(.ex-num, .ex-w-date, .ex-catsel, .ex-item, .ex-amt, .ex-cur, .ex-attach, .ex-more-btn, .ex-x, .ex-x-space) { grid-row: 2 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row:has(> .ex-recline) :is(.ex-purpose, .ex-memo-in) { grid-row: 3 !important; }
+}
+@media (min-width: 641px) and (max-width: 1100px) {
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row { grid-template-columns: 26px repeat(6, minmax(0, 1fr)) 30px !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-num { grid-column: 1 !important; grid-row: 1 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-w-date { grid-column: 2 / 4 !important; grid-row: 1 !important; width: 100%; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-catsel { grid-column: 4 / 6 !important; grid-row: 1 !important; width: 100%; max-width: none; min-width: 0; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-item { grid-column: 6 / 8 !important; grid-row: 1 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row :is(.ex-x, .ex-x-space) { grid-column: 8 !important; grid-row: 1 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-amt { grid-column: 2 / 4 !important; grid-row: 2 !important; width: 100%; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-cur { grid-column: 4 / 5 !important; grid-row: 2 !important; width: 100%; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-attach { grid-column: 5 / 6 !important; grid-row: 2 !important; padding: 0 6px !important; justify-content: center; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-more-btn { grid-column: 6 / 8 !important; grid-row: 2 !important; justify-content: center; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-purpose { grid-column: 2 / 5 !important; grid-row: 3 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-memo-in { grid-column: 5 / 8 !important; grid-row: 3 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row:has(> .ex-recline) :is(.ex-num, .ex-w-date, .ex-catsel, .ex-item, .ex-x, .ex-x-space) { grid-row: 2 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row:has(> .ex-recline) :is(.ex-amt, .ex-cur, .ex-attach, .ex-more-btn) { grid-row: 3 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row:has(> .ex-recline) :is(.ex-purpose, .ex-memo-in) { grid-row: 4 !important; }
+}
+
+/* v206 — 큰 화면(641px~) 공통 두 줄: 1줄 날짜 · 카테고리 · 구매 품목 / 2줄 영수증 · 금액 · 통화 · 열기. 열면 3줄에 구매 목적 · 메모 */
+@media (min-width: 641px) {
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row { grid-template-columns: 26px repeat(6, minmax(0, 1fr)) 30px !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-num { grid-column: 1 !important; grid-row: 1 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-w-date { grid-column: 2 / 4 !important; grid-row: 1 !important; width: 100%; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-catsel { grid-column: 4 / 6 !important; grid-row: 1 !important; width: 100%; max-width: none; min-width: 0; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-item { grid-column: 6 / 8 !important; grid-row: 1 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row :is(.ex-x, .ex-x-space) { grid-column: 8 !important; grid-row: 1 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-attach { grid-column: 2 / 3 !important; grid-row: 2 !important; padding: 0 6px !important; justify-content: center; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-amt { grid-column: 3 / 5 !important; grid-row: 2 !important; width: 100%; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-cur { grid-column: 5 / 6 !important; grid-row: 2 !important; width: 100%; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-more-btn { grid-column: 6 / 8 !important; grid-row: 2 !important; justify-self: start; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-purpose { grid-column: 2 / 5 !important; grid-row: 3 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row .ex-memo-in { grid-column: 5 / 8 !important; grid-row: 3 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row:has(> .ex-recline) :is(.ex-num, .ex-w-date, .ex-catsel, .ex-item, .ex-x, .ex-x-space) { grid-row: 2 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row:has(> .ex-recline) :is(.ex-attach, .ex-amt, .ex-cur, .ex-more-btn) { grid-row: 3 !important; }
+  :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row:has(> .ex-recline) :is(.ex-purpose, .ex-memo-in) { grid-row: 4 !important; }
+}
+@media (min-width: 641px) { :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row > :is(.ex-more, .ex-receipts, .ex-rateline) { padding-left: 0 !important; margin-left: 0 !important; } }
