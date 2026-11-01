@@ -260,7 +260,7 @@
       title.innerHTML = `<strong>${t('week', w + 1)}</strong><span>${md(days[0])} – ${md(days[days.length - 1])}</span>`;
       const grid = el('div', 'drive-days');
       days.forEach(date => {
-        const card = el('article', 'drive-day' + (date === state.today ? ' is-today' : '') + (date < state.today ? ' is-past' : ''));
+        const card = el('article', 'drive-day kday' + (date === state.today ? ' is-today' : '') + (date < state.today ? ' is-past' : ''));
         card.id = 'day-' + date;
         const head = el('div', 'drive-day-head');
         head.innerHTML = `<strong>${md(date)}</strong><span class="dow">${wk(date)}</span>${date === state.today ? `<em>${t('today')}</em>` : ''}`;
@@ -282,12 +282,16 @@
         }
         const slots = el('div', 'drive-slots kitchen-slots');
         MEALS.forEach(m => {
-          const group = el('section', `kmeal meal-${m}`);
+          const mealSlots = SLOTS.filter(s => mealOf(s) === m);
+          // 끼니의 두 칸이 모두 닫혔으면(관리 중이 아닐 때) 좁은 화면에서는 '아침 · 닫힘' 한 줄로 줄인다
+          const allOff = !(manage && mgr) && mealSlots.every(s => isClosed(date, s));
+          const group = el('section', `kmeal meal-${m}` + (allOff ? ' all-closed' : ''));
           const title = el('div', 'kmeal-title');
           title.append(el('strong', '', mealName(m)));
           if (state.meals[m]) title.append(el('small', '', timeLabel(state.meals[m])));
+          if (allOff) title.append(el('span', 'kmeal-off', t('closedLabel')));
           const pair = el('div', 'kmeal-slots');
-          SLOTS.filter(s => mealOf(s) === m).forEach(s => pair.append(slotCell(date, s)));
+          mealSlots.forEach(s => pair.append(slotCell(date, s)));
           group.append(title, pair);
           slots.append(group);
         });

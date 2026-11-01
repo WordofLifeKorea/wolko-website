@@ -8,6 +8,7 @@
 .kmeal-title strong { font-size: 13px; font-weight: 800; letter-spacing: -.02em; }
 .kmeal-title small { font-size: 11px; font-weight: 700; opacity: .8; }
 .kmeal-slots { display: grid; gap: 5px; min-width: 0; }
+.kmeal-off { display: none; }
 .kslot { box-sizing: border-box; display: grid; gap: 4px; width: 100%; min-width: 0; padding: 6px 8px; border: 1px solid #fff; border-radius: var(--ws-radius-sm, 8px); background: #fff; font: inherit; text-align: left; }
 button.kslot { cursor: pointer; }
 .khead { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
@@ -57,4 +58,24 @@ button.kp.add:hover { background: #f3f9fb; border-color: var(--blue); }
   .kitchen-slots { grid-template-columns: minmax(0, 1fr); }
   .kmeal-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .kitchen-toggle-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  /* 폰: 날짜를 왼쪽 칸 대신 맨 위 한 줄로 — 끼니 칸이 화면 폭을 다 쓴다 */
+  .drive-day.kday { grid-template-columns: minmax(0, 1fr); align-items: stretch; gap: 8px; padding: 12px; }
+  .kday .drive-day-head { min-height: 0; }
+  .kday .drive-day-head em { display: inline-block; }
+  .kitchen-slots { gap: 6px; }
+  .kmeal { padding: 8px; }
+  .kmeal-title strong { font-size: 14px; }
+  .kmeal-title small { font-size: 12px; }
+  .kslot { padding: 8px 10px; }
+  .kslot .lbl { font-size: 12.5px; }
+  .kslot .cnt { font-size: 12px; }
+  /* 닫힌 칸은 무늬 없이 옅게, 두 칸이 다 닫힌 끼니는 한 줄로 */
+  .kslot.closed { background: rgba(255, 255, 255, .45); border-color: transparent; }
+  .kslot.closed .lbl, .kclosed { color: #8a9ba3; }
+  .kmeal.all-closed { padding: 9px 10px; background: #f1f4f6; }
+  .kmeal.all-closed .kmeal-title { color: #7d8f98; }
+  .kmeal.all-closed .kmeal-slots { display: none; }
+  .kmeal-off { display: inline; margin-left: auto; font-size: 12px; font-weight: 700; color: #8a9ba3; }
 }
