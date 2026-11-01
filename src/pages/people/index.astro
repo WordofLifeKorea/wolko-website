@@ -83,8 +83,8 @@ const [ptX, ptY] = pins.pt, [jjX, jjY] = pins.jj;
 const pct = (v, total) => `${(v / total * 100).toFixed(2)}%`;
 const facesOf = (loc) => allTeam.filter(p => locOf(p) === loc && p.data.photo_url).sort(byOrder).slice(0, 3);
 const mapPlaces = [
-  { loc: 'pt', lag: 0, x: ptX, y: ptY, ko: '평택 월코센터', en: 'Pyeongtaek', coord: '36.99°N', n: counts.pt, faces: facesOf('pt'), href: '#wp-pyeongtaek' },
-  { loc: 'jj', lag: JJ_LAG, x: jjX, y: jjY, ko: '제주 월비', en: 'Jeju', coord: '33.44°N', n: counts.jj, faces: facesOf('jj'), href: '#wp-jeju' },
+  { loc: 'pt', lag: 0, x: ptX, y: ptY, ko: '평택 월코센터', en: 'Pyeongtaek', n: counts.pt, faces: facesOf('pt'), href: '#wp-pyeongtaek' },
+  { loc: 'jj', lag: JJ_LAG, x: jjX, y: jjY, ko: '제주 월비', en: 'Jeju', n: counts.jj, faces: facesOf('jj'), href: '#wp-jeju' },
 ];
 ---
 
@@ -142,7 +142,7 @@ const mapPlaces = [
               </span>
               <span class="pp-place-text">
                 <span class="pp-place-name"><span class="wl-ko">{m.ko}</span><span class="wl-en">{m.en}</span></span>
-                <span class="pp-place-meta">{m.coord} · <span class="wl-ko">{m.n}명</span><span class="wl-en">{m.n} people</span></span>
+                <span class="pp-place-meta"><span class="wl-ko">{m.n}명</span><span class="wl-en">{m.n} people</span></span>
               </span>
             </a>
           ))}
