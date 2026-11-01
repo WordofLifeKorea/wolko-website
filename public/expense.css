@@ -1447,3 +1447,17 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
   :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row:has(> .ex-recline) :is(.ex-purpose, .ex-memo-in) { grid-row: 4 !important; }
 }
 @media (min-width: 641px) { :root:root:root:root:root:root:root:root:root body .ex-wrap .ex-row > :is(.ex-more, .ex-receipts, .ex-rateline) { padding-left: 0 !important; margin-left: 0 !important; } }
+
+/* v207 — 아래 고정 합계 바를 한 줄로 얇게: 합계 + 제출만 남기고, 지우기·저장 상태는 '항목 추가' 줄로 */
+:root:root:root body .ex-wrap .ex-addline { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-top: 12px; }
+:root:root:root body .ex-wrap .ex-addline .ex-draft-status { margin: 0 0 0 auto; }
+:root:root:root body .ex-wrap .ex-addline .ex-draft-status:empty + .ex-btn-quiet { margin-left: auto; }
+:root:root:root body .ex-wrap .ex-addline .ex-btn-quiet { min-height: 40px; padding: 0 14px; border-color: transparent !important; background: transparent !important; box-shadow: none !important; color: var(--mid, #5b7480); font-weight: 500 !important; }
+:root:root:root body .ex-wrap .ex-addline .ex-btn-quiet:hover { color: var(--ex-ink, #10232d); text-decoration: underline; }
+@media (max-width: 640px) {
+  :root:root:root body .ex-wrap .ex-total-bar { flex-direction: row !important; flex-wrap: nowrap !important; align-items: center !important; bottom: 10px; padding: 8px 8px 8px 16px !important; gap: 12px !important; border-radius: 14px; }
+  :root:root:root body .ex-wrap .ex-total { min-width: 0; font-size: 19px !important; line-height: 1.15; white-space: nowrap; }
+  :root:root:root body .ex-wrap .ex-total small { margin-bottom: 1px; font-size: 10.5px; }
+  :root:root:root body .ex-wrap .ex-total-bar .ex-actions { width: auto !important; flex: 0 0 auto; margin-left: auto !important; }
+  :root:root:root body .ex-wrap .ex-total-bar .ex-actions .ex-btn.primary { flex: 0 0 auto; width: auto !important; min-height: 44px !important; padding: 0 18px !important; font-size: 14.5px !important; white-space: nowrap; }
+}

@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=133">
+  <link rel="stylesheet" href="/expense.css?v=134">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=24">
   <link rel="stylesheet" href="/wolko-header.css?v=16">
@@ -456,12 +456,14 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         </div>
         <datalist id="fSrcList">${sourceOptions()}</datalist>
         <div class="ex-rows" id="fRows">${form.rows.map(rowHtml).join('')}</div>
-        <div style="margin-top:12px"><button class="ex-btn" data-act="add-row">${t('addRow')}</button></div>
+        <div class="ex-addline">
+          <button class="ex-btn" data-act="add-row">${t('addRow')}</button>
+          ${editing ? '' : '<span class="ex-draft-status" id="exDraftStatus" role="status"></span>'}
+          ${editing ? `<button class="ex-btn ex-btn-quiet" data-act="cancel-edit">${t('cancelEdit')}</button>` : `<button class="ex-btn ex-btn-quiet" data-act="reset-draft">${t('resetDraft')}</button>`}
+        </div>
         <div class="ex-total-bar">
           <div class="ex-total" id="fTotal"></div>
           <div class="ex-actions" style="margin:0">
-            ${editing ? '' : '<span class="ex-draft-status" id="exDraftStatus" role="status"></span>'}
-            ${editing ? `<button class="ex-btn" data-act="cancel-edit">${t('cancelEdit')}</button>` : `<button class="ex-btn" data-act="reset-draft">${t('resetDraft')}</button>`}
             <button class="ex-btn primary" id="fSubmit" data-act="submit">${editing ? t('submitEdit') : t('submit')}</button>
           </div>
         </div>
