@@ -64,6 +64,7 @@
       if (eb) { var r = TL.filter(function (x) { return x.id === eb.dataset.e; })[0]; dialog(CT.t('tTimeline'), F, r, async function (o) { await api('/api/campteam/timeline?id=' + encodeURIComponent(r.id), 'PATCH', o); await loadTimeline(); }); }
       if (db) del('/api/campteam/timeline', db.dataset.d, loadTimeline);
     };
+    if (window.CTPrep && window.CTPrep.onTimeline) window.CTPrep.onTimeline();
   }
   function pasteDlg() {
     $('pBody').innerHTML = '<h3>' + esc(CT.t('paste')) + '</h3><p class="hint">' + esc(CT.t('pasteHint')) + '</p><textarea id="pasteTx" rows="10" style="width:100%"></textarea><div class="hint" id="pasteMsg"></div><div class="err" id="pErr" hidden></div><div class="dlg-actions"><button type="button" class="btn" id="pCancel">' + esc(CT.t('cancel')) + '</button><button type="button" class="btn" id="pastePv">' + esc(CT.t('pastePv')) + '</button><button type="button" class="btn pri" id="pasteGo">' + esc(CT.t('pasteGo')) + '</button></div>';

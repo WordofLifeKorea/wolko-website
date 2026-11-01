@@ -17,7 +17,7 @@
   n('work', ['업무·회의·일정을 다루고 싶어요', 'Tasks, meetings and events'],
     ['어떤 일을 하실 건가요?', 'What would you like to do?'], { next: ['w_task', 'w_meeting', 'w_event', 'w_alerts', 'w_ooo', 'w_catchup'] });
   n('camp', ['캠프(행사)·TV 화면이 궁금해요', 'Camps and the TV screen'],
-    ['캠프 준비에 필요한 기능이에요.', 'These help you prepare camps.'], { next: ['c_create', 'c_space', 'c_tv', 'c_prep', 'c_series', 'c_phonecal', 'c_wizard', 'c_close', 'c_survey'] });
+    ['캠프 준비에 필요한 기능이에요.', 'These help you prepare camps.'], { next: ['c_create', 'c_space', 'c_tv', 'c_prep', 'c_series', 'c_phonecal', 'c_wizard', 'c_close', 'c_survey', 'c_assign'] });
   n('c_prep', ['진행표·준비물·연락처', 'Timeline, supplies, contacts'],
     ['캠프별 공간 맨 위의 「📋 캠프 준비」(또는 /portal/campteam/prep/)를 열어요. 진행표 탭은 날짜별 시간표(엑셀에서 붙여넣기 가능, 지금 진행 중인 줄이 초록으로 표시), 준비물 탭은 필요/구입함/준비 끝 상태와 지난 캠프에서 복사, 연락처 탭은 교회·학교·업체·강사 연락처예요. 연락처는 캠프팀 명단에 있는 사람만 봐요.',
      'Open "📋 Camp prep" at the top of a camp space (or /portal/campteam/prep/). Timeline: a schedule by day (paste from Excel; the running row turns green). Supplies: Needed/Bought/Ready with copy from a past camp. Contacts: churches, schools, vendors, speakers, visible only to camp team members.']);
@@ -36,6 +36,9 @@
   n('c_survey', ['캠프 평가 설문', 'Camp evaluation survey'],
     ['캠프 준비 화면의 「평가 설문」 탭에서 설문을 만들고(기본 질문 6개), 「링크 켜기」로 만든 링크를 참가자·교회·스태프에게 보내세요. 로그인 없이 답할 수 있고 이름·연락처는 묻지 않아요. 결과는 캠프 담당자만 볼 수 있고, 필요 없어지면 링크를 끄면 돼요.',
      'In the "Survey" tab of Camp prep, create a survey (6 default questions), turn the link on and send it to participants, churches or staff. No login needed and no name or contact is asked. Only camp managers see results; turn the link off when done.']);
+  n('c_assign', ['조·방·차량 배정과 경고', 'Groups, rooms, vehicles and warnings'],
+    ['캠프 준비 화면의 「배정」 탭에서 참가자·스태프 명단을 엑셀에서 붙여넣고, 조·방·차량을 만든 뒤 사람마다 골라 배정해요. 「조 자동 배정 제안」은 성별·학년이 골고루 섞이게 제안만 하고, 「적용」을 눌러야 저장돼요. 미성년자와 성인이 단둘이 있는 차량·방, 정원 초과, 운전자 없음, 남녀 방 섞임, 진행표에서 담당·장소 시간이 겹치는 것은 경고로 알려 줘요(막지는 않아요). 이름·성별·학년·교회·역할만 저장해요.',
+     'In the "Assign" tab of Camp prep, paste the participant and staff list from Excel, create groups, rooms and vehicles, and assign people. "Suggest groups" only proposes a balance by gender and grade; nothing is saved until you press Apply. Warnings (a minor alone with an adult in a vehicle or room, over capacity, no driver, mixed-gender rooms, overlapping owners or places in the timeline) only inform. Only name, gender, grade, church and role are stored.']);
   n('tips', ['화면·언어·권한이 궁금해요', 'Screen, language and permissions'],
     ['자주 헷갈리는 것들이에요.', 'Things that are often confusing.'], { next: ['t_lang', 't_phone', 't_trash', 't_perm', 't_off'] });
 
