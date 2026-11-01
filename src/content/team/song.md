@@ -11,7 +11,7 @@ gender: male
 name_ko: 송승현
 name_en: Samuel Song
 title_ko: 월코 부대표 선교사
-title_en: Associate Field Director | WOLKO
+title_en: Associate Field Director · WOLKO
 role_badge: Missionary
 campus: pyeongtaek
 category: missionary

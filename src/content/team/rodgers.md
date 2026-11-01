@@ -9,8 +9,8 @@ bio_en: |-
 gender: male
 name_ko: 제레미 & 엘스벳 라저스
 name_en: Jeremy & Elsbeth Rodgers
-title_ko: 선교사 | 월코 회계 책임자
-title_en: Missionaries | WOLKO Finance Director
+title_ko: 선교사 · 월코 회계 책임자
+title_en: Missionaries · WOLKO Finance Director
 role_badge: Missionaries
 campus: jeju
 category: missionary
