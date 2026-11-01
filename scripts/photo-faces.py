@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 섬기는이 사진 얼굴 위치 찾기
-src/content/team/*.md 의 photo_url 사진마다 얼굴을 찾아
-src/data/photo-faces.json 에 적습니다. 섬기는이 목록 · 프로필 옆 목록은
+src/content/team/*.md 의 사진(photo_url · photo_story · photo_url_2)마다 얼굴을 찾아
+src/data/photo-faces.json 에 적습니다. 섬기는이 목록 · 프로필 페이지 · 프로필 옆 목록은
 이 값을 보고 모든 사진의 얼굴이 칸 안 같은 자리 · 같은 크기에 오도록 맞춥니다.
 
 - 사진 주소별로 적으므로, 마이페이지 등에서 새 사진을 올리면 그 사진은
@@ -36,11 +36,14 @@ def main():
 
     data = json.load(open(OUT)) if os.path.exists(OUT) else {}
     redo = '--all' in sys.argv
+    urls = []
     for md in sorted(glob.glob(os.path.join(ROOT, 'src', 'content', 'team', '*.md'))):
-        m = re.search(r'^photo_url:\s*["\']?([^"\'\n]+)', open(md, encoding='utf-8').read(), re.M)
-        if not m:
-            continue
-        url = m.group(1).strip()
+        text = open(md, encoding='utf-8').read()
+        for field in ('photo_url', 'photo_story', 'photo_url_2'):
+            m = re.search(rf'^{field}:\s*["\']?([^"\'\n]+)', text, re.M)
+            if m and m.group(1).strip().startswith('/'):
+                urls.append((os.path.basename(md)[:-3], field, m.group(1).strip()))
+    for slug, field, url in urls:
         if url in data and not redo:
             continue
         path = os.path.join(ROOT, 'public', url.lstrip('/'))
@@ -60,7 +63,7 @@ def main():
             big = max(f[3] for f in faces)
             faces = [f for f in faces if f[3] >= big * MIN_REL_SIZE]
         data[url] = {'w': W, 'h': H, 'faces': [[round(v, 4) for v in f] for f in faces]}
-        print(f'  {os.path.basename(md)[:-3]}: 얼굴 {len(faces)}개')
+        print(f'  {slug} {field}: 얼굴 {len(faces)}개')
 
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, 'w', encoding='utf-8') as f:  # 사진 한 장에 한 줄

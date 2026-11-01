@@ -8,6 +8,8 @@ import FACES from '../data/photo-faces.json';
 // padX / padY: 여러 사람일 때 얼굴들이 칸 폭 · 높이에서 넘지 않을 몫(가장자리 사람이 잘리지 않게)
 const LOOKS = {
   card: { face: 0.27, eye: 0.36, groupEye: 0.5, padX: 0.84, padY: 0.6 },
+  // 프로필 페이지의 큰 사진: 얼굴을 조금 작게(어깨 · 상반신까지)
+  hero: { face: 0.21, eye: 0.36, groupEye: 0.46, padX: 0.84, padY: 0.6 },
   avatar: { face: 0.5, eye: 0.47, groupEye: 0.5, padX: 0.92, padY: 0.8 },
 };
 

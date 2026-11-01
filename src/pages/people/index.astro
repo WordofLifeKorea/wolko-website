@@ -5,15 +5,14 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import { photoFrame, photoFocus } from '../../lib/photoFrame.js';
+// 카드 위 직책 표시(한글 화면은 한글, 영어 화면은 영어) — 프로필 페이지와 같은 표
+import { roleKo } from '../../lib/teamRoles.js';
 
 const allTeam = (await getCollection('team')).filter(p => p.data.active !== false);
 const byOrder = (a, b) => (a.data.order ?? 99) - (b.data.order ?? 99);
 const isDirector = (p) => (p.data.role_badge || '').includes('Director');
 const locOf = (p) => (p.data.campus === 'pyeongtaek' ? 'pt' : 'jj');
 
-// 카드 위 직책 표시 — 한글 화면은 한글, 영어 화면은 영어
-const ROLE_KO = { Staff: '간사', Intern: '인턴', Missionaries: '선교사', Missionary: '선교사', 'Field Director': '필드 디렉터', 'Jeju Director': '제주 디렉터' };
-const roleKo = (v) => ROLE_KO[v] || v || '';
 // 사진 카드 칸 비율 — 아래 CSS .pp-photo 의 aspect-ratio 와 같아야 한다
 const CARD_ASPECT = 1;
 const initialOf = (p) => (p.data.name_ko || p.data.name_en || '?').trim().charAt(0);
