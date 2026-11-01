@@ -357,11 +357,32 @@ const {
         // 화면 갱신(requestAnimationFrame)을 기다리지 않는다 — 영상·큰 이미지로 화면이 바쁜 폰에서는 갱신이 늦어져
         // 메뉴가 안 보이는 동안 터치가 뒤의 딤 배경으로 가서 메뉴가 안 눌리거나 바로 닫히곤 했다.
         // 강제로 레이아웃을 한 번 계산(offsetWidth)한 뒤 바로 클래스를 붙이면 열림 애니메이션은 그대로 재생된다.
+        // 지금 페이지가 들어 있는 묶음은 펼친 채로 연다
+        const cur = menu.querySelector('.mobile-menu-item.has-current');
+        if (cur && cur.querySelector('.mobile-sub') && !menu.querySelector('.mobile-menu-item.is-open')) {
+          cur.classList.add('is-open');
+          cur.querySelector('[aria-expanded]')?.setAttribute('aria-expanded', 'true');
+        }
         void menu.offsetWidth;
         menu.classList.add('open');
         backdrop.classList.add('open');
       }
     };
+    // 지금 보고 있는 페이지를 메뉴에서 강조한다 — 주소가 가장 길게 맞는 링크 하나(하위 페이지도 포함), 그 묶음 제목도 함께
+    (function markCurrent() {
+      const here = location.pathname.replace(/\/+$/, '') || '/';
+      let best = null, bestLen = -1;
+      document.querySelectorAll('#mobileMenu a[href^="/"]').forEach(function(a) {
+        const href = a.getAttribute('href').replace(/[?#].*$/, '').replace(/\/+$/, '') || '/';
+        const hit = href === '/' ? here === '/' : (here === href || here.startsWith(href + '/'));
+        if (hit && href.length > bestLen) { best = a; bestLen = href.length; }
+      });
+      if (!best) return;
+      best.classList.add('is-current');
+      best.setAttribute('aria-current', 'page');
+      best.closest('.mobile-menu-item')?.classList.add('has-current');
+    })();
+
     window.toggleMobileSub = function(btn) {
       const item = btn.closest('.mobile-menu-item');
       const isOpen = item.classList.contains('is-open');
