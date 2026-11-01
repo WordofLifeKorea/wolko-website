@@ -85,10 +85,12 @@ const WM_W = 360 * WM_K, WM_H = (WM_TOP - WM_BOTTOM) * WM_K;
 const wmXY = (lat, lon) => [(lon + 180) * WM_K, (WM_TOP - lat) * WM_K];
 const wmDotsPath = worldDots.dots.map(([lon, lat]) => { const [x, y] = wmXY(lat, lon); return `M${x.toFixed(1)} ${y.toFixed(1)}h0`; }).join('');
 const [wmKx, wmKy] = wmXY(KOREA.lat, KOREA.lon);
-const WM_WAVE = 3.2; // 한국에서 빛이 가장 먼 사역지까지 닿는 데 걸리는 초 — 십자가는 빛이 닿는 순간 뿅 하고 나타난다
-const wmFields = WOL_FIELDS.map((f) => { const [x, y] = wmXY(f.lat, f.lon); return { ...f, x, y, dist: Math.hypot(x - wmKx, y - wmKy) }; });
-const wmMax = Math.max(...wmFields.map((f) => f.dist));
-wmFields.forEach((f) => { f.delay = (0.7 + f.dist / wmMax * WM_WAVE).toFixed(2); });
+// 십자가는 한 곳에서 퍼지지 않고 지도 곳곳에서 흩어진 순서로 뿅 나타난다(황금비로 섞어 매번 같은 순서).
+// 그 뒤로 사역지마다 작은 원이 같은 순서로 번갈아 퍼진다.
+const WM_POP = 2.6;  // 첫 십자가부터 마지막 십자가까지 걸리는 초
+const wmDelay = (i) => (0.4 + ((i * 0.6180339) % 1) * WM_POP).toFixed(2);
+const wmFields = WOL_FIELDS.map((f, i) => { const [x, y] = wmXY(f.lat, f.lon); return { ...f, x, y, delay: wmDelay(i + 1) }; });
+const wmHomeDelay = wmDelay(0);
 const wmCount = WOL_FIELDS.length + 1; // 한국 포함
 const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) => f.region === r.id) }));
 ---
@@ -313,7 +315,7 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 
 
 /* ═══════════════════════════
-   4-1. 한국에서 세계로 — 남색 띠 위 점 지도. 한국에서 금빛 물결이 퍼지고, 닿는 사역지마다 십자가가 뿅 하고 나타난다(10초마다 물결 반복)
+   4-1. 한국에서 세계로 — 남색 띠 위 점 지도. 사역지마다 십자가가 흩어진 순서로 뿅 나타나고, 저마다 작은 원을 퍼뜨린다(6초마다 반복)
    움직임은 .hm-wmap 이 화면에 들어와 .is-in 이 붙을 때만 — 움직임 줄이기면 처음부터 다 찍힌 지도
 ═══════════════════════════ */
 .hm-world { position: relative; padding: 112px 0 96px; color: #fff; background: radial-gradient(90% 80% at 80% 0%, #123a4a 0%, var(--hm-navy) 60%, #08202a 100%); }
@@ -328,29 +330,27 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 .hm-nowrap { white-space: nowrap; }
 .hm-home .hm-wmap-svg { display: block; width: 100%; height: auto; overflow: visible; stroke: none; fill: none; }
 .hm-wdots { fill: none; stroke: rgba(143,208,228,.26); stroke-width: 5.6; stroke-linecap: round; }
-.hm-wdots--gold { stroke: rgba(246,214,150,.95); }
-.hm-wave { opacity: 0; }
+.hm-wring { fill: none; stroke: #f6dc9f; stroke-width: 1.4; vector-effect: non-scaling-stroke; opacity: 0; }
 .hm-wcross-mark { fill: none; stroke: #f6dc9f; stroke-width: 2.2; stroke-linecap: round; filter: drop-shadow(0 0 3px rgba(233,194,122,.9)); }
 .hm-wcross--home .hm-wcross-mark { stroke-width: 3; }
 .hm-wcross-glow { opacity: .55; }
 .hm-wcross { cursor: default; }
-.hm-wcross-pop, .hm-wcross-bump, .hm-wcross-glow, .hm-wave { transform-box: fill-box; transform-origin: center; }
+.hm-wcross-pop, .hm-wcross-bump, .hm-wcross-glow, .hm-wring, .hm-wring-box { transform-box: fill-box; transform-origin: center; }
 .hm-wmap-home { position: absolute; transform: translate(-50%, calc(-100% - 16px)); padding: 3px 8px; border-radius: 999px; background: rgba(255,255,255,.1); border: 1px solid rgba(246,214,150,.45); color: #f6dc9f; font-size: 11px; font-weight: 800; letter-spacing: .08em; pointer-events: none; }
 .hm-wmap.hm-rv { transform: none; }
 .hm-wmap.hm-rv .hm-wdots { opacity: 0; }
-.hm-wmap.hm-rv.is-in .hm-wdots:not(.hm-wdots--gold) { animation: hmWDots 1.2s ease-out both; }
-.hm-wmap.hm-rv.is-in .hm-wdots--gold { opacity: 1; }
-.hm-wmap.hm-rv.is-in .hm-wave { animation: hmWave 10s cubic-bezier(.35,0,.6,1) .5s infinite; }
+.hm-wmap.hm-rv.is-in .hm-wdots { animation: hmWDots 1.2s ease-out both; }
 .hm-wmap.hm-rv .hm-wcross-pop, .hm-wmap.hm-rv .hm-wmap-home { opacity: 0; }
 .hm-wmap.hm-rv.is-in .hm-wcross-pop { animation: hmWPop .7s cubic-bezier(.2,1.7,.4,1) var(--cd) both; }
-.hm-wmap.hm-rv.is-in .hm-wcross-bump { animation: hmWBump 10s ease-out calc(var(--cd) + 10s) infinite; }
-.hm-wmap.hm-rv.is-in .hm-wcross-glow { animation: hmWGlow 10s ease-out var(--cd) infinite; }
-.hm-wmap.hm-rv.is-in .hm-wmap-home { animation: hmWLabel .6s ease-out .9s both; }
+.hm-wmap.hm-rv.is-in .hm-wcross-bump { animation: hmWBump 6s ease-out calc(var(--cd) + 6s) infinite; }
+.hm-wmap.hm-rv.is-in .hm-wcross-glow { animation: hmWGlow .9s ease-out var(--cd) both; }
+.hm-wmap.hm-rv.is-in .hm-wring { animation: hmWRing 6s cubic-bezier(.2,.6,.3,1) calc(var(--cd) + .25s) infinite; }
+.hm-wmap.hm-rv.is-in .hm-wmap-home { animation: hmWLabel .6s ease-out calc(var(--hd) + .4s) both; }
 @keyframes hmWDots { from { opacity: 0; } to { opacity: 1; } }
-@keyframes hmWave { 0% { transform: scale(.02); opacity: 1; } 34% { opacity: 1; } 42% { transform: scale(1); opacity: 0; } 100% { transform: scale(1); opacity: 0; } }
 @keyframes hmWPop { 0% { transform: scale(0) rotate(-25deg); opacity: 0; } 60% { opacity: 1; } 100% { transform: none; opacity: 1; } }
 @keyframes hmWBump { 0% { transform: scale(1); } 4% { transform: scale(1.4); } 10%, 100% { transform: scale(1); } }
-@keyframes hmWGlow { 0% { transform: scale(.4); opacity: 0; } 6% { transform: scale(1.4); opacity: 1; } 30%, 100% { transform: scale(1); opacity: .55; } }
+@keyframes hmWGlow { 0% { transform: scale(.4); opacity: 0; } 40% { transform: scale(1.4); opacity: 1; } 100% { transform: scale(1); opacity: .55; } }
+@keyframes hmWRing { 0% { transform: scale(.3); opacity: .95; } 24% { transform: scale(1); opacity: 0; } 100% { transform: scale(1); opacity: 0; } }
 @keyframes hmWLabel { from { opacity: 0; } to { opacity: 1; } }
 .hm-wlist { margin-top: 36px; border-top: 1px solid rgba(255,255,255,.14); }
 .hm-wlist summary { display: inline-flex; align-items: center; gap: 8px; padding: 18px 0 4px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; list-style: none; }
@@ -373,6 +373,7 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
   .hm-wmap.hm-rv.is-in .hm-wcross-pop { animation-name: hmWPopBig; }
   @keyframes hmWPopBig { 0% { transform: scale(0) rotate(-25deg); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1.8); opacity: 1; } }
   .hm-wcross--home .hm-wcross-pop { transform: scale(1.3); }
+  .hm-wring-box { transform: scale(1.6); }
   .hm-wmap-home { font-size: 9.5px; padding: 2px 6px; transform: translate(-50%, calc(-100% - 12px)); }
   .hm-wlist-grid { grid-template-columns: 1fr; gap: 16px; }
 }
@@ -776,36 +777,28 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
       <div class="hm-wmap" data-rv>
         <svg class="hm-wmap-svg" viewBox={`0 0 ${WM_W} ${WM_H}`} role="img" aria-label="세계 Word of Life 사역지 지도">
           <defs>
-            <radialGradient id="hmWaveGrad">
-              <stop offset="0" stop-color="#fff" stop-opacity="0" />
-              <stop offset=".82" stop-color="#fff" stop-opacity="0" />
-              <stop offset=".95" stop-color="#fff" stop-opacity="1" />
-              <stop offset="1" stop-color="#fff" stop-opacity="0" />
-            </radialGradient>
             <radialGradient id="hmCrossGlow">
               <stop offset="0" stop-color="#f6dfa8" stop-opacity=".6" />
               <stop offset="1" stop-color="#e9c27a" stop-opacity="0" />
             </radialGradient>
-            <mask id="hmWaveMask" maskUnits="userSpaceOnUse" x="0" y="0" width={WM_W} height={WM_H}>
-              <circle class="hm-wave" cx={wmKx.toFixed(1)} cy={wmKy.toFixed(1)} r="1300" fill="url(#hmWaveGrad)" />
-            </mask>
           </defs>
           <path class="hm-wdots" d={wmDotsPath} />
-          <path class="hm-wdots hm-wdots--gold" d={wmDotsPath} mask="url(#hmWaveMask)" />
           {wmFields.map((f) => (
             <g class="hm-wcross" transform={`translate(${f.x.toFixed(1)} ${f.y.toFixed(1)})`} style={`--cd:${f.delay}s`}>
               <title>{f.ko} · {f.en}</title>
               <circle class="hm-wcross-glow" r="16" fill="url(#hmCrossGlow)" />
+              <g class="hm-wring-box"><circle class="hm-wring" r="22" /></g>
               <g class="hm-wcross-pop"><g class="hm-wcross-bump"><path class="hm-wcross-mark" d="M0 -7V7M-4.5 -2.5H4.5" /></g></g>
             </g>
           ))}
-          <g class="hm-wcross hm-wcross--home" transform={`translate(${wmKx.toFixed(1)} ${wmKy.toFixed(1)})`} style="--cd:.3s">
+          <g class="hm-wcross hm-wcross--home" transform={`translate(${wmKx.toFixed(1)} ${wmKy.toFixed(1)})`} style={`--cd:${wmHomeDelay}s`}>
             <title>{KOREA.ko} · WOLKO</title>
             <circle class="hm-wcross-glow" r="30" fill="url(#hmCrossGlow)" />
+            <g class="hm-wring-box"><circle class="hm-wring" r="34" /></g>
             <g class="hm-wcross-pop"><g class="hm-wcross-bump"><path class="hm-wcross-mark" d="M0 -12V12M-7.5 -4.5H7.5" /></g></g>
           </g>
         </svg>
-        <span class="hm-wmap-home" style={`left:${(wmKx / WM_W * 100).toFixed(2)}%;top:${(wmKy / WM_H * 100).toFixed(2)}%`}>WOLKO</span>
+        <span class="hm-wmap-home" style={`--hd:${wmHomeDelay}s;left:${(wmKx / WM_W * 100).toFixed(2)}%;top:${(wmKy / WM_H * 100).toFixed(2)}%`}>WOLKO</span>
       </div>
 
       <details class="hm-wlist" data-rv>
