@@ -66,14 +66,15 @@ test('반복 캠프: 시리즈를 만들고 달을 고르면 회차 캠프가 �
 });
 
 test('폰 캘린더: 주소는 사람마다 하나, 새로 만들면 예전 주소가 멈추고, 일정(ICS)에 진행표가 들어간다', async () => {
-  const env = makeEnv(fakeD1()), cid = await campId(env);
+  const env = { ...makeEnv(fakeD1()), CAMPTEAM_PHONE_TOOLS: 'on' }, cid = await campId(env);
   await call(TL.onRequestPost, env, U.mem, { method: 'POST', body: { campId: cid, dayDate: '2099-07-20', startTime: '09:00', endTime: '09:30', title: '등록, 접수', place: '로비' } });
-  const u1 = (await call(FD.onRequestGet, env, U.mem)).body.url, again = (await call(FD.onRequestGet, env, U.mem)).body.url; assert.equal(u1, again); assert.match(u1, /token=[a-f0-9]{64}/);
+  const u1 = (await call(FD.onRequestGet, env, U.admin)).body.url, again = (await call(FD.onRequestGet, env, U.admin)).body.url; assert.equal(u1, again); assert.match(u1, /token=[a-f0-9]{64}/);
   const ics = await FD.onRequestGet({ env, request: new Request(u1) }); assert.equal(ics.status, 200); const t = await ics.text();
   assert.ok(t.startsWith('BEGIN:VCALENDAR') && t.includes('SUMMARY:등록\\, 접수') && t.includes('DTSTART:20990720T000000Z'), '09:00 KST = 00:00 UTC'); assert.ok(!t.includes('010-'));
-  const u2 = (await call(FD.onRequestPost, env, U.mem, { method: 'POST', body: { regen: true } })).body.url; assert.notEqual(u1, u2);
+  const u2 = (await call(FD.onRequestPost, env, U.admin, { method: 'POST', body: { regen: true } })).body.url; assert.notEqual(u1, u2);
   assert.equal((await FD.onRequestGet({ env, request: new Request(u1) })).status, 404, '예전 주소는 멈춘다'); assert.equal((await FD.onRequestGet({ env, request: new Request(u2) })).status, 200);
   assert.equal((await FD.onRequestGet({ env, request: new Request('http://x/api/campteam/calendar-feed?token=zzz') })).status, 404);
-  assert.equal((await call(FD.onRequestGet, env, U.out)).status, 403, '명단 밖은 주소를 못 받는다');
+  assert.equal((await call(FD.onRequestGet, env, U.out)).status, 403, '명단 밖은 주소를 못 받는다'); assert.equal((await call(FD.onRequestGet, env, U.mem)).status, 403, '관리자가 아니면 주소를 못 받는다');
+  const off = makeEnv(env.DB); assert.equal((await call(FD.onRequestGet, off, U.admin)).status, 403, '꺼져 있으면 아무도 못 받는다'); assert.equal((await FD.onRequestGet({ env: off, request: new Request(u2) })).status, 404, '꺼지면 구독 주소도 멈춘다');
   assert.ok(buildIcs([{ uid: 'a', title: '종일', start: '2099-01-01', end: '2099-01-02' }]).includes('DTEND;VALUE=DATE:20990103'));
 });
