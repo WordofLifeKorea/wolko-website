@@ -447,8 +447,15 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
   .hm-closing { padding: 72px 0; }
   .hm-closing .hm-actions { width: 100%; }
 }
+/* 휴대폰: 큰 사진 카드 네 장 대신 작은 사진 + 이름 + 두 줄 설명의 목록으로 */
 @media (max-width: 540px) {
-  .hm-min-grid { grid-template-columns: 1fr; gap: 40px; }
+  .hm-min-grid { grid-template-columns: 1fr; gap: 0; margin-top: 28px; border-top: 1px solid var(--hm-line); }
+  .hm-min-card { display: grid; grid-template-columns: 84px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--hm-line); }
+  .hm-min-media { grid-column: 1; grid-row: 1 / span 2; align-self: center; aspect-ratio: 1; border-radius: 12px; }
+  .hm-min-num { display: none; }
+  .hm-min-title { grid-column: 2; margin-top: 0; font-size: 18px; }
+  .hm-min-title svg { width: 16px; height: 16px; flex: none; }
+  .hm-min-text { grid-column: 2; margin-top: 4px; font-size: 13.5px; line-height: 1.55; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 }
 @media (hover: none) {
   .hm-min-card:hover .hm-min-media img { transform: none; }
