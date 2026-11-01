@@ -76,6 +76,21 @@ const waffleDots = Array.from({ length: 100 }, (_, i) => {
   const d = on ? 1.8 * (1 - Math.pow(1 - (i + 1) / NO_RELIGION, 0.25)) : 0;
   return { on, style: `--d:${d.toFixed(3)}s;--w:${((r + c) * 0.04).toFixed(2)}s` };
 });
+
+// 한국에서 세계로 — 세계 Word of Life 사역지 지도(점 지도 + 나라마다 십자가). 사역지 목록과 뺀 곳의 기준은 src/data/wolFields.js
+import worldDots from '../data/world-dots.json';
+import { KOREA, WOL_FIELDS, WOL_REGIONS } from '../data/wolFields.js';
+const WM_K = 4, WM_TOP = 75, WM_BOTTOM = -56;           // 등장방형 투영: 경도 1도 = 4, 위도 75 ~ -56
+const WM_W = 360 * WM_K, WM_H = (WM_TOP - WM_BOTTOM) * WM_K;
+const wmXY = (lat, lon) => [(lon + 180) * WM_K, (WM_TOP - lat) * WM_K];
+const wmDotsPath = worldDots.dots.map(([lon, lat]) => { const [x, y] = wmXY(lat, lon); return `M${x.toFixed(1)} ${y.toFixed(1)}h0`; }).join('');
+const [wmKx, wmKy] = wmXY(KOREA.lat, KOREA.lon);
+const WM_WAVE = 3.2; // 한국에서 빛이 가장 먼 사역지까지 닿는 데 걸리는 초 — 십자가는 빛이 닿는 순간 뿅 하고 나타난다
+const wmFields = WOL_FIELDS.map((f) => { const [x, y] = wmXY(f.lat, f.lon); return { ...f, x, y, dist: Math.hypot(x - wmKx, y - wmKy) }; });
+const wmMax = Math.max(...wmFields.map((f) => f.dist));
+wmFields.forEach((f) => { f.delay = (0.7 + f.dist / wmMax * WM_WAVE).toFixed(2); });
+const wmCount = WOL_FIELDS.length + 1; // 한국 포함
+const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) => f.region === r.id) }));
 ---
 
 <BaseLayout
@@ -295,6 +310,71 @@ const waffleDots = Array.from({ length: 100 }, (_, i) => {
 /* 스크롤하면 떠오르기 — 스크립트가 .hm-rv 를 붙일 때만 (작은 표시 → 제목 → 글 → 왼쪽부터 칸 순서) */
 .hm-rv { opacity: 0; transform: translateY(28px); transition: opacity 1.1s cubic-bezier(.2,.7,.2,1) var(--d, 0s), transform 1.1s cubic-bezier(.2,.7,.2,1) var(--d, 0s); }
 .hm-rv.is-in { opacity: 1; transform: none; }
+
+
+/* ═══════════════════════════
+   4-1. 한국에서 세계로 — 남색 띠 위 점 지도. 한국에서 금빛 물결이 퍼지고, 닿는 사역지마다 십자가가 뿅 하고 나타난다(10초마다 물결 반복)
+   움직임은 .hm-wmap 이 화면에 들어와 .is-in 이 붙을 때만 — 움직임 줄이기면 처음부터 다 찍힌 지도
+═══════════════════════════ */
+.hm-world { position: relative; padding: 112px 0 96px; color: #fff; background: radial-gradient(90% 80% at 80% 0%, #123a4a 0%, var(--hm-navy) 60%, #08202a 100%); }
+.hm-world .hm-eyebrow { color: #8fd0e4; }
+.hm-world .hm-h2 { color: #fff; }
+.hm-world-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; }
+.hm-world-stat { display: flex; align-items: center; gap: 14px; flex: none; }
+.hm-world-stat b { font-family: var(--ff-serif); font-size: clamp(56px, 6vw, 84px); font-weight: 700; line-height: 1; letter-spacing: -.04em; color: #f3d89b; }
+.hm-world-stat > span { font-size: 14px; font-weight: 700; line-height: 1.5; color: rgba(255,255,255,.78); }
+.hm-wmap { position: relative; margin-top: 48px; }
+.hm-nowrap { white-space: nowrap; }
+.hm-home .hm-wmap-svg { display: block; width: 100%; height: auto; overflow: visible; stroke: none; fill: none; }
+.hm-wdots { fill: none; stroke: rgba(143,208,228,.26); stroke-width: 5.6; stroke-linecap: round; }
+.hm-wdots--gold { stroke: rgba(246,214,150,.95); }
+.hm-wave { opacity: 0; }
+.hm-wcross-mark { fill: none; stroke: #f6dc9f; stroke-width: 2.2; stroke-linecap: round; filter: drop-shadow(0 0 3px rgba(233,194,122,.9)); }
+.hm-wcross--home .hm-wcross-mark { stroke-width: 3; }
+.hm-wcross-glow { opacity: .55; }
+.hm-wcross { cursor: default; }
+.hm-wcross-pop, .hm-wcross-bump, .hm-wcross-glow, .hm-wave { transform-box: fill-box; transform-origin: center; }
+.hm-wmap-home { position: absolute; transform: translate(-50%, calc(-100% - 16px)); padding: 3px 8px; border-radius: 999px; background: rgba(255,255,255,.1); border: 1px solid rgba(246,214,150,.45); color: #f6dc9f; font-size: 11px; font-weight: 800; letter-spacing: .08em; pointer-events: none; }
+.hm-wmap.hm-rv { transform: none; }
+.hm-wmap.hm-rv .hm-wdots { opacity: 0; }
+.hm-wmap.hm-rv.is-in .hm-wdots:not(.hm-wdots--gold) { animation: hmWDots 1.2s ease-out both; }
+.hm-wmap.hm-rv.is-in .hm-wdots--gold { opacity: 1; }
+.hm-wmap.hm-rv.is-in .hm-wave { animation: hmWave 10s cubic-bezier(.35,0,.6,1) .5s infinite; }
+.hm-wmap.hm-rv .hm-wcross-pop, .hm-wmap.hm-rv .hm-wmap-home { opacity: 0; }
+.hm-wmap.hm-rv.is-in .hm-wcross-pop { animation: hmWPop .7s cubic-bezier(.2,1.7,.4,1) var(--cd) both; }
+.hm-wmap.hm-rv.is-in .hm-wcross-bump { animation: hmWBump 10s ease-out calc(var(--cd) + 10s) infinite; }
+.hm-wmap.hm-rv.is-in .hm-wcross-glow { animation: hmWGlow 10s ease-out var(--cd) infinite; }
+.hm-wmap.hm-rv.is-in .hm-wmap-home { animation: hmWLabel .6s ease-out .9s both; }
+@keyframes hmWDots { from { opacity: 0; } to { opacity: 1; } }
+@keyframes hmWave { 0% { transform: scale(.02); opacity: 1; } 34% { opacity: 1; } 42% { transform: scale(1); opacity: 0; } 100% { transform: scale(1); opacity: 0; } }
+@keyframes hmWPop { 0% { transform: scale(0) rotate(-25deg); opacity: 0; } 60% { opacity: 1; } 100% { transform: none; opacity: 1; } }
+@keyframes hmWBump { 0% { transform: scale(1); } 4% { transform: scale(1.4); } 10%, 100% { transform: scale(1); } }
+@keyframes hmWGlow { 0% { transform: scale(.4); opacity: 0; } 6% { transform: scale(1.4); opacity: 1; } 30%, 100% { transform: scale(1); opacity: .55; } }
+@keyframes hmWLabel { from { opacity: 0; } to { opacity: 1; } }
+.hm-wlist { margin-top: 36px; border-top: 1px solid rgba(255,255,255,.14); }
+.hm-wlist summary { display: inline-flex; align-items: center; gap: 8px; padding: 18px 0 4px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; list-style: none; }
+.hm-wlist summary::-webkit-details-marker { display: none; }
+.hm-wlist summary::after { content: '+'; font-size: 18px; font-weight: 400; color: #8fd0e4; }
+.hm-wlist[open] summary::after { content: '−'; }
+.hm-wlist-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 32px; padding: 18px 0 6px; }
+.hm-wlist-region { font-size: 12px; font-weight: 800; letter-spacing: .08em; color: #8fd0e4; }
+.hm-wlist-names { margin-top: 8px; font-size: 14px; line-height: 1.8; color: rgba(255,255,255,.82); }
+.hm-wnote { margin-top: 22px; font-size: 12.5px; line-height: 1.7; color: rgba(255,255,255,.55); }
+@media (max-width: 860px) {
+  .hm-world-head { flex-direction: column; align-items: flex-start; gap: 24px; }
+  .hm-wlist-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 740px) {
+  .hm-world { padding: 72px 0 64px; }
+  .hm-wmap { margin: 32px -8px 0; }
+  .hm-wdots { stroke-width: 6.4; }
+  .hm-wcross-pop { transform: scale(1.8); }
+  .hm-wmap.hm-rv.is-in .hm-wcross-pop { animation-name: hmWPopBig; }
+  @keyframes hmWPopBig { 0% { transform: scale(0) rotate(-25deg); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1.8); opacity: 1; } }
+  .hm-wcross--home .hm-wcross-pop { transform: scale(1.3); }
+  .hm-wmap-home { font-size: 9.5px; padding: 2px 6px; transform: translate(-50%, calc(-100% - 12px)); }
+  .hm-wlist-grid { grid-template-columns: 1fr; gap: 16px; }
+}
 
 /* ═══════════════════════════
    반응형
@@ -672,6 +752,80 @@ const waffleDots = Array.from({ length: 100 }, (_, i) => {
           </span>
         </button>
       </div>
+    </div>
+  </section>
+
+  <!-- ══ 4-1. 한국에서 세계로 — 세계 Word of Life 사역지 지도. 한국에서 빛이 퍼지며 사역지마다 십자가가 뿅 하고 나타난다 ══ -->
+  <section class="hm-world" data-rv-group aria-labelledby="hmWorldTitle">
+    <div class="hm-shell">
+      <div class="hm-world-head">
+        <div>
+          <p class="hm-eyebrow" data-rv><span class="wl-ko">한국에서 세계로 · WORD OF LIFE</span><span class="wl-en">From Korea to the World</span></p>
+          <h2 class="hm-h2" id="hmWorldTitle" data-rv>
+            <span class="wl-ko">세계 곳곳의 <span class="hm-nowrap">Word of Life</span>와<br>함께 복음을 전합니다</span>
+            <span class="wl-en">Sharing the Gospel with<br><span class="hm-nowrap">Word of Life</span> around the world</span>
+          </h2>
+        </div>
+        <p class="hm-world-stat" data-rv>
+          <b>{wmCount}</b>
+          <span><span class="wl-ko">개 나라와 지역의<br>Word of Life 사역지</span><span class="wl-en">countries and territories<br>with Word of Life ministry</span></span>
+        </p>
+      </div>
+
+      <div class="hm-wmap" data-rv>
+        <svg class="hm-wmap-svg" viewBox={`0 0 ${WM_W} ${WM_H}`} role="img" aria-label="세계 Word of Life 사역지 지도">
+          <defs>
+            <radialGradient id="hmWaveGrad">
+              <stop offset="0" stop-color="#fff" stop-opacity="0" />
+              <stop offset=".82" stop-color="#fff" stop-opacity="0" />
+              <stop offset=".95" stop-color="#fff" stop-opacity="1" />
+              <stop offset="1" stop-color="#fff" stop-opacity="0" />
+            </radialGradient>
+            <radialGradient id="hmCrossGlow">
+              <stop offset="0" stop-color="#f6dfa8" stop-opacity=".6" />
+              <stop offset="1" stop-color="#e9c27a" stop-opacity="0" />
+            </radialGradient>
+            <mask id="hmWaveMask" maskUnits="userSpaceOnUse" x="0" y="0" width={WM_W} height={WM_H}>
+              <circle class="hm-wave" cx={wmKx.toFixed(1)} cy={wmKy.toFixed(1)} r="1300" fill="url(#hmWaveGrad)" />
+            </mask>
+          </defs>
+          <path class="hm-wdots" d={wmDotsPath} />
+          <path class="hm-wdots hm-wdots--gold" d={wmDotsPath} mask="url(#hmWaveMask)" />
+          {wmFields.map((f) => (
+            <g class="hm-wcross" transform={`translate(${f.x.toFixed(1)} ${f.y.toFixed(1)})`} style={`--cd:${f.delay}s`}>
+              <title>{f.ko} · {f.en}</title>
+              <circle class="hm-wcross-glow" r="16" fill="url(#hmCrossGlow)" />
+              <g class="hm-wcross-pop"><g class="hm-wcross-bump"><path class="hm-wcross-mark" d="M0 -7V7M-4.5 -2.5H4.5" /></g></g>
+            </g>
+          ))}
+          <g class="hm-wcross hm-wcross--home" transform={`translate(${wmKx.toFixed(1)} ${wmKy.toFixed(1)})`} style="--cd:.3s">
+            <title>{KOREA.ko} · WOLKO</title>
+            <circle class="hm-wcross-glow" r="30" fill="url(#hmCrossGlow)" />
+            <g class="hm-wcross-pop"><g class="hm-wcross-bump"><path class="hm-wcross-mark" d="M0 -12V12M-7.5 -4.5H7.5" /></g></g>
+          </g>
+        </svg>
+        <span class="hm-wmap-home" style={`left:${(wmKx / WM_W * 100).toFixed(2)}%;top:${(wmKy / WM_H * 100).toFixed(2)}%`}>WOLKO</span>
+      </div>
+
+      <details class="hm-wlist" data-rv>
+        <summary><span class="wl-ko">사역지 전체 보기</span><span class="wl-en">See all ministry locations</span></summary>
+        <div class="hm-wlist-grid">
+          <div class="hm-wlist-col">
+            <p class="hm-wlist-region"><span class="wl-ko">우리</span><span class="wl-en">Home</span></p>
+            <p class="hm-wlist-names"><span class="wl-ko">{KOREA.ko} (월코)</span><span class="wl-en">{KOREA.en} (WOLKO)</span></p>
+          </div>
+          {wmRegions.map((r) => (
+            <div class="hm-wlist-col">
+              <p class="hm-wlist-region"><span class="wl-ko">{r.ko}</span><span class="wl-en">{r.en}</span></p>
+              <p class="hm-wlist-names"><span class="wl-ko">{r.items.map((f) => f.ko).join(' · ')}</span><span class="wl-en">{r.items.map((f) => f.en).join(' · ')}</span></p>
+            </div>
+          ))}
+        </div>
+      </details>
+      <p class="hm-wnote" data-rv>
+        <span class="wl-ko">Word of Life 선교 사이트에 공개된 사역지를 기준으로 표시했습니다. 현지 사역자의 안전을 위해 일부 지역은 지도에 넣지 않았습니다.</span>
+        <span class="wl-en">Based on the ministry locations published by Word of Life Missions. Some locations are left off the map for the safety of those serving there.</span>
+      </p>
     </div>
   </section>
 
