@@ -1231,3 +1231,9 @@ body.hub-modal-open { overflow: hidden; }
 /* 흐르는 도시 · 길: 부드럽게(소수 단위 이동) — 정수 픽셀 단위로 끊기지 않게 */
 .hk-far, .hk-near, .hk-dash, .hk-pan, .hk-toss, .hk-bob { will-change: transform; }
 .hk-scene svg { shape-rendering: geometricPrecision; }
+
+/* 태블릿처럼 카드가 넓으면 그림 칸도 폭에 맞춰 키운다(최대 150px). 그림은 높이에 맞춰 가운데 두고 양옆은 이어지는 벽 · 하늘 · 길로 채운다
+   — 예전처럼 넓은 칸에 맞춰 크게 확대하느라 위쪽(냄비 · 차 지붕)이 잘려 납작해 보이지 않게. 아래 여백은 그림 칸 높이 + 28px */
+:root:root .hub-dcard.hub-dcard-kitchen, :root:root .hub-dcard.hub-dcard-car { container-type: inline-size; }
+.hk-scene { height: clamp(108px, calc(37.33cqw - 9px), 150px); }
+:root:root .hub-dcard.hub-dcard-kitchen, :root:root .hub-dcard.hub-dcard-car { padding-bottom: clamp(136px, calc(37.33% + 2px), 178px) !important; }
