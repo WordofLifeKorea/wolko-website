@@ -13,20 +13,22 @@
       asstModeHelp: '💡 도움말', asstModeFind: '🔎 찾기', asstModeDo: '✍ 부탁', asstPhFind: '예: 보험 가입은 누가 맡았어요?', asstPhDo: '예: 6월 20일까지 버스 예약 업무 추가해줘', asstSources: '출처', asstNoFind: '포털에서 관련 자료를 찾지 못했어요. 다른 말로 물어보거나 위쪽 검색창을 써 보세요.',
       asstProp: '이렇게 추가할까요?', asstConfirm: '확인하고 추가', asstCancel: '취소', asstAdded: '추가했어요! 🎉', asstCanceled: '취소했어요. 아무것도 바뀌지 않았어요.', asstNoProp: '업무나 일정을 추가해 달라는 부탁으로 이해하지 못했어요. 예: 「내일까지 보험 가입 업무 추가해줘」', asstNoPerm: '이 계정에는 업무·일정을 만들 권한이 없어요.', asstKTask: '업무', asstKEvent: '일정', asstFDue: '기한', asstFDate: '날짜', asstFPlace: '장소', asstFOwner: '담당', asstFCamp: '캠프', asstHelpNote: '찾기·부탁은 포털 자료를 AI 에게 보내 답을 만들어요(볼 수 있는 자료만, 금액·연락처 전화는 제외).',
       asstMin: '잠깐 내려놓기', asstExpand: '다시 펼치기', asstPendingBar: '확인을 기다리는 부탁이 있어요', asstQHint: '빠진 내용이 있어요. 골라 주셔도 되고, 건너뛰어도 돼요.', asstQOwner: '담당자는 누구로 할까요?', asstQCamp: '어느 캠프와 관련된 업무인가요?', asstMeOwner: function (n) { return '나(' + n + ')로 할게요'; }, asstRec: '추천', asstUnset: '미정으로 둘게요', asstNoCamp: '캠프와 관련 없어요', asstOtherCamp: '다른 캠프 고르기…', asstSkip: '건너뛰고 간단히 추가', asstQEvent: '어느 캠프와 관련된 일정인가요?',
-      asstOther: '＋ 다른 이름 쓰기', asstOtherPh: '이름을 적어 주세요', asstOtherAdd: '넣기', asstConfirmEdit: '확인하고 바꾸기', asstConfirmDel: '확인하고 지우기', asstEdited: '바꿨어요! ✅', asstDeleted: '지웠어요. 휴지통에서 되살릴 수 있어요.', asstKEditTask: '바꿀 업무', asstKEditEvent: '바꿀 일정', asstKDelTask: '지울 업무', asstKDelEvent: '지울 일정', asstFTitle: '이름', asstFEndDate: '끝나는 날', asstFStart: '시작 시간', asstFEnd: '끝 시간', asstFNone: '없음', asstTrashNote: '지워도 휴지통에서 되살릴 수 있어요.' },
+      asstOther: '＋ 다른 이름 쓰기', asstOtherPh: '이름을 적어 주세요', asstOtherAdd: '넣기', asstConfirmEdit: '확인하고 바꾸기', asstConfirmDel: '확인하고 지우기', asstEdited: '바꿨어요! ✅', asstDeleted: '지웠어요. 휴지통에서 되살릴 수 있어요.', asstKEditTask: '바꿀 업무', asstKEditEvent: '바꿀 일정', asstKDelTask: '지울 업무', asstKDelEvent: '지울 일정', asstFTitle: '이름', asstFEndDate: '끝나는 날', asstFStart: '시작 시간', asstFEnd: '끝 시간', asstFNone: '없음', asstTrashNote: '지워도 휴지통에서 되살릴 수 있어요.',
+      asstModeTr: '🌐 번역', asstPhTr: '번역할 글을 붙여 넣으세요', asstCopy: '복사', asstCopied: '복사했어요', asstTrKoEn: '한국어 → 영어', asstTrEnKo: '영어 → 한국어', asstTrNote: '한국어 글은 영어로, 영어 글은 한국어로 바꿔요. 보내기 전에 한 번 읽어 보세요.', asstGuestNote: '캠프팀 명단 밖의 월코 팀원은 「도움말」과 「찾기」를 하루 20번까지 쓸 수 있어요.', asstDraftTitle: '쓰던 글이 남아 있어요' },
     en: { asstName: 'Lumi', asstHello: "Hi, I'm Lumi! I'll guide you around the Camp Team portal. Pick a question, or just ask me.", asstRoot: '↩ Back to the start', asstMore: 'Anything else?', asstPh: 'Ask anything', asstSend: 'Send', asstNew: 'New chat', asstClose: 'Close',
       asstThinking: 'Thinking…', asstShow: '👉 Show me on screen', asstNext: 'Next', asstStop: 'Stop', asstDone: 'All done! Ask me if you have more questions.', asstStopped: 'Guide stopped. Tap it again any time.',
       asstMenu: 'First click this menu button to open the menu', asstMissing: "I can't see this button on screen. Your account may not have permission, or the page is still loading. Follow the description above, or click Next.",
       asstStarting: "I'll show you on screen.", asstFail: "I couldn't answer right now. Please try again in a moment.", asstOff: 'The AI helper is not turned on yet. The common questions above still work.', asstStep: function (i, n) { return i + ' / ' + n; },
-      asstModeHelp: '💡 Help', asstModeFind: '🔎 Find', asstModeDo: '✍ Ask me to', asstPhFind: 'e.g. Who took care of insurance?', asstPhDo: 'e.g. Add a task: book the bus by June 20', asstSources: 'Sources', asstNoFind: 'I could not find anything about that in the portal. Try other words or the search box at the top.',
+      asstModeHelp: '💡 Help', asstModeFind: '🔎 Find', asstModeDo: '✍ Ask me to', asstPhFind: 'e.g. Who handled insurance?', asstPhDo: 'e.g. Add a task for June 20', asstSources: 'Sources', asstNoFind: 'I could not find anything about that in the portal. Try other words or the search box at the top.',
       asstProp: 'Add it like this?', asstConfirm: 'Confirm and add', asstCancel: 'Cancel', asstAdded: 'Added! 🎉', asstCanceled: 'Canceled. Nothing was changed.', asstNoProp: 'I could not understand that as a request to add a task or event. Try: "Add a task: insurance by tomorrow"', asstNoPerm: 'This account cannot create tasks or events.', asstKTask: 'Task', asstKEvent: 'Event', asstFDue: 'Due', asstFDate: 'Date', asstFPlace: 'Place', asstFOwner: 'Owner', asstFCamp: 'Camp', asstHelpNote: 'Find and Ask-me-to send portal data to the AI to write an answer (only what you can see; money and contact phone numbers are excluded).',
       asstMin: 'Set aside for now', asstExpand: 'Open again', asstPendingBar: 'A request is waiting for your OK', asstQHint: 'Some details are missing. Pick one, or skip.', asstQOwner: 'Who should own it?', asstQCamp: 'Which camp is this task for?', asstMeOwner: function (n) { return 'Me (' + n + ')'; }, asstRec: 'suggested', asstUnset: 'Leave unassigned', asstNoCamp: 'Not tied to a camp', asstOtherCamp: 'Pick another camp…', asstSkip: 'Skip and just add it', asstQEvent: 'Which camp is this event for?',
-      asstOther: '+ Type another name', asstOtherPh: 'Type a name', asstOtherAdd: 'Add', asstConfirmEdit: 'Confirm and change', asstConfirmDel: 'Confirm and delete', asstEdited: 'Changed! ✅', asstDeleted: 'Deleted. You can restore it from Trash.', asstKEditTask: 'Task to change', asstKEditEvent: 'Event to change', asstKDelTask: 'Task to delete', asstKDelEvent: 'Event to delete', asstFTitle: 'Title', asstFEndDate: 'End date', asstFStart: 'Start time', asstFEnd: 'End time', asstFNone: 'none', asstTrashNote: 'Deleted items can be restored from Trash.' }
+      asstOther: '+ Type another name', asstOtherPh: 'Type a name', asstOtherAdd: 'Add', asstConfirmEdit: 'Confirm and change', asstConfirmDel: 'Confirm and delete', asstEdited: 'Changed! ✅', asstDeleted: 'Deleted. You can restore it from Trash.', asstKEditTask: 'Task to change', asstKEditEvent: 'Event to change', asstKDelTask: 'Task to delete', asstKDelEvent: 'Event to delete', asstFTitle: 'Title', asstFEndDate: 'End date', asstFStart: 'Start time', asstFEnd: 'End time', asstFNone: 'none', asstTrashNote: 'Deleted items can be restored from Trash.',
+      asstModeTr: '🌐 Translate', asstPhTr: 'Paste text to translate', asstCopy: 'Copy', asstCopied: 'Copied', asstTrKoEn: 'Korean → English', asstTrEnKo: 'English → Korean', asstTrNote: 'Korean text becomes English and English becomes Korean. Read it once before you send it.', asstGuestNote: 'WOLKO members outside the camp team can use Help and Find up to 20 times a day.', asstDraftTitle: 'You have unsent text' }
   });
   var KEY = 'ct-asst', esc = CT.esc, tr = function (o) { return o ? (o[CT.lang()] || o.ko || '') : ''; };
   // (20분 넘게 멈춘 안내는 이어가지 않는다 — 나중에 다른 화면에서 불쑥 나오지 않게)
-  var st = (function () { try { var v = JSON.parse(sessionStorage.getItem(KEY) || 'null'); if (v && typeof v === 'object') return { open: !!v.open, min: !!v.min, msgs: Array.isArray(v.msgs) ? v.msgs.slice(-24) : [], guide: v.guide && G.guides[v.guide.id] && Date.now() - (v.guide.at || 0) < 20 * 60000 ? v.guide : null, mode: ['find', 'do'].indexOf(v.mode) >= 0 ? v.mode : 'help' }; } catch (e) {} return { open: false, min: false, msgs: [], guide: null, mode: 'help' }; })();
-  var cfg = { member: false, configured: false }, busy = false;
+  var st = (function () { try { var v = JSON.parse(sessionStorage.getItem(KEY) || 'null'); if (v && typeof v === 'object') return { open: !!v.open, min: false, msgs: Array.isArray(v.msgs) ? v.msgs.slice(-24) : [], guide: v.guide && G.guides[v.guide.id] && Date.now() - (v.guide.at || 0) < 20 * 60000 ? v.guide : null, mode: ['find', 'do', 'tr'].indexOf(v.mode) >= 0 ? v.mode : 'help' }; } catch (e) {} return { open: false, min: false, msgs: [], guide: null, mode: 'help' }; })();
+  var cfg = { member: false, guest: false, configured: false }, busy = false;
   var memTimer = 0, memReady = false;
   function save() { try { sessionStorage.setItem(KEY, JSON.stringify({ open: st.open, min: st.min, msgs: st.msgs.slice(-24), guide: st.guide, mode: st.mode })); } catch (e) {} syncMem(); }
   /** 계정별 대화 기억: 바뀐 대화를 잠시 뒤 서버에 저장한다(내 계정에만 저장). 아직 확인 안 한 부탁 카드는 「취소」로 바꿔 저장해서 다음 날 불쑥 되살아나지 않게 한다 */
@@ -51,14 +53,19 @@
   var mood = 'idle', moodTimer = 0, blinkTimer = 0, reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   var root = document.createElement('div'); root.id = 'ctAsst'; root.hidden = true;
   root.innerHTML = '<button type="button" class="asst-fab" id="asstFab" aria-expanded="false"><span class="asst-fab-lb" id="asstLb"></span>' + lumiImg('idle', nightMode(), 'fab-img') + '</button>' +
-    '<section class="asst-panel" id="asstPanel" role="dialog" aria-modal="false" hidden><header><span class="asst-av">' + lumiImg('portrait', 'dark', 'av-img') + '</span><b id="asstTitle"></b><span class="sp"></span><button type="button" id="asstNew" class="asst-hb"></button><button type="button" id="asstMin" class="asst-hb asst-min" aria-label="minimize"><span aria-hidden="true">―</span></button><button type="button" id="asstX" class="asst-hb" aria-label="close">✕</button></header><div class="asst-modes" id="asstModes"></div>' +
+    '<section class="asst-panel" id="asstPanel" role="dialog" aria-modal="false" hidden><header><span class="asst-av">' + lumiImg('portrait', 'dark', 'av-img') + '</span><b id="asstTitle"></b><span class="sp"></span><button type="button" id="asstNew" class="asst-hb"></button><button type="button" id="asstX" class="asst-hb" aria-label="close">✕</button></header><span class="asst-grip" id="asstGrip" aria-hidden="true"></span><div class="asst-modes" id="asstModes"></div>' +
     '<div class="asst-body" id="asstBody"></div><form class="asst-form" id="asstForm"><textarea id="asstIn" rows="1" maxlength="300" autocomplete="off"></textarea><button type="submit" id="asstSend"></button></form></section>';
   document.body.appendChild(root);
   var fab = $('#asstFab'), panel = $('#asstPanel'), body = $('#asstBody'), input = $('#asstIn');
 
-  function paintStatic() { $('#asstLb').textContent = CT.t('asstName'); fab.setAttribute('aria-label', CT.t('asstName')); fab.title = CT.t('asstName'); $('#asstTitle').textContent = CT.t('asstName'); $('#asstNew').textContent = CT.t('asstNew'); $('#asstX').title = CT.t('asstClose'); $('#asstMin').title = CT.t(st.min ? 'asstExpand' : 'asstMin'); $('#asstMin').firstChild.textContent = st.min ? '▢' : '―'; input.placeholder = CT.t(st.mode === 'find' ? 'asstPhFind' : st.mode === 'do' ? 'asstPhDo' : 'asstPh'); $('#asstSend').textContent = CT.t('asstSend'); $('#asstModes').innerHTML = [['help', 'asstModeHelp'], ['find', 'asstModeFind'], ['do', 'asstModeDo']].map(function (m) { return '<button type="button" class="asst-mode' + (st.mode === m[0] ? ' on' : '') + '" data-amode="' + m[0] + '">' + esc(CT.t(m[1])) + '</button>'; }).join(''); }
+  function modesList() { var l = [['help', 'asstModeHelp'], ['find', 'asstModeFind']]; if (!cfg.guest) l.push(['do', 'asstModeDo'], ['tr', 'asstModeTr']); return l; }
+  function paintStatic() {
+    if (cfg.guest && (st.mode === 'do' || st.mode === 'tr')) st.mode = 'help';
+    $('#asstLb').textContent = CT.t('asstName'); fab.setAttribute('aria-label', CT.t('asstName')); fab.title = CT.t('asstName'); $('#asstTitle').textContent = CT.t('asstName'); $('#asstNew').textContent = CT.t('asstNew'); $('#asstX').title = CT.t('asstClose'); input.placeholder = CT.t(st.mode === 'find' ? 'asstPhFind' : st.mode === 'do' ? 'asstPhDo' : st.mode === 'tr' ? 'asstPhTr' : 'asstPh'); $('#asstSend').textContent = CT.t('asstSend');
+    $('#asstModes').innerHTML = modesList().map(function (m) { return '<button type="button" class="asst-mode' + (st.mode === m[0] ? ' on' : '') + '" data-amode="' + m[0] + '">' + esc(CT.t(m[1])) + '</button>'; }).join('');
+  }
   function bubble(m, last) {
-    var txt = '<div class="asst-b">' + esc(m.t).replace(/\n/g, '<br>') + srcHtml(m) + propHtml(m) + (m.g && G.guides[m.g] ? '<button type="button" class="asst-go" data-g="' + esc(m.g) + '">' + esc(CT.t('asstShow')) + '</button>' : '') + '</div>';
+    var txt = '<div class="asst-b">' + (m.cp && m.tag ? '<small class="asst-trtag">' + esc(CT.t(m.tag === 'en' ? 'asstTrKoEn' : 'asstTrEnKo')) + '</small><br>' : '') + (m.cp ? '<span class="asst-trtext">' : '') + esc(m.t).replace(/\n/g, '<br>') + (m.cp ? '</span>' : '') + srcHtml(m) + propHtml(m) + (m.g && G.guides[m.g] ? '<button type="button" class="asst-go" data-g="' + esc(m.g) + '">' + esc(CT.t('asstShow')) + '</button>' : '') + (m.cp ? '<button type="button" class="asst-go asst-copy" data-copy="1">' + esc(CT.t('asstCopy')) + '</button>' : '') + '</div>';
     if (m.r === 'u') return '<div class="asst-msg u">' + txt + '</div>';
     return '<div class="asst-msg a"><span class="asst-mav">' + lumiImg(m.s || 'explain', 'light', 'mav-img') + '</span>' + txt + '</div>' + (last && m.o && m.o.length ? chips(m.o) : '');
   }
@@ -104,10 +111,10 @@
   /** 고정 질문 칩들(루미가 보여 주는 다음 질문) — 맨 마지막 루미 말풍선 아래에만 보인다 */
   function chips(ids) { return '<div class="asst-st">' + ids.filter(function (id) { return id === 'root' || F.nodes[id]; }).map(function (id) { return id === 'root' ? '<button type="button" class="asst-chip home" data-faq="root">' + esc(CT.t('asstRoot')) + '</button>' : '<button type="button" class="asst-chip" data-faq="' + id + '">' + esc(tr(F.nodes[id].q)) + '</button>'; }).join('') + '</div>'; }
   function render() {
-    paintStatic(); panel.hidden = !st.open; panel.classList.toggle('min', !!st.min); if (st.min && st.msgs.some(function (m) { return m.p && !m.pd; })) $('#asstTitle').textContent = CT.t('asstName') + ' · ' + CT.t('asstPendingBar'); fab.setAttribute('aria-expanded', st.open ? 'true' : 'false'); root.classList.toggle('guiding', !!st.guide);
+    paintStatic(); panel.hidden = !st.open; fab.classList.toggle('has-pending', !st.open && !!pending()); lockScroll(st.open); fab.setAttribute('aria-expanded', st.open ? 'true' : 'false'); root.classList.toggle('guiding', !!st.guide);
     if (!st.msgs.length) greet();
     var lastA = -1; st.msgs.forEach(function (m, i) { if (m.r === 'a') lastA = i; });
-    body.innerHTML = st.msgs.map(function (m, i) { return bubble(m, i === lastA && !busy); }).join('') + (busy ? '<div class="asst-msg a asst-typing"><span class="asst-mav">' + lumiImg('talk', 'light', 'mav-img') + '</span><div class="asst-b">' + esc(CT.t('asstThinking')) + '</div></div>' : '') + (cfg.configured ? '' : '<div class="asst-note">' + esc(CT.t('asstOff')) + '</div>');
+    body.innerHTML = st.msgs.map(function (m, i) { return bubble(m, i === lastA && !busy); }).join('') + (busy ? '<div class="asst-msg a asst-typing"><span class="asst-mav">' + lumiImg('talk', 'light', 'mav-img') + '</span><div class="asst-b">' + esc(CT.t('asstThinking')) + '</div></div>' : '') + (cfg.configured ? '' : '<div class="asst-note">' + esc(CT.t('asstOff')) + '</div>') + (cfg.guest ? '<div class="asst-note">' + esc(CT.t('asstGuestNote')) + '</div>' : '') + (st.mode === 'tr' ? '<div class="asst-note">' + esc(CT.t('asstTrNote')) + '</div>' : '');
     $('#asstForm').classList.toggle('off', !cfg.configured); input.disabled = !cfg.configured || busy;
     body.scrollTop = body.scrollHeight;
   }
@@ -127,11 +134,16 @@
   function baseMood() { return !cfg.configured ? 'sleep' : st.guide ? 'search' : busy ? 'talk' : 'idle'; }
   function paintMood() { var im = $('.fab-img', root); if (!im) return; var want = lumiSrc(mood, nightMode()); if (im.getAttribute('src') !== want) { im.dataset.lumi = mood; im.dataset.mode = nightMode(); im.src = want; } root.dataset.mode = nightMode(); }
   function blinkLoop() { clearTimeout(blinkTimer); blinkTimer = setTimeout(function () { if (!reduce && mood === 'idle') { var im = $('.fab-img', root); if (im) { im.src = lumiSrc('blink', nightMode()); setTimeout(function () { if (mood === 'idle') im.src = lumiSrc('idle', nightMode()); }, 130); } } blinkLoop(); }, 3000 + Math.random() * 3000); }
-  function setOpen(v) { st.open = !!v; if (!st.open) st.min = false; save(); render(); if (st.open) setMood('hello', 2200); else setMood(baseMood()); if (st.open && cfg.configured) setTimeout(function () { input.focus(); }, 50); }
+  function setOpen(v) { st.open = !!v; save(); render(); if (st.open) setMood('hello', 2200); else setMood(baseMood()); if (st.open && cfg.configured) setTimeout(function () { input.focus(); }, 50); }
 
   /* ---------- 질문하기 (AI) ---------- */
   async function ask(q) {
     q = String(q || '').trim(); if (!q || busy) return; add('u', q); busy = true; setMood('talk'); render();
+    if (st.mode === 'tr') {
+      try { var tr = await CT.api('/api/campteam/translate', { method: 'POST', body: { text: q, kind: 'general' } }); busy = false; add('a', tr.text, '', ['root'], 'found', { cp: 1, tag: tr.to }); setMood('found', 2800); }
+      catch (e) { busy = false; add('a', (e && e.message) || CT.t('asstFail'), '', ['root'], 'error'); setMood('error', 2800); }
+      busy = false; render(); return;
+    }
     if (st.mode === 'find' || st.mode === 'do') {
       try {
         if (st.mode === 'find') { var f = await CT.api('/api/campteam/ask', { method: 'POST', body: { question: q, lang: CT.lang() } }); busy = false; if (!f.found) add('a', CT.t('asstNoFind'), '', ['root'], 'unknown'), setMood('unknown', 2800); else add('a', f.answer, '', ['root'], 'found', { src: f.sources }), setMood('found', 2800); }
@@ -234,6 +246,28 @@
     arrow.style.left = Math.min(Math.max(14, r.left + r.width / 2 - left - 7), tw - 28) + 'px'; arrow.className = 'asst-arrow ' + (below ? 'up' : 'down');
   }
 
+  /* ---------- 폰: 루미를 열어 두면 뒷화면은 움직이지 않는다 (iPhone Safari 는 overflow 만으로는 뒷화면이 같이 밀려서 화면을 고정한다) ---------- */
+  var narrow = window.matchMedia ? matchMedia('(max-width:600px)') : { matches: false }, lockedY = null;
+  function lockScroll(on) {
+    var want = !!on && narrow.matches;
+    if (want && lockedY === null) { lockedY = window.pageYOffset || 0; document.documentElement.classList.add('asst-lock'); document.body.style.position = 'fixed'; document.body.style.top = -lockedY + 'px'; document.body.style.left = '0'; document.body.style.right = '0'; }
+    else if (!want && lockedY !== null) { var y = lockedY; lockedY = null; document.documentElement.classList.remove('asst-lock'); document.body.style.position = ''; document.body.style.top = ''; document.body.style.left = ''; document.body.style.right = ''; window.scrollTo(0, y); }
+  }
+  /* ---------- 컴퓨터: 왼쪽 위 모서리를 끌어서 크기를 조절한다(위·왼쪽으로 커짐, 한도가 있고 이 브라우저에 기억) ---------- */
+  var SZ = 'ct-asst-size', LIM = { minW: 340, maxW: 640, minH: 420, maxH: 820 };
+  function clampSize(w, h) { return { w: Math.round(Math.min(Math.max(w, LIM.minW), Math.min(LIM.maxW, innerWidth - 24))), h: Math.round(Math.min(Math.max(h, LIM.minH), Math.min(LIM.maxH, innerHeight - 120))) }; }
+  function applySize(sz) { if (narrow.matches) { panel.style.width = panel.style.height = ''; return; } if (!sz) { panel.style.width = panel.style.height = ''; return; } var c = clampSize(sz.w, sz.h); panel.style.width = c.w + 'px'; panel.style.height = c.h + 'px'; }
+  try { applySize(JSON.parse(localStorage.getItem(SZ) || 'null')); } catch (e) {}
+  window.addEventListener('resize', function () { try { applySize(JSON.parse(localStorage.getItem(SZ) || 'null')); } catch (e) {} });
+  (function () {
+    var grip = $('#asstGrip'), drag = null;
+    grip.addEventListener('pointerdown', function (e) { if (narrow.matches) return; e.preventDefault(); var r = panel.getBoundingClientRect(); drag = { x: e.clientX, y: e.clientY, w: r.width, h: r.height }; grip.setPointerCapture(e.pointerId); panel.classList.add('sizing'); });
+    grip.addEventListener('pointermove', function (e) { if (!drag) return; var c = clampSize(drag.w + (drag.x - e.clientX), drag.h + (drag.y - e.clientY)); panel.style.width = c.w + 'px'; panel.style.height = c.h + 'px'; });
+    function end() { if (!drag) return; drag = null; panel.classList.remove('sizing'); var r = panel.getBoundingClientRect(); try { localStorage.setItem(SZ, JSON.stringify({ w: Math.round(r.width), h: Math.round(r.height) })); } catch (e) {} }
+    grip.addEventListener('pointerup', end); grip.addEventListener('pointercancel', end);
+    grip.addEventListener('dblclick', function () { try { localStorage.removeItem(SZ); } catch (e) {} applySize(null); });
+  })();
+
   /* ---------- 이벤트 ---------- */
   $('#asstModes').addEventListener('click', function (e) { var b = e.target.closest('[data-amode]'); if (!b || busy) return; st.mode = b.dataset.amode; save(); paintStatic(); input.focus(); });
   async function confirmProposal(ok, skip) {
@@ -251,16 +285,18 @@
       m.pd = 'ok'; save(); setMood('success', 3000); render();
     } catch (e) { add('a', (e && e.message) || CT.t('asstFail'), '', ['root'], 'error'); render(); }
   }
-  fab.onclick = function () { if (st.open && st.min) { st.min = false; save(); render(); setTimeout(function () { input.focus(); }, 50); } else setOpen(!st.open); };
-  $('#asstMin').onclick = function () { st.min = !st.min; save(); render(); if (!st.min) setTimeout(function () { input.focus(); }, 50); };
+  fab.onclick = function () { setOpen(!st.open); };
   $('#asstX').onclick = function () { setOpen(false); };
   $('#asstNew').onclick = function () { st.msgs = []; clearTimeout(memTimer); if (cfg.member) CT.api('/api/campteam/lumi-memory', { method: 'DELETE' }).catch(function () {}); save(); render(); setMood('hello', 2200); };
   input.addEventListener('focus', function () { if (!busy) setMood('listen'); }); input.addEventListener('blur', function () { if (mood === 'listen') setMood(baseMood()); });
   /* 입력칸: 글이 길어지면 3줄까지 아래로 늘어나고, 그 이상은 칸 안에서 위아래로 스크롤된다 (Enter 로 보내고, Shift+Enter 로 줄바꿈) */
-  function fit() { input.style.height = 'auto'; var max = 3 * 20 + 18, h = Math.min(input.scrollHeight, max); input.style.height = h + 'px'; input.style.overflowY = input.scrollHeight > max ? 'auto' : 'hidden'; }
-  input.addEventListener('input', fit);
+  function fit() { input.style.height = 'auto'; var lh = parseFloat(getComputedStyle(input).lineHeight) || 20, max = Math.round(3 * lh + 18), h = Math.min(input.scrollHeight, max); input.style.height = h + 'px'; input.style.overflowY = input.scrollHeight > max ? 'auto' : 'hidden'; }
+  /* 쓰던 글은 이 탭에 기억해 두었다가 루미를 다시 열면(다른 화면으로 가도) 그대로 보여 준다 */
+  var DKEY = 'ct-asst-draft'; try { input.value = sessionStorage.getItem(DKEY) || ''; } catch (e) {}
+  function saveDraft() { try { input.value ? sessionStorage.setItem(DKEY, input.value) : sessionStorage.removeItem(DKEY); } catch (e) {} }
+  input.addEventListener('input', function () { fit(); saveDraft(); });
   input.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); $('#asstForm').requestSubmit ? $('#asstForm').requestSubmit() : $('#asstForm').dispatchEvent(new Event('submit', { cancelable: true })); } });
-  $('#asstForm').onsubmit = function (e) { e.preventDefault(); var q = input.value; input.value = ''; fit(); ask(q); };
+  $('#asstForm').onsubmit = function (e) { e.preventDefault(); var q = input.value; input.value = ''; saveDraft(); fit(); ask(q); };
   function pending() { for (var i = st.msgs.length - 1; i >= 0; i--) if (st.msgs[i].p && !st.msgs[i].pd) return st.msgs[i]; return null; }
   body.addEventListener('keydown', function (e) { if (e.target.id === 'asstOther' && e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); var b = body.querySelector('[data-qadd]'); if (b) b.click(); } });
   body.addEventListener('change', function (e) { var sl = e.target.closest('[data-qsel]'), m = pending(); if (!sl || !m) return; m.sel = m.sel || {}; if (sl.value) m.sel.camp = sl.value; else delete m.sel.camp; save(); render(); });
@@ -272,6 +308,7 @@
     if (pm) { pm.sel = pm.sel || {}; if (qo) pm.sel.owner = qo.dataset.qo; else pm.sel.camp = qc.dataset.qc; save(); render(); return; }
     var pc = e.target.closest('[data-pc]'), ps = e.target.closest('[data-ps]'), px = e.target.closest('[data-px]');
     if (pc || ps || px) { confirmProposal(!!(pc || ps), !!ps); return; }
+    var cpb = e.target.closest('[data-copy]'); if (cpb) { var t = cpb.closest('.asst-b').querySelector('.asst-trtext').innerText; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { cpb.textContent = CT.t('asstCopied'); setTimeout(function () { cpb.textContent = CT.t('asstCopy'); }, 1200); }, function () {}); return; }
     var q = e.target.closest('[data-faq]'); if (q) { pickFaq(q.dataset.faq); return; }
     var b = e.target.closest('[data-g]'); if (!b) return; var id = b.dataset.g; if (!G.guides[id]) return;
     startGuide(id, 0);
@@ -281,12 +318,12 @@
   /* ---------- 시작: 팀원이면 캐릭터를 보이고, 안내 중이던 것이 있으면 이어서 ---------- */
   render();
   CT.api('/api/campteam/assistant').then(function (r) {
-    cfg = { member: !!r.member, configured: !!r.configured }; if (!cfg.member) return;
+    cfg = { member: !!r.member, guest: !!r.guest, configured: !!r.configured }; if (!cfg.member && !cfg.guest) return;
     // 이 탭에 대화가 없으면(새 탭·다른 기기·다음 날) 서버에 기억해 둔 내 대화를 불러온다
-    CT.api('/api/campteam/lumi-memory').then(function (mm) {
+    if (cfg.member) CT.api('/api/campteam/lumi-memory').then(function (mm) {
       if (mm && mm.msgs && mm.msgs.length && !st.msgs.some(function (x) { return x.r === 'u'; })) { st.msgs = mm.msgs; save(); render(); }
     }).catch(function () {}).then(function () { memReady = true; });
-    root.hidden = false; setMood(baseMood()); render(); blinkLoop(); setInterval(paintMood, 60000); document.addEventListener('visibilitychange', function () { if (!document.hidden) paintMood(); });
+    root.hidden = false; fit(); setMood(baseMood()); render(); blinkLoop(); setInterval(paintMood, 60000); document.addEventListener('visibilitychange', function () { if (!document.hidden) paintMood(); });
     if (st.guide) { since = Date.now(); begin(); }
   }).catch(function () {});
 })();

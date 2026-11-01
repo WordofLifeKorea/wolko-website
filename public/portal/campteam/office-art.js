@@ -49,9 +49,9 @@
       + '<g class="ofc-hands"><circle class="ofc-hl" cx="38" cy="69.500" r="4" fill="' + av.skin + '"/><circle class="ofc-hr" cx="50" cy="69.500" r="4" fill="' + av.skin + '"/></g>'
       + '<rect x="66" y="62" width="9" height="10" rx="2.500" fill="#fff"/><path d="M75 65q4 0 4 3t-4 3" stroke="#fff" stroke-width="1.600" fill="none"/><path class="ofc-steam" d="M69 60q-2-3 0-5M72 60q-2-3 0-5" stroke="#fff" stroke-width="1.200" fill="none" opacity=".7" stroke-linecap="round"/></svg>';
   }
-  function guest() {
+  function guest(label) {
     return '<svg class="ofc-svg ofc-guest-svg" viewBox="0 0 88 100" aria-hidden="true" focusable="false"><g class="ofc-gwalk"><rect x="33" y="72" width="8" height="24" rx="4" fill="#52606d"/><rect x="47" y="72" width="8" height="24" rx="4" fill="#52606d"/><rect x="31" y="94" width="12" height="5" rx="2.500" fill="#2f3d4a"/><rect x="45" y="94" width="12" height="5" rx="2.500" fill="#2f3d4a"/>'
-      + '<path d="M24 76q0-26 20-26q20 0 20 26z" fill="#7f93a8"/><rect x="18" y="56" width="9" height="22" rx="4.500" fill="#7f93a8"/><rect x="61" y="56" width="9" height="22" rx="4.500" fill="#7f93a8"/>'
+      + '<path d="M24 76q0-26 20-26q20 0 20 26z" fill="#7f93a8"/><text class="ofc-shirt-t" x="44" y="69" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">' + esc(label || 'GUEST') + '</text><rect x="18" y="56" width="9" height="22" rx="4.500" fill="#7f93a8"/><rect x="61" y="56" width="9" height="22" rx="4.500" fill="#7f93a8"/>'
       + '<g class="ofc-ghead"><circle cx="44" cy="38" r="15" fill="#eccaa8"/><path d="M29 37A15 15 0 0 1 59 37Q56 26 44 26Q32 26 29 37Z" fill="#6b7280"/><circle cx="38.500" cy="39" r="1.800" fill="#2b2118"/><circle cx="49.500" cy="39" r="1.800" fill="#2b2118"/><path d="M40 45.500q4 3 8 0" stroke="#8a3f31" stroke-width="1.500" fill="none" stroke-linecap="round"/></g></g></svg>';
   }
   // 안경을 쓰고 벗는 캐릭터(varied)는 몇 초마다 한 단계씩: 쓰고 → 벗고 → 머리 위에 → 다시 쓰고
@@ -96,9 +96,9 @@
     var who = !seated ? im('chair-empty', 'ofi-chair') : '<span class="ofi-who" style="--d:-' + d + 's">' + (varied ? frames(sprite, 'on') + frames(sprite, 'off') + frames(sprite, 'up') : frames(sprite, 'on')) + '</span>' + (enter && walkReady(sprite) ? walker(sprite) : '');
     return '<div class="ofi' + (varied ? ' ofc-varied' : '') + '" data-g="on">' + who + im('desk', 'ofi-desk') + props(seated) + '</div>';
   }
-  function guestImg(enter) {
+  function guestImg(enter, label) {
     if (!SP.urls['guest-stand']) return ''; var walk = [1, 2, 3, 4].every(function (i) { return SP.urls['guest-walk' + i]; });
-    return '<div class="ofi ofi-guest' + (enter && walk ? ' ofi-gin' : '') + '">' + (walk && enter ? '<span class="ofi-walk">' + [1, 2, 3, 4].map(function (i) { return im('guest-walk' + i, 'w' + i); }).join('') + '</span>' : '') + im('guest-stand', 'ofi-stand') + '</div>';
+    return '<div class="ofi ofi-guest' + (enter && walk ? ' ofi-gin' : '') + '">' + (walk && enter ? '<span class="ofi-walk">' + [1, 2, 3, 4].map(function (i) { return im('guest-walk' + i, 'w' + i); }).join('') + '</span>' : '') + im('guest-stand', 'ofi-stand') + '<span class="ofi-shirt">' + esc(label || 'GUEST') + '</span></div>';
   }
   function loadGuest() { return init().then(function () { var names = ['guest-stand', 'guest-walk1', 'guest-walk2', 'guest-walk3', 'guest-walk4']; if (!names.every(has)) return false; return Promise.all(names.map(fetchImg)).then(function () { return true; }); }); }
   window.CTOfficeArt = { desk: desk, guest: guest, tick: tick, esc: esc, init: init, load: load, loadWalk: loadWalk, loadGuest: loadGuest, ready: ready, walkReady: walkReady, deskImg: deskImg, guestImg: guestImg, guestReady: function () { return !!SP.urls['guest-stand']; } };

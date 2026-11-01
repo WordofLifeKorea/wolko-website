@@ -80,3 +80,18 @@
 .asst-oth{display:flex;gap:6px;align-items:center;margin-top:6px}.asst-oth input{flex:1;min-width:0;border:1px solid #bcd6e1;border-radius:9px;padding:6px 9px;font:600 13px var(--f-body,sans-serif);background:#fff}.asst-oth .asst-go{margin:0;white-space:nowrap}
 .asst-prop.del{border-left:3px solid #d9534f;padding-left:8px}.asst-go.danger{background:#d9534f;color:#fff}.asst-trash{font-size:11.5px;color:#7a5a58}
 .asst-prop b{overflow-wrap:anywhere}
+
+/* 루미 창: 하나뿐인 닫기 버튼 · 크기 조절(컴퓨터) · 폰에서 뒷화면 고정 · 단어 단위 줄바꿈 */
+.asst-grip{position:absolute;left:0;top:0;width:24px;height:24px;cursor:nwse-resize;z-index:3;touch-action:none}
+.asst-grip::after{content:'';position:absolute;left:6px;top:6px;width:9px;height:9px;border-left:2px solid rgba(255,255,255,.75);border-top:2px solid rgba(255,255,255,.75);border-radius:3px 0 0 0}
+.asst-panel.sizing{user-select:none}
+.asst-fab.has-pending::after{content:'';position:absolute;right:12px;top:10px;width:15px;height:15px;border-radius:50%;background:#f0577b;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.asst-panel,.asst-body{overscroll-behavior:contain}.asst-body{-webkit-overflow-scrolling:touch}
+html.asst-lock,html.asst-lock body{overflow:hidden;overscroll-behavior:none}
+.asst-msg .asst-b,.asst-prop,.asst-note{word-break:keep-all;overflow-wrap:break-word}
+.asst-msg .asst-b{max-width:88%}
+.asst-copy{display:inline-block;margin-top:8px}
+.asst-form textarea{max-height:92px}
+@media (max-width:900px){.asst-form textarea{font-size:16px;line-height:22px}}
+@media (max-width:600px){.asst-grip{display:none}}
+.asst-trtag{color:#5a7585;font-weight:700}

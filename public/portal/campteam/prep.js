@@ -22,8 +22,8 @@
       qHow: 'iPhone Shortcuts: new shortcut → "Dictate Text" (or "Ask for Input") → "Get Contents of URL": URL = the address above, Method = POST, Request Body = JSON with token = your key and text = the dictated text. Finish with "Show Notification" to display the message from the result. Add it to your Home Screen or say "Hey Siri, add task".', qCurl: 'Test (terminal)',
       calTitle: 'Phone calendar subscription', calBody: 'Add the address below as a "subscribed calendar" in your phone calendar app to see team events, camp dates, timelines and your task due dates (read-only). This address is your personal key — do not share it.', calCopy: 'Copy address', calRegen: 'Create a new address', calRegenConfirm: 'The old address stops working right away. Continue?', calCopied: 'Copied.', calHow: 'iPhone: Settings → Calendar → Accounts → Add Account → Other → Add Subscribed Calendar. Google Calendar: Other calendars + → From URL (on the web, not the app).' }
   });
-  CT.addDict({ ko: { pkYear: '연도', pkType: '유형', pkCamp: '캠프', pkAll: '전체', pkNone: '맞는 캠프가 없어요. 위에서 다른 연도나 유형을 눌러 보세요.', pkOther: '연도 미정' },
-    en: { pkYear: 'Year', pkType: 'Type', pkCamp: 'Camp', pkAll: 'All', pkNone: 'No camp matches. Try another year or type above.', pkOther: 'No year' } });
+  CT.addDict({ ko: { pkYear: '연도', pkType: '유형', pkCamp: '캠프', pkAll: '전체', pkNone: '맞는 캠프가 없어요. 위에서 다른 연도나 유형을 눌러 보세요.', pkOther: '연도 미정', gRun: '진행·준비', gPeople: '사람', gStart: '시작·마감', gForm: '설문·신청서' },
+    en: { pkYear: 'Year', pkType: 'Type', pkCamp: 'Camp', pkAll: 'All', pkNone: 'No camp matches. Try another year or type above.', pkOther: 'No year', gRun: 'Run & prepare', gPeople: 'People', gStart: 'Start & close', gForm: 'Survey & forms' } });
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc;
   var KINDS = ['church', 'school', 'vendor', 'speaker', 'venue', 'other'], KL = { church: 'kChurch', school: 'kSchool', vendor: 'kVendor', speaker: 'kSpeaker', venue: 'kVenue', other: 'kOther' };
   var ST = ['need', 'bought', 'ready', 'skip'], STL = { need: 'sNeed', bought: 'sBought', ready: 'sReady', skip: 'sSkip' };
@@ -166,8 +166,17 @@
   function allTabs() { return TABS.concat(Object.keys(EXT).map(function (k) { return [k, EXT[k].label]; })); }
   function needsCamp() { return S.tab === 'timeline' || S.tab === 'supplies' || !!(EXT[S.tab] && EXT[S.tab].needCamp); }
   window.CTPrep = { S: S, api: api, dialog: dialog, field: field, del: del, esc: esc, campLabel: campLabel, canW: canW, add: function (k, o) { EXT[k] = o; }, show: function () { return show(); } };
+  /* 위쪽 메뉴: 큰 분류(밑줄 탭) 안에 작은 하위 탭. 고른 것은 글씨가 굵고 진해진다. 분류에 들지 않은 탭이 생기면 「진행·준비」 끝에 붙는다 */
+  var GROUPS = [['gRun', ['timeline', 'supplies']], ['gPeople', ['contacts', 'assign']], ['gStart', ['series', 'wizard', 'close']], ['gForm', ['survey', 'forms']]];
+  function groupsNow() {
+    var all = allTabs(), have = {}; all.forEach(function (t) { have[t[0]] = t; }); var used = {}, out = GROUPS.map(function (g) { var tabs = g[1].filter(function (k) { return have[k]; }).map(function (k) { used[k] = 1; return have[k]; }); return { key: g[0], tabs: tabs }; }).filter(function (g) { return g.tabs.length; });
+    var rest = all.filter(function (t) { return !used[t[0]]; }); if (rest.length && out.length) out[0].tabs = out[0].tabs.concat(rest); return out;
+  }
   function head() {
-    $('pTabs').innerHTML = allTabs().map(function (t) { return '<button class="tab ' + (t[0] === S.tab ? 'on' : '') + '" data-tab="' + t[0] + '">' + esc(CT.t(t[1])) + '</button>'; }).join('');
+    var gs = groupsNow(), cur = gs.filter(function (g) { return g.tabs.some(function (t) { return t[0] === S.tab; }); })[0] || gs[0];
+    $('pTabs').innerHTML = '<div class="ptabs-main" role="tablist">' + gs.map(function (g) { return '<button type="button" role="tab" class="' + (g === cur ? 'on' : '') + '" data-group="' + g.key + '">' + esc(CT.t(g.key)) + '</button>'; }).join('') + '</div>' +
+      (cur && cur.tabs.length > 1 ? '<div class="ptabs-sub">' + cur.tabs.map(function (t) { return '<button type="button" class="' + (t[0] === S.tab ? 'on' : '') + '" data-tab="' + t[0] + '">' + esc(CT.t(t[1])) + '</button>'; }).join('') + '</div>' : '');
+    S.lastIn = S.lastIn || {}; if (cur) S.lastIn[cur.key] = S.tab;
     $('pCampWrap').hidden = !needsCamp();
     paintPick();
   }
@@ -179,15 +188,15 @@
     var years = []; S.camps.forEach(function (c) { var y = yearOf(c) || '?'; if (years.indexOf(y) < 0) years.push(y); }); years.sort(function (a, b) { return a === '?' ? 1 : b === '?' ? -1 : b.localeCompare(a); });
     var inYear = S.camps.filter(function (c) { return !PK.year || (yearOf(c) || '?') === PK.year; }), tids = {}; inYear.forEach(function (c) { tids[c.typeId] = 1; });
     var types = S.types.filter(function (t) { return tids[t.id]; }), list = pickList();
-    var chip = function (on, attr, label) { return '<button type="button" class="tagchip' + (on ? ' on' : '') + '" ' + attr + '>' + esc(label) + '</button>'; };
-    var row = function (lb, body) { return '<div class="pk-row"><span class="pk-lb">' + esc(CT.t(lb)) + '</span><div class="pk-chips">' + body + '</div></div>'; };
-    el.innerHTML = row('pkYear', chip(!PK.year, 'data-py=""', CT.t('pkAll')) + years.map(function (y) { return chip(PK.year === y, 'data-py="' + esc(y) + '"', y === '?' ? CT.t('pkOther') : y); }).join('')) +
-      (types.length > 1 ? row('pkType', chip(!PK.type, 'data-pt=""', CT.t('pkAll')) + types.map(function (t) { return chip(PK.type === t.id, 'data-pt="' + esc(t.id) + '"', CT.pick(t, 'name')); }).join('')) : '') +
-      row('pkCamp', list.map(function (c) { return chip(c.id === S.campId, 'data-pc="' + esc(c.id) + '"', campLabel(c)); }).join('') || '<span class="hint">' + esc(CT.t('pkNone')) + '</span>');
+    var sel = function (key, label, opts) { return '<label class="pk-sel"><span>' + esc(CT.t(label)) + '</span><select data-pk="' + key + '">' + opts + '</select></label>'; };
+    var op = function (v, label, on) { return '<option value="' + esc(v) + '"' + (on ? ' selected' : '') + '>' + esc(label) + '</option>'; };
+    el.innerHTML = sel('year', 'pkYear', op('', CT.t('pkAll'), !PK.year) + years.map(function (y) { return op(y, y === '?' ? CT.t('pkOther') : y, PK.year === y); }).join('')) +
+      (types.length > 1 ? sel('type', 'pkType', op('', CT.t('pkAll'), !PK.type) + types.map(function (t) { return op(t.id, CT.pick(t, 'name'), PK.type === t.id); }).join('')) : '') +
+      sel('camp', 'pkCamp', list.map(function (c) { return op(c.id, campLabel(c), c.id === S.campId); }).join('') || op('', CT.t('pkNone'), true));
   }
-  function pickClick(e) {
-    var y = e.target.closest('[data-py]'), t = e.target.closest('[data-pt]'), c = e.target.closest('[data-pc]'); if (!y && !t && !c) return;
-    if (c) S.campId = c.dataset.pc; else { if (y) { PK.year = y.dataset.py; PK.type = ''; } else PK.type = t.dataset.pt; var l = pickList(); if (l.length && !l.some(function (x) { return x.id === S.campId; })) S.campId = l[0].id; }
+  function pickChange(e) {
+    var t = e.target.closest('[data-pk]'); if (!t) return; var k = t.dataset.pk;
+    if (k === 'camp') S.campId = t.value; else { if (k === 'year') { PK.year = t.value; PK.type = ''; } else PK.type = t.value; var l = pickList(); if (l.length && !l.some(function (x) { return x.id === S.campId; })) S.campId = l[0].id; }
     show();
   }
   async function show() {
@@ -202,8 +211,8 @@
     var up = new URLSearchParams(location.search); S.campId = (S.camps.filter(function (c) { return c.id === up.get('campId'); })[0] || S.camps[0] || {}).id || ''; if (allTabs().some(function (t) { return t[0] === up.get('tab'); })) S.tab = up.get('tab');
     var cur = S.camps.filter(function (c) { return c.id === S.campId; })[0]; if (cur) PK.year = yearOf(cur) || '?';
     CT.applyI18n(); await show();
-    $('pTabs').onclick = function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; S.tab = b.dataset.tab; show(); };
-    $('pCampPick').onclick = pickClick;
+    $('pTabs').onclick = function (e) { var g = e.target.closest('[data-group]'), b = e.target.closest('[data-tab]'); if (g) { var gr = groupsNow().filter(function (x) { return x.key === g.dataset.group; })[0]; if (!gr) return; S.tab = (S.lastIn && gr.tabs.some(function (t) { return t[0] === S.lastIn[gr.key]; }) ? S.lastIn[gr.key] : gr.tabs[0][0]); show(); return; } if (!b) return; S.tab = b.dataset.tab; show(); };
+    $('pCampPick').onchange = pickChange;
     /* 폰 캘린더 구독 · 폰에서 업무 추가: 지금은 꺼 둔다(아이폰 전용 방식 — 앱 출시 뒤에 다시 연다). 켜더라도 관리자에게만 보인다 */
     $('pCal').onclick = calDlg; if ($('pQuick')) $('pQuick').onclick = quickDlg;
     fetch('/api/campteam/config', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (c) { var on = !!(c && c.phoneTools && CT.me && CT.me.perms && CT.me.perms.manageMembers); ['pCal', 'pQuick'].forEach(function (id) { if ($(id)) $(id).hidden = !on; }); }).catch(function () {});

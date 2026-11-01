@@ -99,7 +99,7 @@
     ['AI 는 제안만 하고, 저장은 항상 사람이 눌러요. 금액(예산) 자료는 AI 에 보내지 않아요. 글(또는 PDF·사진)의 앞부분만 AI 서비스로 보내고 파일 자체는 저장되지 않아요. 저(루미)는 포털 자료를 볼 수 없어서 다른 사람의 업무·금액을 말하지 못해요.',
      'The AI only suggests; you always press Save. Budget (amount) files are never sent to the AI. Only the beginning of the text (or PDF/photo) is sent and the file is not stored. I (Lumi) cannot read portal data, so I cannot tell you anyone else\'s tasks or amounts.']);
   n('ai_lumi', ['루미는 뭘 할 수 있어요?', 'What can Lumi do?'],
-    ['저는 포털 사용법을 알려 드려요. 질문하시면 답하고, 필요하면 화면을 어둡게 하고 눌러야 할 곳을 밝게 보여 드려요. 자료를 대신 찾아 주거나 저장해 드리지는 못해요. 아래 질문을 골라도 되고, 직접 물어보셔도 돼요.',
+    ['저는 포털 사용법을 알려 드리고(💡 도움말), 포털 자료를 찾아 주고(🔎 찾기), 업무·일정을 만들거나 고치고 지우는 부탁을 받아 확인 카드로 보여 주고(✍ 부탁), 글을 한국어↔영어로 바꿔 줘요(🌐 번역). 저장은 항상 사람이 확인 버튼을 눌러야 돼요. 아래 질문을 골라도 되고, 직접 물어보셔도 돼요.',
      'I explain how to use the portal. I answer questions and, when useful, dim the screen and highlight what to press. I cannot search or save things for you. Pick a question below or just ask me.'],
     { next: ['upload', 'find', 'work', 'ai_lumi_memory'] });
   n('ai_lumi_memory', ['루미는 내 부탁을 기억해요? 고치거나 지울 수도 있어요?', 'Does Lumi remember my requests? Can it edit or delete?'],
