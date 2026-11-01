@@ -2,18 +2,25 @@
 import CampTeamLayout from '../../../layouts/CampTeamLayout.astro';
 ---
 <CampTeamLayout title="번역 도우미" active="translate">
+  <link slot="head" rel="stylesheet" href="/portal/campteam/translate.css?v=1">
   <div class="top"><div><div class="h1row"><h1 data-t="trlTitle"></h1></div><div class="sub" data-t="trlSub"></div></div></div>
   <section class="card trl">
-    <div class="trl-opts">
-      <label><span data-t="trlKind"></span><select id="trlKind"></select></label>
-      <label><span data-t="trlDir"></span><select id="trlDir"></select></label>
+    <p class="trl-lumi" data-t="trlLumi"></p>
+    <div id="trlDrop" class="trl-drop" tabindex="0" role="button">
+      <div class="trl-drop-ico" aria-hidden="true">📄</div>
+      <div class="trl-drop-t" data-t="trlDropT"></div>
+      <div class="trl-drop-s" data-t="trlAccept"></div>
+      <button type="button" class="btn pri" id="trlPickBtn" data-t="trlPick"></button>
     </div>
-    <div class="trl-cols">
-      <div><textarea id="trlIn" rows="14" maxlength="8000" data-t-ph="trlPh"></textarea><div class="hint"><span id="trlCount">0</span> / 8000</div></div>
-      <div><textarea id="trlOut" rows="14" readonly></textarea><div class="hint" id="trlMsg"></div></div>
-    </div>
-    <div class="actions"><button class="btn pri" id="trlGo" data-t="trlGo"></button> <button class="btn" id="trlCopy" data-t="trlCopy" hidden></button> <button class="btn" id="trlSwap" data-t="trlSwap" hidden></button> <a class="btn" href="/portal/campteam/settings/" data-t="trlGloss"></a></div>
-    <p class="hint" data-t="trlNote"></p>
+    <input type="file" id="trlFile" accept=".docx,.pptx,.xlsx,.pdf" hidden>
+    <div id="trlMsg" class="trl-msg" role="status" aria-live="polite" hidden></div>
+    <div id="trlWork"></div>
+    <ul class="trl-how" id="trlHow"></ul>
   </section>
-  <script is:inline slot="scripts" src="/portal/campteam/translate.js?v=1"></script>
+  <section class="card trl">
+    <div class="actions"><a class="btn" href="/portal/campteam/settings/" data-t="trlGloss"></a></div>
+    <p class="hint" data-t="trlGlossNote"></p>
+  </section>
+  <script is:inline slot="scripts" src="/portal/campteam/doc-translate.js?v=1"></script>
+  <script is:inline slot="scripts" src="/portal/campteam/translate.js?v=2"></script>
 </CampTeamLayout>
