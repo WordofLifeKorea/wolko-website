@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=126">
+  <link rel="stylesheet" href="/expense.css?v=127">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=24">
   <link rel="stylesheet" href="/wolko-header.css?v=16">
@@ -1297,8 +1297,20 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       const tg = e.target.closest('[data-toggle]');
       if (tg) {
         const rid = tg.dataset.toggle, box = document.getElementById('d-' + rid);
-        const open = box.hidden; box.hidden = !open; tg.setAttribute('aria-expanded', String(open));
-        if (open) G.open.add(rid); else G.open.delete(rid);
+        const open = box.hidden;
+        // 한 번에 하나만 펼친다 — 다른 리포트를 열면 이미 열려 있던 것은 닫는다
+        if (open) document.querySelectorAll('[data-toggle][aria-expanded="true"]').forEach(o => {
+          if (o === tg) return;
+          o.setAttribute('aria-expanded', 'false'); G.open.delete(o.dataset.toggle);
+          const ob = document.getElementById('d-' + o.dataset.toggle); if (ob) ob.hidden = true;
+        });
+        box.hidden = !open; tg.setAttribute('aria-expanded', String(open));
+        if (open) {
+          G.open.add(rid);
+          // 위쪽 리포트가 접히면서 화면이 밀려 방금 연 리포트가 위로 사라지지 않게, 그 줄이 화면 위쪽에 보이도록 맞춘다
+          const top = tg.getBoundingClientRect().top;
+          if (top < 70) scrollBy({ top: top - 90 });
+        } else G.open.delete(rid);
         return;
       }
       const pb = e.target.closest('[data-period]');

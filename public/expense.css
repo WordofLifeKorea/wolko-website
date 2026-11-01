@@ -1228,3 +1228,30 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 :root:root body .ex-wrap .ex-d-item:has(> .ex-d-amt) > :is(.ex-d-date, .ex-d-main, .ex-d-sub) { height: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; line-height: 1.5; }
 :root:root body .ex-wrap .ex-d-item:has(> .ex-d-amt) > .ex-d-main { font-size: 14.5px; }
 @media (max-width: 640px) { :root:root body .ex-wrap .ex-report-head > div:last-child { align-items: flex-start; } :root:root body .ex-wrap .ex-report-total { font-size: 26px; } }
+
+/* v201 — 입력칸을 크게: 높이 48px · 글자 15px, 칸 폭을 넓게(구매 목적은 한 줄을 통째로) */
+:root:root body .ex-wrap .ex-row :is(.ex-input, .ex-select):not(.ex-rate-input) { height: 48px !important; min-height: 48px !important; padding-left: 14px; font-size: 15px !important; }
+:root:root body .ex-wrap .ex-row .ex-btn.ex-attach, :root:root body .ex-wrap .ex-row .ex-btn.ex-more-btn { height: 48px; min-height: 48px !important; font-size: 14px !important; }
+:root:root body .ex-wrap .ex-row .ex-r2 .ex-amt { font-size: 17px !important; }
+:root:root body .ex-wrap .ex-row .ex-num { width: 30px; height: 30px; font-size: 13px; }
+@media (min-width: 641px) {
+  :root:root body .ex-wrap .ex-row .ex-r1 { grid-template-columns: 30px 170px minmax(200px, 260px) minmax(0, 1fr) 32px; column-gap: 12px; row-gap: 10px; }
+  :root:root body .ex-wrap .ex-row .ex-r1 > .ex-num { grid-column: 1; grid-row: 1; }
+  :root:root body .ex-wrap .ex-row .ex-r1 > .ex-w-date { grid-column: 2; grid-row: 1; width: 100%; }
+  :root:root body .ex-wrap .ex-row .ex-r1 > .ex-catsel { grid-column: 3; grid-row: 1; width: 100%; max-width: none; min-width: 0; }
+  :root:root body .ex-wrap .ex-row .ex-r1 > .ex-item { grid-column: 4; grid-row: 1; }
+  :root:root body .ex-wrap .ex-row .ex-r1 > :is(.ex-x, .ex-x-space) { grid-column: 5; grid-row: 1; }
+  :root:root body .ex-wrap .ex-row .ex-r1 > .ex-purpose { grid-column: 2 / 5; grid-row: 2; }
+  :root:root body .ex-wrap .ex-row .ex-r2 { grid-template-columns: 30px minmax(0, 1fr) 190px 128px auto 52px 32px; column-gap: 12px; margin-top: 10px; }
+  :root:root body .ex-wrap .ex-row .ex-r2 > .ex-memo-in { grid-column: 2; }
+  :root:root body .ex-wrap .ex-row :is(.ex-receipts, .ex-rateline, .ex-more) { padding-left: 42px; }
+}
+/* 금액 · 통화 · 영수증 줄을 먼저, 메모는 그 아래 한 줄을 통째로 (좁은 노트북 화면에서도 메모 칸이 넉넉하게) */
+@media (min-width: 641px) {
+  :root:root body .ex-wrap .ex-row .ex-r2 { grid-template-columns: 30px 200px 128px auto 52px minmax(0, 1fr); row-gap: 10px; }
+  :root:root body .ex-wrap .ex-row .ex-r2 > .ex-amt { grid-column: 2; grid-row: 1; }
+  :root:root body .ex-wrap .ex-row .ex-r2 > .ex-cur { grid-column: 3; grid-row: 1; }
+  :root:root body .ex-wrap .ex-row .ex-r2 > .ex-attach { grid-column: 4; grid-row: 1; }
+  :root:root body .ex-wrap .ex-row .ex-r2 > .ex-more-btn { grid-column: 5; grid-row: 1; }
+  :root:root body .ex-wrap .ex-row .ex-r2 > .ex-memo-in { grid-column: 2 / -1; grid-row: 2; }
+}
