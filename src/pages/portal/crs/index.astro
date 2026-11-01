@@ -926,6 +926,16 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   #crs-root .hq-grade.is-on { background:var(--crs-deep); border-color:var(--crs-deep); }
   #crs-root .hq-step { border-radius:10px; border-color:var(--crs-card-line); }
   #crs-root .hq-leaders { border-top:1px solid #eef3f5; }
+  /* 리더십 훈련 참석: 1줄 칸 이름 / 2줄 왼쪽 달 고르기 · 오른쪽 인원 — 둘 다 같은 높이의 묶음 상자 */
+  #crs-root .hq-leaders { display:grid; grid-template-columns:minmax(0, 1fr) auto; align-items:center; gap:.6rem .75rem; padding-top:.9rem; }
+  #crs-root .hq-leaders-label { grid-column:1 / -1; font-size:.86rem; }
+  #crs-root .hq-month, #crs-root .hq-count { gap:0; height:44px; padding:3px; border:1px solid var(--crs-card-line); border-radius:12px; background:#f6f9fa; }
+  #crs-root .hq-month { justify-self:start; }
+  #crs-root .hq-month .hq-step, #crs-root .hq-count .hq-step { width:36px; height:36px; border:0; border-radius:9px; background:transparent; font-size:1.05rem; }
+  #crs-root .hq-month .hq-step:hover:not(:disabled), #crs-root .hq-count .hq-step:hover:not(:disabled) { background:#fff; }
+  #crs-root .hq-count .hq-step { background:#fff; box-shadow:0 0 0 1px var(--crs-card-line) inset; }
+  #crs-root .hq-month b { min-width:96px; font-size:.88rem; font-weight:700; color:var(--crs-navy); }
+  #crs-root .hq-count b { min-width:48px; font-size:1.15rem; font-weight:800; }
   #crs-root .visit-count { border-radius:999px; background:#e4f1f4; color:var(--crs-deep); padding:.14rem .5rem; }
   #crs-root .btn-add-visit { border-radius:11px; background:var(--crs-deep); border-color:var(--crs-deep); padding:.55rem .85rem; }
   #crs-root .visit-card { border:1px solid #e6eef1; border-radius:12px; background:#f8fbfc; padding:.85rem .95rem; }
