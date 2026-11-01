@@ -1,14 +1,14 @@
 import { json, badRequest, noDb } from '../../lib/campteamAuth.js';
 import { uuid, nowIso } from '../../lib/campteamDb.js';
-import { parseQuestions, cleanAnswers, MAX_RESPONSES, MAX_PER_IP_DAY } from '../../lib/campteamSurvey.js';
+import { parseQuestions, cleanAnswers, missingRequired, MAX_RESPONSES, MAX_PER_IP_DAY } from '../../lib/campteamSurvey.js';
 
 /**
  * 설문 답하기 — 로그인 없이, 링크(토큰)로. 이름·연락처는 받지 않는다.
- *  GET ?t=토큰 → { title, questions } (열려 있는 설문만)
+ *  GET ?t=토큰 → { title, titleEn, description, descriptionEn, questions } (열려 있는 설문만). 질문 종류는 campteamSurvey.js 참고 — 「꼭 답하기」(required)인 질문은 서버에서도 확인한다.
  *  POST { t, answers:{질문번호:값}, hp:'' } → 저장. hp 는 사람이 보지 못하는 칸(채워져 있으면 자동 입력 프로그램으로 보고 버린다). 같은 주소에서 하루 5번, 설문당 1000개까지.
  */
 const tokOk = (t) => /^[a-f0-9]{40,80}$/.test(String(t || ''));
-async function load(env, t) { return tokOk(t) ? env.DB.prepare(`SELECT id, title, titleEn, questions FROM surveys WHERE publicToken = ?1 AND status = 'open' AND deletedAt IS NULL`).bind(t).first() : null; }
+async function load(env, t) { return tokOk(t) ? env.DB.prepare(`SELECT id, title, titleEn, description, descriptionEn, questions FROM surveys WHERE publicToken = ?1 AND status = 'open' AND deletedAt IS NULL`).bind(t).first() : null; }
 async function ipHash(request) {
   const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'local', day = nowIso().slice(0, 10);
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${day}|${ip}|campteam-survey`)); return [...new Uint8Array(buf)].slice(0, 10).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -16,14 +16,15 @@ async function ipHash(request) {
 export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const sv = await load(env, new URL(request.url).searchParams.get('t')); if (!sv) return json({ error: '이 설문은 닫혔거나 없는 링크예요.', code: 'closed' }, 404);
-  return json({ title: sv.title, titleEn: sv.titleEn, questions: parseQuestions(sv.questions) }, 200, { 'Cache-Control': 'no-store' });
+  return json({ title: sv.title, titleEn: sv.titleEn, description: sv.description || '', descriptionEn: sv.descriptionEn || '', questions: parseQuestions(sv.questions) }, 200, { 'Cache-Control': 'no-store' });
 }
 export async function onRequestPost({ env, request }) {
   if (!env.DB) return noDb();
   let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
   if (b.hp) return json({ ok: true });                                        // 자동 입력 프로그램: 저장하지 않고 조용히 성공처럼 답한다
   const sv = await load(env, b.t); if (!sv) return json({ error: '이 설문은 닫혔거나 없는 링크예요.', code: 'closed' }, 404);
-  const answers = cleanAnswers(parseQuestions(sv.questions), b.answers); if (!answers) return badRequest('답을 하나 이상 골라 주세요.');
+  const qs = parseQuestions(sv.questions), answers = cleanAnswers(qs, b.answers); if (!answers) return badRequest('답을 하나 이상 골라 주세요.');
+  const missing = missingRequired(qs, answers); if (missing.length) return json({ error: '꼭 답해야 하는 질문이 남아 있어요.', code: 'required', missing }, 400);
   const ip = await ipHash(request);
   const total = (await env.DB.prepare('SELECT COUNT(*) AS n FROM survey_responses WHERE surveyId = ?1').bind(sv.id).first()).n;
   if (total >= MAX_RESPONSES) return json({ error: '이 설문은 더 이상 답을 받지 않아요.', code: 'full' }, 429);
