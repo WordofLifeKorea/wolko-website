@@ -17,6 +17,11 @@ const fileSuggestion = (name, camps = []) => { // 파일 이름에 따라 다르
 const campNames = { names: [{ ko: '2027 겨울 월코 영어 캠프', en: '2027 Winter WOLKO English Camp' }, { ko: '2027 겨울 월코 주니어 영어 캠프', en: '2027 Winter WOLKO Junior English Camp' }] };
 http.createServer((req, res) => {
   let body = ''; req.on('data', c => body += c); req.on('end', () => {
+    // 포털에게 물어보기 · 부탁 제안(스트리밍 아님)
+    try { const j2 = JSON.parse(body); const sys2 = String(j2.system || '');
+      if (!j2.stream && sys2.includes('numbered snippets')) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ content: [{ type: 'text', text: '포털에서 관련 자료를 찾았어요 [S1]. (가짜 AI 답)' }] })); return; }
+      if (!j2.stream && sys2.includes('ONE proposed portal action')) { const t = String((j2.messages || []).slice(-1)[0]?.content || ''); const m = /(\d+)월\s*(\d+)일/.exec(t); const due = m ? '2027-' + String(m[1]).padStart(2, '0') + '-' + String(m[2]).padStart(2, '0') : null; const title = t.replace(/<\/?request>/g, '').replace(/업무.*$/, '').replace(/\d+월\s*\d+일(까지)?/, '').trim() || '새 업무';
+        res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ content: [{ type: 'text', text: JSON.stringify({ type: 'addTask', title, due, ownerName: null, campId: null, say: '「' + title + '」 업무를 추가할까요? (가짜 AI)' }) }] })); return; } } catch (e) { /* 아래로 */ }
     // 번역 도우미(스트리밍 아님): 글을 그대로 돌려주며 가짜 표시를 붙인다
     try { const j1 = JSON.parse(body); if (!j1.stream && String(j1.system || '').includes('You translate text')) {
       const t = String((j1.messages || []).slice(-1)[0]?.content || '').replace(/<\/?text>/g, '').trim();

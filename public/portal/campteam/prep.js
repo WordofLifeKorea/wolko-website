@@ -8,6 +8,8 @@
       paste: '📋 엑셀에서 붙여넣기', pasteHint: '엑셀·표에서 복사해 붙여 넣으세요. 줄마다 [날짜] [시작] [끝] [제목] [장소] [담당] 순서예요. 날짜 칸이 비면 위 줄의 날짜를 이어 써요.', pasteGo: '추가하기', pastePv: '미리보기', pasteRows: function (n, s) { return n + '줄을 읽었어요' + (s ? ' (못 읽은 ' + s + '줄은 건너뛰어요)' : '') + '.'; },
       nowOn: '지금', copyFrom: '지난 캠프에서 복사', copyGo: '복사', copyDone: function (c, k) { return c + '개를 복사했어요' + (k ? ' (같은 이름 ' + k + '개 건너뜀)' : '') + '.'; }, readyOf: function (a, b) { return '준비 ' + a + ' / ' + b; },
       search: '이름·기관·전화로 찾기', allKinds: '전체', newSeries: '+ 반복 캠프 만들기', round: '새 회차 만들기', roundYear: '연도', roundMonth: '달', roundNone: '열리는 달을 먼저 골라 주세요(수정).', roundDone: '회차를 만들었어요: ', months: '달', seriesNote: '교회·교회학교 캠프처럼 해마다 반복되는 캠프예요. 열리는 달을 골라 두고, 회차는 직접 만들어요(자동으로 만들지 않아요).',
+      qBtn: '📱 폰에서 업무 추가', qTitle: '폰에서 업무 추가', qBody: '폰의 단축어(iPhone) 또는 자동화 앱에서 아래 주소로 한 번 요청을 보내면 내 업무가 하나 만들어져요. 「내일까지 버스 예약」처럼 말하면 내일이 기한이 돼요. 이 열쇠는 나만 쓰는 것이고, 업무 만들기만 할 수 있어요 — 남에게 주지 마세요.', qUrl: '주소(POST)', qTok: '내 열쇠(token)', qCopyUrl: '주소 복사', qCopyTok: '열쇠 복사', qNew: '열쇠 새로 만들기', qNewConfirm: '새 열쇠를 만들면 예전 열쇠는 바로 멈춰요. 계속할까요?', qCopied: '복사했어요.',
+      qHow: 'iPhone 단축어: 새 단축어 → 「텍스트 받아쓰기」(또는 「입력 요청」) → 「URL 콘텐츠 가져오기」: URL=위 주소, 방법=POST, 요청 본문=JSON, 항목 token=내 열쇠, text=받아쓴 글. 마지막에 「알림 보기」로 결과 message 를 보여 주세요. 홈 화면에 추가하거나 「Hey Siri, 업무 추가」 로 불러요.', qCurl: '시험용(터미널)',
       calTitle: '폰 캘린더 구독', calBody: '아래 주소를 폰 캘린더 앱의 「구독 캘린더」에 넣으면 팀 일정·캠프 기간·진행표·내 업무 마감이 보여요(읽기 전용). 이 주소는 나만 쓰는 열쇠예요 — 남에게 주지 마세요.', calCopy: '주소 복사', calRegen: '주소 새로 만들기', calRegenConfirm: '새 주소를 만들면 예전 주소는 바로 멈춰요. 계속할까요?', calCopied: '복사했어요.', calHow: 'iPhone: 설정 → 캘린더 → 계정 → 계정 추가 → 기타 → 구독 캘린더 추가. Google 캘린더: 다른 캘린더 + → URL로 추가(앱이 아닌 웹에서).' },
     en: { pTitle: 'Camp prep', pSub: 'Day-of timeline, supplies, contacts and recurring camps in one place.', pCal: '📅 Phone calendar', pCamp: 'Camp', pNoCamp: 'Create a camp first.', tTimeline: 'Timeline', tSupplies: 'Supplies', tContacts: 'Contacts', tSeries: 'Recurring camps',
       add: '+ Add', edit: 'Edit', del: 'Delete', save: 'Save', cancel: 'Cancel', close: 'Close', delConfirm: 'Delete this? (It disappears from the list.)', none: 'Nothing yet.',
@@ -16,6 +18,8 @@
       paste: '📋 Paste from Excel', pasteHint: 'Paste rows copied from Excel or a table: [date] [start] [end] [title] [place] [owner]. An empty date continues the row above.', pasteGo: 'Add rows', pastePv: 'Preview', pasteRows: function (n, s) { return 'Read ' + n + ' rows' + (s ? ' (' + s + ' unreadable rows are skipped)' : '') + '.'; },
       nowOn: 'Now', copyFrom: 'Copy from a past camp', copyGo: 'Copy', copyDone: function (c, k) { return 'Copied ' + c + (k ? ' (' + k + ' same-name skipped)' : '') + '.'; }, readyOf: function (a, b) { return 'Ready ' + a + ' / ' + b; },
       search: 'Search name, organization, phone', allKinds: 'All', newSeries: '+ New recurring camp', round: 'Create new round', roundYear: 'Year', roundMonth: 'Month', roundNone: 'Pick the months first (Edit).', roundDone: 'Round created: ', months: '', seriesNote: 'For camps that repeat every year (church or Sunday-school camps). Pick the months; create each round yourself (nothing is created automatically).',
+      qBtn: '📱 Add tasks from phone', qTitle: 'Add tasks from your phone', qBody: 'One request to the address below from a phone shortcut (iPhone) or automation app creates a task for you. Saying "book the bus by tomorrow" sets the due date to tomorrow. This key is personal and can only create tasks — do not share it.', qUrl: 'Address (POST)', qTok: 'Your key (token)', qCopyUrl: 'Copy address', qCopyTok: 'Copy key', qNew: 'Create a new key', qNewConfirm: 'The old key stops working right away. Continue?', qCopied: 'Copied.',
+      qHow: 'iPhone Shortcuts: new shortcut → "Dictate Text" (or "Ask for Input") → "Get Contents of URL": URL = the address above, Method = POST, Request Body = JSON with token = your key and text = the dictated text. Finish with "Show Notification" to display the message from the result. Add it to your Home Screen or say "Hey Siri, add task".', qCurl: 'Test (terminal)',
       calTitle: 'Phone calendar subscription', calBody: 'Add the address below as a "subscribed calendar" in your phone calendar app to see team events, camp dates, timelines and your task due dates (read-only). This address is your personal key — do not share it.', calCopy: 'Copy address', calRegen: 'Create a new address', calRegenConfirm: 'The old address stops working right away. Continue?', calCopied: 'Copied.', calHow: 'iPhone: Settings → Calendar → Accounts → Add Account → Other → Add Subscribed Calendar. Google Calendar: Other calendars + → From URL (on the web, not the app).' }
   });
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc;
@@ -143,6 +147,17 @@
     $('calRegen').onclick = async function () { if (!confirm(CT.t('calRegenConfirm'))) return; try { $('calUrl').value = (await api('/api/campteam/calendar-feed', 'POST', { regen: true })).url; $('calMsg').textContent = ''; } catch (e) { $('calMsg').textContent = e.message; } };
   }
 
+  /* ---- 폰에서 업무 추가 ---- */
+  async function quickDlg() {
+    $('pBody').innerHTML = '<h3>' + esc(CT.t('qTitle')) + '</h3><p>' + esc(CT.t('qBody')) + '</p><label>' + esc(CT.t('qUrl')) + '<input id="qUrl" readonly></label><label>' + esc(CT.t('qTok')) + '<input id="qTok" readonly></label><div class="hint" id="qMsg"></div><p class="hint">' + esc(CT.t('qHow')) + '</p><details><summary>' + esc(CT.t('qCurl')) + '</summary><pre id="qCurl" class="p-pre"></pre></details><div class="dlg-actions"><button class="btn" id="qNew">' + esc(CT.t('qNew')) + '</button><button class="btn" id="qCu">' + esc(CT.t('qCopyUrl')) + '</button><button class="btn pri" id="qCt">' + esc(CT.t('qCopyTok')) + '</button><button class="btn" id="pCancel">' + esc(CT.t('close')) + '</button></div>';
+    $('pDlg').showModal(); $('pCancel').onclick = function () { $('pDlg').close(); };
+    function fill(r) { $('qUrl').value = r.url; $('qTok').value = r.token; $('qCurl').textContent = "curl -X POST '" + r.url + "' -H 'content-type: application/json' -d '" + JSON.stringify({ token: r.token, text: '내일까지 버스 예약' }) + "'"; }
+    try { fill(await CT.api('/api/campteam/quick-task')); } catch (e) { $('qMsg').textContent = e.message; return; }
+    var cp = async function (id) { try { await navigator.clipboard.writeText($(id).value); } catch (e) { $(id).select(); document.execCommand('copy'); } $('qMsg').textContent = CT.t('qCopied'); };
+    $('qCu').onclick = function () { cp('qUrl'); }; $('qCt').onclick = function () { cp('qTok'); };
+    $('qNew').onclick = async function () { if (!confirm(CT.t('qNewConfirm'))) return; try { fill(await api('/api/campteam/quick-task', 'POST', { regen: true })); $('qMsg').textContent = ''; } catch (e) { $('qMsg').textContent = e.message; } };
+  }
+
   /* ---- 틀 ---- */
   var TABS = [['timeline', 'tTimeline'], ['supplies', 'tSupplies'], ['contacts', 'tContacts'], ['series', 'tSeries']];
   var EXT = {}; // 다른 파일(prep-extra.js)이 탭을 더할 수 있다: CTPrep.add(key, { label, needCamp, load })
@@ -167,7 +182,7 @@
     CT.applyI18n(); await show();
     $('pTabs').onclick = function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; S.tab = b.dataset.tab; show(); };
     $('pCamp').onchange = function () { S.campId = $('pCamp').value; show(); };
-    $('pCal').onclick = calDlg;
+    $('pCal').onclick = calDlg; if ($('pQuick')) $('pQuick').onclick = quickDlg;
     document.addEventListener('ct-lang', function () { CT.applyI18n(); show(); });
     setInterval(function () { if (S.tab === 'timeline' && !$('pDlg').open) renderTimeline(); }, 60000); // 「지금」 표시를 1분마다 갱신
   });
