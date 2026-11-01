@@ -1255,3 +1255,12 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
   :root:root body .ex-wrap .ex-row .ex-r2 > .ex-more-btn { grid-column: 5; grid-row: 1; }
   :root:root body .ex-wrap .ex-row .ex-r2 > .ex-memo-in { grid-column: 2 / -1; grid-row: 2; }
 }
+/* 메모를 금액 줄 앞(위)으로 — 휴대폰은 원래부터 이 순서 */
+@media (min-width: 641px) {
+  :root:root body .ex-wrap .ex-row .ex-r2 > .ex-memo-in { grid-row: 1; }
+  :root:root body .ex-wrap .ex-row .ex-r2 > :is(.ex-amt, .ex-cur, .ex-attach, .ex-more-btn) { grid-row: 2; }
+}
+@media (min-width: 641px) {
+  :root:root body .ex-wrap .ex-row .ex-r2 { grid-template-columns: 30px 200px 128px auto 52px minmax(0, 1fr) 32px; }
+  :root:root body .ex-wrap .ex-row .ex-r2 > .ex-memo-in { grid-column: 2 / -2; }
+}
