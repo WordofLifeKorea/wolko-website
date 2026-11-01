@@ -24,9 +24,9 @@
   n('c_series', ['반복되는 캠프 (교회·교회학교)', 'Recurring camps'],
     ['캠프 준비 화면의 「반복 캠프」 탭에서 시리즈를 만들고 열리는 달(예: 3·7·12월)을 골라 두세요. 새 회차는 연도와 달을 골라 「새 회차 만들기」로 직접 만들어요. 자동으로 만들지 않아요.',
      'In the "Recurring camps" tab of Camp prep, create a series and pick the months it runs (e.g. 3, 7, 12). Create each round yourself by choosing year and month. Nothing is created automatically.']);
-  n('c_phonecal', ['폰 캘린더에 일정 넣기', 'Phone calendar'],
-    ['캠프 준비 화면 위의 「📅 폰 캘린더 구독」에서 나만의 주소를 복사해 폰 캘린더의 「구독 캘린더」에 넣으면 팀 일정·캠프 기간·진행표·내 업무 마감이 보여요. 읽기 전용이고, 주소는 남에게 주지 마세요. 새 주소를 만들면 예전 주소는 멈춰요.',
-     'In Camp prep, "📅 Phone calendar" gives you a personal address. Add it as a subscribed calendar to see team events, camp dates, timelines and your task due dates. It is read-only; do not share the address. Creating a new one stops the old one.']);
+  n('c_phonecal', ['폰 캘린더·폰에서 업무 추가는요?', 'Phone calendar / add tasks from phone'],
+    ['이 두 기능은 아이폰에서만 되는 방식이라 지금은 꺼 두었어요. 갤럭시를 쓰는 팀원도 있어서, 포털 앱이 앱스토어·플레이스토어에 정식으로 나온 뒤에 다시 열 예정이에요. 켜더라도 관리자에게만 보여요.',
+     'These two features only work well on iPhone, so they are switched off for now. Some teammates use Galaxy phones, so we will reopen them after the portal app is officially released in the app stores. When on, only admins will see them.']);
   n('c_wizard', ['새 캠프 시작 마법사', 'Start wizard for a new camp'],
     ['캠프 준비 화면의 「시작 마법사」 탭을 열고 위에서 새 캠프를 고르세요. 지난 캠프 후보가 나오고(「루미에게 추천받기」도 있어요), 하나를 고르면 업무·진행표·준비물·자료 후보가 보여요. 체크한 것만 복사돼요. 담당자는 비워지고 날짜는 시작일 차이만큼 옮겨져요.',
      'In the "Start wizard" tab of Camp prep, pick the new camp at the top. Past camps appear (you can also ask Lumi to recommend); choose one to see tasks, timeline, supplies and files. Only ticked items are copied: owners stay empty and dates shift by the difference in start dates.']);
@@ -95,7 +95,10 @@
   n('ai_lumi', ['루미는 뭘 할 수 있어요?', 'What can Lumi do?'],
     ['저는 포털 사용법을 알려 드려요. 질문하시면 답하고, 필요하면 화면을 어둡게 하고 눌러야 할 곳을 밝게 보여 드려요. 자료를 대신 찾아 주거나 저장해 드리지는 못해요. 아래 질문을 골라도 되고, 직접 물어보셔도 돼요.',
      'I explain how to use the portal. I answer questions and, when useful, dim the screen and highlight what to press. I cannot search or save things for you. Pick a question below or just ask me.'],
-    { next: ['upload', 'find', 'work'] });
+    { next: ['upload', 'find', 'work', 'ai_lumi_memory'] });
+  n('ai_lumi_memory', ['루미는 내 부탁을 기억해요? 고치거나 지울 수도 있어요?', 'Does Lumi remember my requests? Can it edit or delete?'],
+    ['네. 루미는 내 계정의 최근 대화를 기억해서, 다른 화면이나 다음 날 열어도 이어서 얘기할 수 있어요(내 계정에만 저장되고 다른 사람은 못 봐요). 「✍ 부탁」에서 「아까 그 일정 10시로 바꿔줘」「그 업무 지워줘」처럼 말하면, 내가 만들었거나 내가 담당인 업무와 내가 만든 일정을 찾아 어떻게 바뀌는지 카드로 보여 줘요. 확인을 눌러야만 바뀌고, 지운 것은 휴지통에서 되살릴 수 있어요. 대화를 지우고 싶으면 「새 대화」를 누르세요.',
+     'Yes. Lumi remembers the recent chat of your account, so you can continue on another page or the next day (stored for your account only; nobody else can see it). In "Ask me to", say things like "move that event to 10" or "delete that task": Lumi finds tasks you created or own and events you created, and shows a card of the change. Nothing changes until you press confirm, and deleted items can be restored from Trash. Press "New chat" to clear the conversation.']);
 
   /* ───── 올리기 ───── */
   n('up_file', ['파일 하나 올리기', 'Add one file'],

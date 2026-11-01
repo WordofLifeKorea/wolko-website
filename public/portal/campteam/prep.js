@@ -22,10 +22,12 @@
       qHow: 'iPhone Shortcuts: new shortcut → "Dictate Text" (or "Ask for Input") → "Get Contents of URL": URL = the address above, Method = POST, Request Body = JSON with token = your key and text = the dictated text. Finish with "Show Notification" to display the message from the result. Add it to your Home Screen or say "Hey Siri, add task".', qCurl: 'Test (terminal)',
       calTitle: 'Phone calendar subscription', calBody: 'Add the address below as a "subscribed calendar" in your phone calendar app to see team events, camp dates, timelines and your task due dates (read-only). This address is your personal key — do not share it.', calCopy: 'Copy address', calRegen: 'Create a new address', calRegenConfirm: 'The old address stops working right away. Continue?', calCopied: 'Copied.', calHow: 'iPhone: Settings → Calendar → Accounts → Add Account → Other → Add Subscribed Calendar. Google Calendar: Other calendars + → From URL (on the web, not the app).' }
   });
+  CT.addDict({ ko: { pkYear: '연도', pkType: '유형', pkCamp: '캠프', pkAll: '전체', pkNone: '맞는 캠프가 없어요. 위에서 다른 연도나 유형을 눌러 보세요.', pkOther: '연도 미정' },
+    en: { pkYear: 'Year', pkType: 'Type', pkCamp: 'Camp', pkAll: 'All', pkNone: 'No camp matches. Try another year or type above.', pkOther: 'No year' } });
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc;
   var KINDS = ['church', 'school', 'vendor', 'speaker', 'venue', 'other'], KL = { church: 'kChurch', school: 'kSchool', vendor: 'kVendor', speaker: 'kSpeaker', venue: 'kVenue', other: 'kOther' };
   var ST = ['need', 'bought', 'ready', 'skip'], STL = { need: 'sNeed', bought: 'sBought', ready: 'sReady', skip: 'sSkip' };
-  var S = { camps: [], types: [], campId: '', tab: 'timeline', canWrite: false, kind: '', q: '' };
+  var S = { camps: [], types: [], campId: '', tab: 'timeline', canWrite: false, kind: '', q: '' }, PK = { year: '', type: '' };   // PK: 캠프 고르기의 연도·유형 걸러 보기 ('' = 전체)
   function campLabel(c) { return CT.lang() === 'en' && c.nameEn ? c.nameEn : c.nameKo; }
   function canW() { return CT.can('camps', 'edit'); }
   function td() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
@@ -167,7 +169,26 @@
   function head() {
     $('pTabs').innerHTML = allTabs().map(function (t) { return '<button class="tab ' + (t[0] === S.tab ? 'on' : '') + '" data-tab="' + t[0] + '">' + esc(CT.t(t[1])) + '</button>'; }).join('');
     $('pCampWrap').hidden = !needsCamp();
-    $('pCamp').innerHTML = S.camps.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === S.campId ? ' selected' : '') + '>' + esc(campLabel(c)) + '</option>'; }).join('');
+    paintPick();
+  }
+  /* ---- 캠프 고르기: 긴 드롭다운 대신 연도 → 유형 → 캠프 칩으로 좁혀 간다 ---- */
+  function yearOf(c) { return c.year ? String(c.year) : String(c.startDate || '').slice(0, 4); }
+  function pickList() { return S.camps.filter(function (c) { return (!PK.year || (yearOf(c) || '?') === PK.year) && (!PK.type || c.typeId === PK.type); }); }
+  function paintPick() {
+    var el = $('pCampPick'); if (!el || $('pCampWrap').hidden) return;
+    var years = []; S.camps.forEach(function (c) { var y = yearOf(c) || '?'; if (years.indexOf(y) < 0) years.push(y); }); years.sort(function (a, b) { return a === '?' ? 1 : b === '?' ? -1 : b.localeCompare(a); });
+    var inYear = S.camps.filter(function (c) { return !PK.year || (yearOf(c) || '?') === PK.year; }), tids = {}; inYear.forEach(function (c) { tids[c.typeId] = 1; });
+    var types = S.types.filter(function (t) { return tids[t.id]; }), list = pickList();
+    var chip = function (on, attr, label) { return '<button type="button" class="tagchip' + (on ? ' on' : '') + '" ' + attr + '>' + esc(label) + '</button>'; };
+    var row = function (lb, body) { return '<div class="pk-row"><span class="pk-lb">' + esc(CT.t(lb)) + '</span><div class="pk-chips">' + body + '</div></div>'; };
+    el.innerHTML = row('pkYear', chip(!PK.year, 'data-py=""', CT.t('pkAll')) + years.map(function (y) { return chip(PK.year === y, 'data-py="' + esc(y) + '"', y === '?' ? CT.t('pkOther') : y); }).join('')) +
+      (types.length > 1 ? row('pkType', chip(!PK.type, 'data-pt=""', CT.t('pkAll')) + types.map(function (t) { return chip(PK.type === t.id, 'data-pt="' + esc(t.id) + '"', CT.pick(t, 'name')); }).join('')) : '') +
+      row('pkCamp', list.map(function (c) { return chip(c.id === S.campId, 'data-pc="' + esc(c.id) + '"', campLabel(c)); }).join('') || '<span class="hint">' + esc(CT.t('pkNone')) + '</span>');
+  }
+  function pickClick(e) {
+    var y = e.target.closest('[data-py]'), t = e.target.closest('[data-pt]'), c = e.target.closest('[data-pc]'); if (!y && !t && !c) return;
+    if (c) S.campId = c.dataset.pc; else { if (y) { PK.year = y.dataset.py; PK.type = ''; } else PK.type = t.dataset.pt; var l = pickList(); if (l.length && !l.some(function (x) { return x.id === S.campId; })) S.campId = l[0].id; }
+    show();
   }
   async function show() {
     head(); var needCamp = needsCamp();
@@ -179,10 +200,13 @@
     try { var d = await CT.api('/api/campteam/camps'); S.types = d.types; S.camps = []; d.types.forEach(function (t) { t.camps.forEach(function (c) { if (c.status !== 'canceled') S.camps.push(c); }); }); } catch (e) { /* 아래에서 안내 */ }
     S.camps.sort(function (a, b) { return String(b.startDate || '').localeCompare(String(a.startDate || '')); });
     var up = new URLSearchParams(location.search); S.campId = (S.camps.filter(function (c) { return c.id === up.get('campId'); })[0] || S.camps[0] || {}).id || ''; if (allTabs().some(function (t) { return t[0] === up.get('tab'); })) S.tab = up.get('tab');
+    var cur = S.camps.filter(function (c) { return c.id === S.campId; })[0]; if (cur) PK.year = yearOf(cur) || '?';
     CT.applyI18n(); await show();
     $('pTabs').onclick = function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; S.tab = b.dataset.tab; show(); };
-    $('pCamp').onchange = function () { S.campId = $('pCamp').value; show(); };
+    $('pCampPick').onclick = pickClick;
+    /* 폰 캘린더 구독 · 폰에서 업무 추가: 지금은 꺼 둔다(아이폰 전용 방식 — 앱 출시 뒤에 다시 연다). 켜더라도 관리자에게만 보인다 */
     $('pCal').onclick = calDlg; if ($('pQuick')) $('pQuick').onclick = quickDlg;
+    fetch('/api/campteam/config', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (c) { var on = !!(c && c.phoneTools && CT.me && CT.me.perms && CT.me.perms.manageMembers); ['pCal', 'pQuick'].forEach(function (id) { if ($(id)) $(id).hidden = !on; }); }).catch(function () {});
     document.addEventListener('ct-lang', function () { CT.applyI18n(); show(); });
     setInterval(function () { if (S.tab === 'timeline' && !$('pDlg').open) renderTimeline(); }, 60000); // 「지금」 표시를 1분마다 갱신
   });

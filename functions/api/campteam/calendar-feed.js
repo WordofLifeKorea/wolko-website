@@ -1,9 +1,10 @@
 import { campSession, json, needLogin, noDb } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, audit } from '../../lib/campteamDb.js';
 import { buildIcs } from '../../lib/campteamPrep.js';
+import { phoneGate, phoneToolsOn } from '../../lib/campteamPhone.js';
 
 /**
- * 폰 캘린더 구독(읽기 전용, 사람별 주소).
+ * 폰 캘린더 구독(읽기 전용, 사람별 주소). **지금은 꺼 둠** — CAMPTEAM_PHONE_TOOLS=on 일 때만, 그리고 관리자에게만 열린다(campteamPhone.js).
  *  GET  (로그인) → { url }      내 구독 주소(없으면 만든다). 이 주소를 아는 사람은 일정을 볼 수 있으니 남에게 주지 않는다.
  *  POST (로그인) { regen:true } → 주소를 새로 만든다(예전 주소는 바로 멈춘다)
  *  GET ?token=…  → .ics 일정 (로그인 없이 달력 앱이 가져가는 용도): 팀 일정·캠프 기간·캠프 진행표·내 업무 마감·회의. 금액·연락처 정보는 들어가지 않는다.
@@ -17,14 +18,16 @@ async function mine(env, email, regen) {
 export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const url = new URL(request.url), token = url.searchParams.get('token');
-  if (token) return feed(env, token);
+  if (token) return phoneToolsOn(env) ? feed(env, token) : new Response('Not found', { status: 404, headers: { 'cache-control': 'no-store' } });
   const s = await campSession(request, env); if (!s) return needLogin();
+  const off = phoneGate(env, s); if (off) return off;
   if (!s.campRole) return json({ error: '캠프팀 팀원만 쓸 수 있어요.', code: 'forbidden' }, 403);
   return json({ url: `${url.origin}/api/campteam/calendar-feed?token=${await mine(env, s.email, false)}` });
 }
 export async function onRequestPost({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env); if (!s) return needLogin();
+  const off = phoneGate(env, s); if (off) return off;
   if (!s.campRole) return json({ error: '캠프팀 팀원만 쓸 수 있어요.', code: 'forbidden' }, 403);
   let b = {}; try { b = await request.json(); } catch { /* 본문 없음 */ }
   const t = await mine(env, s.email, !!b.regen); if (b.regen) await audit(env, s.email, 'calendar_token_reset', 'calendar', '', '');

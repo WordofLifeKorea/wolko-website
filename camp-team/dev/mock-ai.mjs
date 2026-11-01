@@ -20,8 +20,19 @@ http.createServer((req, res) => {
     // 포털에게 물어보기 · 부탁 제안(스트리밍 아님)
     try { const j2 = JSON.parse(body); const sys2 = String(j2.system || '');
       if (!j2.stream && sys2.includes('numbered snippets')) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ content: [{ type: 'text', text: '포털에서 관련 자료를 찾았어요 [S1]. (가짜 AI 답)' }] })); return; }
-      if (!j2.stream && sys2.includes('ONE proposed portal action')) { const t = String((j2.messages || []).slice(-1)[0]?.content || ''); const m = /(\d+)월\s*(\d+)일/.exec(t); const due = m ? '2027-' + String(m[1]).padStart(2, '0') + '-' + String(m[2]).padStart(2, '0') : null; const title = t.replace(/<\/?request>/g, '').replace(/업무.*$/, '').replace(/\d+월\s*\d+일(까지)?/, '').trim() || '새 업무';
-        res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ content: [{ type: 'text', text: JSON.stringify({ type: 'addTask', title, due, ownerName: null, campId: null, say: '「' + title + '」 업무를 추가할까요? (가짜 AI)' }) }] })); return; } } catch (e) { /* 아래로 */ }
+      if (!j2.stream && sys2.includes('ONE proposed portal action')) { const raw = String((j2.messages || []).slice(-1)[0]?.content || ''), t = (/<request>\n([\s\S]*?)\n<\/request>/.exec(raw) || [, raw])[1];
+        const out = (o) => { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ content: [{ type: 'text', text: JSON.stringify(o) }] })); };
+        // 고치기·지우기(가짜): 목록의 첫 업무(T1)·첫 일정(E1)을 가리킨다
+        const ev = /일정/.test(t), ref = ev ? 'E1' : 'T1', has = sys2.includes('\n' + ref + ':');
+        if (/지워|삭제|없애/.test(t)) return out(has ? { type: ev ? 'deleteEvent' : 'deleteTask', target: ref, say: '이 ' + (ev ? '일정' : '업무') + '을 지울까요? (가짜 AI)' } : { type: 'none', say: '지울 ' + (ev ? '일정' : '업무') + '을 못 찾았어요.' });
+        if (/바꿔|변경|수정|옮겨/.test(t)) { const tm = /(오전|오후)?\s*(\d{1,2})시/.exec(t), dm = /(\d+)월\s*(\d+)일/.exec(t);
+          if (!has) return out({ type: 'none', say: '고칠 ' + (ev ? '일정' : '업무') + '을 못 찾았어요.' });
+          if (tm && !ev) return out({ type: 'none', say: '업무에는 시간이 없어요. 일정으로 만들어 드릴까요?' });
+          if (ev && tm) { const h = +tm[2] + (tm[1] === '오후' && +tm[2] < 12 ? 12 : 0); return out({ type: 'editEvent', target: ref, changes: { startTime: String(h).padStart(2, '0') + ':00' }, say: '일정 시간을 바꿀까요? (가짜 AI)' }); }
+          if (dm) return out({ type: ev ? 'editEvent' : 'editTask', target: ref, changes: ev ? { startDate: '2027-' + dm[1].padStart(2, '0') + '-' + dm[2].padStart(2, '0') } : { due: '2027-' + dm[1].padStart(2, '0') + '-' + dm[2].padStart(2, '0') }, say: '날짜를 바꿀까요? (가짜 AI)' });
+          return out({ type: 'none', say: '무엇을 바꿀까요? 날짜나 시간을 알려 주세요.' }); }
+        const m = /(\d+)월\s*(\d+)일/.exec(t); const due = m ? '2027-' + String(m[1]).padStart(2, '0') + '-' + String(m[2]).padStart(2, '0') : null; const title = t.replace(/업무.*$/, '').replace(/\d+월\s*\d+일(까지)?/, '').trim() || '새 업무';
+        return out({ type: 'addTask', title, due, ownerName: null, campId: null, say: '「' + title + '」 업무를 추가할까요? (가짜 AI)' }); } } catch (e) { /* 아래로 */ }
     // 번역 도우미(스트리밍 아님): 글을 그대로 돌려주며 가짜 표시를 붙인다
     try { const j1 = JSON.parse(body); if (!j1.stream && String(j1.system || '').includes('You translate text')) {
       const t = String((j1.messages || []).slice(-1)[0]?.content || '').replace(/<\/?text>/g, '').trim();
