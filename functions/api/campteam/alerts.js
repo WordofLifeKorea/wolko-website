@@ -1,7 +1,8 @@
 import { campSession, json, needLogin, needPerm, badRequest, noDb, FIXED_ADMIN_EMAILS, canWrite } from '../../lib/campteamAuth.js';
 import { anthropicRoute } from '../../lib/anthropicRoute.js';
+import { sendCampMail, buildTestEmail } from '../../lib/campteamMail.js';
 import { todayKST, uuid, text, audit } from '../../lib/campteamDb.js';
-import { loadSettings, saveSettings, sanitizeSettings, buildAlerts, buildWeek, weekEmpty, listAnnouncements, summaryPrompt, callSummary, summaryItems, SUMMARY_MODEL, tuesdayOf, nowIso } from '../../lib/campteamAlerts.js';
+import { loadSettings, saveSettings, sanitizeSettings, loadPrefs, sanitizePrefPatch, savePrefs, buildAlerts, buildWeek, weekEmpty, listAnnouncements, summaryPrompt, callSummary, summaryItems, SUMMARY_MODEL, tuesdayOf, nowIso } from '../../lib/campteamAlerts.js';
 
 /**
  * 알림공지 — 내 알림(자동) · 팀 공지 · 오늘 할 일 · 요약.
@@ -14,8 +15,9 @@ import { loadSettings, saveSettings, sanitizeSettings, buildAlerts, buildWeek, w
  *   announce { title, body, audience: 'all'|'people', recipients[], pinned, link }   팀 공지 올리기
  *   edit     { id, title?, body?, audience?, recipients?, pinned?, link? }          올린 사람 또는 관리자
  *   delete   { id }                                              올린 사람 또는 관리자 (삭제 표시만 — 휴지통에서 복구)
- *   pref     { weeklyEmail }                                     주간 이메일 받기 켜기/끄기 (내 설정)
- *   settings { dueDays, eventDays, expireDays }                  알림 기준 일수 (관리자만)
+ *   pref     { weeklyEmail?, emailDue?, dueDays?[], eventDays?[], quietStart?, quietEnd?, notifyMine? }   내 설정 (보낸 칸만 바뀐다). 알림 목록 자체는 이메일 스위치와 상관없이 그대로다
+ *   settings { dueDays, eventDays, expireDays }                  팀 고정 알림 일수 + 지난 공지를 접는 일수 (관리자만)
+ *   testMail {}                                                  나에게 시험 메일 한 통 (1시간에 3번까지)
  *   summary  { kind: 'daily'|'weekly' }                          AI 요약 한 번 만들기 (하루/그 주 한 번만)
  */
 const KEY = /^(task|meet|event|dec|ann):[A-Za-z0-9_-]{1,64}(:[a-z0-9]{1,4})?(:\d{8})?$/;
@@ -59,18 +61,18 @@ async function getAlerts({ env, request }) {
   const s = await campSession(request, env);
   if (!s) return needLogin();
   if (!s.campRole) return needPerm('캠프팀 명단에 있는 계정만 알림공지를 쓸 수 있어요.');
-  const lite = new URL(request.url).searchParams.get('lite') === '1', today = todayKST(), settings = await loadSettings(env);
-  const [{ items: all, today: box }, announcements] = await Promise.all([buildAlerts(env, s.email, { today, settings, perms: s.perms }), listAnnouncements(env, s.email, { today, settings, isAdmin: s.perms.manageMembers, perms: s.perms })]);
+  const lite = new URL(request.url).searchParams.get('lite') === '1', today = todayKST(), settings = await loadSettings(env), myPrefs = await loadPrefs(env, s.email);
+  const [{ items: all, today: box }, announcements] = await Promise.all([buildAlerts(env, s.email, { today, settings, perms: s.perms, prefs: myPrefs }), listAnnouncements(env, s.email, { today, settings, isAdmin: s.perms.manageMembers, perms: s.perms })]);
   const items = all.filter((x) => x.state !== 'dismissed'), unreadAuto = items.filter((x) => !x.state).length, unreadAnn = announcements.filter((a) => a.unread && !a.folded).length;
   const out = { date: today, unread: unreadAuto + unreadAnn, unreadAuto, unreadAnn, perms: { write: canWrite(s.perms, 'tasks'), notices: canWrite(s.perms, 'notices'), manageMembers: s.perms.manageMembers } };
   if (lite) return json({ ...out, items: items.slice(0, 8), announcements: announcements.filter((a) => !a.folded).slice(0, 5) });
-  const me = s.email.toLowerCase(), prefRow = await env.DB.prepare('SELECT weeklyEmail FROM notify_prefs WHERE email = ?1').bind(me).first();
+  const me = s.email.toLowerCase();
   const forWeek = tuesdayOf(today), dow = new Date(today + 'T00:00:00Z').getUTCDay();
   const sums = (await env.DB.prepare(`SELECT kind, forDate, text FROM daily_summaries WHERE email = ?1 AND ((kind = 'daily' AND forDate = ?2) OR (kind = 'weekly' AND forDate = ?3))`).bind(me, today, forWeek).all()).results;
   const get = (k) => { const r = sums.find((x) => x.kind === k); return r && r.text ? r.text : null; };
   const week = dow === 1 ? null : await buildWeek(env, s.email, today, s.perms), wk = await env.DB.prepare(`SELECT state FROM alert_state WHERE email = ?1 AND alertKey = ?2`).bind(me, 'weekly:' + forWeek).first();
   const people = await roster(env);
-  return json({ ...out, today: box, items, announcements, people, settings, prefs: { weeklyEmail: prefRow ? !!prefRow.weeklyEmail : true },
+  return json({ ...out, today: box, items, announcements, people, settings, prefs: myPrefs, mailReady: !!env.RESEND_API_KEY,
     ai: !!env.ANTHROPIC_API_KEY, summary: { daily: get('daily'), weekly: get('weekly'), weeklyAvailable: !!week && !weekEmpty(week), weeklyDate: forWeek, dailyCanMake: !box.empty && !get('daily'), weeklyCanMake: !!week && !weekEmpty(week) && !get('weekly'), dismissedWeekly: !!(wk && wk.state === 'dismissed') },
     week: week ? { start: week.start, end: week.end, overdue: week.overdue.length, tasks: week.tasks.length, meetings: week.meetings.length, events: week.events.length } : null });
 }
@@ -129,8 +131,21 @@ async function postAlerts({ env, request }) {
     return json({ ok: true });
   }
   if (a === 'pref') {
-    await env.DB.prepare('INSERT INTO notify_prefs (email,weeklyEmail,updatedAt) VALUES (?1,?2,?3) ON CONFLICT(email) DO UPDATE SET weeklyEmail=?2, updatedAt=?3').bind(me, b.weeklyEmail ? 1 : 0, now).run();
-    return json({ ok: true, weeklyEmail: !!b.weeklyEmail });
+    const r = sanitizePrefPatch(b); if (r.error) return badRequest(r.error);
+    if (!Object.keys(r.patch).length) return badRequest('바꿀 설정이 없어요.');
+    const v = await savePrefs(env, me, r.patch, now);
+    return json({ ok: true, weeklyEmail: v.weeklyEmail, prefs: v });
+  }
+  if (a === 'testMail') {
+    if (!env.RESEND_API_KEY) return json({ error: '이메일 보내기가 아직 준비되지 않았어요. 관리자에게 알려 주세요.', code: 'mail_off' }, 503);
+    // 1시간에 3번까지 (실패한 시도도 센다). 기록은 mail_log 에 kind='test' 로 남긴다 — 주간 메일 중복 방지 기록과는 섞이지 않는다.
+    const since = new Date(Date.now() - 3600000).toISOString(), used = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM mail_log WHERE email = ?1 AND kind = 'test' AND createdAt > ?2`).bind(me, since).first()).n;
+    if (used >= 3) return json({ error: '시험 메일은 1시간에 3번까지 보낼 수 있어요. 잠시 뒤 다시 해 주세요.', code: 'rate_limit' }, 429);
+    const name = (await env.DB.prepare('SELECT name FROM camp_members WHERE email = ?1').bind(me).first())?.name || '', key = now + ':' + uuid().slice(0, 8);
+    try { await sendCampMail(env, { to: me, ...buildTestEmail({ name, base: env.CAMPTEAM_BASE_URL || 'https://wolko.org' }), retryMs: Number(env.CAMPTEAM_MAIL_RETRY_MS) || 1200 }); }
+    catch (e) { await env.DB.prepare(`INSERT INTO mail_log (email,kind,weekKey,status,detail,createdAt) VALUES (?1,'test',?2,'failed',?3,?4)`).bind(me, key, String(e.message || e).slice(0, 200), now).run(); return json({ error: '시험 메일을 보내지 못했어요. 잠시 뒤 다시 해 주세요.', code: 'send_failed' }, 502); }
+    await env.DB.prepare(`INSERT INTO mail_log (email,kind,weekKey,status,detail,createdAt) VALUES (?1,'test',?2,'sent','',?3)`).bind(me, key, now).run();
+    return json({ ok: true, left: 2 - used });
   }
   if (a === 'settings') {
     if (!s.perms.manageMembers) return needPerm('알림 기준은 관리자만 바꿀 수 있어요.');
