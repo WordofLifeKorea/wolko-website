@@ -128,6 +128,7 @@
     var d = new Date(t); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
   }
   var wide = function () { return window.matchMedia('(min-width: 901px)').matches; };
+  var renderedWide = null; // 마지막으로 그린 화면 모양(넓음/좁음) — 창 폭을 바꾸면 모양이 달라졌는지 확인한다
   var clone = function (x) { return JSON.parse(JSON.stringify(x)); };
   var tt = function (type) { return CT.t(TITLES[type][0]); };
 
@@ -296,8 +297,14 @@
       var paint = function () {
         var pages = Math.max(1, Math.round(body.scrollWidth / Math.max(1, body.clientWidth))), cur = Math.min(pages - 1, Math.round(body.scrollLeft / Math.max(1, body.clientWidth)));
         if (pages < 2) { bar.innerHTML = ''; bar.hidden = true; return; }
-        bar.hidden = false; var dots = ''; for (var i = 0; i < pages; i++) dots += '<i' + (i === cur ? ' class="on"' : '') + '></i>';
-        bar.innerHTML = dots + '<b>' + (cur + 1) + '/' + pages + '</b>';
+        bar.hidden = false; var dots = ''; for (var i = 0; i < pages; i++) dots += '<i data-pg="' + i + '"' + (i === cur ? ' class="on"' : '') + '></i>';
+        bar.innerHTML = '<button type="button" class="pgb" data-pgd="-1"' + (cur === 0 ? ' disabled' : '') + ' aria-label="이전">‹</button>' + dots + '<b>' + (cur + 1) + '/' + pages + '</b><button type="button" class="pgb" data-pgd="1"' + (cur >= pages - 1 ? ' disabled' : '') + ' aria-label="다음">›</button>';
+      };
+      bar.onclick = function (e) { // 마우스로도 넘길 수 있게: 화살표나 점을 누르면 그 쪽으로 이동
+        var t = e.target.closest('[data-pgd],[data-pg]'); if (!t) return; var w = Math.max(1, body.clientWidth), cur = Math.round(body.scrollLeft / w);
+        var to = t.hasAttribute('data-pgd') ? cur + (+t.getAttribute('data-pgd')) : +t.getAttribute('data-pg');
+        var x = Math.max(0, to) * w; body.scrollTo({ left: x, behavior: 'smooth' });
+        setTimeout(function () { if (Math.abs(body.scrollLeft - x) > 2) body.scrollLeft = x; }, 450); // 부드럽게 넘어가지 않는 브라우저에서는 바로 이동
       };
       body.addEventListener('scroll', paint, { passive: true }); paint(); setTimeout(paint, 250);
     });
@@ -305,7 +312,7 @@
   function render() {
     var d = data, hasTest = [].concat(d.camps, d.deadlines, d.attention, d.agenda, d.meetings, d.files).some(function (r) { return r.isTest; });
     $('homeSub').innerHTML = esc(d.today) + ' · ' + esc(CT.t('campsCount')) + ' ' + d.camps.length + (hasTest ? ' <span class="chip test">' + esc(CT.t('testData')) + '</span>' : '') + (!editing && L.mine ? ' <span class="chip">' + esc(CT.t('mineOverrides')) + '</span>' : '');
-    var src = editing ? work : L.effective, items = visibleItems(src.items), isWide = wide();
+    var src = editing ? work : L.effective, items = visibleItems(src.items), isWide = wide(); renderedWide = isWide;
     if (!editing && items.length !== src.items.filter(function (w) { return w.show; }).length) { items = clone(items); tidy(items); } // 가려진 위젯 자리는 메운다
     var rows = Math.max(6, items.reduce(function (m, o) { return Math.max(m, o.y + o.h); }, 0) + (editing ? 8 : 0));
     var grid = $('homeGrid'); grid.className = 'dash' + (editing ? ' editing' : '');
@@ -495,6 +502,7 @@
     });
     window.addEventListener('beforeunload', function (e) { if (changed()) { e.preventDefault(); e.returnValue = ''; } });
     var mq = window.matchMedia('(min-width: 901px)'); (mq.addEventListener ? mq.addEventListener('change', function () { render(); }) : mq.addListener(function () { render(); }));
+    var rzT = 0; window.addEventListener('resize', function () { clearTimeout(rzT); rzT = setTimeout(function () { if (renderedWide !== null && renderedWide !== wide()) render(); }, 120); }); // 일부 브라우저는 폭이 바뀌어도 위 알림이 오지 않아 한 번 더 확인
   }
 
   CT.pre('/api/campteam/home'); CT.pre('/api/campteam/home-layout');
