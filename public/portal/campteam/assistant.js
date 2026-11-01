@@ -42,7 +42,7 @@
   document.body.appendChild(root);
   var fab = $('#asstFab'), panel = $('#asstPanel'), body = $('#asstBody'), input = $('#asstIn');
 
-  function paintStatic() { $('#asstLb').textContent = CT.t('asstName'); fab.setAttribute('aria-label', CT.t('asstName')); fab.title = CT.t('asstName'); $('#asstTitle').textContent = CT.t('asstName'); $('#asstNew').textContent = CT.t('asstNew'); $('#asstX').title = CT.t('asstClose'); input.placeholder = CT.t(st.mode === 'find' ? 'asstPhFind' : st.mode === 'do' ? 'asstPhDo' : 'asstPh'); $('#asstSend').textContent = CT.t('asstSend'); $('#asstModes').innerHTML = [['help', 'asstModeHelp'], ['find', 'asstModeFind'], ['do', 'asstModeDo']].map(function (m) { return '<button type="button" class="asst-mode' + (st.mode === m[0] ? ' on' : '') + '" data-mode="' + m[0] + '">' + esc(CT.t(m[1])) + '</button>'; }).join(''); }
+  function paintStatic() { $('#asstLb').textContent = CT.t('asstName'); fab.setAttribute('aria-label', CT.t('asstName')); fab.title = CT.t('asstName'); $('#asstTitle').textContent = CT.t('asstName'); $('#asstNew').textContent = CT.t('asstNew'); $('#asstX').title = CT.t('asstClose'); input.placeholder = CT.t(st.mode === 'find' ? 'asstPhFind' : st.mode === 'do' ? 'asstPhDo' : 'asstPh'); $('#asstSend').textContent = CT.t('asstSend'); $('#asstModes').innerHTML = [['help', 'asstModeHelp'], ['find', 'asstModeFind'], ['do', 'asstModeDo']].map(function (m) { return '<button type="button" class="asst-mode' + (st.mode === m[0] ? ' on' : '') + '" data-amode="' + m[0] + '">' + esc(CT.t(m[1])) + '</button>'; }).join(''); }
   function bubble(m, last) {
     var txt = '<div class="asst-b">' + esc(m.t).replace(/\n/g, '<br>') + srcHtml(m) + propHtml(m) + (m.g && G.guides[m.g] ? '<button type="button" class="asst-go" data-g="' + esc(m.g) + '">' + esc(CT.t('asstShow')) + '</button>' : '') + '</div>';
     if (m.r === 'u') return '<div class="asst-msg u">' + txt + '</div>';
@@ -157,7 +157,7 @@
   }
 
   /* ---------- 이벤트 ---------- */
-  $('#asstModes').addEventListener('click', function (e) { var b = e.target.closest('[data-mode]'); if (!b || busy) return; st.mode = b.dataset.mode; save(); paintStatic(); input.focus(); });
+  $('#asstModes').addEventListener('click', function (e) { var b = e.target.closest('[data-amode]'); if (!b || busy) return; st.mode = b.dataset.amode; save(); paintStatic(); input.focus(); });
   async function confirmProposal(ok, el) {
     var idx = -1; for (var i = st.msgs.length - 1; i >= 0; i--) if (st.msgs[i].p && !st.msgs[i].pd) { idx = i; break; } if (idx < 0) return; var m = st.msgs[idx], p = m.p;
     if (!ok) { m.pd = 'no'; save(); render(); return; }
@@ -173,7 +173,6 @@
   input.addEventListener('focus', function () { if (!busy) setMood('listen'); }); input.addEventListener('blur', function () { if (mood === 'listen') setMood(baseMood()); });
   $('#asstForm').onsubmit = function (e) { e.preventDefault(); var q = input.value; input.value = ''; ask(q); };
   body.addEventListener('click', function (e) {
-    var md = e.target.closest('[data-mode]'); if (md) { return; }
     var pc = e.target.closest('[data-pc]'), px = e.target.closest('[data-px]');
     if (pc || px) { confirmProposal(!!pc, e.target.closest('.asst-msg')); return; }
     var q = e.target.closest('[data-faq]'); if (q) { pickFaq(q.dataset.faq); return; }
