@@ -1,0 +1,239 @@
+---
+// 부모님용 캠프 질문 모음 — 부모님이 전화로 자주 묻는 것을 한곳에.
+// 답은 이 저장소에 이미 있는 사실로만 채운다(각 답 옆 주석이 출처). 답이 아직 없는 질문은 aKo 를 '' 로 두고 화면에 내보내지 않는다 —
+// 사무실에서 답을 정하면 aKo · aEn 만 채우면 바로 보인다.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+
+type QA = { qKo: string; qEn: string; aKo: string; aEn: string };
+type Group = { id: string; ko: string; en: string; items: QA[] };
+
+const groups: Group[] = [
+  {
+    id: 'apply', ko: '신청 · 비용 · 환불', en: 'Registration, Fees & Refunds',
+    items: [
+      {
+        qKo: '어떻게 신청하나요?', qEn: 'How do we register?',
+        // 출처: src/pages/camp-register/index.astro (신청 창), src/content/camp_schedules/*.json (use_external_form · registration_url)
+        aKo: '캠프 신청 페이지에서 원하는 캠프를 고르고 신청서를 작성해 주세요. 일부 캠프는 캠프 일정에 안내된 별도 신청서로 받습니다.',
+        aEn: 'Choose a camp on the camp registration page and fill out the form. Some camps take registrations through a separate form linked in the camp schedule.',
+      },
+      {
+        qKo: '등록은 언제 확정되나요?', qEn: 'When is registration confirmed?',
+        // 출처: src/pages/camp-register/index.astro (예약금 및 캠프 참가비 확인 동의)
+        aKo: '예약금과 캠프 참가비 입금이 모두 확인되면 등록이 최종 확정됩니다. 예약금이 없는 연합캠프는 참가비 입금이 확인되면 확정됩니다.',
+        aEn: 'Registration is final once both the deposit and the camp fee have been received. For Unity Camp, which has no deposit, it is final once the camp fee has been received.',
+      },
+      {
+        qKo: '신청자가 정원보다 많으면 어떻게 되나요?', qEn: 'What happens if a camp fills up?',
+        // 출처: src/pages/camp-register/index.astro (예약금 및 캠프 참가비 확인 동의 안내문)
+        aKo: '예약금 입금이 확인된 순서대로 참가 우선순위가 정해집니다.',
+        aEn: 'Places are given in the order deposit payments are confirmed.',
+      },
+      {
+        qKo: '예약금은 얼마인가요?', qEn: 'How much is the deposit?',
+        // 출처: src/pages/camp-register/index.astro (data-deposit — 캠프마다 deposit_amount), 연합캠프 예약금 없음 안내
+        aKo: '캠프마다 다르며, 신청 화면에 예약금과 남은 참가비가 함께 표시됩니다. 연합캠프는 예약금이 없습니다.',
+        aEn: 'It differs by camp. The registration form shows the deposit and the remaining fee. Unity Camp has no deposit.',
+      },
+      {
+        qKo: '잔금은 언제까지 내야 하나요?', qEn: 'When is the remaining fee due?',
+        // 출처: functions/lib/applicantNotice.js (receipt_general · receipt_early · deposit_early 알림톡 문안)
+        aKo: '예약금 입금 확인 후 7일 이내에 입금해 주세요. 얼리버드 장학금을 신청한 경우에는 알림톡으로 안내된 잔금 기한까지 입금해야 장학금이 지급됩니다.',
+        aEn: 'Please pay within 7 days after your deposit is confirmed. If you applied for the early-bird scholarship, pay by the deadline in your KakaoTalk notice to receive it.',
+      },
+      {
+        qKo: '취소하면 환불받을 수 있나요?', qEn: 'Can we get a refund if we cancel?',
+        // 출처: src/pages/camp-register/index.astro (환불 규정 창 #crpRefundModalBody)
+        aKo: '예약금은 예약 3일이 지난 뒤 취소하면 돌려드리지 않습니다. 다만 천재지변, 주최 측 사정, 피할 수 없는 개인 사정으로 취소하면 전액 환불됩니다. 캠프 참가비는 캠프 시작 30일 전까지 전액, 15~29일 전 90%, 8~14일 전 50%, 2~7일 전 30%를 돌려드리고, 시작 하루 전부터는 환불되지 않습니다.',
+        aEn: 'The deposit is not refunded if you cancel more than 3 days after booking, except for force majeure, organizer circumstances or unavoidable personal reasons, which get a full refund. The camp fee is refunded in full 30 or more days before camp, 90% at 15–29 days, 50% at 8–14 days and 30% at 2–7 days. From the day before camp there is no refund.',
+      },
+      {
+        qKo: '한국 은행 계좌가 없어도 신청할 수 있나요?', qEn: "Can we register without a Korean bank account?",
+        // 출처: src/pages/camp-register/index.astro (현금 또는 현장 결제 선택 — 환불 계좌 칸)
+        aKo: '네. 신청서에서 "현금 또는 현장 결제로 낼게요"를 고르면 환불 계좌 없이 신청할 수 있고, 결제와 환불 방법은 신청 후 따로 안내해 드립니다.',
+        aEn: 'Yes. Choose "I\'ll pay in cash or on site" on the form and you can apply without refund account details. We will contact you about payment and refunds after you apply.',
+      },
+      {
+        qKo: '장학금이나 할인이 있나요?', qEn: 'Are there scholarships or discounts?',
+        // 출처: src/pages/camp-register/index.astro (장학금 고르는 칸 · winterCampPolicy.js 장학금 규칙)
+        aKo: '캠프에 따라 장학금이 있으며, 해당되는 장학금은 신청서에서 고를 수 있습니다. 연합캠프는 장학금이 없습니다.',
+        aEn: 'Some camps offer scholarships, which you can select on the registration form. Unity Camp has no scholarships.',
+      },
+      { qKo: '형제나 친구가 함께 신청하면 할인이 있나요?', qEn: 'Is there a discount for siblings or friends?', aKo: '', aEn: '' },
+      { qKo: '현금영수증이나 기부금 영수증을 받을 수 있나요?', qEn: 'Can we get a cash receipt or donation receipt?', aKo: '', aEn: '' },
+    ],
+  },
+  {
+    id: 'safety', ko: '안전 · 건강', en: 'Safety & Health',
+    items: [
+      {
+        qKo: '알레르기나 복용하는 약은 어떻게 알리나요?', qEn: 'How do we tell you about allergies or medication?',
+        // 출처: src/pages/camp-register/index.astro (#crpNotes 안내문)
+        aKo: '신청서의 문의사항 칸에 알레르기, 건강 상태, 복용약처럼 월코가 꼭 알아야 할 점을 적어 주세요.',
+        aEn: 'Write allergies, health conditions, medication or anything else WOLKO should know in the notes box on the registration form.',
+      },
+      {
+        qKo: '캠프 동안 누가 아이들을 돌보나요?', qEn: 'Who looks after the campers?',
+        // 출처: src/pages/camp/index.astro (히어로 통계 — 훈련된 상담자와 함께)
+        aKo: '훈련된 상담자(카운슬러)가 캠퍼들과 함께 지냅니다.',
+        aEn: 'Trained counselors stay with the campers.',
+      },
+      { qKo: '캠프 중에 아프거나 다치면 어떻게 하나요?', qEn: 'What happens if a camper gets sick or hurt?', aKo: '', aEn: '' },
+      { qKo: '여행자 보험에 가입되어 있나요?', qEn: 'Are campers covered by insurance?', aKo: '', aEn: '' },
+      { qKo: '밤에는 누가 숙소를 지키나요?', qEn: 'Who supervises the dorms at night?', aKo: '', aEn: '' },
+    ],
+  },
+  {
+    id: 'life', ko: '생활 · 준비물', en: 'Camp Life & Packing',
+    items: [
+      {
+        qKo: '캠프는 어디에서 열리나요?', qEn: 'Where is the camp held?',
+        // 출처: src/content/camp_schedules/*.json (notes_ko · notes_en 의 장소)
+        aKo: '캠프마다 장소가 달라 캠프 일정에 장소를 함께 적어 두었습니다. 예를 들어 평택 캠프는 경기도 평택시 경기대로 1407 2층 월코센터, 제주 캠프는 제주시 애월읍 광상로 622 월비연수원에서 열렸습니다.',
+        aEn: 'It differs by camp, so each camp schedule lists its location. For example, Pyeongtaek camps have been held at the WOLKO Center (2F, 1407 Gyeonggi-daero, Pyeongtaek) and Jeju camps at the WOLBI Center (622 Gwangsang-ro, Aewol-eup, Jeju).',
+      },
+      { qKo: '무엇을 챙겨 가야 하나요?', qEn: 'What should campers bring?', aKo: '', aEn: '' },
+      { qKo: '휴대폰을 가져가도 되나요?', qEn: 'Can campers bring a phone?', aKo: '', aEn: '' },
+      { qKo: '숙소와 식사는 어떻게 되나요?', qEn: 'What are the rooms and meals like?', aKo: '', aEn: '' },
+      { qKo: '영어를 잘 못해도 참여할 수 있나요?', qEn: "Can my child join if their English isn't strong?", aKo: '', aEn: '' },
+      { qKo: '캠프장까지 오가는 차편이 있나요?', qEn: 'Is there transportation to and from camp?', aKo: '', aEn: '' },
+    ],
+  },
+  {
+    id: 'contact', ko: '사진 · 연락', en: 'Photos & Contact',
+    items: [
+      {
+        qKo: '캠프 사진이 인터넷에 올라가나요?', qEn: 'Will camp photos be posted online?',
+        // 출처: src/pages/camp-register/index.astro (mediaConsent — 네이버 카페 · 유튜브 공유 동의)
+        aKo: '신청할 때 캠프 사진과 영상을 네이버 카페와 유튜브에 공유하는 데 동의하는지 여쭙니다. "동의 안 함"을 고르셔도 됩니다.',
+        aEn: 'When you register, we ask whether you agree to camp photos and videos being shared on Naver Cafe and YouTube. You may choose not to agree.',
+      },
+      {
+        qKo: '신청 후 진행 안내는 어떻게 받나요?', qEn: 'How will we hear from you after registering?',
+        // 출처: functions/lib/applicantNotice.js (접수 · 예약금 확인 · 최종 확정 알림톡, 실패하면 문자)
+        aKo: '신청 접수, 예약금 확인, 최종 확정 때마다 카카오톡 알림톡으로 안내해 드립니다. 알림톡을 받을 수 없으면 문자로 보내 드립니다.',
+        aEn: 'We send a KakaoTalk notice when your registration is received, when your deposit is confirmed and when registration is final. If KakaoTalk is unavailable, we send a text message.',
+      },
+      {
+        qKo: '캠프 소식은 어디서 볼 수 있나요?', qEn: 'Where can we follow camp news?',
+        // 출처: src/pages/camp/index.astro (문의 띠의 네이버 카페 링크)
+        aKo: '영어캠프와 연합캠프 소식은 월코 캠프 네이버 카페에, 제주 캠프 소식은 제주 캠프 네이버 카페에 올라옵니다.',
+        aEn: 'English and Unity Camp news is posted on the WOLKO Camp Naver Cafe, and Jeju Camp news on the Jeju Camp Naver Cafe.',
+      },
+      { qKo: '캠프 중에 아이와 통화할 수 있나요?', qEn: 'Can we call our child during camp?', aKo: '', aEn: '' },
+    ],
+  },
+];
+
+// 화면에는 답이 있는 질문만 — 답이 하나도 없는 묶음은 통째로 숨긴다
+const shown = groups.map(g => ({ ...g, items: g.items.filter(q => q.aKo && q.aEn) })).filter(g => g.items.length);
+---
+
+<BaseLayout
+  title="캠프 자주 묻는 질문 — Word of Life Korea"
+  description="부모님이 자주 묻는 월코 캠프 질문 — 신청, 비용, 환불, 안전, 준비물, 사진과 연락"
+  activeNav="ministry"
+>
+
+<PageHero variant="band" align="center" image="/images/heroes/camphero.jpg" pos="50% 40%">
+  <Fragment slot="eyebrow"><span class="wl-ko">캠프 사역 · 자주 묻는 질문</span><span class="wl-en">Camp FAQ</span></Fragment>
+  <Fragment slot="title">
+    <span class="wl-ko">부모님이 자주 묻는<br>캠프 질문</span>
+    <span class="wl-en">Questions Parents<br>Often Ask</span>
+  </Fragment>
+  <Fragment slot="desc">
+    <span class="wl-ko">신청부터 캠프가 끝날 때까지 궁금하신 점을 모았습니다.</span>
+    <span class="wl-en">Everything from registration to the last day of camp, in one place.</span>
+  </Fragment>
+</PageHero>
+
+<div class="cf">
+  <div class="cf-shell">
+    <nav class="cf-toc" aria-label="질문 묶음 · Topics">
+      {shown.map(g => (
+        <a href={`#faq-${g.id}`}><span class="wl-ko">{g.ko}</span><span class="wl-en">{g.en}</span></a>
+      ))}
+    </nav>
+
+    {shown.map(g => (
+      <section class="cf-group" id={`faq-${g.id}`}>
+        <h2 class="cf-group-title"><span class="wl-ko">{g.ko}</span><span class="wl-en">{g.en}</span></h2>
+        <div class="cf-list">
+          {g.items.map(q => (
+            <details class="cf-item">
+              <summary>
+                <span class="cf-q"><span class="wl-ko">{q.qKo}</span><span class="wl-en">{q.qEn}</span></span>
+                <svg class="cf-chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5"/></svg>
+              </summary>
+              <p class="cf-a"><span class="wl-ko">{q.aKo}</span><span class="wl-en">{q.aEn}</span></p>
+            </details>
+          ))}
+        </div>
+      </section>
+    ))}
+
+    <section class="cf-more" aria-labelledby="cfMoreTitle">
+      <div>
+        <h2 class="cf-more-title" id="cfMoreTitle"><span class="wl-ko">더 궁금한 점은 문의해 주세요</span><span class="wl-en">Still have a question?</span></h2>
+        <p class="cf-more-text">
+          <span class="wl-ko">월코 캠프 010-7310-9216 · wolkorea1@gmail.com · 카카오톡 채널 wolko<br>제주 캠프 064-799-6084 · wolbijeju.contact@gmail.com</span>
+          <span class="wl-en">WOLKO Camp 010-7310-9216 · wolkorea1@gmail.com · KakaoTalk channel wolko<br>Jeju Camp 064-799-6084 · wolbijeju.contact@gmail.com</span>
+        </p>
+      </div>
+      <div class="cf-more-actions">
+        <a class="cf-btn" href="/contact?type=camp&amp;camp=inland#contact-form"><span class="wl-ko">문의하기</span><span class="wl-en">Contact Us</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+        <a class="cf-btn cf-btn--ghost" href="/camp-register"><span class="wl-ko">캠프 신청하기</span><span class="wl-en">Register for Camp</span></a>
+      </div>
+    </section>
+  </div>
+</div>
+
+<style>
+.cf {
+  --cf-deep: #004f68; --cf-navy: #0b2430; --cf-body: #3e535d; --cf-label: #5a7380;
+  --cf-line: #d6dee2; --cf-soft: #f6f9fb;
+  padding: 72px 0 112px; background: #fff; color: var(--cf-navy); word-break: keep-all;
+}
+.cf-shell { width: min(880px, calc(100% - 48px)); margin: 0 auto; }
+.cf-toc { display: flex; flex-wrap: wrap; gap: 8px; }
+.cf-toc a { padding: 8px 14px; border: 1px solid var(--cf-line); border-radius: 999px; color: var(--cf-deep); font-size: 14px; font-weight: 700; text-decoration: none; transition: background .2s, border-color .2s; }
+.cf-toc a:hover { background: var(--cf-soft); border-color: var(--cf-deep); }
+.cf-group { margin-top: 56px; scroll-margin-top: 110px; }
+.cf-group-title { font-family: var(--ff-serif); font-size: clamp(22px, 2.4vw, 28px); font-weight: 700; letter-spacing: -.02em; line-height: 1.3; color: var(--cf-navy); }
+.cf-list { margin-top: 18px; border-top: 2px solid var(--cf-navy); }
+.cf-item { border-bottom: 1px solid var(--cf-line); }
+.cf-item summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 4px; cursor: pointer; list-style: none; }
+.cf-item summary::-webkit-details-marker { display: none; }
+.cf-q { font-size: 17px; font-weight: 700; line-height: 1.5; color: var(--cf-navy); }
+.cf-chev { flex: none; width: 16px; height: 16px; fill: none; stroke: var(--cf-deep); stroke-width: 1.8; transition: transform .25s ease; }
+.cf-item[open] .cf-chev { transform: rotate(180deg); }
+.cf-item summary:hover .cf-q { color: var(--cf-deep); }
+.cf-a { margin: 0; padding: 0 4px 22px; font-size: 15.5px; line-height: 1.85; color: var(--cf-body); }
+.cf-more { margin-top: 72px; display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 32px 36px; background: var(--cf-soft); border: 1px solid var(--cf-line); }
+.cf-more-title { font-family: var(--ff-serif); font-size: 22px; font-weight: 700; letter-spacing: -.02em; color: var(--cf-navy); }
+.cf-more-text { margin-top: 10px; font-size: 14px; line-height: 1.8; color: var(--cf-label); }
+.cf-more-actions { display: flex; flex-direction: column; gap: 8px; flex: none; }
+.cf-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 22px; background: var(--cf-deep); color: #fff; font-size: 15px; font-weight: 700; text-decoration: none; transition: background .2s; }
+.cf-btn:hover { background: #003d52; }
+.cf-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.cf-btn--ghost { background: #fff; color: var(--cf-deep); border: 1px solid var(--cf-deep); }
+.cf-btn--ghost:hover { background: var(--cf-soft); }
+@media (max-width: 740px) {
+  .cf { padding: 48px 0 80px; }
+  .cf-shell { width: calc(100% - 40px); }
+  .cf-toc { flex-wrap: nowrap; overflow-x: auto; margin: 0 -20px; padding: 0 20px 4px; scrollbar-width: none; }
+  .cf-toc::-webkit-scrollbar { display: none; }
+  .cf-toc a { flex: none; font-size: 13px; }
+  .cf-group { margin-top: 44px; }
+  .cf-q { font-size: 16px; }
+  .cf-a { font-size: 15px; }
+  .cf-more { flex-direction: column; align-items: stretch; padding: 24px 20px; margin-top: 56px; }
+  .cf-btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cf-chev, .cf-toc a, .cf-btn { transition: none; }
+}
+</style>
+
+</BaseLayout>
