@@ -13,7 +13,7 @@
   n('upload', ['자료를 올리고 싶어요', 'I want to add a file'],
     ['어떻게 올리실 건가요?', 'How would you like to add it?'], { next: ['up_file', 'up_many', 'up_link', 'up_share', 'up_undo'] });
   n('find', ['자료·업무를 찾고 싶어요', 'I want to find something'],
-    ['무엇을 찾으세요?', 'What are you looking for?'], { next: ['find_all', 'find_tag', 'find_camp', 'find_portal'] });
+    ['무엇을 찾으세요?', 'What are you looking for?'], { next: ['find_all', 'find_tag', 'find_camp', 'find_portal', 'find_library'] });
   n('work', ['업무·회의·일정을 다루고 싶어요', 'Tasks, meetings and events'],
     ['어떤 일을 하실 건가요?', 'What would you like to do?'], { next: ['w_task', 'w_meeting', 'w_event', 'w_alerts', 'w_ooo', 'w_catchup'] });
   n('camp', ['캠프(행사)·TV 화면이 궁금해요', 'Camps and the TV screen'],
@@ -57,6 +57,9 @@
   n('ai_checklist', ['체크리스트 파일 → 업무', 'Checklist file → tasks'],
     ['체크리스트 파일(체크 표시나 목록으로 된 글)을 AI 정리함으로 읽으면 「업무 N개를 추가할까요?」 질문이 나와요. 담당자·기한은 비워 두고, 같은 이름 업무는 건너뛰어요.',
      'When Lumi reads a checklist file she asks "Add N tasks?". Owners and due dates stay empty and tasks with the same name are skipped.'], { guide: 'addFile' });
+  n('find_library', ['설교·찬양·게임·장소 찾기 (보관함)', 'Sermons, worship, games, venues (Library)'],
+    ['왼쪽 메뉴의 「보관함」을 열면 설교·메시지 / 찬양 콘티 / 게임·활동 / 장소·시설 탭이 있어요. 검색창에 제목·성경 본문·설교자·태그를 쓰면 찾아져요. 「자료실에서 가져오기」로 AI 정리함으로 태그를 단 자료를 옮겨 올 수 있어요. 노래 가사는 글로 저장하지 않고 자료실 파일로 연결해요.',
+     'Open "Library" in the left menu: tabs for Sermons, Worship sets, Games & activities and Venues. Search by title, scripture, speaker or tag. "Import from Files" brings in files Lumi has tagged. Lyrics are not stored as text; link lyric files from Files instead.']);
   n('ai_daily', ['오늘 요약', 'Daily summary'],
     ['홈의 「오늘 내가 할 일」 카드 위에 AI 가 하루 요약을 짧게 알려 줘요.', 'On the Home "today" card the AI shows a short daily summary.']);
   n('ai_undo', ['AI 로 올린 걸 되돌리기', 'Undoing an upload'],
