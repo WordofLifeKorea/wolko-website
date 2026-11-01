@@ -2,6 +2,7 @@
  * 포탈 첫 화면(대시보드) 데이터 — 이번 주 공지, 오늘 키친 듀티·차량 운행, 다가오는 일정, 최근 업데이트된 교회.
  * 각 조각은 따로 읽어서 하나가 실패해도(캘린더 미연결 등) 나머지는 그대로 보여 준다.
  */
+import { inboxFor } from './campFormFlow.js';
 import { SLOTS as KITCHEN_SLOTS, readDay } from './kitchenDuty.js';
 import { SLOTS as DRIVE_SLOTS, closedKey as driveClosedKey, currentWeekStart, isSlotClosed as driveSlotClosed, periodFor, shownName, slotKey, todayKst } from './carDrive.js';
 import { listMergedEvents, extraCalendars } from './extraCalendars.js';
@@ -212,6 +213,7 @@ export async function buildDashboard(env, session, now = Date.now(), { campus = 
     settle(() => prayerBoard(env, session)),
     settle(() => mySchedule(env, session, today)),
   ]);
+  if (me) me.campRequests = (await settle(() => inboxFor(env, session.email))) || [];   // 캠프팀 포털에서 온 요청(환규 선교사님께는 인계 요청, 팀에게는 완료 알림) — 해당하는 사람에게만 있다
   if (me) {   // 내 알림에서도 쓸 수 없는 도구의 항목은 뺀다
     if (!may('/portal/kitchen')) me.kitchen = [];
     if (!may('/portal/car-drive')) me.car = [];
