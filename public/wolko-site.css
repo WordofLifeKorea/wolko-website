@@ -258,7 +258,8 @@ html body .wl-prof-field input { border-radius: var(--ws-radius-sm) !important; 
 html body :is(.hub-modal, .hub-modal-card, .hub-pop) { border-radius: var(--ws-radius) !important; }
 
 /* ══ 캠프 & 아웃리치 팀(/portal/campteam) — 자체 왼쪽 메뉴 · 폰 서랍 ══ */
-body > aside:not(.apanel), #drawer { background: var(--ws-navy) !important; background-image: none !important; }
+/* 메뉴 본체(#drawer)도 바깥 틀과 같이 하루 해를 따라 바뀌는 색(--ws-rail-bg, rail-sky.js)을 쓴다 — 남색으로 고정하면 맨 위 로고 줄만 색이 바뀐다 */
+body > aside:not(.apanel), #drawer { background: var(--ws-rail-bg, var(--ws-navy)) !important; background-image: none !important; transition: background-color 2s ease; }
 body > aside:not(.apanel) .logo { border-bottom-color: rgba(255, 255, 255, .10) !important; }
 body > aside:not(.apanel) nav a.on, #drawer nav a.on { background: rgba(255, 255, 255, .10) !important; font-weight: 700 !important; }
 #drawer .drawer-x { border-radius: var(--ws-radius-sm) !important; }
