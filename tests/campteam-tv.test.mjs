@@ -111,3 +111,13 @@ test('새 DB(가짜 자료 없음)에서도 관리자가 TV 화면을 처음 열
   const tv = await TvData.onRequestGet({ env, request: new Request('http://localhost/api/campteam/tv-data?t=' + first.settings.token) });
   assert.equal(tv.status, 200);
 });
+
+test('TV 자료에 오늘 진행표가 들어간다 (제목·시간·장소만, 메모·담당은 안 보냄)', async () => {
+  const env = makeEnv(fakeD1({ seed: false }));
+  env.DB.sqlite.exec(`INSERT INTO camp_members (email,name,role,active,createdAt,updatedAt) VALUES ('${U.admin}','','admin',1,'x','x')`);
+  const first = await J(await call(TvConfig, 'onRequestGet', env, U.admin)), today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10), tomorrow = new Date(Date.now() + 33 * 3600 * 1000).toISOString().slice(0, 10);
+  env.DB.sqlite.exec(`INSERT INTO camp_types (id,nameKo,createdAt,updatedAt) VALUES ('ty','유형','x','x'); INSERT INTO camps (id,typeId,nameKo,status,createdAt,updatedAt) VALUES ('c1','ty','가상 캠프','active','x','x');
+    INSERT INTO camp_timeline (id,campId,dayDate,startTime,endTime,title,place,ownerName,notes,createdAt,updatedAt) VALUES ('t1','c1','${today}','10:00','11:00','개회 예배','강당','홍길동','비밀 메모','x','x'),('t2','c1','${tomorrow}','09:00','','내일 일정','로비','','','x','x');`);
+  const d = await J(await TvData.onRequestGet({ env, request: new Request('http://localhost/api/campteam/tv-data?t=' + first.settings.token) }));
+  assert.deepEqual(d.data.timeline.map((t) => t.title), ['개회 예배'], '오늘 것만'); assert.ok(!JSON.stringify(d.data.timeline).includes('비밀 메모') && !JSON.stringify(d.data.timeline).includes('홍길동'));
+});
