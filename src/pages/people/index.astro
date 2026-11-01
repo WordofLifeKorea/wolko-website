@@ -93,7 +93,7 @@ const mapPlaces = [
       <span class="pp-glow pp-glow--b" aria-hidden="true"></span>
       <div class="pp-shell pp-hero-grid">
         <div class="pp-hero-text">
-          <p class="pp-eyebrow pp-rise" style="--i:0"><span class="wl-ko">섬기는이 · OUR TEAM</span><span class="wl-en">OUR TEAM</span></p>
+          <p class="pp-eyebrow pp-rise" style="--i:0"><span class="wl-ko">섬기는이</span><span class="wl-en">OUR TEAM</span></p>
           <h1 class="pp-rise" style="--i:1"><span class="wl-ko">함께 섬기는<br><em class="pp-hl">사람들</em></span><span class="wl-en">Meet Our<br><em class="pp-hl">Ministry Team</em></span></h1>
           <p class="pp-lead-copy pp-rise" style="--i:2">
             <span class="wl-ko">하나님의 부르심을 따라 다음 세대를 위해 헌신하는 월코의 사역자들을 소개합니다.</span>
@@ -167,7 +167,7 @@ const mapPlaces = [
 
     <main class="pp-shell pp-main">
       <section class="pp-leads-sec" data-leads>
-        <p class="pp-kicker"><span class="wl-ko">LEADERSHIP · 대표</span><span class="wl-en">LEADERSHIP</span></p>
+        <p class="pp-kicker"><span class="wl-ko">대표</span><span class="wl-en">LEADERSHIP</span></p>
         <div class="pp-leads">
           {leads.map((p) => (
             <a href={`/team/${p.slug}`} class="pp-card pp-lead" data-loc={locOf(p)} data-role={p.data.category}>
@@ -177,7 +177,6 @@ const mapPlaces = [
               <span class="pp-lead-body">
                 <span class="pp-lead-badge"><span class="wl-ko">{roleKo(p.data.role_badge)}</span><span class="wl-en">{p.data.role_badge}</span></span>
                 <span class="pp-lead-name"><span class="wl-ko">{p.data.name_ko}</span><span class="wl-en">{p.data.name_en}</span></span>
-                <span class="pp-lead-sub"><span class="wl-ko">{p.data.name_en}</span><span class="wl-en">{p.data.name_ko}</span></span>
                 <span class="pp-lead-title"><span class="wl-ko">{p.data.title_ko}</span><span class="wl-en">{p.data.title_en}</span></span>
                 <span class="pp-go"><span class="wl-ko">프로필 보기</span><span class="wl-en">View profile</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></span>
               </span>
@@ -205,7 +204,6 @@ const mapPlaces = [
                   </span>
                   <span class="pp-info">
                     <span class="pp-name"><span class="wl-ko">{p.data.name_ko}</span><span class="wl-en">{p.data.name_en}</span></span>
-                    <span class="pp-en"><span class="wl-ko">{p.data.name_en}</span><span class="wl-en">{p.data.name_ko}</span></span>
                     <span class="pp-title"><span class="wl-ko">{p.data.title_ko}</span><span class="wl-en">{p.data.title_en}</span></span>
                   </span>
                 </a>
@@ -219,7 +217,7 @@ const mapPlaces = [
 
       <section class="pp-join">
         <div>
-          <p class="pp-join-kicker">JOIN US</p>
+          <p class="pp-join-kicker"><span class="wl-ko">함께 섬기기</span><span class="wl-en">JOIN US</span></p>
           <p class="pp-join-title"><span class="wl-ko">다음 세대를 함께 섬길<br>동역자를 기다립니다</span><span class="wl-en">Serve the next generation<br>with us</span></p>
         </div>
         <div class="pp-join-btns">
@@ -391,8 +389,7 @@ const mapPlaces = [
     .pp-lead-body { display: flex; flex-direction: column; justify-content: center; gap: 10px; padding: 28px; }
     .pp-lead-badge { align-self: flex-start; padding: 4px 10px; border-radius: 999px; background: var(--pp-navy); color: #fff; font-size: 11.5px; font-weight: 800; letter-spacing: .06em; }
     .pp-lead-name { font-family: var(--ff-serif); font-size: 26px; font-weight: 900; letter-spacing: -.02em; color: var(--pp-navy); line-height: 1.25; }
-    /* 타이틀도 카드의 다른 글자처럼 굵게(가는 400 만 따로 놀아 다른 글꼴처럼 보였다) — 이름 › 타이틀 › 영문 이름 순 */
-    .pp-lead-sub { font-size: 13px; color: var(--pp-muted); font-weight: 500; }
+    /* 타이틀도 카드의 다른 글자처럼 굵게(가는 400 만 따로 놀아 다른 글꼴처럼 보였다) */
     .pp-lead-title { font-size: 14.5px; font-weight: 600; color: #2c4450; line-height: 1.6; }
     .pp-go { margin-top: 6px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 800; color: var(--pp-deep); transition: gap .25s; }
     .pp-go svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; }
@@ -412,7 +409,6 @@ const mapPlaces = [
     .pp-badge { position: absolute; left: 10px; top: 10px; z-index: 1; padding: 4px 9px; border-radius: 999px; background: rgba(255,255,255,.92); font-size: 11px; font-weight: 800; color: var(--pp-navy); }
     .pp-info { display: flex; flex-direction: column; gap: 5px; padding: 14px 2px 0; }
     .pp-name { font-size: 17px; font-weight: 800; letter-spacing: -.01em; color: var(--pp-navy); line-height: 1.35; }
-    .pp-en { font-size: 12.5px; color: var(--pp-muted); font-weight: 500; }
     .pp-title { font-size: 13.5px; font-weight: 600; color: #2c4450; line-height: 1.55; }
     .pp-empty { text-align: center; color: var(--pp-muted); font-weight: 700; }
 

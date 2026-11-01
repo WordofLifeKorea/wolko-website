@@ -82,6 +82,17 @@ function koRefToEn(ref: string): string {
   return ref;
 }
 const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
+// 거꾸로: 영어로 저장된 구절 주소(예: "Ephesians 2:10")는 한글 화면에서 한글 책 이름으로
+const EN_BOOK = Object.entries(BOOK_MAP).map(([ko, en]) => [en, ko]).concat([['Psalms', '시편']])
+  .sort((a, b) => b[0].length - a[0].length);
+function enRefToKo(ref: string): string {
+  const s = ref.trim();
+  for (const [en, ko] of EN_BOOK) {
+    if (s.startsWith(en + ' ')) return ko + s.slice(en.length);
+  }
+  return ref;
+}
+const verseRefKo = d.verse_ref ? enRefToKo(d.verse_ref) : null;
 ---
 <BaseLayout title={`${d.name_ko} — WOLKO 월코`} description={`${d.name_en} | ${d.title_en} | Word of Life Korea`} activeNav="about">
 <style>
@@ -460,12 +471,9 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
             <span class="mp-hero-campus"><span class="wl-ko">{campusKo}</span><span class="wl-en">{campusEn}</span></span>
           </p>
 
-          {(taglineKo || taglineEn) && (
-            <p class="mp-hero-tagline">
-              <span class="wl-ko">{taglineKo || taglineEn}</span>
-              <span class="wl-en">{taglineEn || taglineKo}</span>
-            </p>
-          )}
+          {/* 한 줄 소개 — 한쪽 말이 비어 있어도 다른 말로 채우지 않는다(한글 화면엔 한글만, 영어 화면엔 영어만) */}
+          {taglineKo && <p class="mp-hero-tagline wl-ko-block">{taglineKo}</p>}
+          {taglineEn && <p class="mp-hero-tagline wl-en-block">{taglineEn}</p>}
 
           <p class="mp-hero-desc">
             {d.hero_subtitle_ko || d.hero_subtitle_en ? (
@@ -535,8 +543,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
         <div class="mp-verse-ref">
           {d.verse_ref ? (
             <>
-              <span class="wl-ko">{d.verse_ref}</span>
-              <span class="wl-en">{verseRefEn || d.verse_ref}</span>
+              <span class="wl-ko">{verseRefKo}</span>
+              <span class="wl-en">{verseRefEn}</span>
             </>
           ) : (
             <>
@@ -694,31 +702,16 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
         <h2 class="mp-prayer-title"><span class="wl-ko">기도제목</span><span class="wl-en">Prayer Requests</span></h2>
       </div>
       <div>
-        {d.prayer_ko || d.prayer_en ? (
-          (() => {
-            const parseBullets = (text: string) =>
-              text.split(/\n|(?<!\w)\s*-\s+/).map(s => s.replace(/^-\s*/, '').trim()).filter(Boolean);
-            const koItems = parseBullets(d.prayer_ko || d.prayer_en || '');
-            const enItems = parseBullets(d.prayer_en || d.prayer_ko || '');
-            const isList = koItems.length > 1 || enItems.length > 1;
-            return isList ? (
-              <>
-                <div class="wl-ko"><ul class="mp-prayer-list">{koItems.map(item => <li>{item}</li>)}</ul></div>
-                <div class="wl-en"><ul class="mp-prayer-list">{enItems.map(item => <li>{item}</li>)}</ul></div>
-              </>
-            ) : (
-              <p class="mp-prayer-text">
-                <span class="wl-ko">{d.prayer_ko || d.prayer_en}</span>
-                <span class="wl-en">{d.prayer_en || d.prayer_ko}</span>
-              </p>
-            );
-          })()
-        ) : (
-          <p class="mp-prayer-text">
-            <span class="wl-ko">이 사역자를 위한 중보기도가 사역의 힘이 됩니다. 함께 기도해 주세요.</span>
-            <span class="wl-en">Your prayers are the backbone of this ministry. Thank you for interceding for our team.</span>
-          </p>
-        )}
+        {/* 기도제목 — 언어마다 따로 보여 주고, 그 언어가 비어 있으면 그 언어의 기본 문장(다른 말로 채우지 않는다) */}
+        {[
+          { cls: 'wl-ko', text: d.prayer_ko, empty: '이 사역자를 위한 중보기도가 사역의 힘이 됩니다. 함께 기도해 주세요.' },
+          { cls: 'wl-en', text: d.prayer_en, empty: 'Your prayers are the backbone of this ministry. Thank you for interceding for our team.' },
+        ].map(({ cls, text, empty }) => {
+          const items = String(text || '').split(/\n|(?<!\w)\s*-\s+/).map(s => s.replace(/^-\s*/, '').trim()).filter(Boolean);
+          return items.length > 1
+            ? <div class={cls}><ul class="mp-prayer-list">{items.map(item => <li>{item}</li>)}</ul></div>
+            : <p class={`mp-prayer-text ${cls}-block`}>{items[0] || empty}</p>;
+        })}
       </div>
     </div>
   </section>
