@@ -6,6 +6,7 @@
 # - 이미 적용한 번호를 다시 실행하면 오류가 나거나 데이터가 바뀔 수 있으니, 처음에는 1 부터, 이어서 할 때는 "빠진 번호부터" 지정한다.
 # - 실행 전에 목록을 보여 주고 yes 를 입력해야 시작한다. 오류가 나면 그 자리에서 멈춘다.
 # - DRY_RUN=1 이면 목록만 보여 주고 아무것도 실행하지 않는다.
+# - ASSUME_YES=1 이면 yes 입력을 묻지 않는다(사람이 허락한 자동 실행용 — 반드시 번호 범위를 정확히 지정할 것).
 set -euo pipefail
 CONFIG="${1:-}"; FROM="${2:-}"; TO="${3:-}"
 [ -n "$CONFIG" ] && [ -n "$FROM" ] || { sed -n 2,9p "$0"; exit 1; }
@@ -21,7 +22,7 @@ done
 [ "${#FILES[@]}" -gt 0 ] || { echo "실행할 파일이 없어요."; exit 1; }
 echo "실제 Cloudflare D1 에 아래 파일을 순서대로 실행합니다:"; printf '  %s\n' "${FILES[@]}"
 [ "${DRY_RUN:-}" = "1" ] && { echo "(DRY_RUN — 실행하지 않았어요)"; exit 0; }
-read -r -p "계속할까요? 계속하려면 yes 를 입력: " ans; [ "$ans" = "yes" ] || { echo "취소했어요."; exit 1; }
+if [ "${ASSUME_YES:-}" != "1" ]; then read -r -p "계속할까요? 계속하려면 yes 를 입력: " ans; [ "$ans" = "yes" ] || { echo "취소했어요."; exit 1; }; fi
 for f in "${FILES[@]}"; do
   echo "▶ $f"; npx wrangler@4 d1 execute DB --remote --config "$CONFIG" --file "$f" --yes
 done

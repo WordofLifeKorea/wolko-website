@@ -1,0 +1,19 @@
+---
+import CampTeamLayout from '../../../layouts/CampTeamLayout.astro';
+---
+<CampTeamLayout title="번역 도우미" active="translate">
+  <div class="top"><div><div class="h1row"><h1 data-t="trlTitle"></h1></div><div class="sub" data-t="trlSub"></div></div></div>
+  <section class="card trl">
+    <div class="trl-opts">
+      <label><span data-t="trlKind"></span><select id="trlKind"></select></label>
+      <label><span data-t="trlDir"></span><select id="trlDir"></select></label>
+    </div>
+    <div class="trl-cols">
+      <div><textarea id="trlIn" rows="14" maxlength="8000" data-t-ph="trlPh"></textarea><div class="hint"><span id="trlCount">0</span> / 8000</div></div>
+      <div><textarea id="trlOut" rows="14" readonly></textarea><div class="hint" id="trlMsg"></div></div>
+    </div>
+    <div class="actions"><button class="btn pri" id="trlGo" data-t="trlGo"></button> <button class="btn" id="trlCopy" data-t="trlCopy" hidden></button> <button class="btn" id="trlSwap" data-t="trlSwap" hidden></button> <a class="btn" href="/portal/campteam/settings/" data-t="trlGloss"></a></div>
+    <p class="hint" data-t="trlNote"></p>
+  </section>
+  <script is:inline slot="scripts" src="/portal/campteam/translate.js?v=1"></script>
+</CampTeamLayout>
