@@ -27,13 +27,21 @@
       en: { t: 'How to use Camp prep', s: ['Choose one camp at the top: Year → Type → Camp.', 'Open prep tools in the tabs: timeline, supplies, contacts, assignments, survey.', 'Press “+ Add” for one row, or use “Paste from Excel” to add a whole table at once.', 'Contacts are visible only to people on the camp team list.'], ex: ['09:00–09:30 Registration', 'Place: Lobby · Owner Jason · Winter Joint Camp day 1'] }
     }
   };
-  CT.addDict({ ko: { htBadge: '예시 카드', htEx: '예시', htNote: '아래는 보여 주기 위한 가짜 예시예요. 실제 자료가 아니고 저장되지 않아요.' }, en: { htBadge: 'Example card', htEx: 'Example', htNote: 'The row below is a made-up example for illustration. It is not real data and is not saved.' } });
+  CT.addDict({ ko: { htBadge: '예시 카드', htEx: '예시', htNote: '아래는 보여 주기 위한 가짜 예시예요. 실제 자료가 아니고 저장되지 않아요.', htHide: '접기 ▲', htShow: '펼치기 ▼', htBar: '이 화면 사용법 · 예시' },
+    en: { htBadge: 'Example card', htEx: 'Example', htNote: 'The row below is a made-up example for illustration. It is not real data and is not saved.', htHide: 'Hide ▲', htShow: 'Show ▼', htBar: 'How to use this page · example' } });
+  /* 접어 둔 상태는 계정마다 서버에 기억하고(다른 기기에서도 같음), 서버를 못 쓰면 이 브라우저에만 기억한다. 처음엔 펼쳐서 보여 준다 */
+  var PK = 'howto:' + sec, LK = 'ct-' + PK, hidden = false;
+  try { hidden = localStorage.getItem(LK) === '1'; } catch (e) {}
+  function remember(v) { try { v ? localStorage.setItem(LK, '1') : localStorage.removeItem(LK); } catch (e) {} CT.api('/api/campteam/ui-prefs', { method: 'PUT', body: { key: PK, value: v ? '1' : '' } }).catch(function () {}); }
   var box = document.createElement('section'); box.className = 'ct-howto'; box.id = 'ctHowto'; box.setAttribute('aria-label', 'how to use'); top.insertAdjacentElement('afterend', box);
   function paint() {
-    var d = C[sec][CT.lang() === 'en' ? 'en' : 'ko'], esc = CT.esc;
-    box.innerHTML = '<div class="ht-head"><b>💡 ' + esc(d.t) + '</b><span class="ht-badge">' + esc(CT.t('htBadge')) + '</span></div>' +
+    var d = C[sec][CT.lang() === 'en' ? 'en' : 'ko'], esc = CT.esc; box.classList.toggle('is-min', hidden);
+    if (hidden) { box.innerHTML = '<div class="ht-bar"><span class="ht-bt">💡 ' + esc(CT.t('htBar')) + '</span><span class="ht-badge">' + esc(CT.t('htBadge')) + '</span><button type="button" class="ht-tg" data-ht="show" aria-expanded="false">' + esc(CT.t('htShow')) + '</button></div>'; return; }
+    box.innerHTML = '<div class="ht-head"><b>💡 ' + esc(d.t) + '</b><span class="ht-badge">' + esc(CT.t('htBadge')) + '</span><button type="button" class="ht-tg" data-ht="hide" aria-expanded="true">' + esc(CT.t('htHide')) + '</button></div>' +
       '<ol class="ht-steps">' + d.s.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>' +
       '<div class="ht-ex"><span class="ht-tag">' + esc(CT.t('htEx')) + '</span><div class="ht-exb"><b>' + esc(d.ex[0]) + '</b><small>' + esc(d.ex[1]) + '</small></div></div><p class="ht-note">' + esc(CT.t('htNote')) + '</p>';
   }
+  box.addEventListener('click', function (e) { var b = e.target.closest('[data-ht]'); if (!b) return; hidden = b.dataset.ht === 'hide'; remember(hidden); paint(); });
   paint(); document.addEventListener('ct-lang', paint);
+  document.addEventListener('ct-ready', function () { CT.api('/api/campteam/ui-prefs').then(function (r) { var v = r && r.prefs && r.prefs[PK]; if (v === undefined && !hidden) return; var h = v === '1'; if (v === undefined && hidden) { remember(true); return; } if (h !== hidden) { hidden = h; try { h ? localStorage.setItem(LK, '1') : localStorage.removeItem(LK); } catch (e) {} paint(); } }).catch(function () {}); });
 })();

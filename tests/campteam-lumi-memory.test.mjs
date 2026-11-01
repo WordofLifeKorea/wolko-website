@@ -64,3 +64,14 @@ test('루미 기억: 내 대화만 서버에 저장·불러오기·지우기, �
   await mem(Mem.onRequestPut, env, U.mem, { method: 'PUT', body: { msgs: [{ r: 'u', t: '안녕' }] } }); await mem(Mem.onRequestDelete, env, U.mem, { method: 'DELETE' });
   assert.deepEqual((await mem(Mem.onRequestGet, env, U.mem)).body.msgs, [], '「새 대화」는 기억도 지운다');
 });
+
+test('화면 설정 기억: 내 설정만, 허용된 키·짧은 값만, 빈 값이면 지운다', async () => {
+  const Prefs = await import('../functions/api/campteam/ui-prefs.js'), env = makeEnv(fakeD1());
+  const call = async (m, who, o = {}) => { const r = await m({ env, request: await req(who, { method: o.method || 'GET', url: 'http://localhost/api/campteam/ui-prefs', body: o.body }) }); return { status: r.status, body: await r.json() }; };
+  assert.deepEqual((await call(Prefs.onRequestGet, U.mem)).body.prefs, {});
+  assert.equal((await call(Prefs.onRequestPut, U.mem, { method: 'PUT', body: { key: 'howto:tasks', value: '1' } })).body.ok, true);
+  assert.deepEqual((await call(Prefs.onRequestGet, U.mem)).body.prefs, { 'howto:tasks': '1' }); assert.deepEqual((await call(Prefs.onRequestGet, U.dir)).body.prefs, {}, '다른 계정은 못 본다');
+  assert.equal((await call(Prefs.onRequestPut, U.mem, { method: 'PUT', body: { key: 'admin:secret', value: '1' } })).status, 400, '정해진 키만');
+  await call(Prefs.onRequestPut, U.mem, { method: 'PUT', body: { key: 'howto:tasks', value: '' } }); assert.deepEqual((await call(Prefs.onRequestGet, U.mem)).body.prefs, {}, '빈 값이면 지운다');
+  assert.equal((await Prefs.onRequestGet({ env, request: await req(null) })).status, 401);
+});
