@@ -29,7 +29,7 @@ const funds = [
 // number 는 화면에 보이는 그대로(하이픈 포함) 복사된다.
 const giveAccounts: { bankKo: string; bankEn: string; number: string; holderKo: string; holderEn: string }[] = [];
 
-// 사역 참여 — 마무리 남색 띠 안에 세 갈래로 놓인다
+// 사역 참여 — 히어로 바로 아래 남색 띠 안에 세 갈래로 놓인다
 const involve = [
   {
     num: '01', ko: '캠프 스태프', en: 'Camp Staff',
@@ -71,6 +71,34 @@ const involve = [
     <span class="wl-en">Your generosity empowers Word of Life Korea to reach the next generation with the Gospel.</span>
   </Fragment>
 </PageHero>
+
+  <!-- ═══ 사역 참여 — 히어로 바로 아래 남색 띠 ═══ -->
+  <section class="gv-involve">
+    <div class="gv-shell">
+      <div class="gv-involve-head">
+        <p class="gv-eyebrow"><span class="wl-ko">사역 참여</span><span class="wl-en">Get Involved</span></p>
+        <h2 class="gv-title">
+          <span class="wl-ko">함께 사역할 수 있는<br>다양한 방법이 있습니다</span>
+          <span class="wl-en">There Are Many Ways<br>to Serve With Us</span>
+        </h2>
+      </div>
+      <ol class="gv-involve-grid">
+        {involve.map((v) => (
+          <li class="gv-involve-item">
+            <span class="gv-involve-num">{v.num}</span>
+            <h3 class="gv-involve-title"><span class="wl-ko">{v.ko}</span><span class="wl-en">{v.en}</span></h3>
+            <p class="gv-involve-desc"><span class="wl-ko">{v.dKo}</span><span class="wl-en">{v.dEn}</span></p>
+          </li>
+        ))}
+      </ol>
+      <div class="gv-involve-cta">
+        <a href="/contact" class="gv-btn gv-btn-light">
+          <span><span class="wl-ko">참여 문의하기</span><span class="wl-en">Get in Touch</span></span>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
 
   <!-- ═══ SECTION 1 : 사역 후원 ═══ -->
   <section class="gv-ministry" id="ministry-give">
@@ -265,34 +293,6 @@ const involve = [
         </a>
       </div>
       <figure class="gv-intl-photo"><img src="/images/heroes/campgroup.jpg" alt="월코 캠프에 함께한 청소년들과 스태프" loading="lazy"></figure>
-    </div>
-  </section>
-
-  <!-- ═══ 사역 참여 — 마무리 남색 띠 ═══ -->
-  <section class="gv-involve">
-    <div class="gv-shell">
-      <div class="gv-involve-head">
-        <p class="gv-eyebrow"><span class="wl-ko">사역 참여</span><span class="wl-en">Get Involved</span></p>
-        <h2 class="gv-title">
-          <span class="wl-ko">함께 사역할 수 있는<br>다양한 방법이 있습니다</span>
-          <span class="wl-en">There Are Many Ways<br>to Serve With Us</span>
-        </h2>
-      </div>
-      <ol class="gv-involve-grid">
-        {involve.map((v) => (
-          <li class="gv-involve-item">
-            <span class="gv-involve-num">{v.num}</span>
-            <h3 class="gv-involve-title"><span class="wl-ko">{v.ko}</span><span class="wl-en">{v.en}</span></h3>
-            <p class="gv-involve-desc"><span class="wl-ko">{v.dKo}</span><span class="wl-en">{v.dEn}</span></p>
-          </li>
-        ))}
-      </ol>
-      <div class="gv-involve-cta">
-        <a href="/contact" class="gv-btn gv-btn-light">
-          <span><span class="wl-ko">참여 문의하기</span><span class="wl-en">Get in Touch</span></span>
-          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
-        </a>
-      </div>
     </div>
   </section>
 
