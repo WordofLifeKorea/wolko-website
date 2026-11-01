@@ -17,7 +17,7 @@
   n('work', ['업무·회의·일정을 다루고 싶어요', 'Tasks, meetings and events'],
     ['어떤 일을 하실 건가요?', 'What would you like to do?'], { next: ['w_task', 'w_meeting', 'w_event', 'w_alerts', 'w_ooo', 'w_catchup'] });
   n('camp', ['캠프(행사)·TV 화면이 궁금해요', 'Camps and the TV screen'],
-    ['캠프 준비에 필요한 기능이에요.', 'These help you prepare camps.'], { next: ['c_create', 'c_space', 'c_tv', 'c_prep', 'c_series', 'c_phonecal', 'c_wizard', 'c_close', 'c_survey', 'c_assign'] });
+    ['캠프 준비에 필요한 기능이에요.', 'These help you prepare camps.'], { next: ['c_create', 'c_space', 'c_tv', 'c_prep', 'c_series', 'c_phonecal', 'c_wizard', 'c_close', 'c_survey', 'c_assign', 'c_forms'] });
   n('c_prep', ['진행표·준비물·연락처', 'Timeline, supplies, contacts'],
     ['왼쪽 메뉴의 「캠프 준비」(또는 캠프별 공간 맨 위의 「📋 캠프 준비」)를 열어요. 진행표 탭은 날짜별 시간표(엑셀에서 붙여넣기 가능, 지금 진행 중인 줄이 초록으로 표시), 준비물 탭은 필요/구입함/준비 끝 상태와 지난 캠프에서 복사, 연락처 탭은 교회·학교·업체·강사 연락처예요. 연락처는 캠프팀 명단에 있는 사람만 봐요.',
      'Open "Camp Prep" in the left menu (or "📋 Camp prep" at the top of a camp space). Timeline: a schedule by day (paste from Excel; the running row turns green). Supplies: Needed/Bought/Ready with copy from a past camp. Contacts: churches, schools, vendors, speakers, visible only to camp team members.']);
@@ -27,6 +27,9 @@
   n('c_phonecal', ['폰 캘린더·폰에서 업무 추가는요?', 'Phone calendar / add tasks from phone'],
     ['이 두 기능은 아이폰에서만 되는 방식이라 지금은 꺼 두었어요. 갤럭시를 쓰는 팀원도 있어서, 포털 앱이 앱스토어·플레이스토어에 정식으로 나온 뒤에 다시 열 예정이에요. 켜더라도 관리자에게만 보여요.',
      'These two features only work well on iPhone, so they are switched off for now. Some teammates use Galaxy phones, so we will reopen them after the portal app is officially released in the app stores. When on, only admins will see them.']);
+  n('c_forms', ['다음 캠프 신청서·지원서는 어디서 만들어요?', 'Where do I make the next camp forms?'],
+    ['캠프 준비의 「신청서」 탭에서 만들어요. 「+ 새 신청서」를 누르면 같은 종류·유형의 가장 최근 신청서를 복사해서 시작하고, 필요한 칸·문단·동의만 고치면 돼요(스태프·크루 지원서도 같아요). 작성(Ella) → 검토(Jason) → 최종 승인(Aiden)을 모두 거치면 「승인 완료」로 보관돼요. 홈페이지에는 연결되어 있지 않아요.',
+     'Make them in the "Forms" tab of Camp prep. "+ New form" starts as a copy of the most recent form of the same kind and type; edit only the items, paragraphs and consents that change (same for staff/crew forms). After Write (Ella) → Review (Jason) → Final approval (Aiden) it is kept as "Approved". It is not connected to the website.']);
   n('c_wizard', ['새 캠프 시작 마법사', 'Start wizard for a new camp'],
     ['캠프 준비 화면의 「시작 마법사」 탭을 열고 위에서 새 캠프를 고르세요. 지난 캠프 후보가 나오고(「루미에게 추천받기」도 있어요), 하나를 고르면 업무·진행표·준비물·자료 후보가 보여요. 체크한 것만 복사돼요. 담당자는 비워지고 날짜는 시작일 차이만큼 옮겨져요.',
      'In the "Start wizard" tab of Camp prep, pick the new camp at the top. Past camps appear (you can also ask Lumi to recommend); choose one to see tasks, timeline, supplies and files. Only ticked items are copied: owners stay empty and dates shift by the difference in start dates.']);
