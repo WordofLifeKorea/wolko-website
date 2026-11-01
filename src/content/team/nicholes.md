@@ -24,7 +24,7 @@ hero_tagline_ko: 말씀으로
 hero_tagline_en: Raising Up the Next Generation
 hero_tagline2_ko: 다음 세대를 세우다
 hero_tagline2_en: Through the Word
-hero_subtitle_ko: 스티브와 론다는 제주도에 위치한 생명의 말씀 성경학교(월비)에서 학생들을 하나님의 말씀으로 가르치고
+hero_subtitle_ko: 스티브와 란다는 제주도에 위치한 생명의 말씀 성경학교(월비)에서 학생들을 하나님의 말씀으로 가르치고
   훈련합니다. 30년 넘게 아시아에서 섬겨온 두 사람은 지금도 젊은 사역자들을 지도하는 일에 헌신하고 있습니다.
 hero_subtitle_en: Steve and Rhonda teach and train students in God's Word at
   Word of Life Bible Institute (WOLBI) on Jeju Island. With over thirty years of
