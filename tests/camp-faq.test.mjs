@@ -5,7 +5,7 @@ import test from 'node:test';
 const read = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
 test('parent camp FAQ page is bilingual, hides unanswered questions and links to contact', async () => {
-  const faq = await read('src/pages/camp/faq.astro');
+  const faq = await read('src/pages/camp/_faq.astro');
   assert.match(faq, /<BaseLayout[\s\S]*activeNav="ministry"/);
   assert.match(faq, /class="wl-ko"/);
   assert.match(faq, /class="wl-en"/);
@@ -19,7 +19,8 @@ test('parent camp FAQ page is bilingual, hides unanswered questions and links to
   assert.equal(sources.length, answers.length);
 });
 
-test('camp page links to the parent FAQ', async () => {
+test('the parent FAQ stays a draft until every answer is filled in', async () => {
   const camp = await read('src/pages/camp/index.astro');
-  assert.match(camp, /href="\/camp\/faq"/);
+  // 링크는 주석 안에만 있다 — 공개할 때 주석을 푼다
+  assert.doesNotMatch(camp.replace(/\{\/\*[\s\S]*?\*\/\}/g, ''), /href="\/camp\/faq"/);
 });
