@@ -75,9 +75,9 @@
     ['업무 제목은 한국어/영어로 자동 번역돼서 업무·홈·캠프 공간·달력·검색에서 언어를 바꿔 볼 수 있어요. 번역이 안 된 업무는 설정 화면의 「번역 안 된 업무 번역하기」로 한 번에 번역할 수 있어요.',
      'Task titles are translated automatically so you can switch language in Tasks, Home, Camp spaces, Calendar and Search. Untranslated tasks can be translated at once from Settings.'],
     { next: ['t_lang'] });
-  n('ai_translate_text', ['번역 도우미 (설교문·공지)', 'Translation helper'],
-    ['주소창에 /portal/campteam/translate/ 를 열거나 자료실 위의 「번역 도우미」 링크를 누르세요. 글을 붙여 넣고 종류(설교·공지·일정표)를 고르면 한국어↔영어로 옮겨 줘요. 용어집 단어는 그대로 지켜요. 결과는 꼭 한 번 읽고 고쳐 쓰세요. 하루 40번까지예요.',
-     'Open /portal/campteam/translate/ or the "Translation helper" link above Files. Paste text, pick the kind (sermon, notice, schedule) and it translates Korean ↔ English, keeping glossary terms. Always read and adjust the result. Up to 40 a day.']);
+  n('ai_translate_text', ['번역 도우미 (문서 파일 번역)', 'Translation helper (documents)'],
+    ['자료실 위의 「번역 도우미」(또는 /portal/campteam/translate/)에서 Word·PowerPoint·Excel 파일을 올리면 글꼴·표·배치는 그대로 두고 글만 한국어↔영어로 바꾼 새 파일을 내려받아요. PDF 는 글만 뽑아 새 Word 문서로 만들어 줘요(배치·표·그림은 사라져요). 장부·예산 같은 돈 관련 파일은 번역하지 않아요. 짧은 글(단톡에 올릴 말 등)은 루미의 「🌐 번역」 버튼을 쓰세요. 결과는 꼭 한 번 읽어 보고 쓰세요.',
+     'Use the "Translation helper" above Files (or /portal/campteam/translate/): upload a Word, PowerPoint or Excel file and download a new file with only the text changed Korean ↔ English; fonts, tables and layout stay. PDFs become a new Word file with text only (layout, tables and images are lost). Finance files such as ledgers and budgets are not translated. For short text use Lumi\'s "🌐 Translate" button. Always read the result before using it.']);
   n('ai_pair', ['한·영 짝 묶기 · 중복 정리', 'Pairing and duplicates'],
     ['자료실 위의 「정리 제안」을 누르면 같은 내용의 한국어·영어 자료 짝 후보와 중복·최신본 후보가 나와요. 「짝으로 묶기」「나머지는 휴지통으로」를 눌러야만 바뀌고, 휴지통에서 되살릴 수 있어요.',
      'Press "Tidy suggestions" above Files to see Korean/English pair candidates and duplicates. Nothing changes until you press "Pair them" or "Move the rest to trash", and the trash can be restored.']);
