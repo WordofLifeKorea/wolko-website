@@ -50,6 +50,18 @@ test('notice due date: optional, must be a real date, and keeps a notice visible
   assert.deepEqual(noticesForWeek(list, '2026-10-26', '2026-10-31').map(n => n.id), ['now'], '마감일 다음 날부터는 사라진다');
 });
 
+test('a pinned notice stays on the board after the week changes, until it is unpinned', () => {
+  const list = [
+    { id: 'pin-old', weekStart: '2026-10-19', pinned: true, createdAt: '2026-10-20T00:00:00Z' },
+    { id: 'old', weekStart: '2026-10-19', createdAt: '2026-10-21T00:00:00Z' },
+    { id: 'pin-next', weekStart: '2026-11-02', pinned: true, createdAt: '2026-10-28T00:00:00Z' },
+    { id: 'now', weekStart: '2026-10-26', createdAt: '2026-10-27T00:00:00Z' },
+  ];
+  assert.deepEqual(noticesForWeek(list, '2026-10-26').map(n => n.id), ['pin-old', 'now'], '다음 주 고정 공지는 그 주가 와야 보인다');
+  assert.deepEqual(noticesForWeek(list, '2026-10-26', TODAY).map(n => n.id), ['pin-old', 'now']);
+  assert.deepEqual(noticesForWeek([{ ...list[0], pinned: false }], '2026-10-26').map(n => n.id), [], '고정을 풀면 지난 주 공지는 사라진다');
+});
+
 test('kitchen duty today lists only meals that have people', async () => {
   const { env } = kvEnv({ [`kitchen:day:${TODAY}`]: { lunch_prep: [{ email: 'a@b.c', name: 'Amy' }], dinner_clean: [{ email: 'd@e.f', name: 'Dan' }, { email: 'g@h.i', name: 'Eve' }] } });
   const out = await kitchenToday(env, TODAY);

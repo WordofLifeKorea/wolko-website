@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=87">
+  <link rel="stylesheet" href="/hub.css?v=88">
   <link rel="stylesheet" href="/hub-sky.css?v=13">
   <script src="/hub-sky.js?v=6" defer></script>
   <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
@@ -769,7 +769,7 @@
       else body = '<ul class="hub-events">' + d.events.map(e => {
         const p = kstParts(e.start, e.allDay), isToday = p.ymd === d.today;
         const when = e.allDay ? '<span class="hub-tag">' + esc(t('allDay')) + '</span>' : '<span class="hub-time">' + esc(fmtTime(e.start)) + '</span>';
-        return '<li' + (isToday ? ' class="is-today"' : '') + '><span class="hub-datetile"><small>' + esc(p.month + (hubLang === 'en' ? '' : '월')) + '</small><b>' + esc(p.day) + '</b><i>' + esc(p.weekday) + '</i></span>'
+        return '<li' + (isToday ? ' class="is-today"' : '') + '><span class="hub-datetile"><b>' + esc(p.ymd.slice(5, 7) + '. ' + p.ymd.slice(8, 10)) + '</b><i>' + esc(p.weekday) + '</i></span>'
           + '<span class="hub-event-text"><b>' + esc(e.title) + '' + '</b>'
           + '<small>' + when + (e.location ? '<span class="hub-loc">' + esc(e.location) + '</span>' : '') + (e.cal ? '<span class="hub-loc" style="color:' + esc(e.cal.color) + ';font-weight:700">● ' + esc(hubLang === 'en' ? e.cal.en : e.cal.ko) + '</span>' : '') + '</small></span></li>';
       }).join('') + '</ul>';

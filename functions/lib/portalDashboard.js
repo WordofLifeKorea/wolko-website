@@ -52,10 +52,11 @@ export async function translateMissingNotices(env, { now = Date.now(), limit = 3
 }
 
 /** 이번 주(일요일부터 새 주) 공지 — 고정(pinned) 공지는 먼저, 나머지는 최근 순.
+ *  고정한 지난 주 공지는 고정을 풀거나 지울 때까지 주가 바뀌어도 계속 보여 준다.
  *  마감일(dueDate)이 아직 지나지 않은 지난 주 공지도 마감일까지는 계속 보여 준다(today 를 넘겼을 때). */
 export function noticesForWeek(list, weekStart, today = '') {
   return list
-    .filter(n => n.weekStart === weekStart || (today && n.dueDate && n.dueDate >= today && n.weekStart < weekStart))
+    .filter(n => n.weekStart === weekStart || (n.weekStart < weekStart && (n.pinned || (today && n.dueDate && n.dueDate >= today))))
     .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || String(b.createdAt).localeCompare(String(a.createdAt)));
 }
 
