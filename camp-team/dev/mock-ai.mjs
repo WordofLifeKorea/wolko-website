@@ -17,6 +17,10 @@ const fileSuggestion = (name, camps = []) => { // 파일 이름에 따라 다르
 const campNames = { names: [{ ko: '2027 겨울 월코 영어 캠프', en: '2027 Winter WOLKO English Camp' }, { ko: '2027 겨울 월코 주니어 영어 캠프', en: '2027 Winter WOLKO Junior English Camp' }] };
 http.createServer((req, res) => {
   let body = ''; req.on('data', c => body += c); req.on('end', () => {
+    // 번역 도우미(스트리밍 아님): 글을 그대로 돌려주며 가짜 표시를 붙인다
+    try { const j1 = JSON.parse(body); if (!j1.stream && String(j1.system || '').includes('You translate text')) {
+      const t = String((j1.messages || []).slice(-1)[0]?.content || '').replace(/<\/?text>/g, '').trim();
+      res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ content: [{ type: 'text', text: '(mock translation) ' + t }] })); return; } } catch (e) { /* 아래로 */ }
     // 캠프 도우미 챗(스트리밍 아님: stream 항목이 없거나 false): 사용법 질문에 가짜 답 + 맞는 화면 안내 번호
     try { const j0 = JSON.parse(body); if (!j0.stream && String(j0.system || '').includes('in-app helper')) {
       const last = String((j0.messages || []).slice(-1)[0]?.content || ''), g = /자료|파일|upload|file/i.test(last) ? 'addFile' : /업무|task/i.test(last) ? 'addTask' : '';

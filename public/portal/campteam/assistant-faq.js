@@ -9,7 +9,7 @@
   /* ───── 맨 위 질문 ───── */
   n('ai', ['AI 기능은 뭐가 있어요?', 'What AI features are there?'],
     ['포털에는 이런 AI 기능이 있어요. 궁금한 걸 골라 보세요.', 'These are the AI features in the portal. Pick one to learn more.'],
-    { next: ['ai_intake', 'ai_title', 'ai_campname', 'ai_minutes', 'ai_translate', 'ai_daily', 'ai_undo', 'ai_safe', 'ai_lumi'] });
+    { next: ['ai_intake', 'ai_title', 'ai_campname', 'ai_minutes', 'ai_translate', 'ai_translate_text', 'ai_pair', 'ai_checklist', 'ai_daily', 'ai_undo', 'ai_safe', 'ai_lumi'] });
   n('upload', ['자료를 올리고 싶어요', 'I want to add a file'],
     ['어떻게 올리실 건가요?', 'How would you like to add it?'], { next: ['up_file', 'up_many', 'up_link', 'up_share', 'up_undo'] });
   n('find', ['자료·업무를 찾고 싶어요', 'I want to find something'],
@@ -48,6 +48,15 @@
     ['업무 제목은 한국어/영어로 자동 번역돼서 업무·홈·캠프 공간·달력·검색에서 언어를 바꿔 볼 수 있어요. 번역이 안 된 업무는 설정 화면의 「번역 안 된 업무 번역하기」로 한 번에 번역할 수 있어요.',
      'Task titles are translated automatically so you can switch language in Tasks, Home, Camp spaces, Calendar and Search. Untranslated tasks can be translated at once from Settings.'],
     { next: ['t_lang'] });
+  n('ai_translate_text', ['번역 도우미 (설교문·공지)', 'Translation helper'],
+    ['주소창에 /portal/campteam/translate/ 를 열거나 자료실 위의 「번역 도우미」 링크를 누르세요. 글을 붙여 넣고 종류(설교·공지·일정표)를 고르면 한국어↔영어로 옮겨 줘요. 용어집 단어는 그대로 지켜요. 결과는 꼭 한 번 읽고 고쳐 쓰세요. 하루 40번까지예요.',
+     'Open /portal/campteam/translate/ or the "Translation helper" link above Files. Paste text, pick the kind (sermon, notice, schedule) and it translates Korean ↔ English, keeping glossary terms. Always read and adjust the result. Up to 40 a day.']);
+  n('ai_pair', ['한·영 짝 묶기 · 중복 정리', 'Pairing and duplicates'],
+    ['자료실 위의 「정리 제안」을 누르면 같은 내용의 한국어·영어 자료 짝 후보와 중복·최신본 후보가 나와요. 「짝으로 묶기」「나머지는 휴지통으로」를 눌러야만 바뀌고, 휴지통에서 되살릴 수 있어요.',
+     'Press "Tidy suggestions" above Files to see Korean/English pair candidates and duplicates. Nothing changes until you press "Pair them" or "Move the rest to trash", and the trash can be restored.']);
+  n('ai_checklist', ['체크리스트 파일 → 업무', 'Checklist file → tasks'],
+    ['체크리스트 파일(체크 표시나 목록으로 된 글)을 AI 정리함으로 읽으면 「업무 N개를 추가할까요?」 질문이 나와요. 담당자·기한은 비워 두고, 같은 이름 업무는 건너뛰어요.',
+     'When Lumi reads a checklist file she asks "Add N tasks?". Owners and due dates stay empty and tasks with the same name are skipped.'], { guide: 'addFile' });
   n('ai_daily', ['오늘 요약', 'Daily summary'],
     ['홈의 「오늘 내가 할 일」 카드 위에 AI 가 하루 요약을 짧게 알려 줘요.', 'On the Home "today" card the AI shows a short daily summary.']);
   n('ai_undo', ['AI 로 올린 걸 되돌리기', 'Undoing an upload'],
