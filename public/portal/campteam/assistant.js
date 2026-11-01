@@ -12,20 +12,32 @@
       asstStarting: '화면에서 보여 드릴게요.', asstFail: '지금은 답을 드리지 못했어요. 잠시 뒤 다시 물어봐 주세요.', asstOff: 'AI 도우미가 아직 켜지지 않았어요. 위의 자주 묻는 질문은 쓸 수 있어요.', asstStep: function (i, n) { return i + ' / ' + n; },
       asstModeHelp: '💡 도움말', asstModeFind: '🔎 찾기', asstModeDo: '✍ 부탁', asstPhFind: '예: 보험 가입은 누가 맡았어요?', asstPhDo: '예: 6월 20일까지 버스 예약 업무 추가해줘', asstSources: '출처', asstNoFind: '포털에서 관련 자료를 찾지 못했어요. 다른 말로 물어보거나 위쪽 검색창을 써 보세요.',
       asstProp: '이렇게 추가할까요?', asstConfirm: '확인하고 추가', asstCancel: '취소', asstAdded: '추가했어요! 🎉', asstCanceled: '취소했어요. 아무것도 바뀌지 않았어요.', asstNoProp: '업무나 일정을 추가해 달라는 부탁으로 이해하지 못했어요. 예: 「내일까지 보험 가입 업무 추가해줘」', asstNoPerm: '이 계정에는 업무·일정을 만들 권한이 없어요.', asstKTask: '업무', asstKEvent: '일정', asstFDue: '기한', asstFDate: '날짜', asstFPlace: '장소', asstFOwner: '담당', asstFCamp: '캠프', asstHelpNote: '찾기·부탁은 포털 자료를 AI 에게 보내 답을 만들어요(볼 수 있는 자료만, 금액·연락처 전화는 제외).',
-      asstMin: '잠깐 내려놓기', asstExpand: '다시 펼치기', asstPendingBar: '확인을 기다리는 부탁이 있어요', asstQHint: '빠진 내용이 있어요. 골라 주셔도 되고, 건너뛰어도 돼요.', asstQOwner: '담당자는 누구로 할까요?', asstQCamp: '어느 캠프와 관련된 업무인가요?', asstMeOwner: function (n) { return '나(' + n + ')로 할게요'; }, asstRec: '추천', asstUnset: '미정으로 둘게요', asstNoCamp: '캠프와 관련 없어요', asstOtherCamp: '다른 캠프 고르기…', asstSkip: '건너뛰고 간단히 추가', asstQEvent: '어느 캠프와 관련된 일정인가요?' },
+      asstMin: '잠깐 내려놓기', asstExpand: '다시 펼치기', asstPendingBar: '확인을 기다리는 부탁이 있어요', asstQHint: '빠진 내용이 있어요. 골라 주셔도 되고, 건너뛰어도 돼요.', asstQOwner: '담당자는 누구로 할까요?', asstQCamp: '어느 캠프와 관련된 업무인가요?', asstMeOwner: function (n) { return '나(' + n + ')로 할게요'; }, asstRec: '추천', asstUnset: '미정으로 둘게요', asstNoCamp: '캠프와 관련 없어요', asstOtherCamp: '다른 캠프 고르기…', asstSkip: '건너뛰고 간단히 추가', asstQEvent: '어느 캠프와 관련된 일정인가요?',
+      asstOther: '＋ 다른 이름 쓰기', asstOtherPh: '이름을 적어 주세요', asstOtherAdd: '넣기', asstConfirmEdit: '확인하고 바꾸기', asstConfirmDel: '확인하고 지우기', asstEdited: '바꿨어요! ✅', asstDeleted: '지웠어요. 휴지통에서 되살릴 수 있어요.', asstKEditTask: '바꿀 업무', asstKEditEvent: '바꿀 일정', asstKDelTask: '지울 업무', asstKDelEvent: '지울 일정', asstFTitle: '이름', asstFEndDate: '끝나는 날', asstFStart: '시작 시간', asstFEnd: '끝 시간', asstFNone: '없음', asstTrashNote: '지워도 휴지통에서 되살릴 수 있어요.' },
     en: { asstName: 'Lumi', asstHello: "Hi, I'm Lumi! I'll guide you around the Camp Team portal. Pick a question, or just ask me.", asstRoot: '↩ Back to the start', asstMore: 'Anything else?', asstPh: 'Ask anything', asstSend: 'Send', asstNew: 'New chat', asstClose: 'Close',
       asstThinking: 'Thinking…', asstShow: '👉 Show me on screen', asstNext: 'Next', asstStop: 'Stop', asstDone: 'All done! Ask me if you have more questions.', asstStopped: 'Guide stopped. Tap it again any time.',
       asstMenu: 'First click this menu button to open the menu', asstMissing: "I can't see this button on screen. Your account may not have permission, or the page is still loading. Follow the description above, or click Next.",
       asstStarting: "I'll show you on screen.", asstFail: "I couldn't answer right now. Please try again in a moment.", asstOff: 'The AI helper is not turned on yet. The common questions above still work.', asstStep: function (i, n) { return i + ' / ' + n; },
       asstModeHelp: '💡 Help', asstModeFind: '🔎 Find', asstModeDo: '✍ Ask me to', asstPhFind: 'e.g. Who took care of insurance?', asstPhDo: 'e.g. Add a task: book the bus by June 20', asstSources: 'Sources', asstNoFind: 'I could not find anything about that in the portal. Try other words or the search box at the top.',
       asstProp: 'Add it like this?', asstConfirm: 'Confirm and add', asstCancel: 'Cancel', asstAdded: 'Added! 🎉', asstCanceled: 'Canceled. Nothing was changed.', asstNoProp: 'I could not understand that as a request to add a task or event. Try: "Add a task: insurance by tomorrow"', asstNoPerm: 'This account cannot create tasks or events.', asstKTask: 'Task', asstKEvent: 'Event', asstFDue: 'Due', asstFDate: 'Date', asstFPlace: 'Place', asstFOwner: 'Owner', asstFCamp: 'Camp', asstHelpNote: 'Find and Ask-me-to send portal data to the AI to write an answer (only what you can see; money and contact phone numbers are excluded).',
-      asstMin: 'Set aside for now', asstExpand: 'Open again', asstPendingBar: 'A request is waiting for your OK', asstQHint: 'Some details are missing. Pick one, or skip.', asstQOwner: 'Who should own it?', asstQCamp: 'Which camp is this task for?', asstMeOwner: function (n) { return 'Me (' + n + ')'; }, asstRec: 'suggested', asstUnset: 'Leave unassigned', asstNoCamp: 'Not tied to a camp', asstOtherCamp: 'Pick another camp…', asstSkip: 'Skip and just add it', asstQEvent: 'Which camp is this event for?' }
+      asstMin: 'Set aside for now', asstExpand: 'Open again', asstPendingBar: 'A request is waiting for your OK', asstQHint: 'Some details are missing. Pick one, or skip.', asstQOwner: 'Who should own it?', asstQCamp: 'Which camp is this task for?', asstMeOwner: function (n) { return 'Me (' + n + ')'; }, asstRec: 'suggested', asstUnset: 'Leave unassigned', asstNoCamp: 'Not tied to a camp', asstOtherCamp: 'Pick another camp…', asstSkip: 'Skip and just add it', asstQEvent: 'Which camp is this event for?',
+      asstOther: '+ Type another name', asstOtherPh: 'Type a name', asstOtherAdd: 'Add', asstConfirmEdit: 'Confirm and change', asstConfirmDel: 'Confirm and delete', asstEdited: 'Changed! ✅', asstDeleted: 'Deleted. You can restore it from Trash.', asstKEditTask: 'Task to change', asstKEditEvent: 'Event to change', asstKDelTask: 'Task to delete', asstKDelEvent: 'Event to delete', asstFTitle: 'Title', asstFEndDate: 'End date', asstFStart: 'Start time', asstFEnd: 'End time', asstFNone: 'none', asstTrashNote: 'Deleted items can be restored from Trash.' }
   });
   var KEY = 'ct-asst', esc = CT.esc, tr = function (o) { return o ? (o[CT.lang()] || o.ko || '') : ''; };
   // (20분 넘게 멈춘 안내는 이어가지 않는다 — 나중에 다른 화면에서 불쑥 나오지 않게)
   var st = (function () { try { var v = JSON.parse(sessionStorage.getItem(KEY) || 'null'); if (v && typeof v === 'object') return { open: !!v.open, min: !!v.min, msgs: Array.isArray(v.msgs) ? v.msgs.slice(-24) : [], guide: v.guide && G.guides[v.guide.id] && Date.now() - (v.guide.at || 0) < 20 * 60000 ? v.guide : null, mode: ['find', 'do'].indexOf(v.mode) >= 0 ? v.mode : 'help' }; } catch (e) {} return { open: false, min: false, msgs: [], guide: null, mode: 'help' }; })();
   var cfg = { member: false, configured: false }, busy = false;
-  function save() { try { sessionStorage.setItem(KEY, JSON.stringify({ open: st.open, min: st.min, msgs: st.msgs.slice(-24), guide: st.guide, mode: st.mode })); } catch (e) {} }
+  var memTimer = 0, memReady = false;
+  function save() { try { sessionStorage.setItem(KEY, JSON.stringify({ open: st.open, min: st.min, msgs: st.msgs.slice(-24), guide: st.guide, mode: st.mode })); } catch (e) {} syncMem(); }
+  /** 계정별 대화 기억: 바뀐 대화를 잠시 뒤 서버에 저장한다(내 계정에만 저장). 아직 확인 안 한 부탁 카드는 「취소」로 바꿔 저장해서 다음 날 불쑥 되살아나지 않게 한다 */
+  function syncMem() {
+    if (!cfg.member || !memReady) return; clearTimeout(memTimer);
+    memTimer = setTimeout(function () {
+      if (!st.msgs.some(function (m) { return m.r === 'u'; })) return;
+      var msgs = st.msgs.slice(-40).map(function (m) { var o = {}; Object.keys(m).forEach(function (k) { if (k !== 'qs' && k !== 'sel' && k !== 'other') o[k] = m[k]; }); if (o.p && !o.pd) o.pd = 'no'; return o; });
+      CT.api('/api/campteam/lumi-memory', { method: 'PUT', body: { msgs: msgs } }).catch(function () {});
+    }, 1500);
+  }
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var norm = function (p) { return String(p || '').replace(/\/+$/, '') || '/'; };
 
@@ -56,7 +68,12 @@
   function campLabelOf(m, id) { var c = m.qs && m.qs.camp && m.qs.camp.all.filter(function (x) { return x.id === id; })[0]; return c ? c.label : ''; }
   function qHtml(m) {
     var qs = m.qs; if (!qs || m.pd) return ''; var sel = m.sel || {}, h = '<div class="asst-qhint">' + esc(CT.t('asstQHint')) + '</div>';
-    if (qs.owner) h += '<div class="asst-q"><small>' + esc(CT.t('asstQOwner')) + '</small><div class="asst-qc">' + qs.owner.opts.map(function (o) { return '<button type="button" class="asst-chip' + (sel.owner !== undefined && sel.owner === o.v ? ' on' : '') + '" data-qo="' + esc(o.v) + '">' + esc(o.label) + (o.rec ? ' <i>' + esc(CT.t('asstRec')) + '</i>' : '') + '</button>'; }).join('') + '</div></div>';
+    if (qs.owner) {
+      var known = qs.owner.opts.some(function (o) { return o.v === sel.owner; }), custom = sel.owner && !known ? sel.owner : '';
+      h += '<div class="asst-q"><small>' + esc(CT.t('asstQOwner')) + '</small><div class="asst-qc">' + qs.owner.opts.map(function (o) { return '<button type="button" class="asst-chip' + (sel.owner !== undefined && sel.owner === o.v ? ' on' : '') + '" data-qo="' + esc(o.v) + '">' + esc(o.label) + (o.rec ? ' <i>' + esc(CT.t('asstRec')) + '</i>' : '') + '</button>'; }).join('') +
+        (custom ? '<button type="button" class="asst-chip on" data-qo="' + esc(custom) + '">' + esc(custom) + '</button>' : '') + '<button type="button" class="asst-chip" data-qother="1">' + esc(CT.t('asstOther')) + '</button></div>' +
+        (m.other ? '<div class="asst-oth"><input id="asstOther" maxlength="40" autocomplete="off" placeholder="' + esc(CT.t('asstOtherPh')) + '"><button type="button" class="asst-go" data-qadd="1">' + esc(CT.t('asstOtherAdd')) + '</button></div>' : '') + '</div>';
+    }
     if (qs.camp) {
       var groups = [], seen = {}; qs.camp.all.forEach(function (c) { if (!seen[c.g]) { seen[c.g] = []; groups.push(c.g); } seen[c.g].push(c); });
       h += '<div class="asst-q"><small>' + esc(CT.t(m.p.type === 'addTask' ? 'asstQCamp' : 'asstQEvent')) + '</small><div class="asst-qc">' + qs.camp.top.map(function (c) { return '<button type="button" class="asst-chip' + (sel.camp === c.id ? ' on' : '') + '" data-qc="' + esc(c.id) + '">' + esc(c.label) + '</button>'; }).join('') + '<button type="button" class="asst-chip' + (sel.camp === '' ? ' on' : '') + '" data-qc="">' + esc(CT.t('asstNoCamp')) + '</button></div>' +
@@ -64,11 +81,25 @@
     }
     return h;
   }
+  var FLAB = { title: 'asstFTitle', dueDate: 'asstFDue', ownerName: 'asstFOwner', campId: 'asstFCamp', startDate: 'asstFDate', endDate: 'asstFEndDate', startTime: 'asstFStart', endTime: 'asstFEnd', location: 'asstFPlace' };
+  function editRows(p) {
+    var cn = p.campNames || {}; return Object.keys(p.changes || {}).map(function (k) {
+      var b = k === 'campId' ? cn.before : p.before && p.before[k], a = k === 'campId' ? cn.after : p.changes[k], none = CT.t('asstFNone');
+      return '<div><small>' + esc(CT.t(FLAB[k] || 'asstFTitle')) + '</small> ' + esc(b || none) + ' → <b>' + esc(a || none) + '</b></div>';
+    }).join('');
+  }
+  var EDONE = { editTask: 'asstEdited', editEvent: 'asstEdited', deleteTask: 'asstDeleted', deleteEvent: 'asstDeleted', addTask: 'asstAdded', addEvent: 'asstAdded' };
   function propHtml(m) {
-    var p = m.p; if (!p) return ''; var e = eff(m), camp = e.campId ? campLabelOf(m, e.campId) : '';
-    var rows = p.type === 'addTask' ? [[CT.t('asstKTask'), p.title], [CT.t('asstFDue'), p.dueDate], [CT.t('asstFOwner'), e.owner], [CT.t('asstFCamp'), camp]] : [[CT.t('asstKEvent'), p.title], [CT.t('asstFDate'), p.startDate + (p.endDate ? ' ~ ' + p.endDate : '') + (p.startTime ? ' ' + p.startTime + (p.endTime ? '–' + p.endTime : '') : '')], [CT.t('asstFPlace'), p.location], [CT.t('asstFCamp'), camp]];
+    var p = m.p; if (!p) return ''; var tail = m.pd ? '<div class="asst-pd">' + esc(CT.t(m.pd === 'ok' ? EDONE[p.type] : 'asstCanceled')) + '</div>' : '';
+    if (/^(edit|delete)/.test(p.type)) {
+      var del = /^delete/.test(p.type), isT = /Task$/.test(p.type), btn = del ? 'asstConfirmDel' : 'asstConfirmEdit';
+      var rows = '<div><small>' + esc(CT.t(del ? (isT ? 'asstKDelTask' : 'asstKDelEvent') : (isT ? 'asstKEditTask' : 'asstKEditEvent'))) + '</small> ' + esc(p.targetTitle) + '</div>' + (del ? '<div class="asst-trash">' + esc(CT.t('asstTrashNote')) + '</div>' : editRows(p));
+      return '<div class="asst-prop' + (del ? ' del' : '') + '"><b>' + esc(p.say || CT.t('asstProp')) + '</b>' + rows + (m.pd ? tail : '<div class="asst-pb"><button type="button" class="asst-go' + (del ? ' danger' : '') + '" data-pc="1">' + esc(CT.t(btn)) + '</button><button type="button" class="asst-chip" data-px="1">' + esc(CT.t('asstCancel')) + '</button></div>') + '</div>';
+    }
+    var e = eff(m), camp = e.campId ? campLabelOf(m, e.campId) : '';
+    var rows2 = p.type === 'addTask' ? [[CT.t('asstKTask'), p.title], [CT.t('asstFDue'), p.dueDate], [CT.t('asstFOwner'), e.owner], [CT.t('asstFCamp'), camp]] : [[CT.t('asstKEvent'), p.title], [CT.t('asstFDate'), p.startDate + (p.endDate ? ' ~ ' + p.endDate : '') + (p.startTime ? ' ' + p.startTime + (p.endTime ? '–' + p.endTime : '') : '')], [CT.t('asstFPlace'), p.location], [CT.t('asstFCamp'), camp]];
     var hasQ = !!(m.qs && (m.qs.owner || m.qs.camp));
-    return '<div class="asst-prop"><b>' + esc(p.say || CT.t('asstProp')) + '</b>' + rows.filter(function (r) { return r[1]; }).map(function (r) { return '<div><small>' + esc(r[0]) + '</small> ' + esc(r[1]) + '</div>'; }).join('') + qHtml(m) + (m.pd ? '<div class="asst-pd">' + esc(CT.t(m.pd === 'ok' ? 'asstAdded' : 'asstCanceled')) + '</div>' : '<div class="asst-pb"><button type="button" class="asst-go" data-pc="1">' + esc(CT.t('asstConfirm')) + '</button>' + (hasQ ? '<button type="button" class="asst-chip" data-ps="1">' + esc(CT.t('asstSkip')) + '</button>' : '') + '<button type="button" class="asst-chip" data-px="1">' + esc(CT.t('asstCancel')) + '</button></div>') + '</div>';
+    return '<div class="asst-prop"><b>' + esc(p.say || CT.t('asstProp')) + '</b>' + rows2.filter(function (r) { return r[1]; }).map(function (r) { return '<div><small>' + esc(r[0]) + '</small> ' + esc(r[1]) + '</div>'; }).join('') + qHtml(m) + (m.pd ? tail : '<div class="asst-pb"><button type="button" class="asst-go" data-pc="1">' + esc(CT.t('asstConfirm')) + '</button>' + (hasQ ? '<button type="button" class="asst-chip" data-ps="1">' + esc(CT.t('asstSkip')) + '</button>' : '') + '<button type="button" class="asst-chip" data-px="1">' + esc(CT.t('asstCancel')) + '</button></div>') + '</div>';
   }
   /** 고정 질문 칩들(루미가 보여 주는 다음 질문) — 맨 마지막 루미 말풍선 아래에만 보인다 */
   function chips(ids) { return '<div class="asst-st">' + ids.filter(function (id) { return id === 'root' || F.nodes[id]; }).map(function (id) { return id === 'root' ? '<button type="button" class="asst-chip home" data-faq="root">' + esc(CT.t('asstRoot')) + '</button>' : '<button type="button" class="asst-chip" data-faq="' + id + '">' + esc(tr(F.nodes[id].q)) + '</button>'; }).join('') + '</div>'; }
@@ -104,7 +135,7 @@
     if (st.mode === 'find' || st.mode === 'do') {
       try {
         if (st.mode === 'find') { var f = await CT.api('/api/campteam/ask', { method: 'POST', body: { question: q, lang: CT.lang() } }); busy = false; if (!f.found) add('a', CT.t('asstNoFind'), '', ['root'], 'unknown'), setMood('unknown', 2800); else add('a', f.answer, '', ['root'], 'found', { src: f.sources }), setMood('found', 2800); }
-        else { var a = await CT.api('/api/campteam/ask', { method: 'POST', body: { action: 'act', text: q, lang: CT.lang() } }); busy = false; if (!a.proposal) add('a', CT.t(a.reason === 'no_permission' ? 'asstNoPerm' : 'asstNoProp'), '', ['root'], 'unknown'), setMood('unknown', 2800); else { var qs = await followUps(a.proposal, q); add('a', '', '', null, 'explain', { p: a.proposal, qs: qs, sel: {} }); setMood('explain', 2800); } }
+        else { var a = await CT.api('/api/campteam/ask', { method: 'POST', body: { action: 'act', text: q, lang: CT.lang(), history: actHistory() } }); busy = false; if (!a.proposal) add('a', CT.t(a.reason === 'no_permission' ? 'asstNoPerm' : 'asstNoProp'), '', ['root'], 'unknown'), setMood('unknown', 2800); else if (a.proposal.type === 'none') add('a', a.proposal.say, '', ['root'], 'unknown'), setMood('unknown', 2800); else { var qs = await followUps(a.proposal, q); add('a', '', '', null, 'explain', { p: a.proposal, qs: qs, sel: {} }); setMood('explain', 2800); } }
       } catch (e) { busy = false; add('a', (e && e.message) || CT.t('asstFail'), '', ['root'], 'error'); setMood('error', 2800); }
       busy = false; render(); return;
     }
@@ -117,15 +148,25 @@
   }
 
 
+  /** 「그 일정」「아까 그 업무」 같은 말을 알아듣도록 서버에 보내는 최근 대화 요약: 내 말, 루미가 한 일(추가·변경·삭제), 루미의 되묻기. 찾기 답(포털 자료)은 보내지 않는다 */
+  function actHistory() {
+    var out = []; st.msgs.slice(-12).forEach(function (m) {
+      if (m.r === 'u') { if (m.t) out.push({ r: 'u', t: m.t }); return; }
+      if (m.p) { if (m.pd === 'ok') { var p = m.p, w = { addTask: '추가한 업무', addEvent: '추가한 일정', editTask: '바꾼 업무', editEvent: '바꾼 일정', deleteTask: '지운 업무', deleteEvent: '지운 일정' }[p.type] || ''; out.push({ r: 'a', t: w + ': ' + (p.targetTitle || p.title) + (p.dueDate ? ' (기한 ' + p.dueDate + ')' : p.startDate ? ' (' + p.startDate + (p.startTime ? ' ' + p.startTime : '') + ')' : '') }); } return; }
+      if (m.t && !m.src && m.s !== 'hello' && m.s !== 'error') out.push({ r: 'a', t: m.t });
+    }); return out.slice(-8);
+  }
   /** 부탁 카드에 빠진 내용 묻기 — 담당자(업무)와 캠프(캠프 이야기가 나왔을 때). 후보는 이름·캠프 이름뿐이며 AI 로 보내지 않는다 */
   var CAMPRE = /캠프|camp|수련회|retreat|아웃리치|outreach/i;
   async function followUps(p, text) {
     var qs = {}, me = CT.me && CT.me.name ? String(CT.me.name).trim() : '';
     if (p.type === 'addTask' && !p.ownerName) {
-      var names = []; try { names = ((await CT.api('/api/campteam/owners')).options || []).map(function (o) { return o.name; }); } catch (e) { names = []; }
-      var opts = []; if (me) opts.push({ v: me, label: CT.t('asstMeOwner')(me), rec: true });
-      names.filter(function (n) { return n && n !== me; }).slice(0, 14).forEach(function (n) { opts.push({ v: n, label: n }); });
-      if (opts.length) { opts.push({ v: '', label: CT.t('asstUnset') }); qs.owner = { opts: opts }; }
+      var people = []; try { people = (await CT.api('/api/campteam/people')).people || []; } catch (e) { people = []; }
+      var opts = [], first = function (n) { return String(n || '').trim().split(/\s+/)[0]; }, meFirst = first(me), seen = {};
+      if (me) opts.push({ v: meFirst, label: CT.t('asstMeOwner')(meFirst), rec: true }); seen[meFirst.toLowerCase()] = 1;
+      var cnt = {}; people.forEach(function (x) { var f = first(x.name).toLowerCase(); if (f) cnt[f] = (cnt[f] || 0) + 1; });
+      people.forEach(function (x) { var full = String(x.name || '').trim(), f = first(full); if (!f) return; var v = cnt[f.toLowerCase()] > 1 ? full : f, k = v.toLowerCase(); if (seen[k] || (CT.me && x.email && CT.me.email && x.email.toLowerCase() === String(CT.me.email).toLowerCase())) return; seen[k] = 1; opts.push({ v: v, label: v }); });
+      opts.splice(15); opts.push({ v: '', label: CT.t('asstUnset') }); qs.owner = { opts: opts };
     }
     if (!p.campId && CAMPRE.test(text + ' ' + p.title)) {
       var cd = null; try { cd = await CT.api('/api/campteam/camps'); } catch (e) { cd = null; }
@@ -200,7 +241,12 @@
     if (!ok) { m.pd = 'no'; save(); render(); return; }
     if (!skip && m.sel) { if (m.sel.owner !== undefined && !p.ownerName) p.ownerName = m.sel.owner; if (m.sel.camp !== undefined && !p.campId) p.campId = m.sel.camp || null; }
     try {
-      if (p.type === 'addTask') await CT.api('/api/campteam/tasks', { method: 'POST', body: { title: p.title, dueDate: p.dueDate || null, ownerName: p.ownerName || '', campId: p.campId || null } });
+      var tid = encodeURIComponent(p.targetId || '');
+      if (p.type === 'editTask') await CT.api('/api/campteam/tasks?id=' + tid, { method: 'PATCH', body: p.changes });
+      else if (p.type === 'editEvent') await CT.api('/api/campteam/events?id=' + tid, { method: 'PATCH', body: p.changes });
+      else if (p.type === 'deleteTask') await CT.api('/api/campteam/tasks?id=' + tid, { method: 'DELETE' });
+      else if (p.type === 'deleteEvent') await CT.api('/api/campteam/events?id=' + tid, { method: 'DELETE' });
+      else if (p.type === 'addTask') await CT.api('/api/campteam/tasks', { method: 'POST', body: { title: p.title, dueDate: p.dueDate || null, ownerName: p.ownerName || '', campId: p.campId || null } });
       else await CT.api('/api/campteam/events', { method: 'POST', body: { title: p.title, kind: 'team', startDate: p.startDate, endDate: p.endDate || null, startTime: p.startTime || '', endTime: p.endTime || '', location: p.location || '', campId: p.campId || null } });
       m.pd = 'ok'; save(); setMood('success', 3000); render();
     } catch (e) { add('a', (e && e.message) || CT.t('asstFail'), '', ['root'], 'error'); render(); }
@@ -208,7 +254,7 @@
   fab.onclick = function () { if (st.open && st.min) { st.min = false; save(); render(); setTimeout(function () { input.focus(); }, 50); } else setOpen(!st.open); };
   $('#asstMin').onclick = function () { st.min = !st.min; save(); render(); if (!st.min) setTimeout(function () { input.focus(); }, 50); };
   $('#asstX').onclick = function () { setOpen(false); };
-  $('#asstNew').onclick = function () { st.msgs = []; save(); render(); setMood('hello', 2200); };
+  $('#asstNew').onclick = function () { st.msgs = []; clearTimeout(memTimer); if (cfg.member) CT.api('/api/campteam/lumi-memory', { method: 'DELETE' }).catch(function () {}); save(); render(); setMood('hello', 2200); };
   input.addEventListener('focus', function () { if (!busy) setMood('listen'); }); input.addEventListener('blur', function () { if (mood === 'listen') setMood(baseMood()); });
   /* 입력칸: 글이 길어지면 3줄까지 아래로 늘어나고, 그 이상은 칸 안에서 위아래로 스크롤된다 (Enter 로 보내고, Shift+Enter 로 줄바꿈) */
   function fit() { input.style.height = 'auto'; var max = 3 * 20 + 18, h = Math.min(input.scrollHeight, max); input.style.height = h + 'px'; input.style.overflowY = input.scrollHeight > max ? 'auto' : 'hidden'; }
@@ -216,8 +262,12 @@
   input.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); $('#asstForm').requestSubmit ? $('#asstForm').requestSubmit() : $('#asstForm').dispatchEvent(new Event('submit', { cancelable: true })); } });
   $('#asstForm').onsubmit = function (e) { e.preventDefault(); var q = input.value; input.value = ''; fit(); ask(q); };
   function pending() { for (var i = st.msgs.length - 1; i >= 0; i--) if (st.msgs[i].p && !st.msgs[i].pd) return st.msgs[i]; return null; }
+  body.addEventListener('keydown', function (e) { if (e.target.id === 'asstOther' && e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); var b = body.querySelector('[data-qadd]'); if (b) b.click(); } });
   body.addEventListener('change', function (e) { var sl = e.target.closest('[data-qsel]'), m = pending(); if (!sl || !m) return; m.sel = m.sel || {}; if (sl.value) m.sel.camp = sl.value; else delete m.sel.camp; save(); render(); });
   body.addEventListener('click', function (e) {
+    var qother = e.target.closest('[data-qother]'), qadd = e.target.closest('[data-qadd]');
+    if (qother || qadd) { var pm0 = pending(); if (!pm0) return; if (qother) { pm0.other = true; render(); setTimeout(function () { var i = $('#asstOther'); if (i) i.focus(); }, 0); return; }
+      var inp = $('#asstOther'), nm = inp ? inp.value.replace(/\s+/g, ' ').trim().slice(0, 40) : ''; if (!nm) { if (inp) inp.focus(); return; } pm0.sel = pm0.sel || {}; pm0.sel.owner = nm; pm0.other = false; save(); render(); return; }
     var qo = e.target.closest('[data-qo]'), qc = e.target.closest('[data-qc]'), pm = (qo || qc) && pending();
     if (pm) { pm.sel = pm.sel || {}; if (qo) pm.sel.owner = qo.dataset.qo; else pm.sel.camp = qc.dataset.qc; save(); render(); return; }
     var pc = e.target.closest('[data-pc]'), ps = e.target.closest('[data-ps]'), px = e.target.closest('[data-px]');
@@ -232,6 +282,10 @@
   render();
   CT.api('/api/campteam/assistant').then(function (r) {
     cfg = { member: !!r.member, configured: !!r.configured }; if (!cfg.member) return;
+    // 이 탭에 대화가 없으면(새 탭·다른 기기·다음 날) 서버에 기억해 둔 내 대화를 불러온다
+    CT.api('/api/campteam/lumi-memory').then(function (mm) {
+      if (mm && mm.msgs && mm.msgs.length && !st.msgs.some(function (x) { return x.r === 'u'; })) { st.msgs = mm.msgs; save(); render(); }
+    }).catch(function () {}).then(function () { memReady = true; });
     root.hidden = false; setMood(baseMood()); render(); blinkLoop(); setInterval(paintMood, 60000); document.addEventListener('visibilitychange', function () { if (!document.hidden) paintMood(); });
     if (st.guide) { since = Date.now(); begin(); }
   }).catch(function () {});

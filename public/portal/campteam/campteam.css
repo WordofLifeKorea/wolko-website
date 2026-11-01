@@ -852,3 +852,23 @@ aside{background:var(--ws-rail-bg,var(--ws-navy,#0b2430))!important;background-i
 /* 왼쪽 메뉴에 마우스를 올리면 보이는 한 줄 설명(shell.js) */
 .ct-tip{position:fixed;z-index:80;max-width:280px;padding:8px 11px;border-radius:var(--ws-radius-sm,8px);background:#0b2430;color:#fff;font:600 12px/1.45 var(--f-sans);box-shadow:0 6px 18px #0004;pointer-events:none}
 .ct-tip[hidden]{display:none}
+
+/* ── 줄바꿈 정리: 버튼·칩 글자가 두 줄로 꺾이거나 한 글자만 아래로 떨어지지 않게 (좁은 폰 화면) ── */
+.btn,.tab,.tagchip{white-space:nowrap;word-break:keep-all}
+.dlg-actions{flex-wrap:wrap}
+.ct-tip{max-width:none;width:max-content;white-space:nowrap}
+
+/* ── 캠프 고르기: 연도 → 유형 → 캠프 칩 (캠프 준비) ── */
+.p-camp{display:block;margin:4px 0 12px}
+.pk-row{display:flex;gap:10px;align-items:flex-start;margin:4px 0}.pk-lb{flex:none;width:36px;padding-top:6px;font:700 12px var(--f-body);color:var(--mid)}
+.pk-chips{display:flex;flex-wrap:wrap;gap:6px;min-width:0}.pk-chips .tagchip{margin:0;padding:5px 12px;font-size:12.5px}.pk-chips .tagchip.on{background:var(--blue);border-color:var(--blue);color:#fff}.pk-chips .hint{padding-top:6px}
+
+/* ── 사용법 카드: 화면마다 맨 위 고정. 노란 점선 + 「예시 카드」 표시로 실제 자료와 구분한다 ── */
+.ct-howto{background:#fff8e1;border:1.5px dashed #d9a52b;border-radius:var(--ws-radius-sm,8px);padding:12px 16px 10px;margin:0 0 16px;color:#5b4410}
+.ht-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}.ht-head b{font:800 14.5px var(--f-body);color:#4a3508}
+.ht-badge{font:700 11px var(--f-body);background:#f6d778;color:#4a3508;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.ht-steps{margin:0 0 10px;padding-left:20px;display:grid;gap:3px;font-size:13px;line-height:1.55}
+.ht-ex{display:flex;gap:10px;align-items:stretch;background:#fffdf3;border:1.5px dashed #e4c25f;border-radius:var(--ws-radius-sm,8px);padding:8px 10px}
+.ht-tag{flex:none;align-self:center;font:800 11px var(--f-body);background:#e9b93a;color:#3d2c00;border-radius:6px;padding:3px 8px}
+.ht-exb{display:grid;gap:1px;min-width:0}.ht-exb b{font-size:13.5px;color:#3d2c00}.ht-exb small{font-size:12px;color:#7a6120;overflow-wrap:anywhere}
+.ht-note{margin:6px 0 0;font-size:11.5px;color:#8a7228}

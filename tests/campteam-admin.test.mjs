@@ -84,7 +84,7 @@ test('용어집: 조회는 모두, 수정은 팀원 이상', async () => {
 });
 
 test('공개 설정: 비밀 값은 없고 켜진 기능만', async () => {
-  const off = await J(await Config.onRequestGet({ env: {} })); assert.deepEqual(off, { googleClientId: '', aiEnabled: false });
+  const off = await J(await Config.onRequestGet({ env: {} })); assert.deepEqual(off, { googleClientId: '', aiEnabled: false, phoneTools: false });
   const on = await J(await Config.onRequestGet({ env: { CAMPTEAM_GOOGLE_CLIENT_ID: 'abc.apps.googleusercontent.com', ANTHROPIC_API_KEY: 'sk-secret' } }));
   assert.equal(on.aiEnabled, true); assert.doesNotMatch(JSON.stringify(on), /sk-secret/);
 });

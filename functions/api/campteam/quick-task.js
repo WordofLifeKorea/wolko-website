@@ -1,9 +1,10 @@
 import { campSession, json, needLogin, noDb, badRequest, canWrite, applyOverrides, isFixedAdmin } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, audit, todayKST } from '../../lib/campteamDb.js';
 import { titleCols } from '../../lib/campteamTranslate.js';
+import { phoneGate, phoneToolsOn, phoneOff } from '../../lib/campteamPhone.js';
 
 /**
- * 폰에서 업무 추가 (iPhone 단축어·Android 자동화 등에서 한 번의 요청으로).
+ * 폰에서 업무 추가 (iPhone 단축어·Android 자동화 등에서 한 번의 요청으로). **지금은 꺼 둠** — CAMPTEAM_PHONE_TOOLS=on 일 때만, 그리고 관리자에게만 열린다(campteamPhone.js).
  *  GET  (로그인) → { url, hasToken }     내 개인 주소 (없으면 만든다). 이 주소로는 「내 업무 만들기」만 된다.
  *  POST (로그인) { regen:true } → 주소를 새로 만든다(예전 주소는 바로 멈춘다)
  *  POST { token, text, due? }  (로그인 없이, 토큰으로) → 내 업무로 하나 만든다. text 에 「내일」「6/20」 같은 날짜 말이 있으면 기한으로 쓴다. 하루 60개까지.
@@ -26,6 +27,7 @@ async function mine(env, email, regen) {
 export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env); if (!s) return needLogin();
+  const off = phoneGate(env, s); if (off) return off;
   if (!s.campRole || !canWrite(s.perms, 'tasks')) return json({ error: '업무를 만들 수 있는 팀원만 쓸 수 있어요.', code: 'forbidden' }, 403);
   return json({ url: `${new URL(request.url).origin}/api/campteam/quick-task`, token: await mine(env, s.email, false) });
 }
@@ -34,10 +36,12 @@ export async function onRequestPost({ env, request }) {
   let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
   if (!b.token) {
     const s = await campSession(request, env); if (!s) return needLogin();
+    const off = phoneGate(env, s); if (off) return off;
     if (!s.campRole || !canWrite(s.perms, 'tasks')) return json({ error: '업무를 만들 수 있는 팀원만 쓸 수 있어요.', code: 'forbidden' }, 403);
     const t = await mine(env, s.email, !!b.regen); if (b.regen) await audit(env, s.email, 'quick_token_reset', 'task', '', '');
     return json({ url: `${new URL(request.url).origin}/api/campteam/quick-task`, token: t });
   }
+  if (!phoneToolsOn(env)) return phoneOff();
   const bad = (m, c = 401) => json({ error: m, code: 'token' }, c);
   if (!/^[a-f0-9]{40,80}$/.test(String(b.token))) return bad('주소가 올바르지 않아요.');
   const row = await env.DB.prepare('SELECT email FROM quick_tokens WHERE token = ?1').bind(b.token).first(); if (!row) return bad('주소가 멈췄거나 없어요. 포털에서 새 주소를 받아 주세요.');

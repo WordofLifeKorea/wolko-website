@@ -2,17 +2,18 @@
    컴퓨터 화면에서는 왼쪽 아래 언어·계정 칸을 숨기고 이 머리글을 쓴다. 폰에서는 머리글 대신 예전처럼 위쪽 막대(언어)와 서랍(계정)을 쓴다. */
 (function () {
   var CT = window.CT; if (!CT) return;
+  /* 메뉴 말풍선은 한 줄에 들어가도록 짧게 쓴다 (두 줄로 꺾이면 한 글자만 떨어져 보인다) */
   CT.addDict({
     ko: { navPrep: '캠프 준비',
-      tipHome: '오늘 할 일과 공지를 한눈에 보는 첫 화면', tipCamps: '캠프마다 일정·업무·파일을 모아 보는 공간', tipPrep: '진행표 · 준비물 · 연락처 · 배정 · 설문 같은 캠프 준비 도구',
-      tipTasks: '팀 업무 목록, 담당자와 기한 관리', tipCalendar: '팀 일정 · 캠프 기간 · 외출 달력', tipMeetings: '회의 기록과 함께 정한 일',
-      tipFiles: '파일(PPT · PDF · 사진 · 영상)을 올리고 보관하는 곳', tipLibrary: '설교 · 찬양 콘티 · 게임 · 장소 정보 카드', tipResources: '기존 포털의 캠프 자료실을 그대로 열어요',
-      tipTv: '사무실 TV에 띄울 화면 꾸미기', tipAlerts: '나에게 온 알림과 팀 공지', tipBudget: '캠프 예산과 장부 (권한이 있는 사람만)', tipTrash: '지운 항목을 되살리는 곳', tipSettings: '팀원 · 권한 · 설정 (관리자만)' },
+      tipHome: '오늘 할 일과 공지를 한눈에', tipCamps: '캠프별 일정·업무·파일 모아 보기', tipPrep: '진행표·준비물·연락처·배정·설문',
+      tipTasks: '팀 업무와 담당자·기한 관리', tipCalendar: '팀 일정·캠프 기간·부재 달력', tipMeetings: '회의 기록과 함께 정한 일',
+      tipFiles: '파일(PPT·PDF·사진·영상) 보관', tipLibrary: '설교·콘티·게임·장소 정보 카드', tipResources: '기존 포털의 캠프 자료실 열기',
+      tipTv: '사무실 TV 화면 꾸미기', tipAlerts: '내 알림과 팀 공지', tipBudget: '캠프 예산과 장부(권한자만)', tipTrash: '지운 항목 되살리기', tipSettings: '팀원·권한·설정(관리자만)' },
     en: { navPrep: 'Camp Prep',
-      tipHome: "Today's tasks and notices at a glance", tipCamps: 'A space per camp: schedule, tasks and files together', tipPrep: 'Camp prep tools: timeline, supplies, contacts, assignments, surveys',
-      tipTasks: 'Team tasks, owners and due dates', tipCalendar: 'Team events, camp dates and out-of-office', tipMeetings: 'Meeting notes and what we decided',
-      tipFiles: 'Where you upload and keep files (PPT, PDF, photos, video)', tipLibrary: 'Info cards: sermons, worship setlists, games, venues', tipResources: "Opens the portal's existing Camp Resources as is",
-      tipTv: 'Design what shows on the office TV', tipAlerts: 'Your alerts and team notices', tipBudget: 'Camp budget and ledger (permission needed)', tipTrash: 'Restore deleted items', tipSettings: 'Members, permissions, settings (admins)' }
+      tipHome: "Today's tasks and notices", tipCamps: 'Per-camp schedule, tasks and files', tipPrep: 'Timeline, supplies, contacts, surveys',
+      tipTasks: 'Team tasks, owners, due dates', tipCalendar: 'Events, camp dates, out-of-office', tipMeetings: 'Meeting notes and decisions',
+      tipFiles: 'Keep PPT, PDF, photos, video', tipLibrary: 'Sermon, setlist, game, venue cards', tipResources: "Open the portal's Camp Resources",
+      tipTv: 'Design the office TV screen', tipAlerts: 'Your alerts and team notices', tipBudget: 'Camp budget and ledger (permission)', tipTrash: 'Restore deleted items', tipSettings: 'Members, permissions (admins)' }
   });
 
   /* ---------- 위쪽 머리글: 계정 칩 · 언어 · 로그아웃 ---------- */

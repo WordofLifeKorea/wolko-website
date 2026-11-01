@@ -58,13 +58,25 @@ test('부탁 제안: 저장하지 않고 제안만 돌려준다 (권한 없으�
 
 test('폰 업무 추가: 날짜 말 읽기, 토큰으로 내 업무 만들기, 새 주소 만들면 예전 주소 멈춤, 한도·권한', async () => {
   assert.deepEqual(parseDue('내일까지 보험 가입', '2026-11-04'), { due: '2026-11-05', title: '보험 가입' }); assert.deepEqual(parseDue('6/20 버스 예약', '2026-11-04'), { due: '2027-06-20', title: '버스 예약' }); assert.deepEqual(parseDue('물품 정리', '2026-11-04'), { due: null, title: '물품 정리' }); assert.equal(parseDue('x', '2026-11-04', '2026-12-25').due, '2026-12-25');
-  const env = makeEnv(fakeD1()), get = async (who) => (await (await QT.onRequestGet({ env, request: await req(who, { url: 'http://localhost/api/campteam/quick-task' }) })).json());
-  const t1 = (await get(U.mem)).token; assert.match(t1, /^[a-f0-9]{64}$/); assert.equal((await get(U.mem)).token, t1);
+  const env = { ...makeEnv(fakeD1()), CAMPTEAM_PHONE_TOOLS: 'on' }, get = async (who) => (await (await QT.onRequestGet({ env, request: await req(who, { url: 'http://localhost/api/campteam/quick-task' }) })).json());
+  const t1 = (await get(U.admin)).token; assert.match(t1, /^[a-f0-9]{64}$/); assert.equal((await get(U.admin)).token, t1);
   const phone = async (body) => { const r = await QT.onRequestPost({ env, request: new Request('http://x/api/campteam/quick-task', { method: 'POST', body: JSON.stringify(body), headers: { 'content-type': 'application/json' } }) }); return { status: r.status, body: await r.json() }; };
   const ok = await phone({ token: t1, text: '내일까지 버스 예약' }); assert.equal(ok.status, 201); const row = await env.DB.prepare('SELECT title, ownerEmail, dueDate, status FROM tasks WHERE id = ?1').bind(ok.body.id).first(); assert.equal(row.title, '버스 예약'); assert.ok(row.ownerEmail && row.dueDate);
   assert.equal((await phone({ token: 'a'.repeat(64), text: 'x' })).status, 401); assert.equal((await phone({ token: t1, text: '  ' })).status, 400);
-  const t2 = (await (await QT.onRequestPost({ env, request: await req(U.mem, { method: 'POST', url: 'http://localhost/api/campteam/quick-task', body: { regen: true } }) })).json()).token; assert.notEqual(t1, t2);
+  const t2 = (await (await QT.onRequestPost({ env, request: await req(U.admin, { method: 'POST', url: 'http://localhost/api/campteam/quick-task', body: { regen: true } }) })).json()).token; assert.notEqual(t1, t2);
   assert.equal((await phone({ token: t1, text: 'x' })).status, 401, '예전 주소는 멈춘다'); assert.equal((await phone({ token: t2, text: 'ok' })).status, 201);
   assert.equal((await QT.onRequestGet({ env, request: await req(U.view, { url: 'http://localhost/api/campteam/quick-task' }) })).status, 403, '보기만 하는 계정은 주소를 못 받는다'); assert.equal((await QT.onRequestGet({ env, request: await req(U.out, { url: 'http://localhost/api/campteam/quick-task' }) })).status, 403);
   for (let i = 0; i < 58; i++) await phone({ token: t2, text: 't' + i }); assert.equal((await phone({ token: t2, text: 'more' })).status, 429);
+});
+
+test('폰 연결 기능: 기본은 꺼져 있고, 켜도 관리자만 — 꺼지면 예전 주소도 멈춘다', async () => {
+  const base = makeEnv(fakeD1()), on = { ...base, CAMPTEAM_PHONE_TOOLS: 'on' }, url = 'http://localhost/api/campteam/quick-task';
+  const get = async (env, who) => (await QT.onRequestGet({ env, request: await req(who, { url }) })).status;
+  assert.equal(await get(base, U.admin), 403, '꺼져 있으면 관리자도 못 받는다'); assert.equal((await (await QT.onRequestGet({ env: base, request: await req(U.admin, { url }) })).json()).code, 'phone_off');
+  assert.equal(await get(on, U.mem), 403, '켜져도 관리자가 아니면 못 받는다'); assert.equal(await get(on, U.admin), 200);
+  const token = (await (await QT.onRequestGet({ env: on, request: await req(U.admin, { url }) })).json()).token;
+  const phone = async (env) => (await QT.onRequestPost({ env, request: new Request('http://x/api/campteam/quick-task', { method: 'POST', body: JSON.stringify({ token, text: '버스 예약' }), headers: { 'content-type': 'application/json' } }) })).status;
+  assert.equal(await phone(on), 201); assert.equal(await phone(base), 403, '스위치를 끄면 예전 주소도 멈춘다');
+  const { onRequestGet: cfg } = await import('../functions/api/campteam/config.js');
+  assert.equal((await (await cfg({ env: base })).json()).phoneTools, false); assert.equal((await (await cfg({ env: on })).json()).phoneTools, true);
 });
