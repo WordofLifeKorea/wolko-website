@@ -23,6 +23,8 @@ const groups = [
   ...g,
   people: allTeam.filter(p => locOf(p) === g.loc && !isDirector(p))
     .sort((a, b) => (a.data.category === b.data.category ? byOrder(a, b) : a.data.category === 'missionary' ? -1 : 1)),
+  // 그 거점 인원 전체(위 '대표'에 따로 나온 디렉터 포함) — 거르기 막대 · 지도 숫자와 같다
+  total: allTeam.filter(p => locOf(p) === g.loc).length,
 }));
 const counts = {
   all: allTeam.length,
@@ -129,8 +131,8 @@ const mapPlaces = [
       <div class="pp-shell pp-bar-inner">
         <div class="pp-seg" role="group" aria-label="사역 거점">
           <button type="button" class="is-on" data-loc="all" aria-pressed="true"><span class="wl-ko">전체</span><span class="wl-en">All</span> <em>{counts.all}</em></button>
-          <button type="button" data-loc="pt" aria-pressed="false"><span class="wl-ko">평택 월코센터</span><span class="wl-en">Pyeongtaek</span> <em>{counts.pt}</em></button>
-          <button type="button" data-loc="jj" aria-pressed="false"><span class="wl-ko">제주 월비</span><span class="wl-en">Jeju</span> <em>{counts.jj}</em></button>
+          <button type="button" data-loc="pt" aria-pressed="false"><span class="wl-ko">평택<span class="pp-seg-long"> 월코센터</span></span><span class="wl-en">Pyeongtaek</span> <em>{counts.pt}</em></button>
+          <button type="button" data-loc="jj" aria-pressed="false"><span class="wl-ko">제주<span class="pp-seg-long"> 월비</span></span><span class="wl-en">Jeju</span> <em>{counts.jj}</em></button>
         </div>
         <div class="pp-chips" role="group" aria-label="역할">
           <button type="button" class="is-on" data-role="all" aria-pressed="true"><span class="wl-ko">모두</span><span class="wl-en">Everyone</span></button>
@@ -168,7 +170,7 @@ const mapPlaces = [
               <p class="pp-group-place"><span class="pp-group-num">{g.num}</span><span class="wl-ko">{g.placeKo}</span><span class="wl-en">{g.placeEn}</span></p>
               <h2><span class="wl-ko">{g.ko}</span><span class="wl-en">{g.en}</span></h2>
             </div>
-            <p class="pp-group-count"><span data-count>{g.people.length}</span><span class="wl-ko">명</span><span class="wl-en"> people</span></p>
+            <p class="pp-group-count"><span data-count>{g.total}</span><span class="wl-ko">명</span><span class="wl-en"> people</span></p>
           </div>
           <ul class="pp-grid">
             {g.people.map((p) => (
@@ -257,7 +259,10 @@ const mapPlaces = [
         var total = 0;
         root.querySelectorAll('.pp-group').forEach(function (g) {
           var n = 0; g.querySelectorAll('li[data-loc]').forEach(function (li) { var ok = match(li); li.hidden = !ok; if (ok) n++; });
-          g.hidden = !n; g.querySelector('[data-count]').textContent = n; total += n;
+          total += n;
+          // 인원수에는 위 '대표'에 따로 나온 그 거점 디렉터도 넣는다(거르기 막대 · 지도 숫자와 맞춘다)
+          root.querySelectorAll('.pp-lead[data-loc="' + g.dataset.group + '"]').forEach(function (c) { if (!c.hidden) n++; });
+          g.hidden = !g.querySelector('li[data-loc]:not([hidden])'); g.querySelector('[data-count]').textContent = n;
         });
         root.querySelector('.pp-empty').hidden = !!(total || anyLead);
       }
@@ -353,7 +358,8 @@ const mapPlaces = [
     .pp-leads { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
     .pp-lead { display: grid; grid-template-columns: 200px minmax(0, 1fr); background: #fff; border: 1px solid #e7e2d8; border-radius: 18px; overflow: hidden; }
     .pp-lead:hover { box-shadow: 0 22px 40px -22px rgba(11,36,48,.45); }
-    .pp-lead-photo { position: relative; display: block; aspect-ratio: 4 / 5; overflow: hidden; background: #e7e2d8; }
+    /* 사진은 카드 높이를 끝까지 채운다(글이 길어 카드가 길어져도 사진 아래가 비지 않게) */
+    .pp-lead-photo { position: relative; display: block; align-self: stretch; min-height: 250px; overflow: hidden; background: #e7e2d8; }
     .pp-lead-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
     .pp-lead-body { display: flex; flex-direction: column; justify-content: center; gap: 10px; padding: 28px; }
     .pp-lead-badge { align-self: flex-start; padding: 4px 10px; border-radius: 999px; background: var(--pp-navy); color: #fff; font-size: 11.5px; font-weight: 800; letter-spacing: .06em; }
@@ -370,7 +376,7 @@ const mapPlaces = [
     .pp-group-place { display: flex; align-items: baseline; gap: 12px; font-size: 12px; font-weight: 800; letter-spacing: .14em; color: #5a7380; }
     .pp-group-num { font-family: var(--ff-serif); font-size: 15px; letter-spacing: 0; color: var(--pp-deep); }
     .pp-group h2 { margin-top: 10px; font-family: var(--ff-serif); font-size: clamp(28px, 3vw, 36px); font-weight: 900; letter-spacing: -.03em; color: var(--pp-navy); }
-    .pp-group-count { font-size: 14px; font-weight: 700; color: #5a7380; }
+    .pp-group-count { flex: none; white-space: nowrap; font-size: 14px; font-weight: 700; color: #5a7380; }
     .pp-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 36px 24px; }
     .pp-grid .pp-card { flex-direction: column; height: 100%; }
     .pp-photo { position: relative; display: block; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 16px; background: #e7e2d8; isolation: isolate; }
@@ -409,14 +415,18 @@ const mapPlaces = [
       .pp-faces img { width: 24px; height: 24px; }
       .pp-place-name { font-size: 12.5px; }
       .pp-place-meta { font-size: 10.5px; }
-      .pp-bar-inner { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding: 8px 0; }
-      .pp-seg button, .pp-chips button { min-height: 36px; }
-      .pp-bar-inner::-webkit-scrollbar { display: none; }
-      .pp-seg, .pp-chips { flex: none; flex-wrap: nowrap; }
-      .pp-seg button, .pp-chips button { white-space: nowrap; }
+      /* 휴대폰: 거점 · 역할을 두 줄로 나눠 화면 폭에 꼭 맞춘다(옆으로 밀어야 보이는 버튼이 없게) */
+      .pp-bar-inner { flex-direction: column; align-items: stretch; gap: 8px; padding: 10px 0; }
+      .pp-seg, .pp-chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .pp-chips { gap: 6px; }
+      .pp-seg button, .pp-chips button { min-height: 36px; padding: 0 6px; white-space: nowrap; }
+      .pp-seg button { font-size: 13.5px; }
+      .pp-chips button { font-size: 13px; }
+      .pp-seg-long { display: none; }
       .pp-main { gap: 56px; padding: 40px 0 72px; }
       .pp-leads { grid-template-columns: 1fr; }
       .pp-lead { grid-template-columns: 120px minmax(0, 1fr); }
+      .pp-lead-photo { min-height: 160px; }
       .pp-lead-body { padding: 18px; gap: 6px; }
       .pp-lead-name { font-size: 20px; }
       .pp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 12px; }
