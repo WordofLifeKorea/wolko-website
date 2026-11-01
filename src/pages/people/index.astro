@@ -53,35 +53,38 @@ const pins = {
   pt: proj(127.11, 36.99),
   jj: proj(126.37, 33.44),
 };
-// 십자가 — 남한 본토 한가운데(대전 근처)에 두어, 빛이 사방으로 고르게 퍼져 제주까지 닿게 한다
-const [crossX, crossY] = proj(127.75, 36.25);
-// 점은 십자가에서의 거리별 띠로 묶는다(띠마다 지연 시간 하나 — HTML을 가볍게 유지)
-const BAND = 14;
-const bands = new Map();
+// 십자가 — 두 사역 거점(평택·제주)에 하나씩 '뿅' 하고 나타나고, 빛이 두 곳에서 전국으로 퍼진다.
+// 제주는 평택보다 조금 늦게(JJ_LAG초) 나타나 '뿅, 뿅' 차례로 보인다
+const JJ_LAG = 0.35;
+const SPREAD = 2.6; // 빛이 가장 먼 점까지 닿는 데 걸리는 초 — 고리와 점 물결이 같은 빠르기로 움직인다
+const dotsAll = [];
 let maxDist = 0;
 for (let y = STEP / 2, r = 0; y < MAP_H; y += STEP, r++) {
   for (let x = STEP / 2 + (r % 2 ? STEP / 2 : 0); x < MAP_W; x += STEP) {
     if (!inKorea(x / 81 + 125.6, 38.9 - y / 100)) continue;
-    const near = Math.min(...Object.values(pins).map(([px, py]) => Math.hypot(px - x, py - y)));
-    const dist = Math.hypot(x - crossX, y - crossY);
-    maxDist = Math.max(maxDist, dist);
-    const b = Math.floor(dist / BAND);
-    if (!bands.has(b)) bands.set(b, []);
-    bands.get(b).push({ x, y, hot: near < 34 });
+    const dPt = Math.hypot(pins.pt[0] - x, pins.pt[1] - y), dJj = Math.hypot(pins.jj[0] - x, pins.jj[1] - y);
+    maxDist = Math.max(maxDist, Math.min(dPt, dJj));
+    dotsAll.push({ x, y, dPt, dJj, hot: Math.min(dPt, dJj) < 34 });
   }
 }
-const SPREAD = 2.8; // 빛이 가장 먼 점(제주)까지 닿는 데 걸리는 초 — 고리와 점 물결이 같은 빠르기로 움직인다
-const mapBands = [...bands.entries()].sort((a, b) => a[0] - b[0]).map(([b, dots]) => {
-  const t = (b * BAND + BAND / 2) / maxDist;
-  return { enter: (0.15 + t * 0.9).toFixed(2), wave: (t * SPREAD).toFixed(2), dots };
+// 점마다 '빛이 먼저 닿는 십자가' 기준으로 닿는 시각을 정하고, 0.1초 단위 띠로 묶는다(띠마다 지연 시간 하나 — HTML을 가볍게 유지)
+const bands = new Map();
+dotsAll.forEach((d) => {
+  const t = Math.min(d.dPt / maxDist * SPREAD, d.dJj / maxDist * SPREAD + JJ_LAG);
+  const b = Math.round(t * 10);
+  if (!bands.has(b)) bands.set(b, []);
+  bands.get(b).push(d);
 });
+const mapBands = [...bands.entries()].sort((a, b) => a[0] - b[0]).map(([b, dots]) => ({
+  enter: (0.15 + b / 10 * 0.35).toFixed(2), wave: (b / 10).toFixed(2), dots,
+}));
 const ringMax = (maxDist / 10).toFixed(1); // 고리 반지름 10에서 가장 먼 점까지 커지는 배율
 const [ptX, ptY] = pins.pt, [jjX, jjY] = pins.jj;
 const pct = (v, total) => `${(v / total * 100).toFixed(2)}%`;
 const facesOf = (loc) => allTeam.filter(p => locOf(p) === loc && p.data.photo_url).sort(byOrder).slice(0, 3);
 const mapPlaces = [
-  { loc: 'pt', x: ptX, y: ptY, ko: '평택 월코센터', en: 'Pyeongtaek', coord: '36.99°N', n: counts.pt, faces: facesOf('pt'), href: '#wp-pyeongtaek' },
-  { loc: 'jj', x: jjX, y: jjY, ko: '제주 월비', en: 'Jeju', coord: '33.44°N', n: counts.jj, faces: facesOf('jj'), href: '#wp-jeju' },
+  { loc: 'pt', lag: 0, x: ptX, y: ptY, ko: '평택 월코센터', en: 'Pyeongtaek', coord: '36.99°N', n: counts.pt, faces: facesOf('pt'), href: '#wp-pyeongtaek' },
+  { loc: 'jj', lag: JJ_LAG, x: jjX, y: jjY, ko: '제주 월비', en: 'Jeju', coord: '33.44°N', n: counts.jj, faces: facesOf('jj'), href: '#wp-jeju' },
 ];
 ---
 
@@ -119,19 +122,16 @@ const mapPlaces = [
                 {band.dots.map((dt) => <circle cx={dt.x} cy={dt.y} r="2.3" class={dt.hot ? 'is-hot' : undefined} />)}
               </g>
             ))}
-            <g class="pp-spread" transform={`translate(${crossX.toFixed(1)} ${crossY.toFixed(1)})`} style={`--ring-max:${ringMax}`}>
-              <circle class="pp-spread-ring" r="10" />
-              <circle class="pp-spread-ring pp-spread-ring--echo" r="10" />
-            </g>
-            <g class="pp-cross" transform={`translate(${crossX.toFixed(1)} ${crossY.toFixed(1)})`}>
-              <circle class="pp-cross-glow" r="26" fill="url(#ppCrossGlow)" />
-              <path class="pp-cross-mark" d="M0 -13V13M-8 -5H8" />
-            </g>
             {mapPlaces.map((m) => (
-              <g class={`pp-pin pp-pin--${m.loc}`} transform={`translate(${m.x.toFixed(1)} ${m.y.toFixed(1)})`}>
-                <circle class="pp-pin-ring" r="9" />
-                <circle class="pp-pin-ring pp-pin-ring--late" r="9" />
-                <circle class="pp-pin-core" r="5.5" />
+              <g class="pp-spread" transform={`translate(${m.x.toFixed(1)} ${m.y.toFixed(1)})`} style={`--ring-max:${ringMax};--o:${m.lag}s`}>
+                <circle class="pp-spread-ring" r="10" />
+                <circle class="pp-spread-ring pp-spread-ring--echo" r="10" />
+              </g>
+            ))}
+            {mapPlaces.map((m) => (
+              <g class={`pp-cross pp-cross--${m.loc}`} transform={`translate(${m.x.toFixed(1)} ${m.y.toFixed(1)})`} style={`--o:${m.lag}s`}>
+                <circle class="pp-cross-glow" r="24" fill="url(#ppCrossGlow)" />
+                <g class="pp-cross-pop"><g class="pp-cross-bump"><path class="pp-cross-mark" d="M0 -12V12M-7.5 -4.5H7.5" /></g></g>
               </g>
             ))}
           </svg>
@@ -326,25 +326,25 @@ const mapPlaces = [
 
     .pp-map { position: relative; justify-self: center; height: 500px; aspect-ratio: 340 / 600; margin-right: 120px; }
     .pp-map svg { display: block; width: 100%; height: 100%; overflow: visible; }
-    /* 십자가에서 빛이 퍼진다: 점이 십자가 가까운 곳부터 나타나고, 7초마다 금빛 물결이 전국으로 번진 뒤 조금 더 밝은 청록으로 남는다 */
+    /* 평택·제주의 십자가에서 빛이 퍼진다: 점이 십자가 가까운 곳부터 나타나고, 7초마다 금빛 물결이 전국으로 번진 뒤 조금 더 밝은 청록으로 남는다 */
     .pp-map { --pp-wave-start: 1.4s; --pp-wave-cycle: 7s; }
     .pp-map-band { animation: pp-dots .7s ease-out both; animation-delay: var(--d); }
     @keyframes pp-dots { from { opacity: 0; } }
     .pp-map .pp-map-band circle { --base: rgba(143,208,228,.3); --rest: rgba(156,218,236,.46); fill: var(--base); animation: pp-wave var(--pp-wave-cycle) ease-out infinite; animation-delay: calc(var(--pp-wave-start) + var(--w)); }
     .pp-map .pp-map-band circle.is-hot { --base: rgba(170,224,240,.62); --rest: rgba(186,232,246,.72); }
     @keyframes pp-wave { 0% { fill: var(--base); } 7% { fill: rgba(243,214,150,.95); } 24%, 100% { fill: var(--rest); } }
-    .pp-spread-ring { fill: none; stroke: rgba(233,194,122,.55); stroke-width: 1.2; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; opacity: 0; animation: pp-spread var(--pp-wave-cycle) linear infinite; animation-delay: var(--pp-wave-start); }
-    .pp-spread-ring--echo { stroke: rgba(143,208,228,.35); animation-delay: calc(var(--pp-wave-start) + .45s); }
+    .pp-spread-ring { fill: none; stroke: rgba(233,194,122,.55); stroke-width: 1.2; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; opacity: 0; animation: pp-spread var(--pp-wave-cycle) linear infinite; animation-delay: calc(var(--pp-wave-start) + var(--o)); }
+    .pp-spread-ring--echo { stroke: rgba(143,208,228,.35); animation-delay: calc(var(--pp-wave-start) + var(--o) + .45s); }
     @keyframes pp-spread { 0% { transform: scale(.4); opacity: .9; } 40% { transform: scale(var(--ring-max)); opacity: 0; } 100% { transform: scale(var(--ring-max)); opacity: 0; } }
-    .pp-cross { animation: pp-cross-in 1s .5s cubic-bezier(.2,.8,.2,1) both; }
-    @keyframes pp-cross-in { from { opacity: 0; } }
-    .pp-cross-mark { fill: none; stroke: #f3d89b; stroke-width: 2.6; stroke-linecap: round; filter: drop-shadow(0 0 4px rgba(233,194,122,.85)); }
-    .pp-map .pp-cross-glow { transform-box: fill-box; transform-origin: center; animation: pp-glow var(--pp-wave-cycle) ease-out infinite; animation-delay: var(--pp-wave-start); }
+    /* 십자가 '뿅': 0에서 크게 튀어나왔다가 제자리로, 이후 빛 물결이 시작될 때마다 살짝 다시 튄다 */
+    .pp-map .pp-cross-pop, .pp-map .pp-cross-bump { transform-box: fill-box; transform-origin: center; }
+    .pp-map .pp-cross-pop { animation: pp-cross-in .75s cubic-bezier(.2,1.7,.4,1) both; animation-delay: calc(.55s + var(--o)); }
+    @keyframes pp-cross-in { 0% { transform: scale(0) rotate(-25deg); opacity: 0; } 60% { opacity: 1; } 100% { transform: none; opacity: 1; } }
+    .pp-map .pp-cross-bump { animation: pp-cross-bump var(--pp-wave-cycle) ease-out infinite; animation-delay: calc(var(--pp-wave-start) + var(--o)); }
+    @keyframes pp-cross-bump { 0% { transform: scale(1); } 4% { transform: scale(1.32); } 10%, 100% { transform: scale(1); } }
+    .pp-cross-mark { fill: none; stroke: #f6dc9f; stroke-width: 2.8; stroke-linecap: round; filter: drop-shadow(0 0 4px rgba(233,194,122,.9)); }
+    .pp-map .pp-cross-glow { transform-box: fill-box; transform-origin: center; opacity: 0; animation: pp-glow var(--pp-wave-cycle) ease-out infinite; animation-delay: calc(var(--pp-wave-start) + var(--o)); }
     @keyframes pp-glow { 0% { transform: scale(.7); opacity: .6; } 8% { transform: scale(1.25); opacity: 1; } 40%, 100% { transform: scale(.85); opacity: .65; } }
-    .pp-map .pp-pin-core { fill: #fff; stroke: #e9c27a; stroke-width: 2.5; }
-    .pp-map .pp-pin-ring { fill: none; stroke: rgba(233,194,122,.8); stroke-width: 1.4; transform-box: fill-box; transform-origin: center; animation: pp-ring 2.8s ease-out infinite; }
-    .pp-map .pp-pin-ring--late { animation-delay: 1.4s; }
-    @keyframes pp-ring { from { transform: scale(.6); opacity: 1; } to { transform: scale(3.2); opacity: 0; } }
     .pp-place { position: absolute; display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 8px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: #fff; text-decoration: none; white-space: nowrap; transform: translate(22px, -50%); animation: pp-pop .7s cubic-bezier(.2,.9,.3,1.3) both; animation-delay: calc(1.5s + var(--i) * .25s); transition: background-color .25s, border-color .25s, transform .25s; }
     @keyframes pp-pop { from { opacity: 0; transform: translate(8px, -50%) scale(.9); } }
     .pp-place:hover { background: rgba(255,255,255,.16); border-color: rgba(233,194,122,.6); transform: translate(26px, -50%); color: #fff; }
@@ -472,6 +472,7 @@ const mapPlaces = [
       .pp-hl { background-size: 100% 5px; }
       .pp-map .pp-map-band circle { fill: var(--rest); }
       .pp-spread-ring { display: none; }
+      .pp-map .pp-cross-glow { opacity: .65; }
     }
   </style>
 </BaseLayout>
