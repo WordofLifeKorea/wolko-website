@@ -12,7 +12,7 @@ photo_url: /images/uploads/niki.jpg
 photo_position: "center 20%"
 gender: female
 support_url_en: https://missions.wol.org/missionaries/989052
-hero_tagline_ko: Niki Florica
+hero_tagline_ko: ""
 hero_subtitle_en: "Niki serves in Word of Life Korea's camp and outreach ministries, seeking to inspire, equip, and mobilize South Korean youth with the gospel through English-based camp ministries and community events. "
 verse_ref: "2 Corinthians 12:10"
 verse_ko: "그러므로 내가 그리스도를 위하여 약한 것들과 능욕과 궁핍과 핍박과 곤란을 기뻐하노니 이는 내가 약할 그 때에 곧 강함이니라"

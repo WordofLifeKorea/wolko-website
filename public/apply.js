@@ -95,7 +95,7 @@
       age: function (a) { return a === '0' ? 'Under 1' : a === '26+' ? '26 or older' : a; },
     },
   };
-  var lang = (function () { try { var v = localStorage.getItem('wolko-apply-lang'); if (v === 'ko' || v === 'en') return v; } catch (e) {} return /^ko/i.test(navigator.language || '') ? 'ko' : 'en'; })();
+  var lang = (function () { try { var v = sessionStorage.getItem('wolko-apply-lang'); if (v === 'ko' || v === 'en') return v; } catch (e) {} return /^ko/i.test(navigator.language || '') ? 'ko' : 'en'; })();
   var t = function (k) { return T[lang][k]; };
   var tx = function (o) { return (o && (o[lang] || o.ko)) || ''; };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
@@ -473,7 +473,7 @@
   $('apPrev').addEventListener('click', function () { goTo(step - 1); });
   document.addEventListener('click', function (e) { var b = e.target.closest('[data-ref-resend]'); if (b) sendRef(+b.getAttribute('data-ref-resend'), true).then(function (ok) { if (ok) { var y = window.scrollY; render(); window.scrollTo(0, y); } }); });
   document.addEventListener('click', function (e) { var g = e.target.closest('[data-go]'); if (g && !g.disabled) goTo(Number(g.getAttribute('data-go'))); });
-  document.querySelectorAll('.ap-lang button').forEach(function (b) { b.addEventListener('click', function () { lang = b.dataset.lang; try { localStorage.setItem('wolko-apply-lang', lang); } catch (e) {} errors = {}; showError(''); if (application && account) showStatus(); else render(); }); });
+  document.querySelectorAll('.ap-lang button').forEach(function (b) { b.addEventListener('click', function () { lang = b.dataset.lang; try { sessionStorage.setItem('wolko-apply-lang', lang); } catch (e) {} errors = {}; showError(''); if (application && account) showStatus(); else render(); }); });
 
   renderChrome();
   if (!token) showGate('');

@@ -9,6 +9,7 @@ interface Props {
   roleKo: (badge: string) => string;
   variant?: 'side' | 'sheet';
 }
+import { photoFrame } from '../lib/photoFrame.js';
 const { campuses, current, roleKo, variant = 'side' } = Astro.props;
 const initialOf = (p: any) => (p.data.name_ko || p.data.name_en || '?').trim().charAt(0);
 ---
@@ -25,7 +26,7 @@ const initialOf = (p: any) => (p.data.name_ko || p.data.name_en || '?').trim().c
                 <a href={`/team/${p.slug}`} class:list={['tn-item', { 'is-active': p.slug === current }]} aria-current={p.slug === current ? 'page' : undefined}>
                   <span class="tn-avatar" aria-hidden="true">
                     <span class="tn-initial">{initialOf(p)}</span>
-                    {p.data.photo_url && <img src={p.data.photo_url} alt="" loading="lazy" style={p.data.photo_position ? `object-position: ${p.data.photo_position}` : undefined} onerror="this.remove()" />}
+                    {p.data.photo_url && <img src={p.data.photo_url} alt="" loading="lazy" style={photoFrame(p.data.photo_url, 1, 'avatar', p.data.photo_position)} onerror="this.remove()" />}
                   </span>
                   <span class="tn-text">
                     <span class="tn-name"><span class="wl-ko">{p.data.name_ko}</span><span class="wl-en">{p.data.name_en}</span></span>

@@ -2,6 +2,8 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import TeamNavList from '../../components/TeamNavList.astro';
+import { photoFrame } from '../../lib/photoFrame.js';
+import { roleKo, campusOf } from '../../lib/teamRoles.js';
 
 export async function getStaticPaths() {
   const team = await getCollection('team');
@@ -22,13 +24,12 @@ const navCampuses = [
 ].map(c => ({ ...c, groups: c.groups.filter(g => g.people.length) })).filter(c => c.groups.length);
 const teamCount = wolkoMission.length + wolkoSTW.length + jejuMission.length + jejuSTW.length;
 const d = person.data;
-const campusKo = d.campus === 'pyeongtaek' ? '평택 월코센터' : '제주 월비캠퍼스';
-const campusEn = d.campus === 'pyeongtaek' ? 'Pyeongtaek WOLKO Center' : 'Jeju WOLBI Campus';
+// 사역 거점 · 직책 이름은 섬기는이 목록과 같은 표(src/lib/teamRoles.js)를 쓴다
+const { ko: campusKo, en: campusEn } = campusOf(d.campus);
 // 빈 줄로 나뉜 문단을 그대로 살려서 보여준다
 const paras = (text?: string) => (text ?? '').split(/\n{2,}/).map(t => t.trim()).filter(Boolean);
 const hasBio = (d.bio_ko && d.bio_ko.trim()) || (d.bio_en && d.bio_en.trim());
 const hasBio2 = (d.bio_ko_2 && d.bio_ko_2.trim()) || (d.bio_en_2 && d.bio_en_2.trim());
-const isDir = d.role_badge && d.role_badge.toLowerCase().includes('director');
 // 부부 선교사 이름 분리
 const [name1Ko, name2Ko] = d.name_ko.includes(' & ') ? d.name_ko.split(' & ') : [d.name_ko, null];
 const [name1En, name2En] = d.name_en.includes(' & ') ? d.name_en.split(' & ') : [d.name_en, null];
@@ -45,19 +46,10 @@ const unquote = (s?: string) => (s ?? '').trim().replace(/^["'“”‘’]+|["'
 const taglineKo = [d.hero_tagline_ko, d.hero_tagline2_ko].map(unquote).filter(Boolean).join(' ');
 const taglineEn = [d.hero_tagline_en, d.hero_tagline2_en].map(unquote).filter(Boolean).join(' ');
 
-// ── Role badge 한/영 매핑 ────────────────────────────────────────
-const ROLE_MAP: Record<string, string> = {
-  'Missionary':        '선교사',
-  'Missionaries':      '선교사',
-  'Field Director':    '대표 선교사',
-  'Director':          '대표 선교사',
-  'Jeju Director':     '제주 대표 선교사',
-  'Short-term Worker': '단기 사역자',
-  'Intern':            '인턴',
-  'Staff':             '간사',
-};
-const roleOf = (badge: string) => (badge ? (ROLE_MAP[badge] || badge) : '');
-const roleBadgeKo = d.role_badge ? (ROLE_MAP[d.role_badge] || d.role_badge) : '';
+const roleOf = roleKo;
+const roleBadgeKo = roleKo(d.role_badge);
+// 사진 칸 비율 — 아래 CSS .mp-hero-photo · .mp-story-photo · .mp-spouse-photo-wrap 의 aspect-ratio 와 같아야 한다
+const PHOTO_ASPECT = 4 / 5;
 
 // ── 성경 참조 한→영 자동 변환 ──────────────────────────────────
 const BOOK_MAP: Record<string, string> = {
@@ -90,6 +82,17 @@ function koRefToEn(ref: string): string {
   return ref;
 }
 const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
+// 거꾸로: 영어로 저장된 구절 주소(예: "Ephesians 2:10")는 한글 화면에서 한글 책 이름으로
+const EN_BOOK = Object.entries(BOOK_MAP).map(([ko, en]) => [en, ko]).concat([['Psalms', '시편']])
+  .sort((a, b) => b[0].length - a[0].length);
+function enRefToKo(ref: string): string {
+  const s = ref.trim();
+  for (const [en, ko] of EN_BOOK) {
+    if (s.startsWith(en + ' ')) return ko + s.slice(en.length);
+  }
+  return ref;
+}
+const verseRefKo = d.verse_ref ? enRefToKo(d.verse_ref) : null;
 ---
 <BaseLayout title={`${d.name_ko} — WOLKO 월코`} description={`${d.name_en} | ${d.title_en} | Word of Life Korea`} activeNav="about">
 <style>
@@ -148,8 +151,10 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   line-height: 1.18; letter-spacing: -.03em; color: var(--c-navy);
 }
 .mp-hero-meta { margin-top: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; }
-.mp-hero-role { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--c-deep); }
-.mp-hero-campus { display: inline-flex; align-items: center; gap: 20px; font-size: 14px; font-weight: 600; color: var(--c-muted); }
+/* 직책 · 거점은 같은 크기 · 굵기로 나란히(색만 다르게) */
+.mp-hero-role, .mp-hero-campus { font-size: 13.5px; font-weight: 700; letter-spacing: .02em; }
+.mp-hero-role { color: var(--c-deep); }
+.mp-hero-campus { display: inline-flex; align-items: center; gap: 20px; color: var(--c-muted); }
 .mp-hero-campus::before { content: ''; width: 1px; height: 14px; background: var(--c-line); }
 .mp-hero-tagline {
   margin-top: 32px; padding-top: 28px; border-top: 1px solid var(--c-line);
@@ -249,8 +254,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 /* ── 함께 사역하는 배우자 ───────────────────────────── */
 .mp-spouse { padding: 0 0 104px; }
 .mp-spouse-card { display: flex; align-items: center; gap: 40px; padding: 40px; background: var(--c-soft); border: 1px solid var(--c-line); border-radius: 12px; }
-.mp-spouse-photo-wrap { flex: none; width: 128px; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 8px; background: #e6eef2; }
-.mp-spouse-photo-wrap img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.mp-spouse-photo-wrap { position: relative; flex: none; width: 128px; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 8px; background: #e6eef2; }
+.mp-spouse-photo-wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
 .mp-spouse-avatar { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
 .mp-spouse-avatar svg { width: 52px; height: 52px; }
 .mp-spouse-name {
@@ -309,7 +314,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   .mp-hero { padding: 96px 0 56px; }
   .mp-back { margin-bottom: 24px; }
   .mp-hero-grid { grid-template-columns: 1fr; gap: 28px; }
-  .mp-hero-photo { aspect-ratio: 4 / 5; max-height: 72vh; }
+  /* 키가 작은 화면에서는 비율(4:5)은 지킨 채 폭을 줄인다 — 높이만 자르면 얼굴 맞춤이 찌그러진다 */
+  .mp-hero-photo { aspect-ratio: 4 / 5; width: min(100%, calc(72vh * 4 / 5)); }
   .mp-hero-title { margin-top: 16px; font-size: clamp(30px, 8.4vw, 38px); }
   .mp-hero-tagline { margin-top: 24px; padding-top: 22px; font-size: 18px; }
   .mp-hero-meta + .mp-hero-desc { margin-top: 24px; padding-top: 22px; }
@@ -440,7 +446,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
         <!-- 사진 -->
         <div class="mp-hero-photo">
           {heroPhoto ? (
-            <img src={heroPhoto} alt={d.name_ko} loading="eager" style={`object-position:${heroPhotoPos}`} onerror="this.style.display='none'"/>
+            <img src={heroPhoto} alt={d.name_ko} loading="eager" style={photoFrame(heroPhoto, PHOTO_ASPECT, 'hero', heroPhotoPos)} onerror="this.style.display='none'"/>
           ) : (
             <span class="mp-hero-initial" aria-hidden="true">{initial}</span>
           )}
@@ -449,8 +455,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
         <!-- 이름 · 직책 · 소개 -->
         <div class="mp-hero-content">
           <p class="mp-eyebrow mp-hero-label">
-            <span class="wl-ko">{isDir ? '월드오브라이프 코리아 · 대표 선교사' : `월드오브라이프 코리아 · ${d.title_ko}`}</span>
-            <span class="wl-en">{isDir ? 'Word of Life Korea · Field Director' : `Word of Life Korea · ${d.title_en}`}</span>
+            <span class="wl-ko">{d.title_ko ? `월드오브라이프 코리아 · ${d.title_ko}` : '월드오브라이프 코리아'}</span>
+            <span class="wl-en">{d.title_en ? `Word of Life Korea · ${d.title_en}` : 'Word of Life Korea'}</span>
           </p>
 
           <h1 class="mp-hero-title">
@@ -465,12 +471,9 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
             <span class="mp-hero-campus"><span class="wl-ko">{campusKo}</span><span class="wl-en">{campusEn}</span></span>
           </p>
 
-          {(taglineKo || taglineEn) && (
-            <p class="mp-hero-tagline">
-              <span class="wl-ko">{taglineKo || taglineEn}</span>
-              <span class="wl-en">{taglineEn || taglineKo}</span>
-            </p>
-          )}
+          {/* 한 줄 소개 — 한쪽 말이 비어 있어도 다른 말로 채우지 않는다(한글 화면엔 한글만, 영어 화면엔 영어만) */}
+          {taglineKo && <p class="mp-hero-tagline wl-ko-block">{taglineKo}</p>}
+          {taglineEn && <p class="mp-hero-tagline wl-en-block">{taglineEn}</p>}
 
           <p class="mp-hero-desc">
             {d.hero_subtitle_ko || d.hero_subtitle_en ? (
@@ -540,8 +543,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
         <div class="mp-verse-ref">
           {d.verse_ref ? (
             <>
-              <span class="wl-ko">{d.verse_ref}</span>
-              <span class="wl-en">{verseRefEn || d.verse_ref}</span>
+              <span class="wl-ko">{verseRefKo}</span>
+              <span class="wl-en">{verseRefEn}</span>
             </>
           ) : (
             <>
@@ -567,7 +570,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
         {storyPhoto && (
           <figure class="mp-story-figure">
             <div class="mp-story-photo">
-              <img src={storyPhoto} alt="" loading="lazy" onerror="this.style.display='none'"/>
+              <img src={storyPhoto} alt="" loading="lazy" style={photoFrame(storyPhoto, PHOTO_ASPECT, 'hero')} onerror="this.style.display='none'"/>
             </div>
             {d.role_badge && (
               <figcaption class="mp-story-caption">
@@ -633,7 +636,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
             {d.photo_url_2 && (
               <figure class="mp-story-figure">
                 <div class="mp-story-photo">
-                  <img src={d.photo_url_2} alt="" loading="lazy" onerror="this.style.display='none'"/>
+                  <img src={d.photo_url_2} alt="" loading="lazy" style={photoFrame(d.photo_url_2, PHOTO_ASPECT, 'hero')} onerror="this.style.display='none'"/>
                 </div>
                 {d.role_badge && (
                   <figcaption class="mp-story-caption">
@@ -658,7 +661,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
           <div class="mp-spouse-card mp-reveal">
             <div class="mp-spouse-photo-wrap">
               {d.photo_url_2 ? (
-                <img src={d.photo_url_2} alt={d.spouse_ko} loading="lazy" onerror="this.style.display='none'"/>
+                <img src={d.photo_url_2} alt={d.spouse_ko} loading="lazy" style={photoFrame(d.photo_url_2, PHOTO_ASPECT, 'card', 'center top')} onerror="this.style.display='none'"/>
               ) : (
                 <div class="mp-spouse-avatar">
                   <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -699,31 +702,16 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
         <h2 class="mp-prayer-title"><span class="wl-ko">기도제목</span><span class="wl-en">Prayer Requests</span></h2>
       </div>
       <div>
-        {d.prayer_ko || d.prayer_en ? (
-          (() => {
-            const parseBullets = (text: string) =>
-              text.split(/\n|(?<!\w)\s*-\s+/).map(s => s.replace(/^-\s*/, '').trim()).filter(Boolean);
-            const koItems = parseBullets(d.prayer_ko || d.prayer_en || '');
-            const enItems = parseBullets(d.prayer_en || d.prayer_ko || '');
-            const isList = koItems.length > 1 || enItems.length > 1;
-            return isList ? (
-              <>
-                <div class="wl-ko"><ul class="mp-prayer-list">{koItems.map(item => <li>{item}</li>)}</ul></div>
-                <div class="wl-en"><ul class="mp-prayer-list">{enItems.map(item => <li>{item}</li>)}</ul></div>
-              </>
-            ) : (
-              <p class="mp-prayer-text">
-                <span class="wl-ko">{d.prayer_ko || d.prayer_en}</span>
-                <span class="wl-en">{d.prayer_en || d.prayer_ko}</span>
-              </p>
-            );
-          })()
-        ) : (
-          <p class="mp-prayer-text">
-            <span class="wl-ko">이 사역자를 위한 중보기도가 사역의 힘이 됩니다. 함께 기도해 주세요.</span>
-            <span class="wl-en">Your prayers are the backbone of this ministry. Thank you for interceding for our team.</span>
-          </p>
-        )}
+        {/* 기도제목 — 언어마다 따로 보여 주고, 그 언어가 비어 있으면 그 언어의 기본 문장(다른 말로 채우지 않는다) */}
+        {[
+          { cls: 'wl-ko', text: d.prayer_ko, empty: '이 사역자를 위한 중보기도가 사역의 힘이 됩니다. 함께 기도해 주세요.' },
+          { cls: 'wl-en', text: d.prayer_en, empty: 'Your prayers are the backbone of this ministry. Thank you for interceding for our team.' },
+        ].map(({ cls, text, empty }) => {
+          const items = String(text || '').split(/\n|(?<!\w)\s*-\s+/).map(s => s.replace(/^-\s*/, '').trim()).filter(Boolean);
+          return items.length > 1
+            ? <div class={cls}><ul class="mp-prayer-list">{items.map(item => <li>{item}</li>)}</ul></div>
+            : <p class={`mp-prayer-text ${cls}-block`}>{items[0] || empty}</p>;
+        })}
       </div>
     </div>
   </section>

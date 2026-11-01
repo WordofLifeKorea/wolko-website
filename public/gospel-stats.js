@@ -19,7 +19,7 @@
       item: '항목', combined: '통합', month: '달', reports: '보고', tHeard: '들은 인원', tSalv: '구원', tDed: '헌신', monthShort: function (m) { return Number(m.split('-')[1]) + '월'; },
       rName: '보고자', rPlace: '위치', rType: '유형', rUpdated: '수정', individual: '개인', team: '팀', teamOf: function (n) { return '팀 · ' + n; },
       mineTitle: '내가 낸 보고', edit: '고치기', del: '지우기', delAsk: '이 보고를 지울까요?',
-      formTitle: '월간 복음 전도 보고', formMonth: '보고하는 달', formWho: '보고 종류', formTeam: '팀 이름', formTeamPh: '예: 평택 캠프팀', formPlace: '위치 (평택 또는 제주)',
+      formTitle: '월간 복음 전도 보고', formMonth: '보고하는 달', formWho: '보고 종류', formTeam: '팀 이름', formTeamPh: '예: 평택 캠프팀', formPlace: '위치', segIndividualSub: '내 전도 숫자', segMinistry: '사역 현황', segMinistrySub: '제자훈련·지역교회',
       placeMainland: '평택', placeJeju: '제주', save: '저장하기', saving: '저장 중…', cancel: '닫기',
       formLoaded: '이미 낸 보고를 불러왔어요. 고쳐서 저장하면 덮어써요.', saved: '저장했어요.', savedUpdated: '고쳐서 저장했어요.',
       needPlace: '위치(평택 또는 제주)를 선택해 주세요.', needTeam: '팀 이름을 입력해 주세요.',
@@ -47,7 +47,7 @@
       item: 'Item', combined: 'Combined', month: 'Month', reports: 'Reports', tHeard: 'Heard', tSalv: 'Saved', tDed: 'Dedicated', monthShort: function (m) { return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Number(m.split('-')[1]) - 1]; },
       rName: 'Reporter', rPlace: 'Location', rType: 'Type', rUpdated: 'Updated', individual: 'Individual', team: 'Team', teamOf: function (n) { return 'Team · ' + n; },
       mineTitle: 'My reports', edit: 'Edit', del: 'Delete', delAsk: 'Delete this report?',
-      formTitle: 'Monthly Gospel Outreach Report', formMonth: 'Month', formWho: 'Report type', formTeam: 'Team name', formTeamPh: 'e.g. Pyeongtaek Camp Team', formPlace: 'Location (Pyeongtaek or Jeju)',
+      formTitle: 'Monthly Gospel Outreach Report', formMonth: 'Month', formWho: 'Report type', formTeam: 'Team name', formTeamPh: 'e.g. Pyeongtaek Camp Team', formPlace: 'Location', segIndividualSub: 'my own outreach', segMinistry: 'Ministry status', segMinistrySub: 'discipleship & churches',
       placeMainland: 'Pyeongtaek', placeJeju: 'Jeju', save: 'Save', saving: 'Saving…', cancel: 'Close',
       formLoaded: 'Loaded the report you already submitted. Saving will overwrite it.', saved: 'Saved.', savedUpdated: 'Updated.',
       needPlace: 'Please choose a location (Pyeongtaek or Jeju).', needTeam: 'Please enter a team name.',
@@ -250,7 +250,8 @@
       section.fields.forEach(function (f) {
         var desc = tx(f.label).split(' — ').slice(1).join(' — ');   // 본부 양식처럼 설명은 이름 아래에 그대로 보여 주고, ⓘ 에는 월코 쪽 추가 설명만 넣는다
         var extra = tx(f.note);   // 월코 정의서 각주 — 해당 항목에만 ⓘ
-        html += '<tr><td><span class="gs-itemname">' + esc(tx(f.short)) + '</span>' + infoBtn(extra, tx(f.short)) + (desc ? '<span class="gs-itemdesc">' + esc(desc) + '</span>' : '') + '</td>' + cols.map(function (c) { return '<td class="' + (tab === c[0] ? 'is-col ' : '') + (c[0] === 'all' ? 'gs-total' : '') + '">' + num(s[c[0]][f.id]) + '</td>'; }).join('') + '</tr>';
+        // 휴대폰에서는 이름·설명을 한 줄 전체로, 숫자 셋(평택·제주·합계)을 그 아래 한 줄로 놓는다 — data-label 이 숫자 위 작은 이름이 된다
+        html += '<tr><td><span class="gs-itemname">' + esc(tx(f.short)) + '</span>' + infoBtn(extra, tx(f.short)) + (desc ? '<span class="gs-itemdesc">' + esc(desc) + '</span>' : '') + '</td>' + cols.map(function (c) { return '<td class="' + (tab === c[0] ? 'is-col ' : '') + (c[0] === 'all' ? 'gs-total' : '') + '" data-label="' + esc(c[1]) + '">' + num(s[c[0]][f.id]) + '</td>'; }).join('') + '</tr>';
       });
     });
     $('statsTable').innerHTML = html + '</tbody>';
@@ -383,12 +384,13 @@
     var html = '<div class="gs-meta"><fieldset class="gs-fieldset"><legend>' + esc(t('formMonth')) + '</legend><select id="fMonth" class="gs-select">' + monthOptions().map(function (m) { return '<option value="' + m + '"' + (m === month ? ' selected' : '') + '>' + esc(t('monthLabel', m)) + '</option>'; }).join('') + '</select></fieldset>' +
       // 개인/팀 구분은 없앴다(입력 항목이 같다). 담당자만 '사역 현황'을 고를 수 있고, 아니면 고를 것이 없어 이 칸을 숨긴다
       '<fieldset class="gs-fieldset"' + (designated ? '' : ' hidden') + '><legend>' + esc(t('formWho')) + '</legend><div class="gs-choices">' +
-        '<label class="gs-choice"><input type="radio" name="fScope" value="individual"' + (scope !== 'ministry' ? ' checked' : '') + '> ' + esc(t('individual')) + '</label>' +
-        (designated ? '<label class="gs-choice"><input type="radio" name="fScope" value="ministry"' + (scope === 'ministry' ? ' checked' : '') + '> ' + esc(t('scopeMinistry')) + '</label>' : '') + '</div>' +
+        // 같은 너비의 칸 두 개(큰 이름 + 작은 설명)로 나란히 — 긴 이름이 줄바꿈되며 칸 크기가 들쭉날쭉하던 것을 정리
+        '<label class="gs-choice gs-choice--sub"><input type="radio" name="fScope" value="individual"' + (scope !== 'ministry' ? ' checked' : '') + '><span class="gs-choice-main">' + esc(t('individual')) + '</span><span class="gs-choice-sub">' + esc(t('segIndividualSub')) + '</span></label>' +
+        (designated ? '<label class="gs-choice gs-choice--sub" title="' + esc(t('scopeMinistry')) + '"><input type="radio" name="fScope" value="ministry"' + (scope === 'ministry' ? ' checked' : '') + '><span class="gs-choice-main">' + esc(t('segMinistry')) + '</span><span class="gs-choice-sub">' + esc(t('segMinistrySub')) + '</span></label>' : '') + '</div>' +
         '<input id="fTeam" class="gs-text" type="text" maxlength="60" placeholder="' + esc(t('formTeamPh')) + '" aria-label="' + esc(t('formTeam')) + '" value="' + esc(report ? report.teamName : '') + '"' + (scope === 'team' ? '' : ' hidden') + '></fieldset>' +
       '<fieldset class="gs-fieldset"><legend>' + esc(t('formPlace')) + '</legend><div class="gs-choices">' +
-        '<label class="gs-choice"><input type="radio" name="fPlace" value="mainland"' + (place === 'mainland' ? ' checked' : '') + '> ' + esc(t('placeMainland')) + '</label>' +
-        '<label class="gs-choice"><input type="radio" name="fPlace" value="jeju"' + (place === 'jeju' ? ' checked' : '') + '> ' + esc(t('placeJeju')) + '</label></div></fieldset></div>';
+        '<label class="gs-choice"><input type="radio" name="fPlace" value="mainland"' + (place === 'mainland' ? ' checked' : '') + '><span class="gs-choice-main">' + esc(t('placeMainland')) + '</span></label>' +
+        '<label class="gs-choice"><input type="radio" name="fPlace" value="jeju"' + (place === 'jeju' ? ' checked' : '') + '><span class="gs-choice-main">' + esc(t('placeJeju')) + '</span></label></div></fieldset></div>';
     data.schema.sections.forEach(function (section) {
       html += '<section class="gs-sec" data-sec="' + section.id + '"><h4 class="gs-sec-head">' + esc(tx(section.title)) + '</h4>' + (section.id === 'camps' ? '<p class="gs-ce-hint gs-sec-note">' + esc(t('campFormHint')) + '</p>' : '')
         + (section.scope === 'ministry' && section.id === 'discipleship' ? '<p class="gs-ce-hint gs-sec-note">' + esc(t('formMinistryHint')) + '</p>' : '')

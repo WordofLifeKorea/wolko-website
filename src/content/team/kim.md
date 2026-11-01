@@ -55,7 +55,7 @@ bio_ko_2: |-
   여섯 살 때, 여름 성경학교에서 복음을 처음으로 온전히 듣고 이해하게 되었습니다. 자신이 지은 죄로 인해 하나님과 영원히 분리되는 지옥을 마땅히 받아야 한다는 것, 그러나 하나님께서 죄 없고 완전하신 독생자 예수님을 이 세상에 보내셔서 십자가 위에서 자신의 죄 값을 대신 치러 주셨다는 것을 깨달았습니다. 예수님은 십자가에서 돌아가셨지만 사흘 만에 부활하셨고, 그 부활을 통해 죄와 사망이 정복되었습니다. 씬띠아는 그 복음을 믿고 예수님께 구원을 간구하며 하나님의 가족이 되었습니다.
 
 
-  아홉 살 때, 아동전도협회 캠프에서 아시아 사역에 대해 이야기하는 선교사님의 간증을 들으며 아시아를 향한 소명이 마음에 자리 잡기 시작했습니다. 고등학생 시절 한국을 방문하고 한국의 Word of Life 성경대학에 참석하며 한국에서 주님을 섬기고 싶다는 확신이 더욱 깊어졌습니다. 하나님께서 씬띠아와 환규 두 사람의 삶을 인도하셔서 한국으로 다시 보내 주신 것을 기뻐하며, 현재 두 아들 Zayn, Noah와 막내딸 노엘과 함께 한국에서 주님을 섬기고 있습니다.
+  아홉 살 때, 아동전도협회 캠프에서 아시아 사역에 대해 이야기하는 선교사님의 간증을 들으며 아시아를 향한 소명이 마음에 자리 잡기 시작했습니다. 고등학생 시절 한국을 방문하고 한국의 월드 오브 라이프 성경대학에 참석하며 한국에서 주님을 섬기고 싶다는 확신이 더욱 깊어졌습니다. 하나님께서 씬띠아와 환규 두 사람의 삶을 인도하셔서 한국으로 다시 보내 주신 것을 기뻐하며, 현재 두 아들 자인, 노아와 막내딸 노엘과 함께 한국에서 주님을 섬기고 있습니다.
 bio_en_2: |-
   Hi, my name is Cynthia (Eichelberger) Kim. I grew up in Northeastern Pennsylvania. I was very blessed to grow up in a home where my parents had a personal relationship with the Lord. My dad was a pastor, so I was always involved in church activities — attending every Sunday, Wednesday, and Friday. Because of this, I thought I was a pretty good person and believed I deserved to go to heaven. If I'm honest, though, my motivation was often my own sinful nature — a desire to do good things to be noticed.
 

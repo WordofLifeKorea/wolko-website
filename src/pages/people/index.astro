@@ -1,18 +1,20 @@
 ---
 // 섬기는이 — Claude Design 'A · 갤러리형' 시안을 옮긴 페이지.
-// 남색 첫 화면(큰 제목 · 숫자) → 거르기 막대(사역 거점 · 역할, 화면을 내려도 따라온다)
+// 남색 첫 화면(큰 제목 · 숫자 · 점 지도 위 두 거점) → 거르기 막대(사역 거점 · 역할, 화면을 내려도 따라온다)
 // → 두 거점의 대표 → 거점별 사진 카드 → 함께 섬기기 띠.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
+import { photoFrame, photoFocus } from '../../lib/photoFrame.js';
+// 카드 위 직책 표시(한글 화면은 한글, 영어 화면은 영어) — 프로필 페이지와 같은 표
+import { roleKo } from '../../lib/teamRoles.js';
 
 const allTeam = (await getCollection('team')).filter(p => p.data.active !== false);
 const byOrder = (a, b) => (a.data.order ?? 99) - (b.data.order ?? 99);
 const isDirector = (p) => (p.data.role_badge || '').includes('Director');
 const locOf = (p) => (p.data.campus === 'pyeongtaek' ? 'pt' : 'jj');
 
-// 카드 위 직책 표시 — 한글 화면은 한글, 영어 화면은 영어
-const ROLE_KO = { Staff: '간사', Intern: '인턴', Missionaries: '선교사', Missionary: '선교사', 'Field Director': '필드 디렉터', 'Jeju Director': '제주 디렉터' };
-const roleKo = (v) => ROLE_KO[v] || v || '';
+// 사진 카드 칸 비율 — 아래 CSS .pp-photo 의 aspect-ratio 와 같아야 한다
+const CARD_ASPECT = 1;
 const initialOf = (p) => (p.data.name_ko || p.data.name_en || '?').trim().charAt(0);
 
 const leads = allTeam.filter(isDirector).sort((a, b) => (locOf(a) === locOf(b) ? byOrder(a, b) : locOf(a) === 'pt' ? -1 : 1));
@@ -23,6 +25,8 @@ const groups = [
   ...g,
   people: allTeam.filter(p => locOf(p) === g.loc && !isDirector(p))
     .sort((a, b) => (a.data.category === b.data.category ? byOrder(a, b) : a.data.category === 'missionary' ? -1 : 1)),
+  // 그 거점 인원 전체(위 '대표'에 따로 나온 디렉터 포함) — 거르기 막대 · 지도 숫자와 같다
+  total: allTeam.filter(p => locOf(p) === g.loc).length,
 }));
 const counts = {
   all: allTeam.length,
@@ -31,26 +35,118 @@ const counts = {
   missionary: allTeam.filter(p => p.data.category === 'missionary').length,
   stw: allTeam.filter(p => p.data.category === 'stw').length,
 };
+
+// 첫 화면 지도 — 남한 윤곽을 대략의 경위도로 적고, 그 안에 드는 격자점만 찍는다(제주는 타원)
+const KOREA = [[126.1,37.75],[126.6,37.75],[127.1,38.3],[128.35,38.62],[128.6,38.2],[128.9,37.8],[129.1,37.5],[129.4,37.0],[129.45,36.5],[129.4,36.05],[129.57,36.08],[129.45,35.6],[129.35,35.4],[129.1,35.1],[128.6,34.9],[128.0,34.82],[127.6,34.68],[127.3,34.5],[126.9,34.4],[126.5,34.3],[126.3,34.6],[126.4,35.0],[126.5,35.5],[126.7,35.9],[126.5,36.3],[126.15,36.7],[126.5,37.0],[126.8,36.95],[126.6,37.3],[126.6,37.5]];
+const MAP_W = 340, MAP_H = 600, STEP = 10;
+const proj = (lon, lat) => [(lon - 125.6) * 81, (38.9 - lat) * 100];
+const inKorea = (lon, lat) => {
+  if (((lon - 126.55) / 0.42) ** 2 + ((lat - 33.38) / 0.19) ** 2 <= 1) return true;
+  let inside = false;
+  for (let i = 0, j = KOREA.length - 1; i < KOREA.length; j = i++) {
+    const [xi, yi] = KOREA[i], [xj, yj] = KOREA[j];
+    if ((yi > lat) !== (yj > lat) && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+};
+const pins = {
+  pt: proj(127.11, 36.99),
+  jj: proj(126.37, 33.44),
+};
+// 십자가 — 남한 본토 한가운데(대전 근처)에 두어, 빛이 사방으로 고르게 퍼져 제주까지 닿게 한다
+const [crossX, crossY] = proj(127.75, 36.25);
+// 점은 십자가에서의 거리별 띠로 묶는다(띠마다 지연 시간 하나 — HTML을 가볍게 유지)
+const BAND = 14;
+const bands = new Map();
+let maxDist = 0;
+for (let y = STEP / 2, r = 0; y < MAP_H; y += STEP, r++) {
+  for (let x = STEP / 2 + (r % 2 ? STEP / 2 : 0); x < MAP_W; x += STEP) {
+    if (!inKorea(x / 81 + 125.6, 38.9 - y / 100)) continue;
+    const near = Math.min(...Object.values(pins).map(([px, py]) => Math.hypot(px - x, py - y)));
+    const dist = Math.hypot(x - crossX, y - crossY);
+    maxDist = Math.max(maxDist, dist);
+    const b = Math.floor(dist / BAND);
+    if (!bands.has(b)) bands.set(b, []);
+    bands.get(b).push({ x, y, hot: near < 34 });
+  }
+}
+const SPREAD = 2.8; // 빛이 가장 먼 점(제주)까지 닿는 데 걸리는 초 — 고리와 점 물결이 같은 빠르기로 움직인다
+const mapBands = [...bands.entries()].sort((a, b) => a[0] - b[0]).map(([b, dots]) => {
+  const t = (b * BAND + BAND / 2) / maxDist;
+  return { enter: (0.15 + t * 0.9).toFixed(2), wave: (t * SPREAD).toFixed(2), dots };
+});
+const ringMax = (maxDist / 10).toFixed(1); // 고리 반지름 10에서 가장 먼 점까지 커지는 배율
+const [ptX, ptY] = pins.pt, [jjX, jjY] = pins.jj;
+const pct = (v, total) => `${(v / total * 100).toFixed(2)}%`;
+const facesOf = (loc) => allTeam.filter(p => locOf(p) === loc && p.data.photo_url).sort(byOrder).slice(0, 3);
+const mapPlaces = [
+  { loc: 'pt', x: ptX, y: ptY, ko: '평택 월코센터', en: 'Pyeongtaek', coord: '36.99°N', n: counts.pt, faces: facesOf('pt'), href: '#wp-pyeongtaek' },
+  { loc: 'jj', x: jjX, y: jjY, ko: '제주 월비', en: 'Jeju', coord: '33.44°N', n: counts.jj, faces: facesOf('jj'), href: '#wp-jeju' },
+];
 ---
 
 <BaseLayout title="섬기는이 — WOLKO 월코" activeNav="about">
   <div class="pp">
 
     <header class="pp-hero">
+      <span class="pp-glow pp-glow--a" aria-hidden="true"></span>
+      <span class="pp-glow pp-glow--b" aria-hidden="true"></span>
       <div class="pp-shell pp-hero-grid">
         <div class="pp-hero-text">
-          <p class="pp-eyebrow"><span class="wl-ko">섬기는이 · OUR TEAM</span><span class="wl-en">OUR TEAM</span></p>
-          <h1><span class="wl-ko">함께 섬기는<br>사람들</span><span class="wl-en">Meet Our<br>Ministry Team</span></h1>
-          <p class="pp-lead-copy">
+          <p class="pp-eyebrow pp-rise" style="--i:0"><span class="wl-ko">섬기는이</span><span class="wl-en">OUR TEAM</span></p>
+          <h1 class="pp-rise" style="--i:1"><span class="wl-ko">함께 섬기는<br><em class="pp-hl">사람들</em></span><span class="wl-en">Meet Our<br><em class="pp-hl">Ministry Team</em></span></h1>
+          <p class="pp-lead-copy pp-rise" style="--i:2">
             <span class="wl-ko">하나님의 부르심을 따라 다음 세대를 위해 헌신하는 월코의 사역자들을 소개합니다.</span>
             <span class="wl-en">Called by God and committed to the next generation, meet the people of Word of Life Korea.</span>
           </p>
+          <dl class="pp-stats pp-rise" style="--i:3">
+            <div><dt><span class="wl-ko">선교사</span><span class="wl-en">Missionaries</span></dt><dd data-count-to={counts.missionary}>{counts.missionary}</dd></div>
+            <div><dt><span class="wl-ko">단기 사역자</span><span class="wl-en">Short-term</span></dt><dd data-count-to={counts.stw}>{counts.stw}</dd></div>
+            <div><dt><span class="wl-ko">사역 거점</span><span class="wl-en">Locations</span></dt><dd data-count-to="2">2</dd></div>
+          </dl>
         </div>
-        <dl class="pp-stats">
-          <div><dt><span class="wl-ko">선교사</span><span class="wl-en">Missionaries</span></dt><dd>{counts.missionary}</dd></div>
-          <div><dt><span class="wl-ko">단기 사역자</span><span class="wl-en">Short-term</span></dt><dd>{counts.stw}</dd></div>
-          <div><dt><span class="wl-ko">사역 거점</span><span class="wl-en">Locations</span></dt><dd>2</dd></div>
-        </dl>
+
+        <div class="pp-map" aria-label="사역 거점 지도: 평택 월코센터와 제주 월비">
+          <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} aria-hidden="true">
+            <defs>
+              <radialGradient id="ppCrossGlow">
+                <stop offset="0" stop-color="#f6dfa8" stop-opacity=".55" />
+                <stop offset="1" stop-color="#e9c27a" stop-opacity="0" />
+              </radialGradient>
+            </defs>
+            {mapBands.map((band) => (
+              <g class="pp-map-band" style={`--d:${band.enter}s;--w:${band.wave}s`}>
+                {band.dots.map((dt) => <circle cx={dt.x} cy={dt.y} r="2.3" class={dt.hot ? 'is-hot' : undefined} />)}
+              </g>
+            ))}
+            <g class="pp-spread" transform={`translate(${crossX.toFixed(1)} ${crossY.toFixed(1)})`} style={`--ring-max:${ringMax}`}>
+              <circle class="pp-spread-ring" r="10" />
+              <circle class="pp-spread-ring pp-spread-ring--echo" r="10" />
+            </g>
+            <g class="pp-cross" transform={`translate(${crossX.toFixed(1)} ${crossY.toFixed(1)})`}>
+              <circle class="pp-cross-glow" r="26" fill="url(#ppCrossGlow)" />
+              <path class="pp-cross-mark" d="M0 -13V13M-8 -5H8" />
+            </g>
+            {mapPlaces.map((m) => (
+              <g class={`pp-pin pp-pin--${m.loc}`} transform={`translate(${m.x.toFixed(1)} ${m.y.toFixed(1)})`}>
+                <circle class="pp-pin-ring" r="9" />
+                <circle class="pp-pin-ring pp-pin-ring--late" r="9" />
+                <circle class="pp-pin-core" r="5.5" />
+              </g>
+            ))}
+          </svg>
+          {mapPlaces.map((m, i) => (
+            <a href={m.href} class={`pp-place pp-place--${m.loc}`} style={`left:${pct(m.x, MAP_W)};top:${pct(m.y, MAP_H)};--i:${i}`}>
+              <span class="pp-faces" aria-hidden="true">
+                {m.faces.map((p) => <img src={p.data.photo_url} alt="" loading="lazy" style={photoFocus(p.data.photo_url, p.data.photo_position)} />)}
+              </span>
+              <span class="pp-place-text">
+                <span class="pp-place-name"><span class="wl-ko">{m.ko}</span><span class="wl-en">{m.en}</span></span>
+                <span class="pp-place-meta">{m.coord} · <span class="wl-ko">{m.n}명</span><span class="wl-en">{m.n} people</span></span>
+              </span>
+            </a>
+          ))}
+        </div>
       </div>
     </header>
 
@@ -58,8 +154,8 @@ const counts = {
       <div class="pp-shell pp-bar-inner">
         <div class="pp-seg" role="group" aria-label="사역 거점">
           <button type="button" class="is-on" data-loc="all" aria-pressed="true"><span class="wl-ko">전체</span><span class="wl-en">All</span> <em>{counts.all}</em></button>
-          <button type="button" data-loc="pt" aria-pressed="false"><span class="wl-ko">평택 월코센터</span><span class="wl-en">Pyeongtaek</span> <em>{counts.pt}</em></button>
-          <button type="button" data-loc="jj" aria-pressed="false"><span class="wl-ko">제주 월비</span><span class="wl-en">Jeju</span> <em>{counts.jj}</em></button>
+          <button type="button" data-loc="pt" aria-pressed="false"><span class="wl-ko">평택<span class="pp-seg-long"> 월코센터</span></span><span class="wl-en">Pyeongtaek</span> <em>{counts.pt}</em></button>
+          <button type="button" data-loc="jj" aria-pressed="false"><span class="wl-ko">제주<span class="pp-seg-long"> 월비</span></span><span class="wl-en">Jeju</span> <em>{counts.jj}</em></button>
         </div>
         <div class="pp-chips" role="group" aria-label="역할">
           <button type="button" class="is-on" data-role="all" aria-pressed="true"><span class="wl-ko">모두</span><span class="wl-en">Everyone</span></button>
@@ -71,17 +167,16 @@ const counts = {
 
     <main class="pp-shell pp-main">
       <section class="pp-leads-sec" data-leads>
-        <p class="pp-kicker"><span class="wl-ko">LEADERSHIP · 대표</span><span class="wl-en">LEADERSHIP</span></p>
+        <p class="pp-kicker"><span class="wl-ko">대표</span><span class="wl-en">LEADERSHIP</span></p>
         <div class="pp-leads">
           {leads.map((p) => (
             <a href={`/team/${p.slug}`} class="pp-card pp-lead" data-loc={locOf(p)} data-role={p.data.category}>
               <span class="pp-lead-photo">
-                {p.data.photo_url ? <img src={p.data.photo_url} alt={p.data.name_ko} loading="lazy" style={p.data.photo_position ? `object-position: ${p.data.photo_position}` : undefined} /> : <span class="pp-initial">{initialOf(p)}</span>}
+                {p.data.photo_url ? <img src={p.data.photo_url} alt={p.data.name_ko} loading="lazy" style={photoFocus(p.data.photo_url, p.data.photo_position)} /> : <span class="pp-initial">{initialOf(p)}</span>}
               </span>
               <span class="pp-lead-body">
                 <span class="pp-lead-badge"><span class="wl-ko">{roleKo(p.data.role_badge)}</span><span class="wl-en">{p.data.role_badge}</span></span>
                 <span class="pp-lead-name"><span class="wl-ko">{p.data.name_ko}</span><span class="wl-en">{p.data.name_en}</span></span>
-                <span class="pp-lead-sub"><span class="wl-ko">{p.data.name_en}</span><span class="wl-en">{p.data.name_ko}</span></span>
                 <span class="pp-lead-title"><span class="wl-ko">{p.data.title_ko}</span><span class="wl-en">{p.data.title_en}</span></span>
                 <span class="pp-go"><span class="wl-ko">프로필 보기</span><span class="wl-en">View profile</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></span>
               </span>
@@ -97,19 +192,18 @@ const counts = {
               <p class="pp-group-place"><span class="pp-group-num">{g.num}</span><span class="wl-ko">{g.placeKo}</span><span class="wl-en">{g.placeEn}</span></p>
               <h2><span class="wl-ko">{g.ko}</span><span class="wl-en">{g.en}</span></h2>
             </div>
-            <p class="pp-group-count"><span data-count>{g.people.length}</span><span class="wl-ko">명</span><span class="wl-en"> people</span></p>
+            <p class="pp-group-count"><span data-count>{g.total}</span><span class="wl-ko">명</span><span class="wl-en"> people</span></p>
           </div>
           <ul class="pp-grid">
             {g.people.map((p) => (
               <li data-loc={locOf(p)} data-role={p.data.category}>
                 <a href={`/team/${p.slug}`} class="pp-card">
                   <span class="pp-photo">
-                    {p.data.photo_url ? <img src={p.data.photo_url} alt={p.data.name_ko} loading="lazy" style={p.data.photo_position ? `object-position: ${p.data.photo_position}` : undefined} /> : <span class="pp-initial">{initialOf(p)}</span>}
+                    {p.data.photo_url ? <img src={p.data.photo_url} alt={p.data.name_ko} loading="lazy" style={photoFrame(p.data.photo_url, CARD_ASPECT, 'card', p.data.photo_position)} /> : <span class="pp-initial">{initialOf(p)}</span>}
                     <span class="pp-badge"><span class="wl-ko">{roleKo(p.data.role_badge)}</span><span class="wl-en">{p.data.role_badge}</span></span>
                   </span>
                   <span class="pp-info">
                     <span class="pp-name"><span class="wl-ko">{p.data.name_ko}</span><span class="wl-en">{p.data.name_en}</span></span>
-                    <span class="pp-en"><span class="wl-ko">{p.data.name_en}</span><span class="wl-en">{p.data.name_ko}</span></span>
                     <span class="pp-title"><span class="wl-ko">{p.data.title_ko}</span><span class="wl-en">{p.data.title_en}</span></span>
                   </span>
                 </a>
@@ -123,7 +217,7 @@ const counts = {
 
       <section class="pp-join">
         <div>
-          <p class="pp-join-kicker">JOIN US</p>
+          <p class="pp-join-kicker"><span class="wl-ko">함께 섬기기</span><span class="wl-en">JOIN US</span></p>
           <p class="pp-join-title"><span class="wl-ko">다음 세대를 함께 섬길<br>동역자를 기다립니다</span><span class="wl-en">Serve the next generation<br>with us</span></p>
         </div>
         <div class="pp-join-btns">
@@ -135,6 +229,43 @@ const counts = {
   </div>
 
   <script is:inline>
+    // 첫 화면 숫자: 0부터 올라간다(움직임 줄이기 설정이면 그대로 둔다)
+    (function () {
+      if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      document.querySelectorAll('.pp-stats [data-count-to]').forEach(function (el, i) {
+        var to = +el.dataset.countTo, t0 = 0, delay = 600 + i * 120, dur = 1100;
+        el.textContent = '0';
+        function step(t) {
+          if (!t0) t0 = t;
+          var k = Math.min(1, Math.max(0, (t - t0 - delay) / dur));
+          el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3)));
+          if (k < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      });
+    })();
+
+    // 거르기 막대 자리: 위 메뉴 바로 아래에 붙인다(메뉴 높이는 기기·글자 크기마다 달라 실제 높이를 잰다)
+    (function () {
+      var bar = document.querySelector('.pp-bar'); if (!bar) return;
+      var nav = document.querySelector('.nav');
+      var small = window.matchMedia('(max-width: 900px)');
+      var lastY = window.scrollY, ticking = false;
+      function update() {
+        ticking = false;
+        if (nav) bar.style.setProperty('--pp-bar-top', Math.max(0, Math.round(nav.getBoundingClientRect().bottom)) + 'px');
+        var y = window.scrollY, hero = document.querySelector('.pp-hero');
+        var past = hero ? y > hero.offsetTop + hero.offsetHeight : y > 400;
+        if (!small.matches || !past || y < lastY - 4) bar.classList.remove('is-tucked');
+        else if (y > lastY + 4) bar.classList.add('is-tucked');
+        lastY = y;
+      }
+      window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+      window.addEventListener('resize', update);
+      bar.addEventListener('focusin', function () { bar.classList.remove('is-tucked'); });
+      update();
+    })();
+
     // 거르기: 사역 거점(전체 · 평택 · 제주) × 역할(모두 · 선교사 · 단기 사역자). 사람이 없는 칸은 통째로 숨긴다
     (function () {
       var root = document.querySelector('.pp'); if (!root) return;
@@ -149,7 +280,10 @@ const counts = {
         var total = 0;
         root.querySelectorAll('.pp-group').forEach(function (g) {
           var n = 0; g.querySelectorAll('li[data-loc]').forEach(function (li) { var ok = match(li); li.hidden = !ok; if (ok) n++; });
-          g.hidden = !n; g.querySelector('[data-count]').textContent = n; total += n;
+          total += n;
+          // 인원수에는 위 '대표'에 따로 나온 그 거점 디렉터도 넣는다(거르기 막대 · 지도 숫자와 맞춘다)
+          root.querySelectorAll('.pp-lead[data-loc="' + g.dataset.group + '"]').forEach(function (c) { if (!c.hidden) n++; });
+          g.hidden = !g.querySelector('li[data-loc]:not([hidden])'); g.querySelector('[data-count]').textContent = n;
         });
         root.querySelector('.pp-empty').hidden = !!(total || anyLead);
       }
@@ -166,22 +300,63 @@ const counts = {
       background: var(--pp-cream); color: #10252e; font-family: var(--ff-sans); word-break: keep-all; overflow: clip; }
     .pp-shell { width: min(1240px, calc(100% - 96px)); margin-inline: auto; }
 
-    /* 첫 화면 */
-    .pp-hero { background: var(--pp-navy); color: #fff; padding-top: 168px; }
-    .pp-hero-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 56px; align-items: end; padding-bottom: 72px; }
-    .pp-hero-text { display: flex; flex-direction: column; gap: 22px; }
+    /* 첫 화면 — 은은하게 움직이는 빛, 차례로 떠오르는 글, 점으로 찍은 지도 위의 두 거점 */
+    .pp-hero { position: relative; overflow: hidden; isolation: isolate; background: radial-gradient(120% 90% at 85% 10%, #123a4a 0%, var(--pp-navy) 55%, #08202a 100%); color: #fff; padding-top: 150px; }
+    .pp-glow { position: absolute; z-index: -1; border-radius: 50%; filter: blur(70px); pointer-events: none; will-change: transform; }
+    .pp-glow--a { width: 520px; height: 520px; right: 4%; top: 6%; background: rgba(46,150,180,.32); animation: pp-drift-a 18s ease-in-out infinite alternate; }
+    .pp-glow--b { width: 420px; height: 420px; left: -6%; bottom: -30%; background: rgba(233,185,95,.14); animation: pp-drift-b 22s ease-in-out infinite alternate; }
+    @keyframes pp-drift-a { to { transform: translate(-90px, 60px) scale(1.15); } }
+    @keyframes pp-drift-b { to { transform: translate(120px, -50px) scale(.9); } }
+    .pp-hero-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 48px; align-items: center; padding-bottom: 64px; }
+    .pp-hero-text { display: flex; flex-direction: column; gap: 24px; }
+    .pp-rise { animation: pp-rise .9s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i, 0) * .12s + .1s); }
+    @keyframes pp-rise { from { opacity: 0; transform: translateY(22px); } }
     .pp-eyebrow { display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 800; letter-spacing: .16em; color: #8fd0e4; }
-    .pp-eyebrow::before { content: ''; width: 28px; height: 1px; background: currentColor; }
-    .pp-hero h1 { font-family: var(--ff-serif); font-size: clamp(42px, 5vw, 64px); font-weight: 900; line-height: 1.12; letter-spacing: -.035em; color: #fff; }
-    .pp-lead-copy { max-width: 520px; font-size: 17px; line-height: 1.8; color: rgba(255,255,255,.78); }
-    .pp-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid rgba(255,255,255,.18); }
+    .pp-eyebrow::before { content: ''; width: 28px; height: 1px; background: currentColor; transform-origin: left; animation: pp-line .8s .2s cubic-bezier(.2,.7,.2,1) both; }
+    @keyframes pp-line { from { transform: scaleX(0); } }
+    .pp-hero h1 { font-family: var(--ff-serif); font-size: clamp(42px, 5vw, 66px); font-weight: 900; line-height: 1.14; letter-spacing: -.035em; color: #fff; }
+    .pp-hl { font-style: normal; color: #fff; background: linear-gradient(90deg, #e9c27a, #f3dca6) no-repeat 0 92% / 0% 5px; padding-bottom: 4px; animation: pp-mark 1s .9s cubic-bezier(.6,0,.2,1) forwards; }
+    @keyframes pp-mark { to { background-size: 100% 5px; } }
+    .pp-lead-copy { max-width: 500px; font-size: 17px; line-height: 1.8; color: rgba(255,255,255,.78); }
+    .pp-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 520px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,.18); }
     .pp-stats > div { padding: 18px 0 0 20px; border-left: 1px solid rgba(255,255,255,.14); }
     .pp-stats > div:first-child { padding-left: 0; border-left: 0; }
     .pp-stats dt { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.6); }
-    .pp-stats dd { margin: 8px 0 0; font-family: var(--ff-serif); font-size: 44px; font-weight: 900; line-height: 1; }
+    .pp-stats dd { margin: 8px 0 0; font-family: var(--ff-serif); font-size: 44px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+
+    .pp-map { position: relative; justify-self: center; height: 500px; aspect-ratio: 340 / 600; margin-right: 120px; }
+    .pp-map svg { display: block; width: 100%; height: 100%; overflow: visible; }
+    /* 십자가에서 빛이 퍼진다: 점이 십자가 가까운 곳부터 나타나고, 7초마다 금빛 물결이 전국으로 번진 뒤 조금 더 밝은 청록으로 남는다 */
+    .pp-map { --pp-wave-start: 1.4s; --pp-wave-cycle: 7s; }
+    .pp-map-band { animation: pp-dots .7s ease-out both; animation-delay: var(--d); }
+    @keyframes pp-dots { from { opacity: 0; } }
+    .pp-map .pp-map-band circle { --base: rgba(143,208,228,.3); --rest: rgba(156,218,236,.46); fill: var(--base); animation: pp-wave var(--pp-wave-cycle) ease-out infinite; animation-delay: calc(var(--pp-wave-start) + var(--w)); }
+    .pp-map .pp-map-band circle.is-hot { --base: rgba(170,224,240,.62); --rest: rgba(186,232,246,.72); }
+    @keyframes pp-wave { 0% { fill: var(--base); } 7% { fill: rgba(243,214,150,.95); } 24%, 100% { fill: var(--rest); } }
+    .pp-spread-ring { fill: none; stroke: rgba(233,194,122,.55); stroke-width: 1.2; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; opacity: 0; animation: pp-spread var(--pp-wave-cycle) linear infinite; animation-delay: var(--pp-wave-start); }
+    .pp-spread-ring--echo { stroke: rgba(143,208,228,.35); animation-delay: calc(var(--pp-wave-start) + .45s); }
+    @keyframes pp-spread { 0% { transform: scale(.4); opacity: .9; } 40% { transform: scale(var(--ring-max)); opacity: 0; } 100% { transform: scale(var(--ring-max)); opacity: 0; } }
+    .pp-cross { animation: pp-cross-in 1s .5s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes pp-cross-in { from { opacity: 0; } }
+    .pp-cross-mark { fill: none; stroke: #f3d89b; stroke-width: 2.6; stroke-linecap: round; filter: drop-shadow(0 0 4px rgba(233,194,122,.85)); }
+    .pp-map .pp-cross-glow { transform-box: fill-box; transform-origin: center; animation: pp-glow var(--pp-wave-cycle) ease-out infinite; animation-delay: var(--pp-wave-start); }
+    @keyframes pp-glow { 0% { transform: scale(.7); opacity: .6; } 8% { transform: scale(1.25); opacity: 1; } 40%, 100% { transform: scale(.85); opacity: .65; } }
+    .pp-map .pp-pin-core { fill: #fff; stroke: #e9c27a; stroke-width: 2.5; }
+    .pp-map .pp-pin-ring { fill: none; stroke: rgba(233,194,122,.8); stroke-width: 1.4; transform-box: fill-box; transform-origin: center; animation: pp-ring 2.8s ease-out infinite; }
+    .pp-map .pp-pin-ring--late { animation-delay: 1.4s; }
+    @keyframes pp-ring { from { transform: scale(.6); opacity: 1; } to { transform: scale(3.2); opacity: 0; } }
+    .pp-place { position: absolute; display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 8px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: #fff; text-decoration: none; white-space: nowrap; transform: translate(22px, -50%); animation: pp-pop .7s cubic-bezier(.2,.9,.3,1.3) both; animation-delay: calc(1.5s + var(--i) * .25s); transition: background-color .25s, border-color .25s, transform .25s; }
+    @keyframes pp-pop { from { opacity: 0; transform: translate(8px, -50%) scale(.9); } }
+    .pp-place:hover { background: rgba(255,255,255,.16); border-color: rgba(233,194,122,.6); transform: translate(26px, -50%); color: #fff; }
+    .pp-faces { display: flex; }
+    .pp-faces img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; object-position: top; border: 2px solid var(--pp-navy); background: #23495a; }
+    .pp-faces img + img { margin-left: -9px; }
+    .pp-place-text { display: flex; flex-direction: column; gap: 2px; }
+    .pp-place-name { font-size: 14px; font-weight: 800; line-height: 1.2; }
+    .pp-place-meta { font-size: 11.5px; font-weight: 700; color: rgba(255,255,255,.62); letter-spacing: .02em; }
 
     /* 거르기 막대 — 위 메뉴 아래에 붙어 따라온다 */
-    .pp-bar { position: sticky; top: 84px; z-index: 20; background: rgba(244,241,234,.94); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid var(--pp-line); }
+    .pp-bar { position: sticky; top: var(--pp-bar-top, 84px); z-index: 20; transition: transform .3s cubic-bezier(.2,.7,.2,1); background: rgba(244,241,234,.94); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid var(--pp-line); }
     .pp-bar-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 14px 0; }
     .pp-seg { display: inline-flex; gap: 4px; padding: 4px; background: #fff; border: 1px solid var(--pp-line); border-radius: 12px; }
     .pp-seg button { min-height: 40px; padding: 0 16px; border: 0; border-radius: 9px; background: transparent; color: var(--pp-text); font: 800 14px/1 var(--ff-sans); cursor: pointer; transition: background-color .2s, color .2s; }
@@ -205,15 +380,17 @@ const counts = {
 
     /* 대표 */
     .pp-leads { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
-    .pp-lead { display: grid; grid-template-columns: 200px minmax(0, 1fr); background: #fff; border: 1px solid #e7e2d8; border-radius: 18px; overflow: hidden; }
+    /* 대표 사진은 가족 · 부부 가로 사진(3:2)이라 칸도 가로로 넓게 잡아 양옆이 잘리지 않게 한다.
+       글이 길어 카드가 길어지면 사진이 카드 높이를 끝까지 채운다 */
+    .pp-lead { display: grid; grid-template-columns: minmax(0, 52%) minmax(0, 1fr); background: #fff; border: 1px solid #e7e2d8; border-radius: 18px; overflow: hidden; }
     .pp-lead:hover { box-shadow: 0 22px 40px -22px rgba(11,36,48,.45); }
-    .pp-lead-photo { position: relative; display: block; aspect-ratio: 4 / 5; overflow: hidden; background: #e7e2d8; }
-    .pp-lead-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+    .pp-lead-photo { position: relative; display: block; align-self: stretch; width: 100%; aspect-ratio: 3 / 2; overflow: hidden; background: #e7e2d8; }
+    .pp-lead-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 30%; display: block; }
     .pp-lead-body { display: flex; flex-direction: column; justify-content: center; gap: 10px; padding: 28px; }
     .pp-lead-badge { align-self: flex-start; padding: 4px 10px; border-radius: 999px; background: var(--pp-navy); color: #fff; font-size: 11.5px; font-weight: 800; letter-spacing: .06em; }
     .pp-lead-name { font-family: var(--ff-serif); font-size: 26px; font-weight: 900; letter-spacing: -.02em; color: var(--pp-navy); line-height: 1.25; }
-    .pp-lead-sub { font-size: 13px; color: var(--pp-muted); font-weight: 600; }
-    .pp-lead-title { font-size: 14.5px; color: var(--pp-text); line-height: 1.6; }
+    /* 타이틀도 카드의 다른 글자처럼 굵게(가는 400 만 따로 놀아 다른 글꼴처럼 보였다) */
+    .pp-lead-title { font-size: 14.5px; font-weight: 600; color: #2c4450; line-height: 1.6; }
     .pp-go { margin-top: 6px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 800; color: var(--pp-deep); transition: gap .25s; }
     .pp-go svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; }
     .pp-lead:hover .pp-go { gap: 10px; }
@@ -224,16 +401,15 @@ const counts = {
     .pp-group-place { display: flex; align-items: baseline; gap: 12px; font-size: 12px; font-weight: 800; letter-spacing: .14em; color: #5a7380; }
     .pp-group-num { font-family: var(--ff-serif); font-size: 15px; letter-spacing: 0; color: var(--pp-deep); }
     .pp-group h2 { margin-top: 10px; font-family: var(--ff-serif); font-size: clamp(28px, 3vw, 36px); font-weight: 900; letter-spacing: -.03em; color: var(--pp-navy); }
-    .pp-group-count { font-size: 14px; font-weight: 700; color: #5a7380; }
+    .pp-group-count { flex: none; white-space: nowrap; font-size: 14px; font-weight: 700; color: #5a7380; }
     .pp-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 36px 24px; }
     .pp-grid .pp-card { flex-direction: column; height: 100%; }
-    .pp-photo { position: relative; display: block; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 16px; background: #e7e2d8; isolation: isolate; }
+    .pp-photo { position: relative; display: block; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 16px; background: #e7e2d8; isolation: isolate; }
     .pp-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
     .pp-badge { position: absolute; left: 10px; top: 10px; z-index: 1; padding: 4px 9px; border-radius: 999px; background: rgba(255,255,255,.92); font-size: 11px; font-weight: 800; color: var(--pp-navy); }
     .pp-info { display: flex; flex-direction: column; gap: 5px; padding: 14px 2px 0; }
     .pp-name { font-size: 17px; font-weight: 800; letter-spacing: -.01em; color: var(--pp-navy); line-height: 1.35; }
-    .pp-en { font-size: 12.5px; color: var(--pp-muted); font-weight: 600; }
-    .pp-title { font-size: 13.5px; color: var(--pp-text); line-height: 1.55; }
+    .pp-title { font-size: 13.5px; font-weight: 600; color: #2c4450; line-height: 1.55; }
     .pp-empty { text-align: center; color: var(--pp-muted); font-weight: 700; }
 
     /* 함께 섬기기 */
@@ -247,20 +423,39 @@ const counts = {
     .pp-btn--ghost { border: 1px solid rgba(255,255,255,.4); color: #fff; }
     .pp-btn--ghost:hover { background: rgba(255,255,255,.1); color: #fff; }
 
-    @media (max-width: 1100px) { .pp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-    @media (max-width: 900px) { .pp-bar { top: 72px; } }
+    @media (max-width: 1100px) {
+      .pp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      /* 두 장을 나란히 두면 글 칸이 너무 좁아져 한 줄에 한 장씩 */
+      .pp-leads { grid-template-columns: 1fr; }
+      .pp-lead { grid-template-columns: minmax(0, 360px) minmax(0, 1fr); }
+    }
+    @media (max-width: 900px) {
+      .pp-bar { top: var(--pp-bar-top, 72px); }
+      /* 휴대폰·태블릿: 내려 읽을 때는 거르기 막대를 위로 치워 화면을 넓게 쓰고, 조금이라도 올리면 다시 나온다 */
+      .pp-bar.is-tucked { transform: translateY(calc(-100% - var(--pp-bar-top, 72px))); }
+    }
     @media (max-width: 760px) {
       .pp-shell { width: calc(100% - 40px); }
-      .pp-hero { padding-top: 120px; }
-      .pp-hero-grid { grid-template-columns: 1fr; gap: 28px; padding-bottom: 36px; }
+      .pp-hero { padding-top: 116px; }
+      .pp-hero-grid { grid-template-columns: 1fr; gap: 12px; padding-bottom: 32px; }
       .pp-stats dd { font-size: 34px; }
-      .pp-bar-inner { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
-      .pp-bar-inner::-webkit-scrollbar { display: none; }
-      .pp-seg, .pp-chips { flex: none; flex-wrap: nowrap; }
-      .pp-seg button, .pp-chips button { white-space: nowrap; }
+      .pp-map { height: 320px; margin-right: 110px; }
+      .pp-place { padding: 6px 12px 6px 6px; gap: 8px; transform: translate(14px, -50%); }
+      .pp-faces img { width: 24px; height: 24px; }
+      .pp-place-name { font-size: 12.5px; }
+      .pp-place-meta { font-size: 10.5px; }
+      /* 휴대폰: 거점 · 역할을 두 줄로 나눠 화면 폭에 꼭 맞춘다(옆으로 밀어야 보이는 버튼이 없게) */
+      .pp-bar-inner { flex-direction: column; align-items: stretch; gap: 8px; padding: 10px 0; }
+      .pp-seg, .pp-chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .pp-chips { gap: 6px; }
+      .pp-seg button, .pp-chips button { min-height: 36px; padding: 0 6px; white-space: nowrap; }
+      .pp-seg button { font-size: 13.5px; }
+      .pp-chips button { font-size: 13px; }
+      .pp-seg-long { display: none; }
       .pp-main { gap: 56px; padding: 40px 0 72px; }
       .pp-leads { grid-template-columns: 1fr; }
-      .pp-lead { grid-template-columns: 120px minmax(0, 1fr); }
+      /* 휴대폰: 사진을 위에 화면 폭 가득(3:2), 글은 그 아래 — 가족 모두가 잘리지 않고 보인다 */
+      .pp-lead { grid-template-columns: 1fr; }
       .pp-lead-body { padding: 18px; gap: 6px; }
       .pp-lead-name { font-size: 20px; }
       .pp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 12px; }
@@ -270,6 +465,13 @@ const counts = {
       .pp-join-btns { justify-content: flex-start; }
     }
     @media (hover: none) { .pp-card:hover { transform: none; } .pp-card:hover img { transform: none; } }
-    @media (prefers-reduced-motion: reduce) { .pp-card, .pp-card img, .pp-go { transition: none; } }
+    @media (max-width: 1100px) and (min-width: 761px) { .pp-map { height: 420px; margin-right: 100px; } }
+    @media (prefers-reduced-motion: reduce) {
+      .pp-card, .pp-card img, .pp-go, .pp-bar { transition: none; }
+      .pp-hero *, .pp-hero *::before { animation: none !important; }
+      .pp-hl { background-size: 100% 5px; }
+      .pp-map .pp-map-band circle { fill: var(--rest); }
+      .pp-spread-ring { display: none; }
+    }
   </style>
 </BaseLayout>

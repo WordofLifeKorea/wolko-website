@@ -24,7 +24,7 @@ hero_tagline_ko: 말씀으로
 hero_tagline_en: Raising Up the Next Generation
 hero_tagline2_ko: 다음 세대를 세우다
 hero_tagline2_en: Through the Word
-hero_subtitle_ko: 스티브와 론다는 제주도에 위치한 생명의 말씀 성경학교(WOLBI)에서 학생들을 하나님의 말씀으로 가르치고
+hero_subtitle_ko: 스티브와 론다는 제주도에 위치한 생명의 말씀 성경학교(월비)에서 학생들을 하나님의 말씀으로 가르치고
   훈련합니다. 30년 넘게 아시아에서 섬겨온 두 사람은 지금도 젊은 사역자들을 지도하는 일에 헌신하고 있습니다.
 hero_subtitle_en: Steve and Rhonda teach and train students in God's Word at
   Word of Life Bible Institute (WOLBI) on Jeju Island. With over thirty years of
@@ -34,15 +34,15 @@ verse_ref: "고린도전서 16 : 15"
 spouse_ko: 란다 니콜스
 spouse_en: Rhonda Nicholes
 show_spouse: true
-bio_ko: Steve는 월드 오브 라이프 사역자 가정에서 태어났습니다. 네 살 때 어머니의 인도로 예수님을 처음 받아들였지만, 어린 시절
-  대부분을 자신의 신앙을 의심하며 보냈습니다. 5학년 때 가까운 친구 Lewis의 갑작스러운 죽음이 그를 크게 흔들었습니다. 자신의 신앙이
+bio_ko: 스티브는 월드 오브 라이프 사역자 가정에서 태어났습니다. 네 살 때 어머니의 인도로 예수님을 처음 받아들였지만, 어린 시절
+  대부분을 자신의 신앙을 의심하며 보냈습니다. 5학년 때 가까운 친구 루이스의 갑작스러운 죽음이 그를 크게 흔들었습니다. 자신의 신앙이
   다른 친구들과 무엇이 다른지 자신에게 묻기 시작했고, 성경을 들고 하나님 앞에 나아가 개인적으로 하나님을 알기를 간구했습니다. 그날 이후
-  그는 구원을 의심한 적이 없습니다. 아시아를 향한 비전을 품고 월비를 통해 훈련받은 그는 WOL 아시아 사역에 합류하였으며, 현재 WOLBI
+  그는 구원을 의심한 적이 없습니다. 아시아를 향한 비전을 품고 월비를 통해 훈련받은 그는 월드 오브 라이프 아시아 사역에 합류하였으며, 현재 월비
   제주의 총장으로 30년 넘는 헌신의 열매를 이어가고 있습니다.
-bio_ko_2: Rhonda는 버지니아주 WOL 사역자 가정에서 자랐습니다. 여섯 살에 신앙고백을 했지만 오랫동안 구원의 확신이 없었고,
+bio_ko_2: 란다는 버지니아주 월드 오브 라이프 사역자 가정에서 자랐습니다. 여섯 살에 신앙고백을 했지만 오랫동안 구원의 확신이 없었고,
   실제로 선교 현장에서 봉사하게 된 후에야 그리스도의 십자가가 자신의 과거·현재·미래의 죄를 완전히 덮기에 충분함을 깨달았습니다. 열여섯 살,
-  월드 오브 라이프 캠프파이어 예배에서 인생을 주님께 드렸습니다. 함께 30년 이상 아시아에서 주님을 섬기고 있으며, 네 자녀(Ben,
-  Anna, Daniel, Abby)와 함께 하나님의 나라를 이루어가고 있습니다.
+  월드 오브 라이프 캠프파이어 예배에서 인생을 주님께 드렸습니다. 함께 30년 이상 아시아에서 주님을 섬기고 있으며, 네 자녀(벤,
+  애나, 대니얼, 애비)와 함께 하나님의 나라를 이루어가고 있습니다.
 bio_en_2: Rhonda grew up in a WOL ministry family in Virginia. She made a
   profession of faith at six years old, but lived for many years without
   assurance of her salvation. It was not until she was actively serving on the

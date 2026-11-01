@@ -14,14 +14,14 @@ show_spouse: false
 verse_ref: "디모데후서 3:16-17"
 verse_ko: "모든 성경은 하나님의 감동으로 된 것으로 교훈과 책망과 바르게 함과 의로 교육하기에 유익하니 이는 하나님의 사람으로 온전케 하며 모든 선한 일을 행하기에 온전케 하려 함이니라"
 verse_en: "All Scripture is breathed out by God and profitable for teaching, for reproof, for correction, and for training in righteousness, that the man of God may be complete, equipped for every good work. (ESV)"
-hero_subtitle_ko: "WOLBI 제주에서 여학생 총괄 담당자(Dean of Women)로 섬기며, 말씀을 공부하는 여학생들의 생활과 신앙을 돌보고 있습니다."
+hero_subtitle_ko: "제주 월비에서 여학생 총괄 담당자로 섬기며, 말씀을 공부하는 여학생들의 생활과 신앙을 돌보고 있습니다."
 hero_subtitle_en: "Serves as the Dean of Women at WOLBI Jeju, caring for the daily lives and spiritual growth of the female students who study God's Word there."
 bio_ko: |-
   저는 매주 교회에 참석하는 가정에서 자랐습니다. 매주 교회에 다니며 자랐기 때문에 교회에 가는 것은 저에게 그저 일상적인 삶의 한 부분이었습니다. 학창 시절에도 교회 생활을 열심히 했지만, 정작 '하나님과의 인격적인 만남'이 무엇인지에 대해서는 이해하지 못했습니다.
 
   저는 '죄인'이고 하나님은 '창조주이시며 완전하신 분'이기 때문에, 완전하신 하나님과 죄인인 저 사이에는 좁혀질 수 없는 벽이 있다고 생각했습니다. 또한 제가 교회에 나가고, 성경을 읽고, 예배를 드리는 이유도 그리스도인으로서 마땅히 해야 하는 일이기 때문이라고 생각했습니다.
 
-  그러나 하나님은 이런 저를 WOLBI JEJU로 인도하셨고, 그곳에서 성경을 배우면서 저의 생각은 변화하기 시작했습니다. 성경을 통해 하나님이 어떤 분이신지 알아갈 수 있고, 살아 있는 말씀을 통해 말씀하시고 응답하시는 하나님을 경험할 수 있으며, 하나님과 대화하는 시간이 기도라는 것을 깨닫게 되었습니다.
+  그러나 하나님은 이런 저를 제주 월비로 인도하셨고, 그곳에서 성경을 배우면서 저의 생각은 변화하기 시작했습니다. 성경을 통해 하나님이 어떤 분이신지 알아갈 수 있고, 살아 있는 말씀을 통해 말씀하시고 응답하시는 하나님을 경험할 수 있으며, 하나님과 대화하는 시간이 기도라는 것을 깨닫게 되었습니다.
 
   또한 하나님께서는 죄인인 저와 관계를 맺기 위해 사랑하는 아들 예수님을 십자가에 못 박혀 죽게 하시고 부활하게 하심으로써, 하나님과 저 사이에 길을 만들어 주셨다는 사실을 진정으로 깨닫게 되었습니다.
 
@@ -31,7 +31,7 @@ bio_ko: |-
 
   지금도 여전히 많은 청년과 청소년들이 교회에 다니지만 하나님과의 관계를 제대로 이해하지 못하고 있습니다. 뿐만 아니라 교회를 열심히 다니고 있음에도 여전히 채워지지 않는 공허함 속에서 살아가는 청년과 청소년들이 많이 있습니다.
 
-  그래서 저는 이들에게 복음의 의미와 예수님의 십자가의 의미를 전하고 싶었고, 이들을 섬기기 위해 WOLBI JEJU에서 섬기기로 결정했습니다.
+  그래서 저는 이들에게 복음의 의미와 예수님의 십자가의 의미를 전하고 싶었고, 이들을 섬기기 위해 제주 월비에서 섬기기로 결정했습니다.
 bio_en: |-
   I grew up in a family that attended church every week. Since I had grown up going to church every week, going to church was simply a normal part of my daily life. I was actively involved in church throughout my school years, but I did not truly understand what it meant to have a "personal relationship with God."
 

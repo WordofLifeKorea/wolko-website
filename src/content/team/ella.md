@@ -30,7 +30,7 @@ bio_ko: |-
   
   고등학교 때 아버지가 그리스도를 영접하시고 복음을 나누기 시작하셨습니다. 아버지는 항상 차 안에서 복음 오디오 메시지를 들으셨고, 그것을 통해 저는 반복해서 그 메시지에 노출되었습니다. 그때 처음으로 구원은 오직 예수님을 믿는 믿음을 통한 은혜로 주어진다는 것을 깨달았습니다. 그 진리를 이해했을 때 기쁨을 느꼈지만, 예수님을 따르고 싶은 마음이 있었음에도 제 삶은 여전히 나 자신 중심이었습니다. 저는 세상의 기준과 제 자신의 욕망을 자주 따랐습니다.
   
-  월코(Word of Life Korea)의 SYME(영어 청소년 사역 학교)에 참여하면서 변화가 시작되었습니다. 그곳에서 하나님의 말씀을 깊이 공부하며 죄의 심각성과 복음의 아름다움을 이해하기 시작했습니다. 하나님의 은혜에 대한 지식이 자라면서, 그 은혜를 다른 사람들과 나누고 싶은 열망도 커져갔습니다.
+  월코(월드 오브 라이프 코리아)의 SYME(영어 청소년 사역 학교)에 참여하면서 변화가 시작되었습니다. 그곳에서 하나님의 말씀을 깊이 공부하며 죄의 심각성과 복음의 아름다움을 이해하기 시작했습니다. 하나님의 은혜에 대한 지식이 자라면서, 그 은혜를 다른 사람들과 나누고 싶은 열망도 커져갔습니다.
 support_url: https://online.mrm.or.kr/As5Nocc
 support_url_en: https://missions.wol.org/missionaries/950678
 bio_en_2: |-
@@ -38,7 +38,7 @@ bio_en_2: |-
   
   Now I long to share the good news of Jesus with others, and so I returned to Word of Life Korea, where I first started following Jesus. Here, I want to continue sharing hope that changed my life with my people. Even though I am still weak and often fail, I remember the grace of God, who upholds me and lifts me up each time. In the place where God has called me, I am now living a life that proclaims the gospel and reflects the love of Jesus.
 bio_ko_2: |-
-  이 열망은 사역의 소명 의식으로 발전했습니다. "어떻게 내 삶을 통해 복음을 전할 수 있을까?"라고 스스로 묻기 시작했습니다. 제주와 뉴욕의 월비(Word of Life Bible Institute)에서 공부하면서 죄에 대한 인식이 깊어졌고, 그와 함께 하나님의 사랑과 자비에 대한 경험도 깊어졌습니다.
+  이 열망은 사역의 소명 의식으로 발전했습니다. "어떻게 내 삶을 통해 복음을 전할 수 있을까?"라고 스스로 묻기 시작했습니다. 제주와 뉴욕의 월비(월드 오브 라이프 성경학교)에서 공부하면서 죄에 대한 인식이 깊어졌고, 그와 함께 하나님의 사랑과 자비에 대한 경험도 깊어졌습니다.
   
   이제 저는 예수님의 기쁜 소식을 다른 사람들과 나누고 싶고, 그래서 처음 예수님을 따르기 시작한 월코로 돌아왔습니다. 이곳에서 제 삶을 변화시킨 소망을 제 주변 사람들과 계속해서 나누고 싶습니다. 비록 저는 여전히 연약하고 자주 실패하지만, 매번 저를 붙들어 일으켜 세우시는 하나님의 은혜를 기억합니다. 하나님이 저를 부르신 그 자리에서, 저는 이제 복음을 선포하고 예수님의 사랑을 반영하는 삶을 살아가고 있습니다.
 verse_ko: "내게 이르시기를 내 은혜가 네게 족하도다 이는 내 능력이 약한데서 온전하여짐이라 하신지라 이러므로 도리어 크게 기뻐함으로 나의 여러 약한 것들에 대하여 자랑하리니 이는 그리스도의 능력으로 내게 머물게 하려함이라 그러므로 내가 그리스도를 위하여 약한 것들과 능욕과 궁핍과 핍박과 곤란을 기뻐하노니 이는 내가 약할 그 때에 곧 강함이니라"

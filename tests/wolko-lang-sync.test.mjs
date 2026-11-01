@@ -5,17 +5,22 @@ import vm from 'node:vm';
 
 const source = await readFile(new URL('../public/wolko-lang-sync.js', import.meta.url), 'utf8');
 
-function run({ languages, stored = {} }) {
+// stored = 기기에 남은 값(localStorage), visit = 같은 창에서 이어지는 방문의 값(sessionStorage)
+function run({ languages, stored = {}, visit = {} }) {
   const data = new Map(Object.entries(stored));
+  const sess = new Map(Object.entries(visit));
   class Storage {
-    getItem(k) { return data.has(k) ? data.get(k) : null; }
-    setItem(k, v) { data.set(k, String(v)); }
+    constructor(map) { this.map = map; }
+    getItem(k) { return this.map.has(k) ? this.map.get(k) : null; }
+    setItem(k, v) { this.map.set(k, String(v)); }
+    removeItem(k) { this.map.delete(k); }
   }
-  const local = new Storage();
+  const local = new Storage(data);
+  const session = new Storage(sess);
   const document = { documentElement: { setAttribute() {} } };
-  const window = { localStorage: local };
+  const window = { localStorage: local, sessionStorage: session };
   vm.runInNewContext(source, { window, Storage, navigator: { languages, language: languages[0] }, document });
-  return { local, data };
+  return { local, data, sess };
 }
 
 test('with no saved choice the device language decides', () => {
@@ -26,22 +31,31 @@ test('with no saved choice the device language decides', () => {
   for (const k of ['wolko-lang', 'wolkoCarLang', 'wolkoAdminLang', 'wolkoHubLang']) assert.equal(all.get(k), 'en');
 });
 
-test('a choice made on any page is followed on every page', () => {
-  const { local, data } = run({ languages: ['ko-KR'] });
+test('a choice made on any page is followed on every page during the same visit', () => {
+  const { local, data, sess } = run({ languages: ['ko-KR'] });
   local.setItem('wolkoCarLang', 'en'); // 차량 페이지에서 EN 선택
   for (const k of ['wolko-lang', 'wolkoCarLang', 'wolkoAdminLang', 'wolkoHubLang']) assert.equal(data.get(k), 'en');
-  assert.equal(data.get('wolko-lang-choice'), 'en');
-  // 다음 페이지(스크립트 재실행)도 기기 언어가 아니라 선택을 따른다
-  const next = run({ languages: ['ko-KR'], stored: Object.fromEntries(data) });
+  assert.equal(sess.get('wolko-lang-choice'), 'en');
+  assert.equal(data.has('wolko-lang-choice'), false, '선택은 기기에 영구 저장하지 않는다');
+  // 같은 창의 다음 페이지(스크립트 재실행)는 선택을 따른다
+  const next = run({ languages: ['ko-KR'], stored: Object.fromEntries(data), visit: Object.fromEntries(sess) });
   assert.equal(next.data.get('wolko-lang'), 'en');
   next.local.setItem('wolko-lang', 'ko');
   assert.equal(next.data.get('wolkoAdminLang'), 'ko');
 });
 
-test('an old English choice stored by only one page becomes the shared choice', () => {
-  const { data } = run({ languages: ['ko-KR'], stored: { wolkoAdminLang: 'en' } });
-  assert.equal(data.get('wolko-lang'), 'en');
-  assert.equal(data.get('wolko-lang-choice'), 'en');
+test('a new visit (new tab, email link) goes back to the device language', () => {
+  const { local, data } = run({ languages: ['ko-KR'] });
+  local.setItem('wolko-lang', 'en');
+  const fresh = run({ languages: ['ko-KR'], stored: Object.fromEntries(data) });
+  for (const k of ['wolko-lang', 'wolkoCarLang', 'wolkoAdminLang', 'wolkoHubLang']) assert.equal(fresh.data.get(k), 'ko');
+});
+
+test('an old permanent English choice no longer forces English on a Korean phone', () => {
+  const { data } = run({ languages: ['ko-KR'], stored: { wolkoAdminLang: 'en', 'wolko-lang': 'en', 'wolko-lang-choice': 'en' } });
+  assert.equal(data.get('wolko-lang'), 'ko');
+  assert.equal(data.get('wolkoAdminLang'), 'ko');
+  assert.equal(data.has('wolko-lang-choice'), false);
 });
 
 test('the public site layout and the camp-resources page share the same language', async () => {

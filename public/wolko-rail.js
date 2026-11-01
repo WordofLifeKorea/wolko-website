@@ -132,7 +132,7 @@
 
   function syncLabels() {
     var lang = currentLang();
-    document.querySelectorAll('.wolko-rail-item-label[data-ko], .wolko-rail-group[data-ko], .wl-logout[data-ko], .wolko-drawer-label[data-ko], .wolko-drawer-group[data-ko]').forEach(function (el) {
+    document.querySelectorAll('.wl-intro-title[data-ko], .wolko-rail-item-label[data-ko], .wolko-rail-group[data-ko], .wl-logout[data-ko], .wolko-drawer-label[data-ko], .wolko-drawer-group[data-ko]').forEach(function (el) {
       el.textContent = lang === 'en' ? el.getAttribute('data-en') : el.getAttribute('data-ko');
     });
   }
@@ -388,6 +388,21 @@
     document.head.appendChild(script);
   }
 
+  // 페이지 맨 위 설명 한 줄(.wl-lead)을 도구 아이콘이 붙은 작은 안내 카드로 감싼다.
+  // 휴대폰에서는 위쪽 바에 페이지 이름이 안 보이므로 카드에 이름도 함께 보인다(컴퓨터는 위쪽 바에 이미 있어 숨긴다)
+  function mountIntro(path) {
+    var lead = document.querySelector('p.wl-lead');
+    if (!lead || lead.closest('.wl-intro')) return;
+    var tool = TOOLS.filter(function (t) { return path === t.href || (t.href === '/portal/car-drive' && (path === '/portal/car' || path === '/portal/car-log')); })[0];
+    if (!tool) return;
+    var box = document.createElement('div');
+    box.className = 'wl-intro';
+    box.style.setProperty('--intro-color', tool.color);
+    box.innerHTML = '<span class="wl-intro-icon">' + (ART[tool.href] ? art(tool.href, 26) : '') + '</span><div class="wl-intro-body"><span class="wl-intro-title" data-ko="' + tool.label + '" data-en="' + tool.label_en + '"></span></div>';
+    lead.parentNode.insertBefore(box, lead);
+    box.querySelector('.wl-intro-body').appendChild(lead);   // 문장 자체는 그대로 옮긴다 — 페이지가 언어를 바꿀 때 이 글을 계속 고친다
+  }
+
   function init() {
     var path = window.location.pathname.replace(/\/+$/, '') || '/';
     checkPasswordReset();
@@ -420,6 +435,7 @@
     document.body.insertBefore(rail, document.body.firstChild);
     document.body.classList.add('wolko-rail-active');
     mountMobileMenu(path);
+    mountIntro(path);
     if (window.WolkoAccess) window.WolkoAccess.apply();   // 쓸 수 있는 도구를 이미 알고 있으면 지금 메뉴를 줄인다(모르면 알게 되는 대로 줄인다)
     syncLabels();
     syncHeadHeight();
