@@ -4,6 +4,7 @@
 // → 두 거점의 대표 → 거점별 사진 카드 → 함께 섬기기 띠.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
+import { photoFrame, photoFocus } from '../../lib/photoFrame.js';
 
 const allTeam = (await getCollection('team')).filter(p => p.data.active !== false);
 const byOrder = (a, b) => (a.data.order ?? 99) - (b.data.order ?? 99);
@@ -13,6 +14,8 @@ const locOf = (p) => (p.data.campus === 'pyeongtaek' ? 'pt' : 'jj');
 // 카드 위 직책 표시 — 한글 화면은 한글, 영어 화면은 영어
 const ROLE_KO = { Staff: '간사', Intern: '인턴', Missionaries: '선교사', Missionary: '선교사', 'Field Director': '필드 디렉터', 'Jeju Director': '제주 디렉터' };
 const roleKo = (v) => ROLE_KO[v] || v || '';
+// 사진 카드 칸 비율 — 아래 CSS .pp-photo 의 aspect-ratio 와 같아야 한다
+const CARD_ASPECT = 1;
 const initialOf = (p) => (p.data.name_ko || p.data.name_en || '?').trim().charAt(0);
 
 const leads = allTeam.filter(isDirector).sort((a, b) => (locOf(a) === locOf(b) ? byOrder(a, b) : locOf(a) === 'pt' ? -1 : 1));
@@ -115,7 +118,7 @@ const mapPlaces = [
           {mapPlaces.map((m, i) => (
             <a href={m.href} class={`pp-place pp-place--${m.loc}`} style={`left:${pct(m.x, MAP_W)};top:${pct(m.y, MAP_H)};--i:${i}`}>
               <span class="pp-faces" aria-hidden="true">
-                {m.faces.map((p) => <img src={p.data.photo_url} alt="" loading="lazy" style={p.data.photo_position ? `object-position: ${p.data.photo_position}` : undefined} />)}
+                {m.faces.map((p) => <img src={p.data.photo_url} alt="" loading="lazy" style={photoFocus(p.data.photo_url, p.data.photo_position)} />)}
               </span>
               <span class="pp-place-text">
                 <span class="pp-place-name"><span class="wl-ko">{m.ko}</span><span class="wl-en">{m.en}</span></span>
@@ -149,7 +152,7 @@ const mapPlaces = [
           {leads.map((p) => (
             <a href={`/team/${p.slug}`} class="pp-card pp-lead" data-loc={locOf(p)} data-role={p.data.category}>
               <span class="pp-lead-photo">
-                {p.data.photo_url ? <img src={p.data.photo_url} alt={p.data.name_ko} loading="lazy" style={p.data.photo_position ? `object-position: ${p.data.photo_position}` : undefined} /> : <span class="pp-initial">{initialOf(p)}</span>}
+                {p.data.photo_url ? <img src={p.data.photo_url} alt={p.data.name_ko} loading="lazy" style={photoFocus(p.data.photo_url, p.data.photo_position)} /> : <span class="pp-initial">{initialOf(p)}</span>}
               </span>
               <span class="pp-lead-body">
                 <span class="pp-lead-badge"><span class="wl-ko">{roleKo(p.data.role_badge)}</span><span class="wl-en">{p.data.role_badge}</span></span>
@@ -177,7 +180,7 @@ const mapPlaces = [
               <li data-loc={locOf(p)} data-role={p.data.category}>
                 <a href={`/team/${p.slug}`} class="pp-card">
                   <span class="pp-photo">
-                    {p.data.photo_url ? <img src={p.data.photo_url} alt={p.data.name_ko} loading="lazy" style={p.data.photo_position ? `object-position: ${p.data.photo_position}` : undefined} /> : <span class="pp-initial">{initialOf(p)}</span>}
+                    {p.data.photo_url ? <img src={p.data.photo_url} alt={p.data.name_ko} loading="lazy" style={photoFrame(p.data.photo_url, CARD_ASPECT, 'card', p.data.photo_position)} /> : <span class="pp-initial">{initialOf(p)}</span>}
                     <span class="pp-badge"><span class="wl-ko">{roleKo(p.data.role_badge)}</span><span class="wl-en">{p.data.role_badge}</span></span>
                   </span>
                   <span class="pp-info">
@@ -380,7 +383,7 @@ const mapPlaces = [
     .pp-group-count { flex: none; white-space: nowrap; font-size: 14px; font-weight: 700; color: #5a7380; }
     .pp-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 36px 24px; }
     .pp-grid .pp-card { flex-direction: column; height: 100%; }
-    .pp-photo { position: relative; display: block; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 16px; background: #e7e2d8; isolation: isolate; }
+    .pp-photo { position: relative; display: block; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 16px; background: #e7e2d8; isolation: isolate; }
     .pp-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
     .pp-badge { position: absolute; left: 10px; top: 10px; z-index: 1; padding: 4px 9px; border-radius: 999px; background: rgba(255,255,255,.92); font-size: 11px; font-weight: 800; color: var(--pp-navy); }
     .pp-info { display: flex; flex-direction: column; gap: 5px; padding: 14px 2px 0; }
