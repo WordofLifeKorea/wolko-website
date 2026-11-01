@@ -221,6 +221,11 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 .hm-hero.hm-motion.is-ready .hm-hero-eyebrow::before { animation: hmLine 1s .65s ease-out both; }
 .hm-hero.hm-motion.is-ready .hm-hero-title { animation: hmRise 1.3s .6s cubic-bezier(.2,.7,.2,1) both; }
 .hm-hero.hm-motion.is-ready .hm-hero-bar { animation: hmRise 1.3s 1.05s cubic-bezier(.2,.7,.2,1) both; }
+/* 제목의 강조 낱말 아래 금빛 밑줄(섬기는이 · 다른 배너와 같은 모양): 제목이 떠오른 뒤 왼쪽부터 그어진다 */
+.hm-hero-title em { font-style: normal; color: inherit; background: linear-gradient(90deg, #e9c27a, #f3dca6) no-repeat 0 92% / 100% max(4px, .075em); padding-bottom: 4px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+@keyframes hmHl { from { background-size: 0% max(4px, .075em); } }
+.hm-hero.hm-motion:not(.is-ready) .hm-hero-title em { background-size: 0% max(4px, .075em); }
+.hm-hero.hm-motion.is-ready .hm-hero-title em { animation: hmHl 1s 1.5s cubic-bezier(.6,0,.2,1) both; }
 
 /* ═══════════════════════════
    3. 왜 지금인가 — 왼쪽 글 · 오른쪽 큰 숫자
@@ -610,8 +615,8 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
     <div class="hm-shell hm-hero-inner">
       <p class="hm-hero-eyebrow">Word of Life Korea</p>
       <h1 class="hm-hero-title">
-        <span class="wl-ko">한국의 다음 세대에게<br>복음을 전합니다</span>
-        <span class="wl-en">Bringing the Hope of the Gospel<br>to the Next Generation in Korea</span>
+        <span class="wl-ko">한국의 다음 세대에게<br><em>복음을 전합니다</em></span>
+        <span class="wl-en">Bringing the Hope of the Gospel<br><em>to the Next Generation in Korea</em></span>
       </h1>
       <div class="hm-hero-bar">
         <p class="hm-hero-desc">

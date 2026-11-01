@@ -48,7 +48,8 @@ const hasBar = Astro.slots.has('bar');
   .ph-eyebrow a { color: inherit; text-decoration: none; }
   .ph-eyebrow a:hover { text-decoration: underline; text-underline-offset: 3px; }
   .ph-title { margin: 20px 0 0; font-family: var(--ff-serif); font-weight: 700; letter-spacing: -0.04em; }
-  .ph-title em { font-style: normal; color: inherit; }
+  /* 제목의 강조 낱말(<em>) 아래 금빛 밑줄 — 섬기는이 페이지와 같은 모양. 두 줄로 넘어가도 줄마다 그어진다 */
+  .ph-title em { font-style: normal; color: inherit; background: linear-gradient(90deg, #e9c27a, #f3dca6) no-repeat 0 92% / 100% max(4px, .075em); padding-bottom: 4px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
   .ph-br { display: none; }   /* 좁은 화면에서만 줄을 바꾸는 자리 */
   @media (max-width: 900px) { .ph-br { display: inline; } }
   .ph-desc { margin: 18px 0 0; max-width: 640px; font-size: 17px; line-height: 1.75; }
@@ -82,6 +83,7 @@ const hasBar = Astro.slots.has('bar');
   .ph--plain .ph-eyebrow { color: #004f68; }
   .ph--plain .ph-title { font-size: clamp(32px, 3.6vw, 48px); line-height: 1.2; color: #0b2430; }
   .ph--plain .ph-desc { color: #4a5d66; font-size: 16px; }
+  .ph--plain .ph-title em { background-image: linear-gradient(90deg, #e2b45c, #efcf8c); }
 
   /* 설명 · 숫자 · 버튼 줄 */
   .ph-bar { margin-top: 40px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,0.3); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 56px; align-items: center; }
@@ -187,6 +189,10 @@ const hasBar = Astro.slots.has('bar');
   .wl-motion .ph.is-ready .ph-eyebrow::before { animation: phLine 1s .65s ease-out both; }
   .wl-motion .ph.is-ready .ph-title { animation: phRise 1.3s .6s cubic-bezier(.2,.7,.2,1) both; }
   .wl-motion .ph.is-ready .ph-bar, .wl-motion .ph.is-ready .ph-desc { animation: phRise 1.3s 1.05s cubic-bezier(.2,.7,.2,1) both; }
+  /* 밑줄은 제목이 떠오른 뒤 왼쪽부터 그어진다 */
+  @keyframes phHl { from { background-size: 0% max(4px, .075em); } }
+  .wl-motion .ph:not(.is-ready) .ph-title em { background-size: 0% max(4px, .075em); }
+  .wl-motion .ph.is-ready .ph-title em { animation: phHl 1s 1.5s cubic-bezier(.6,0,.2,1) both; }
 </style>
 
 <script is:inline>
