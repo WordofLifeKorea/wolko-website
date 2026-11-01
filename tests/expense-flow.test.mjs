@@ -852,7 +852,7 @@ test('회계 항목: 목적 · 카테고리 · 출금 계좌 줄은 높이도 �
 test('작성 폼: 사역명·계좌 칸 없이 카테고리만 고르고, 드롭박스 화살표는 제자리에 고정된다', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../src/pages/portal/expense/index.astro', import.meta.url), 'utf8');
-  const row = src.slice(src.indexOf('<div class="ex-row" data-i="${i}">'), src.indexOf('<div class="ex-r2">'));
+  const row = src.slice(src.indexOf('<div class="ex-row" data-i="${i}"'), src.indexOf('<div class="ex-r2">'));
   assert.doesNotMatch(row, /data-f="srcSel"|data-f="source"/, '사역명·계좌 칸은 없다');
   const order = ['data-f="when"', 'data-f="account"', 'data-f="item"', 'data-f="ministryPurpose"'].map(k => row.indexOf(k));
   assert.ok(order.every((v, i) => v > -1 && (i === 0 || v > order[i - 1])), '1줄: 날짜 → 카테고리 → 구매 품목 → 구매 목적');

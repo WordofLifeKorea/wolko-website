@@ -1264,3 +1264,59 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
   :root:root body .ex-wrap .ex-row .ex-r2 { grid-template-columns: 30px 200px 128px auto 52px minmax(0, 1fr) 32px; }
   :root:root body .ex-wrap .ex-row .ex-r2 > .ex-memo-in { grid-column: 2 / -2; }
 }
+
+/* v202 — 칸 이름표(.ex-mlab)는 휴대폰에서만. 컴퓨터에서는 감싸개(.ex-fld)가 없는 것처럼 각 칸이 바로 격자에 놓인다
+   글자 굵기는 예전 결정대로(영수증 버튼만 굵게) 되돌린다 */
+.ex-fld { display: contents; }
+.ex-mlab, .ex-more-txt { display: none; }
+:root:root body .ex-wrap .ex-row .ex-r1 .ex-item, :root:root body .ex-wrap .ex-row .ex-r2 .ex-amt, :root:root body .ex-wrap .ex-row .ex-r2 .ex-cur { font-weight: 400 !important; }
+@media (min-width: 641px) {
+  :root:root body .ex-wrap .ex-row .ex-r1 { grid-template-columns: 30px 170px minmax(200px, 260px) minmax(0, 1fr) 32px; }
+  :root:root body .ex-wrap .ex-row .ex-r1 .ex-num { grid-column: 1; grid-row: 1; }
+  :root:root body .ex-wrap .ex-row .ex-r1 .ex-w-date { grid-column: 2; grid-row: 1; width: 100%; }
+  :root:root body .ex-wrap .ex-row .ex-r1 .ex-catsel { grid-column: 3; grid-row: 1; width: 100%; max-width: none; min-width: 0; }
+  :root:root body .ex-wrap .ex-row .ex-r1 .ex-item { grid-column: 4; grid-row: 1; }
+  :root:root body .ex-wrap .ex-row .ex-r1 :is(.ex-x, .ex-x-space) { grid-column: 5; grid-row: 1; }
+  :root:root body .ex-wrap .ex-row .ex-r1 .ex-purpose { grid-column: 2 / 5; grid-row: 2; }
+  /* 둘째 줄: 메모 → 금액 → 통화 → 영수증 → ⋯ 를 한 줄에 */
+  :root:root body .ex-wrap .ex-row .ex-r2 { grid-template-columns: 30px minmax(0, 1fr) 170px 116px auto 52px 32px; }
+  :root:root body .ex-wrap .ex-row .ex-r2 .ex-memo-in { grid-column: 2; grid-row: 1; }
+  :root:root body .ex-wrap .ex-row .ex-r2 .ex-amt { grid-column: 3; grid-row: 1; }
+  :root:root body .ex-wrap .ex-row .ex-r2 .ex-cur { grid-column: 4; grid-row: 1; }
+  :root:root body .ex-wrap .ex-row .ex-r2 .ex-attach { grid-column: 5; grid-row: 1; }
+  :root:root body .ex-wrap .ex-row .ex-r2 .ex-more-btn { grid-column: 6; grid-row: 1; }
+}
+/* 휴대폰: 칸마다 위에 이름표, 날짜·카테고리 / 금액·통화는 두 칸씩, 영수증은 큰 버튼 */
+@media (max-width: 640px) {
+  :root:root body .ex-wrap .ex-fld { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  :root:root body .ex-wrap .ex-mlab { display: block; font-size: 12.5px; font-weight: 700; line-height: 1.2; color: #45616d; }
+  :root:root body .ex-wrap .ex-row .ex-fld > :is(.ex-input, .ex-select) { width: 100%; max-width: none; min-width: 0; }
+  :root:root body .ex-wrap .ex-row .ex-r1 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px 10px; }
+  :root:root body .ex-wrap .ex-row .ex-r1 > .ex-num { grid-column: 1; grid-row: 1; justify-self: start; }
+  :root:root body .ex-wrap .ex-row .ex-r1 > .ex-x { grid-column: 2; grid-row: 1; justify-self: end; }
+  :root:root body .ex-wrap .ex-row .ex-r1 > .ex-x-space { display: none; }
+  :root:root body .ex-wrap .ex-row .ex-fld-date { grid-column: 1; grid-row: 2; }
+  :root:root body .ex-wrap .ex-row .ex-fld-cat { grid-column: 2; grid-row: 2; }
+  :root:root body .ex-wrap .ex-row .ex-fld-item { grid-column: 1 / -1; grid-row: 3; }
+  :root:root body .ex-wrap .ex-row .ex-fld-purpose { grid-column: 1 / -1; grid-row: 4; }
+  :root:root body .ex-wrap .ex-row .ex-r2 { display: grid; grid-template-columns: minmax(0, 1fr) 116px; gap: 14px 10px; margin-top: 14px; }
+  :root:root body .ex-wrap .ex-row .ex-fld-memo { grid-column: 1 / -1; grid-row: 1; }
+  :root:root body .ex-wrap .ex-row .ex-fld-amt { grid-column: 1; grid-row: 2; }
+  :root:root body .ex-wrap .ex-row .ex-fld-cur { grid-column: 2; grid-row: 2; }
+  :root:root body .ex-wrap .ex-row .ex-r2 .ex-amt { text-align: left; font-size: 17px !important; }
+  :root:root body .ex-wrap .ex-row .ex-r2 > .ex-attach { grid-column: 1 / -1; grid-row: 3; justify-self: stretch; justify-content: center; height: 52px; min-height: 52px !important; font-size: 14.5px !important; }
+  :root:root body .ex-wrap .ex-row .ex-r2 > .ex-more-btn { grid-column: 1 / -1; grid-row: 4; justify-self: start; height: 36px; min-height: 36px !important; padding: 0 12px; background: transparent !important; color: var(--ex-deep) !important; font-size: 13px !important; }
+  :root:root body .ex-wrap .ex-more-dots { display: none; }
+  :root:root body .ex-wrap .ex-more-txt { display: inline; }
+  :root:root body .ex-wrap .ex-more-txt::before { content: '+ '; }
+}
+/* 휴대폰: 구매 목적 · 메모는 접어 두고 [구매 목적 · 메모 · 장소 적기]를 눌러 연다 — 이미 적어 둔 칸은 늘 보인다 */
+@media (max-width: 640px) {
+  :root:root body .ex-wrap .ex-row[data-more="0"] :is(.ex-fld-purpose, .ex-fld-memo):not(.has-val) { display: none; }
+  :root:root body .ex-wrap .ex-row .ex-fld-purpose { grid-row: 4; }
+  :root:root body .ex-wrap .ex-row .ex-fld-memo { grid-column: 1 / -1; grid-row: 1; }
+  :root:root body .ex-wrap .ex-row[data-more="0"] .ex-r2:not(:has(.ex-fld-memo.has-val)) { margin-top: 14px; }
+}
+@media (max-width: 640px) { :root:root body .ex-wrap .ex-row .ex-r2 { margin-top: 14px !important; padding-top: 0 !important; border-top: 0 !important; } :root:root body .ex-wrap .ex-row .ex-r1 { margin-bottom: 0 !important; padding-bottom: 0 !important; } }
+/* 휴대폰 둘째 묶음은 줄 번호를 정하지 않고 차례대로 — 메모를 접었을 때 빈 줄 간격이 생기지 않게 */
+@media (max-width: 640px) { :root:root body .ex-wrap .ex-row .ex-r2 > * { grid-row: auto !important; } }
