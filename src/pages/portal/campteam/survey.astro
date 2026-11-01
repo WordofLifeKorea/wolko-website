@@ -19,39 +19,71 @@
     .stars{display:flex;gap:6px}.stars label{flex:1}.stars input{position:absolute;opacity:0}.stars span{display:grid;place-items:center;height:46px;border:1px solid var(--border);border-radius:10px;cursor:pointer;font-weight:700;background:var(--bg)}.stars input:checked+span{background:var(--blue);color:#fff;border-color:var(--blue)}.stars small{display:flex;justify-content:space-between;color:var(--mid);font-size:12px;margin-top:4px}
     .opt{display:flex;gap:8px;align-items:center;padding:9px 10px;border:1px solid var(--border);border-radius:10px;margin:6px 0;cursor:pointer;background:var(--bg)}textarea{width:100%;min-height:90px;font:inherit;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text)}
     .go{width:100%;padding:14px;border:0;border-radius:12px;background:var(--accent);color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-top:10px}.go:disabled{opacity:.5}.msg{margin:12px 0;padding:12px;border-radius:10px}.err{background:#fde8ea;color:#8a1c25}.ok{background:#e3f6ee;color:#14663f}.hp{position:absolute;left:-9999px;opacity:0}.note{color:var(--mid);font-size:12.5px;margin-top:12px}
+    .desc{color:var(--mid);font-size:14px;margin:0 0 14px;white-space:pre-wrap}.q.hd{background:transparent;border:0;border-left:4px solid var(--blue);border-radius:0;padding:4px 12px}.q.hd b{margin:0;font-size:17px}.q.hd .desc{margin:4px 0 0;font-size:13.5px}
+    .req{color:var(--accent);margin-left:3px}.q.bad{border-color:var(--accent)}.q .why{display:none;color:var(--accent);font-size:12.5px;margin-top:8px}.q.bad .why{display:block}
+    input[type=text],select{width:100%;font:inherit;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text)}.opt input[type=text]{flex:1;min-width:0;padding:6px 8px}
+    .scale{display:grid;gap:4px}.scale label{display:block}.scale input{position:absolute;opacity:0}.scale span{display:grid;place-items:center;height:42px;border:1px solid var(--border);border-radius:10px;cursor:pointer;font-weight:700;background:var(--bg)}.scale input:checked+span{background:var(--blue);color:#fff;border-color:var(--blue)}.scale input:focus-visible+span,.stars input:focus-visible+span{outline:2px solid var(--blue);outline-offset:2px}
+    .ends{display:flex;justify-content:space-between;color:var(--mid);font-size:12px;margin-top:4px}
   </style>
 </head>
 <body>
 <main id="main"><div class="lang"><button type="button" id="lko">한국어</button><button type="button" id="len">English</button></div><div id="app"></div></main>
 <script is:inline>
 (function () {
-  var T = { ko: { sub: '답은 익명으로 저장돼요. 이름·연락처는 묻지 않아요. 아는 만큼만 답해 주세요.', send: '보내기', sent: '고맙습니다! 답을 잘 받았어요.', closed: '이 설문은 닫혔거나 없는 링크예요.', fail: '보내지 못했어요. 잠시 뒤 다시 해 주세요.', pick: '답을 하나 이상 골라 주세요.', low: '아쉬웠어요', high: '아주 좋았어요', note: 'WOLKO 캠프 & 아웃리치 팀' },
-    en: { sub: 'Answers are saved anonymously. We do not ask for your name or contact. Answer what you can.', send: 'Send', sent: 'Thank you! We received your answers.', closed: 'This survey is closed or the link is not valid.', fail: 'Could not send. Please try again in a moment.', pick: 'Please answer at least one question.', low: 'Not good', high: 'Great', note: 'WOLKO Camp & Outreach Team' } };
+  var T = { ko: { sub: '답은 익명으로 저장돼요. 이름·연락처는 묻지 않아요. 아는 만큼만 답해 주세요.', send: '보내기', sent: '고맙습니다! 답을 잘 받았어요.', closed: '이 설문은 닫혔거나 없는 링크예요.', fail: '보내지 못했어요. 잠시 뒤 다시 해 주세요.', pick: '답을 하나 이상 골라 주세요.', low: '아쉬웠어요', high: '아주 좋았어요', note: 'WOLKO 캠프 & 아웃리치 팀', need: '필수 질문에 답해 주세요.', why: '꼭 답해야 하는 질문이에요.', other: '기타', otherPh: '직접 쓰기', choose: '선택' },
+    en: { sub: 'Answers are saved anonymously. We do not ask for your name or contact. Answer what you can.', send: 'Send', sent: 'Thank you! We received your answers.', closed: 'This survey is closed or the link is not valid.', fail: 'Could not send. Please try again in a moment.', pick: 'Please answer at least one question.', low: 'Not good', high: 'Great', note: 'WOLKO Camp & Outreach Team', need: 'Please answer the required questions.', why: 'This question is required.', other: 'Other', otherPh: 'Write here', choose: 'Choose' } };
   var lang = /^ko/i.test(navigator.language || 'ko') ? 'ko' : 'en', t = new URLSearchParams(location.search).get('t') || '', data = null, app = document.getElementById('app');
   try { var saved = localStorage.getItem('ct-survey-lang'); if (saved) lang = saved; } catch (e) {}
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-  function pick(o, k) { return lang === 'en' && o[k + 'En'] ? o[k + 'En'] : (lang === 'en' && o.en ? o.en : (o.ko || o.en || '')); }
-  function label(o) { return lang === 'en' && o.en ? o.en : (o.ko || o.en || ''); }
-  function setLang(l) { lang = l; try { localStorage.setItem('ct-survey-lang', l); } catch (e) {} document.documentElement.lang = l; document.getElementById('lko').className = l === 'ko' ? 'on' : ''; document.getElementById('len').className = l === 'en' ? 'on' : ''; if (data) render(); }
+  function L(ko, en) { return lang === 'en' && en ? en : (ko || en || ''); }
+  function label(o) { return L(o.ko, o.en); }
+  /* 언어를 바꿔도 이미 고른 답이 사라지지 않게: 다시 그리기 전에 입력값을 모았다가 다시 채운다 */
+  function snapshot() { var f = document.getElementById('f'), s = {}; if (!f) return s; [].forEach.call(f.elements, function (el) { if (!el.name || el.name === 'hp') return; if ((el.type === 'radio' || el.type === 'checkbox')) { if (el.checked) (s[el.name] = s[el.name] || []).push(el.value); } else if (el.value) s[el.name] = [el.value]; }); return s; }
+  function restore(s) { var f = document.getElementById('f'); if (!f) return; [].forEach.call(f.elements, function (el) { var v = s[el.name]; if (!v) return; if (el.type === 'radio' || el.type === 'checkbox') el.checked = v.indexOf(el.value) >= 0; else el.value = v[0]; }); }
+  function setLang(l) { var s = snapshot(); lang = l; try { localStorage.setItem('ct-survey-lang', l); } catch (e) {} document.documentElement.lang = l; document.getElementById('lko').className = l === 'ko' ? 'on' : ''; document.getElementById('len').className = l === 'en' ? 'on' : ''; if (data) { render(); restore(s); } }
+  function qHtml(q) {
+    var name = esc(q.id), title = esc(label(q));
+    if (q.type === 'heading') return '<div class="q hd"><b>' + title + '</b>' + (q.descKo || q.descEn ? '<div class="desc">' + esc(L(q.descKo, q.descEn)) + '</div>' : '') + '</div>';
+    var h = '<div class="q" data-q="' + name + '"><b>' + title + (q.required ? '<span class="req" aria-label="' + esc(T[lang].why) + '">*</span>' : '') + '</b>';
+    if (q.type === 'rating') h += '<div class="stars">' + [1, 2, 3, 4, 5].map(function (n) { return '<label><input type="radio" name="' + name + '" value="' + n + '"><span>' + n + '</span></label>'; }).join('') + '</div><small style="display:flex;justify-content:space-between;color:var(--mid);font-size:12px;margin-top:4px"><span>' + esc(T[lang].low) + '</span><span>' + esc(T[lang].high) + '</span></small>';
+    else if (q.type === 'scale') { var mx = q.max === 10 ? 10 : 5, lo = L(q.lowKo, q.lowEn), hi = L(q.highKo, q.highEn); h += '<div class="scale" style="grid-template-columns:repeat(' + mx + ',1fr)">' + Array.apply(null, Array(mx)).map(function (_, i) { return '<label><input type="radio" name="' + name + '" value="' + (i + 1) + '"><span>' + (i + 1) + '</span></label>'; }).join('') + '</div>' + (lo || hi ? '<div class="ends"><span>' + esc(lo) + '</span><span>' + esc(hi) + '</span></div>' : ''); }
+    else if (q.type === 'choice' || q.type === 'checkbox') {
+      var kind = q.type === 'choice' ? 'radio' : 'checkbox';
+      h += q.options.map(function (o, i) { return '<label class="opt"><input type="' + kind + '" name="' + name + '" value="' + i + '"> ' + esc(label(o)) + '</label>'; }).join('');
+      if (q.other) h += '<label class="opt"><input type="' + kind + '" name="' + name + '" value="other"> ' + esc(T[lang].other) + ' <input type="text" name="' + name + '__o" maxlength="200" placeholder="' + esc(T[lang].otherPh) + '"></label>';
+    }
+    else if (q.type === 'dropdown') h += '<select name="' + name + '"><option value="">' + esc(T[lang].choose) + '</option>' + q.options.map(function (o, i) { return '<option value="' + i + '">' + esc(label(o)) + '</option>'; }).join('') + '</select>';
+    else if (q.type === 'short') h += '<input type="text" name="' + name + '" maxlength="200">';
+    else h += '<textarea name="' + name + '" maxlength="1000"></textarea>';
+    return h + '<div class="why">' + esc(T[lang].why) + '</div></div>';
+  }
   function render() {
-    var h = '<h1>' + esc(lang === 'en' && data.titleEn ? data.titleEn : data.title) + '</h1><div class="sub">' + esc(T[lang].sub) + '</div><form id="f" novalidate>';
-    data.questions.forEach(function (q) {
-      h += '<div class="q"><b>' + esc(label(q)) + '</b>';
-      if (q.type === 'rating') h += '<div class="stars">' + [1, 2, 3, 4, 5].map(function (n) { return '<label><input type="radio" name="' + q.id + '" value="' + n + '"><span>' + n + '</span></label>'; }).join('') + '</div><small style="display:flex;justify-content:space-between;color:var(--mid);font-size:12px;margin-top:4px"><span>' + esc(T[lang].low) + '</span><span>' + esc(T[lang].high) + '</span></small>';
-      else if (q.type === 'choice') h += q.options.map(function (o, i) { return '<label class="opt"><input type="radio" name="' + q.id + '" value="' + i + '"> ' + esc(label(o)) + '</label>'; }).join('');
-      else h += '<textarea name="' + q.id + '" maxlength="1000"></textarea>';
-      h += '</div>';
-    });
+    var d = L(data.description, data.descriptionEn);
+    var h = '<h1>' + esc(L(data.title, data.titleEn)) + '</h1>' + (d ? '<div class="desc">' + esc(d) + '</div>' : '') + '<div class="sub">' + esc(T[lang].sub) + '</div><form id="f" novalidate>';
+    h += data.questions.map(qHtml).join('');
     h += '<input class="hp" name="hp" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="go" type="submit">' + esc(T[lang].send) + '</button><div id="msg"></div><div class="note">' + esc(T[lang].note) + '</div></form>';
     app.innerHTML = h; document.getElementById('f').onsubmit = submit;
   }
+  /* 답 모으기 — 서버가 받는 모양: 숫자 · 보기 번호 · {other:'글'} · [번호…, {other}] · 글 */
+  function collect(fd) {
+    var a = {}, any = false, miss = [];
+    data.questions.forEach(function (q) {
+      if (q.type === 'heading') return; var v = null;
+      if (q.type === 'checkbox') { var vals = fd.getAll(q.id), o = String(fd.get(q.id + '__o') || '').trim(), arr = vals.filter(function (x) { return x !== 'other'; }); if (vals.indexOf('other') >= 0 && o) arr.push({ other: o }); if (arr.length) v = arr; }
+      else if (q.type === 'choice') { var c = fd.get(q.id); if (c === 'other') { var o2 = String(fd.get(q.id + '__o') || '').trim(); if (o2) v = { other: o2 }; } else if (c !== null && c !== '') v = c; }
+      else { var x = fd.get(q.id); if (x !== null && String(x).trim() !== '') v = x; }
+      if (v !== null) { a[q.id] = v; any = true; } else if (q.required) miss.push(q.id);
+    });
+    return { a: a, any: any, miss: miss };
+  }
+  function flag(ids) { [].forEach.call(document.querySelectorAll('.q[data-q]'), function (el) { el.classList.toggle('bad', ids.indexOf(el.getAttribute('data-q')) >= 0); }); var first = ids.length && document.querySelector('.q[data-q="' + ids[0] + '"]'); if (first && first.scrollIntoView) first.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
   async function submit(e) {
-    e.preventDefault(); var f = document.getElementById('f'), a = {}, fd = new FormData(f), any = false;
-    data.questions.forEach(function (q) { var v = fd.get(q.id); if (v !== null && String(v).trim() !== '') { a[q.id] = v; any = true; } });
-    var msg = document.getElementById('msg'); if (!any) { msg.className = 'msg err'; msg.textContent = T[lang].pick; return; }
+    e.preventDefault(); var f = document.getElementById('f'), fd = new FormData(f), c = collect(fd), msg = document.getElementById('msg');
+    flag(c.miss); if (c.miss.length) { msg.className = 'msg err'; msg.textContent = T[lang].need; return; }
+    if (!c.any) { msg.className = 'msg err'; msg.textContent = T[lang].pick; return; }
     f.querySelector('.go').disabled = true;
-    try { var r = await fetch('/api/campteam/survey-answer', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ t: t, answers: a, hp: fd.get('hp') || '' }) }); var j = await r.json().catch(function () { return {}; });
-      if (!r.ok) throw new Error(j.error || T[lang].fail); app.innerHTML = '<div class="msg ok">' + esc(T[lang].sent) + '</div>'; }
+    try { var r = await fetch('/api/campteam/survey-answer', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ t: t, answers: c.a, hp: fd.get('hp') || '' }) }); var j = await r.json().catch(function () { return {}; });
+      if (!r.ok) { if (j.code === 'required' && j.missing) flag(j.missing); throw new Error(j.code === 'required' ? T[lang].need : (j.error || T[lang].fail)); } app.innerHTML = '<div class="msg ok">' + esc(T[lang].sent) + '</div>'; }
     catch (er) { msg.className = 'msg err'; msg.textContent = er.message || T[lang].fail; f.querySelector('.go').disabled = false; }
   }
   document.getElementById('lko').onclick = function () { setLang('ko'); }; document.getElementById('len').onclick = function () { setLang('en'); };

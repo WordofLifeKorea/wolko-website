@@ -35,14 +35,27 @@ test('팀 사무실: 오래된 접속은 자리가 비고, 「내 자리 숨기�
   assert.ok((await J(await call('onRequestGet', env, U.dir))).members.some((m) => m.id === publicId(U.mem) && m.seated));
 });
 
-test('팀 사무실: 명단 밖 로그인 사용자는 앉지 않고 게스트로 들어오며, 숨기면 빠진다', async () => {
+test('팀 사무실: 명단 밖 월코 팀원에게는 사무실이 보이지 않고(403), 접속 기록도 남지 않는다', async () => {
   const env = makeEnv(fakeD1());
-  await call('onRequestPost', env, U.out, {});
+  assert.equal((await call('onRequestGet', env, U.out)).status, 403); assert.equal((await call('onRequestPost', env, U.out, {})).status, 403);
+  assert.equal((await env.DB.prepare('SELECT COUNT(*) AS n FROM office_presence').first()).n, 0);
+});
+
+test('팀 사무실: 자리가 정해지면 그 사람만 캐릭터, 방문형(환규)은 접속할 때만 책상이 생기고, 명단의 나머지는 게스트로 나온다', async () => {
+  const env = makeEnv(fakeD1()), at = (e) => e.toLowerCase();
+  const ins = (e, v) => env.DB.sqlite.prepare('INSERT INTO office_seats (email, visitor, createdAt) VALUES (?1,?2,?3)').run(at(e), v, 'x');
+  ins(U.mem, 0); ins(U.dir, 0); ins(U.admin, 1);   // 평소 책상 2개 + 방문형 1개
   let j = await J(await call('onRequestGet', env, U.mem));
-  assert.equal(j.guests.length, 1); assert.ok(j.guests[0].name && j.guests[0].id);
-  assert.ok(!j.members.some((m) => m.id === publicId(U.out)), '게스트는 자리가 없다');
-  await call('onRequestPost', env, U.out, { hidden: true });
-  assert.equal((await J(await call('onRequestGet', env, U.mem))).guests.length, 0);
+  assert.deepEqual(j.members.map((m) => m.id).sort(), [publicId(U.mem), publicId(U.dir)].sort(), '방문형은 접속 전에는 빈 책상도 없다'); assert.equal(j.guests.length, 0);
+  await call('onRequestPost', env, U.admin, {});
+  j = await J(await call('onRequestGet', env, U.mem)); const v = j.members.find((m) => m.id === publicId(U.admin)); assert.ok(v && v.seated, '방문형이 접속하면 책상과 캐릭터가 생기고 앉는다');
+  await call('onRequestPost', env, U.fin, {});   // 명단에는 있지만 자리가 없는 사람
+  j = await J(await call('onRequestGet', env, U.mem)); assert.equal(j.guests.length, 1, '자리가 없는 명단 사람은 접속하면 게스트'); assert.ok(!j.members.some((m) => m.id === publicId(U.fin)));
+  await call('onRequestPost', env, U.fin, { hidden: true }); assert.equal((await J(await call('onRequestGet', env, U.mem))).guests.length, 0, '숨기면 게스트도 빠진다');
+  await call('onRequestPost', env, U.admin, { hidden: true }); j = await J(await call('onRequestGet', env, U.mem)); assert.ok(!j.members.some((m) => m.id === publicId(U.admin)), '방문형이 자리를 숨기면 사라진다');
+  env.DB.sqlite.prepare('UPDATE office_presence SET lastSeen = ?1, hidden = 0 WHERE email = ?2').run(new Date(Date.now() - SEAT_WINDOW_MS - 5000).toISOString(), at(U.admin));
+  assert.ok(!(await J(await call('onRequestGet', env, U.dir))).members.some((m) => m.id === publicId(U.admin)), '방문형이 오래 접속하지 않으면 책상째 사라진다');
+  assert.equal((await J(await call('onRequestGet', env, U.dir))).members.find((m) => m.id === publicId(U.mem)).seated, false, '평소 책상은 비어 있어도 남는다');
 });
 
 test('팀 사무실: 캐릭터 모양은 허용된 값만 저장되고, 남의 것은 관리자만 바꾼다', async () => {

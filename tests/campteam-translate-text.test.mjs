@@ -31,10 +31,13 @@ test('번역: 팀원만, 한도·길이 확인, 글은 저장하지 않고 기�
   assert.equal((await post({ ...env, ANTHROPIC_API_KEY: '' }, U.mem, { text: 'hi' })).status, 503);
 });
 
-test('번역: 하루 40번 한도', async () => {
-  const env = ai(makeEnv(fakeD1()));
+test('번역: 하루 한도(캠프팀 200개 · 여기서는 5개로 줄여 확인)와 1분 12개 한도, 명단 밖은 번역을 못 쓴다', async () => {
+  const env = { ...ai(makeEnv(fakeD1())), CAMPTEAM_AI_DAILY: '5', CAMPTEAM_AI_PER_MIN: '100' };
   await withFetch('ok', async () => {
-    for (let i = 0; i < 40; i++) assert.equal((await post(env, U.mem, { text: 'hello ' + i })).status, 200);
+    for (let i = 0; i < 5; i++) assert.equal((await post(env, U.mem, { text: 'hello ' + i })).status, 200);
     assert.equal((await post(env, U.mem, { text: 'hello' })).status, 429);
+    const fast = { ...ai(makeEnv(fakeD1())), CAMPTEAM_AI_PER_MIN: '3' };
+    for (let i = 0; i < 3; i++) assert.equal((await post(fast, U.mem, { text: 'hi ' + i })).status, 200);
+    assert.equal((await post(fast, U.mem, { text: 'hi' })).status, 429, '1분에 12개(여기서는 3개로 줄여 확인)');
   });
 });

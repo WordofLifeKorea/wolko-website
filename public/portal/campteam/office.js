@@ -26,7 +26,7 @@
     return sp && !settled ? A.desk(m.avatar, false) : A.desk(m.avatar, m.seated);
   }
   function cellHtml(m, enter) { return art(m, enter) + (m.ooo ? '<span class="ofc-sign' + (m.seated ? ' wfh' : '') + '">' + esc(CT.t(m.seated ? 'ofWfh' : 'ofOoo')) + '</span>' : '') + '<span class="ofc-name">' + esc(m.name) + '</span>'; }
-  function guestHtml(g, enter) { return (A.guestReady() ? A.guestImg(enter) : A.guest()) + '<span class="ofc-name">' + esc(g.name) + '</span><span class="ofc-tag">' + esc(CT.t('ofGuest')) + '</span>'; }
+  function guestHtml(g, enter) { return (A.guestReady() ? A.guestImg(enter, CT.t('ofGuest')) : A.guest(CT.t('ofGuest'))) + '<span class="ofc-name">' + esc(g.name) + '</span><span class="ofc-tag">' + esc(CT.t('ofGuest')) + '</span>'; }
 
   /** 「사무실 끄기」 — 이 화면에서만 사무실 그림을 숨긴다(내 자리를 남에게 숨기는 것과는 별개). 새로 열면 다시 기본으로 보인다 */
   function paintOff() { var b = host.querySelector('#ofcOff'); if (b) b.textContent = CT.t(host.classList.contains('is-off') ? 'ofOn' : 'ofOff'); }
@@ -62,7 +62,12 @@
       order = ids;
     }
     first = false;
+    fitCard(row);
   }
+  /* 자리가 늘면(방문형 팀원·게스트) 사무실 카드를 좌우로 조금 넓혀서 옆으로 밀리거나 잘리지 않게 한다 */
+  var fitT = 0;
+  function fitNow(row) { var card = host.closest('.hub-wx-card'); if (!card) return; card.style.minWidth = ''; if (row.scrollWidth > row.clientWidth + 1) card.style.minWidth = Math.min(Math.max(300, card.offsetWidth + (row.scrollWidth - row.clientWidth) + 6), 460) + 'px'; }
+  function fitCard(row) { fitNow(row); clearTimeout(fitT); fitT = setTimeout(function () { fitNow(row); }, 1500); }   // 그림이 늦게 뜨면 폭이 달라지므로 한 번 더 맞춘다
   var loading = {};
   /** 그림이 올라와 있는 사람은 그림을 먼저 불러온 뒤(최대 2.5초) 한 번에 그린다 — 그림이 없거나 늦으면 코드 캐릭터가 대신 보이다가 바뀐다 */
   async function load() {
@@ -75,7 +80,7 @@
       if (!need.length) settled = true;
       render(state);
       var rest = need.concat(later); if (rest.length) Promise.all(rest).then(function () { settled = true; render(state); }, function () { settled = true; render(state); });
-    } catch (e) { /* 사무실이 안 보여도 홈은 그대로 */ }
+    } catch (e) { if (e && e.status === 403 && host) { host.hidden = true; clearInterval(timer); } /* 캠프팀 명단 밖이면 사무실은 아예 보이지 않는다. 그 밖의 오류는 사무실이 안 보여도 홈은 그대로 */ }
   }
   function start() {
     host = document.getElementById('ctOffice'); if (!host || !A) return;

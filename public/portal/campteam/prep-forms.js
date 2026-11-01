@@ -19,7 +19,8 @@
       bText: '글 한 줄', bTextarea: '긴 글', bPhone: '전화번호', bEmail: '이메일', bDate: '날짜', bSelect: '고르기(목록)', bRadio: '하나만 고르기', bCheckbox: '여러 개 고르기', bConsent: '동의 체크', bHeading: '제목', bParagraph: '안내 글',
       fLabelL: '질문 이름', fHelpL: '작은 설명', fReq: '꼭 입력', fOptsL: '선택지 (한 줄에 하나, 「한국어 | English」)', fUp: '위로', fDown: '아래로', fEdit: '고치기', fRemove: '빼기', fDone: '닫기',
       fTimeline: '진행 기록', fApproved: '승인함', fReturned: '되돌림', fMine: '내 차례예요', fRoleNeed: '먼저 「역할 정하기」에서 작성·검토·최종 확인·배포 담당을 정해 주세요(관리자).', fLockNote: '지금은 고칠 수 없어요. 검토 중이면 「거두기」, 인계 뒤에는 「복사해서 새로 만들기」를 쓰세요.',
-      fHandTitle: '환규 선교사님께 인계된 내용', fHandHow: 'CMS(wolko.org/admin)에서 「캠프 일정 → 새 캠프 일정」을 열고 아래 순서대로 같은 칸에 붙여 넣으면 돼요. 파일 형식 전체를 한 번에 쓰고 싶으면 「파일 내용 복사」를 쓰세요.', fCopy: '복사', fCopied: '복사했어요', fCopyAll: '파일 내용 복사', fCmsOpen: 'CMS 새 캠프 화면 열기', fConfirmBtn: '확인했어요', fDReturn: '되돌리기', fConfirmAsk: '확인했다고 표시할까요? 캠프팀 모두에게 완료 알림이 가요.', fCodeReqs: '코드 변경 요청', fPr: '변경 요청(PR) 보기', fPrLabel: '변경 요청(PR) 링크', fNoteLabel: '설명', fReady: '코드 준비됨', fDrop: '하지 않기', fPending: '아직 처리 안 됨', fCodeNote: '코드는 병합·배포하지 않고 환규 선교사님이 판단해요.', fFileName: '파일 이름', fQuestions: '신청서 질문', fStateL: '상태' },
+      fHandTitle: '환규 선교사님께 인계된 내용', fHandHow: 'CMS(wolko.org/admin)에서 「캠프 일정 → 새 캠프 일정」을 열고 아래 순서대로 같은 칸에 붙여 넣으면 돼요. 파일 형식 전체를 한 번에 쓰고 싶으면 「파일 내용 복사」를 쓰세요.', fCopy: '복사', fCopied: '복사했어요', fCopyAll: '파일 내용 복사', fCmsOpen: 'CMS 새 캠프 화면 열기', fConfirmBtn: '확인했어요', fDReturn: '되돌리기', fConfirmAsk: '확인했다고 표시할까요? 캠프팀 모두에게 완료 알림이 가요.', fCodeReqs: '코드 변경 요청', fPr: '변경 요청(PR) 보기', fPrLabel: '변경 요청(PR) 링크', fNoteLabel: '설명', fReady: '코드 준비됨', fDrop: '하지 않기', fPending: '아직 처리 안 됨', fCodeNote: '코드는 병합·배포하지 않고 환규 선교사님이 판단해요.', fFileName: '파일 이름', fQuestions: '신청서 질문', fStateL: '상태',
+      fDlgDraft: '새 신청서 작성 중', fDlgReview: '신청서 검토', fDlgFinal: '신청서 최종 확인', fDlgHanded: '환규님 인계 확인', fDlgDone: '신청서', fCloseAsk: '저장하지 않은 내용이 있어요.', fCloseSave: '저장하고 닫기', fCloseDiscard: '저장 안 하고 닫기', fCloseStay: '계속 쓰기', fAuto: '자동 저장됨', fMineN: function (n) { return '내 차례인 신청서가 ' + n + '개 있어요'; } },
     en: { fLabel: 'Forms', fIntro: 'Create the next camp card, application form and staff/crew form here. Load the last camp and change only what is different. After Write → Review → Final check it is handed to HwanKyu, who confirms, enters it in the CMS and deploys. This screen never writes to the homepage.',
       fNew: '+ New form', fRoles: 'Set roles', fNone: 'No forms yet.', fBack: '← List', fKindCamper: 'Camp card & application', fKindStaff: 'Staff / crew form',
       fStDraft: 'Draft', fStReview: 'In review', fStFinal: 'Final check', fStHanded: 'Waiting for HwanKyu', fStConfirmed: 'Confirmed by HwanKyu', fLive: 'Live on homepage', fStep1: 'Write', fStep2: 'Review', fStep3: 'Final check', fStep4: 'HwanKyu', fStep5: 'Done',
@@ -36,10 +37,11 @@
       bText: 'One-line text', bTextarea: 'Long text', bPhone: 'Phone', bEmail: 'Email', bDate: 'Date', bSelect: 'Dropdown', bRadio: 'Choose one', bCheckbox: 'Choose many', bConsent: 'Consent checkbox', bHeading: 'Heading', bParagraph: 'Paragraph',
       fLabelL: 'Question', fHelpL: 'Small help text', fReq: 'Required', fOptsL: 'Options (one per line, "Korean | English")', fUp: 'Up', fDown: 'Down', fEdit: 'Edit', fRemove: 'Remove', fDone: 'Close',
       fTimeline: 'History', fApproved: 'approved', fReturned: 'sent back', fMine: 'Your turn', fRoleNeed: 'First set the writer, reviewers, final checker and deployer in "Set roles" (admin).', fLockNote: 'It cannot be edited now. Use "Withdraw" during review, or "Copy as a new form" after the handover.',
-      fHandTitle: 'Handed over to HwanKyu', fHandHow: 'Open "Camp Schedule → New" in the CMS (wolko.org/admin) and paste each value into the same box in this order. To use the whole file at once, use "Copy file content".', fCopy: 'Copy', fCopied: 'Copied', fCopyAll: 'Copy file content', fCmsOpen: 'Open CMS new camp page', fConfirmBtn: 'I checked it', fDReturn: 'Send back', fConfirmAsk: 'Mark as checked? The whole camp team gets a completion alert.', fCodeReqs: 'Code change requests', fPr: 'View pull request', fPrLabel: 'Pull request link', fNoteLabel: 'Explanation', fReady: 'Code ready', fDrop: 'Do not do', fPending: 'Not handled yet', fCodeNote: 'The code is not merged or deployed; HwanKyu decides.', fFileName: 'File name', fQuestions: 'Form questions', fStateL: 'State' }
+      fHandTitle: 'Handed over to HwanKyu', fHandHow: 'Open "Camp Schedule → New" in the CMS (wolko.org/admin) and paste each value into the same box in this order. To use the whole file at once, use "Copy file content".', fCopy: 'Copy', fCopied: 'Copied', fCopyAll: 'Copy file content', fCmsOpen: 'Open CMS new camp page', fConfirmBtn: 'I checked it', fDReturn: 'Send back', fConfirmAsk: 'Mark as checked? The whole camp team gets a completion alert.', fCodeReqs: 'Code change requests', fPr: 'View pull request', fPrLabel: 'Pull request link', fNoteLabel: 'Explanation', fReady: 'Code ready', fDrop: 'Do not do', fPending: 'Not handled yet', fCodeNote: 'The code is not merged or deployed; HwanKyu decides.', fFileName: 'File name', fQuestions: 'Form questions', fStateL: 'State',
+      fDlgDraft: 'Writing a new form', fDlgReview: 'Review the form', fDlgFinal: 'Final check', fDlgHanded: 'Handover to HwanKyu', fDlgDone: 'Form', fCloseAsk: 'You have unsaved changes.', fCloseSave: 'Save and close', fCloseDiscard: 'Close without saving', fCloseStay: 'Keep writing', fAuto: 'Auto-saved', fMineN: function (n) { return n + ' form(s) are waiting for you'; } }
   });
   var $ = function (id) { return document.getElementById(id); }, esc = P.esc, api = P.api, URL0 = '/api/campteam/camp-forms';
-  var X = { id: '', d: null, c: null, req: [], campId: '', meta: null, feed: null, open: -1, preLang: 'ko', ai: {} };
+  var X = { dirty: false, timer: 0, id: '', d: null, c: null, req: [], campId: '', meta: null, feed: null, open: -1, preLang: 'ko', ai: {} };
   var ST = { draft: 'fStDraft', review: 'fStReview', final: 'fStFinal', handed: 'fStHanded', confirmed: 'fStConfirmed' }, STEP = { draft: 0, review: 1, final: 2, handed: 3, confirmed: 4 };
   var BT = { text: 'bText', textarea: 'bTextarea', phone: 'bPhone', email: 'bEmail', date: 'bDate', select: 'bSelect', radio: 'bRadio', checkbox: 'bCheckbox', consent: 'bConsent', heading: 'bHeading', paragraph: 'bParagraph' };
   var TY = { english: 'tEnglish', union: 'tUnion', jeju: 'tJeju', other: 'tOther' }, CHOICE = ['select', 'radio', 'checkbox'], NOSAME = ['campType', 'order', 'status'];
@@ -53,17 +55,19 @@
   /* ---------- 목록 ---------- */
   async function load() {
     var v = $('pView'); v.innerHTML = '<p class="hint">…</p>';
-    try { if (!X.meta) X.meta = await CT.api(URL0 + '?meta=1'); var q = new URLSearchParams(location.search).get('form'); if (q && !X.asked) { X.asked = 1; X.id = q; } if (X.id) await openForm(X.id); else await showList(); }
+    try { if (!X.meta) X.meta = await CT.api(URL0 + '?meta=1'); var q = new URLSearchParams(location.search).get('form'); await showList(); if (q && !X.asked) { X.asked = 1; await openForm(q); } }
     catch (e) { v.innerHTML = '<div class="err">' + esc(e.message) + '</div>'; }
   }
   async function showList() {
     X.id = ''; var d = await CT.api(URL0), me = d.me, r = d.roles;
     var h = '<p class="hint">' + esc(CT.t('fIntro')) + '</p><div class="fm-roles">' + ['editor', 'reviewer', 'approver', 'deployer'].map(function (k) { return '<span class="chip">' + esc(CT.t(roleKey(k))) + ': ' + who(r[k]) + '</span>'; }).join(' ') + '</div>';
     if (['editor', 'reviewer', 'approver', 'deployer'].some(function (k) { return !r[k].length; })) h += '<div class="hint fm-warn">' + esc(CT.t('fRoleNeed')) + '</div>';
+    var mineN = d.items.filter(function (f) { return (f.status === 'review' && me.reviewer) || (f.status === 'final' && me.approver) || (f.status === 'handed' && me.deployer) || (f.status === 'draft' && canEdit(me)); }).length;
+    if (mineN) h += '<div class="fm-mine">' + esc(CT.t('fMineN')(mineN)) + '</div>';
     h += '<div class="p-bar">' + (canEdit(me) ? '<button class="btn pri" id="fNew">' + esc(CT.t('fNew')) + '</button> ' : '') + (me.admin ? '<button class="btn" id="fRoles">' + esc(CT.t('fRoles')) + '</button>' : '') + '</div>';
     h += d.items.map(function (f) {
-      var mine = (f.status === 'review' && me.reviewer) || (f.status === 'final' && me.approver) || (f.status === 'handed' && me.deployer);
-      return '<div class="card fm-item" data-open="' + esc(f.id) + '"><div class="p-row"><span class="p-main"><b>' + esc(f.title) + '</b> ' + chip(f) + (mine ? ' <span class="chip ok">' + esc(CT.t('fMine')) + '</span>' : '') + '<small>' + esc(CT.t(f.kind === 'staff' ? 'fKindStaff' : 'fKindCamper')) + ' · ' + esc(CT.t(TY[f.campType] || 'tOther')) + (f.campId ? ' · ' + esc(f.campId) : '') + ' · ' + esc(date(f.updatedAt)) + '</small></span><span class="p-act"><button class="btn sm" data-open="' + esc(f.id) + '">' + esc(CT.t('fEdit')) + '</button></span></div></div>';
+      var mine = (f.status === 'review' && me.reviewer) || (f.status === 'final' && me.approver) || (f.status === 'handed' && me.deployer) || (f.status === 'draft' && canEdit(me));
+      return '<div class="card fm-item' + (mine ? ' mine' : '') + '" data-open="' + esc(f.id) + '"><div class="p-row"><span class="p-main"><b>' + esc(f.title) + '</b> ' + chip(f) + (mine ? ' <span class="chip ok">' + esc(CT.t('fMine')) + '</span>' : '') + '<small>' + esc(CT.t(f.kind === 'staff' ? 'fKindStaff' : 'fKindCamper')) + ' · ' + esc(CT.t(TY[f.campType] || 'tOther')) + (f.campId ? ' · ' + esc(f.campId) : '') + ' · ' + esc(date(f.updatedAt)) + '</small></span><span class="p-act"><button class="btn sm" data-open="' + esc(f.id) + '">' + esc(CT.t('fEdit')) + '</button></span></div></div>';
     }).join('') || '<div class="empty">' + esc(CT.t('fNone')) + '</div>';
     $('pView').innerHTML = h;
     if ($('fNew')) $('fNew').onclick = function () { newDlg(d.items); }; if ($('fRoles')) $('fRoles').onclick = rolesDlg;
@@ -91,8 +95,35 @@
   }
 
   /* ---------- 한 신청서 ---------- */
+  /* 신청서는 큰 창(팝업)에서 열린다 — 목록과 헷갈리지 않고, 자기 차례의 작업이라는 게 분명해진다. 쓰는 중에는 15초마다 임시 저장하고, 닫을 때 저장 안 한 내용이 있으면 물어본다 */
+  function ensureDlg() {
+    var dlg = $('fDlg'); if (dlg) return dlg;
+    dlg = document.createElement('dialog'); dlg.id = 'fDlg'; dlg.className = 'fm-dlg';
+    dlg.innerHTML = '<div class="fm-dhead"><b id="fDlgTitle"></b><span id="fDlgChip"></span><span class="sp"></span><span class="hint" id="fDlgAuto"></span><button type="button" class="fm-dx" id="fDlgX" aria-label="close">×</button></div><div class="fm-dask" id="fDlgAsk" hidden></div><div class="fm-dbody" id="fDlgBody"></div>';
+    document.body.appendChild(dlg);
+    dlg.addEventListener('cancel', function (e) { e.preventDefault(); closeDlg(); });
+    $('fDlgX').onclick = function () { closeDlg(); };
+    return dlg;
+  }
+  async function closeDlg() {
+    var dlg = $('fDlg'); if (!dlg || !dlg.open) return;
+    if (X.dirty && X.editable) {
+      var box = $('fDlgAsk'); box.hidden = false; box.innerHTML = '<span>' + esc(CT.t('fCloseAsk')) + '</span> <button class="btn pri sm" data-ca="save">' + esc(CT.t('fCloseSave')) + '</button> <button class="btn sm" data-ca="discard">' + esc(CT.t('fCloseDiscard')) + '</button> <button class="btn sm" data-ca="stay">' + esc(CT.t('fCloseStay')) + '</button>';
+      var choice = await new Promise(function (res) { box.onclick = function (e) { var b = e.target.closest('[data-ca]'); if (b) res(b.dataset.ca); }; });
+      box.hidden = true; if (choice === 'stay') return;
+      if (choice === 'save') { try { await save(); } catch (e) { err(e.message); return; } }
+    }
+    clearInterval(X.timer); X.timer = 0; X.dirty = false; dlg.close(); X.id = ''; try { await showList(); } catch (e) { /* 목록은 다음에 */ }
+  }
+  var DLG_TITLE = { draft: 'fDlgDraft', review: 'fDlgReview', final: 'fDlgFinal', handed: 'fDlgHanded', confirmed: 'fDlgDone' };
   async function openForm(id) {
-    var d = await CT.api(URL0 + '?id=' + encodeURIComponent(id)); X.id = id; X.d = d; X.c = JSON.parse(JSON.stringify(d.form.content)); X.req = JSON.parse(JSON.stringify(d.form.codeRequests || [])); X.campId = d.form.campId; X.open = -1; X.ai = {}; renderDetail();
+    var d = await CT.api(URL0 + '?id=' + encodeURIComponent(id)); X.id = id; X.d = d; X.c = JSON.parse(JSON.stringify(d.form.content)); X.req = JSON.parse(JSON.stringify(d.form.codeRequests || [])); X.campId = d.form.campId; X.open = -1; X.ai = {};
+    var dlg = ensureDlg(); if (!dlg.open) dlg.showModal(); renderDetail();
+    clearInterval(X.timer); X.timer = setInterval(autoSave, 15000);
+  }
+  async function autoSave() {
+    if (!X.dirty || !X.editable || !$('fDlg') || !$('fDlg').open || X.saving) return;
+    X.saving = true; try { await save(); X.dirty = false; var t = new Date(); $('fDlgAuto').textContent = CT.t('fAuto') + ' ' + String(t.getHours()).padStart(2, '0') + ':' + String(t.getMinutes()).padStart(2, '0'); } catch (e) { /* 다음에 다시 */ } X.saving = false;
   }
   function history(d) {
     var f = d.form, ap = d.approvals || [], cur = ap.filter(function (a) { return a.current; }), r = d.roles, out = '';
@@ -169,10 +200,10 @@
     return h + '<h4 class="fm-sub">' + esc(CT.t('fQuestions')) + '</h4><div id="fRead" class="fm-read"></div>';
   }
   function renderDetail() {
-    var d = X.d, f = d.form, me = d.me, st = f.status, v = $('pView'), kind = f.kind;
+    var d = X.d, f = d.form, me = d.me, st = f.status, v = $('fDlgBody'), kind = f.kind;
     var edit = st === 'draft' && canEdit(me), finalEdit = st === 'final' && me.approver, h = '';
-    h += '<div class="p-bar"><button class="btn" id="fBack">' + esc(CT.t('fBack')) + '</button> <button class="btn" id="fPrev">' + esc(CT.t('fPrevBtn')) + '</button></div>';
-    h += '<div class="fm-head"><h3>' + esc(f.title) + '</h3> ' + chip(f) + ' <span class="chip">' + esc(CT.t(kind === 'staff' ? 'fKindStaff' : 'fKindCamper')) + '</span></div>' + stepper(st) + history(d);
+    $('fDlgTitle').textContent = CT.t(DLG_TITLE[st] || 'fDlgDone') + ' · ' + f.title; $('fDlgChip').innerHTML = chip(f); X.editable = edit || finalEdit; $('fDlgAuto').textContent = '';
+    h += '<div class="p-bar"><button class="btn" id="fPrev">' + esc(CT.t('fPrevBtn')) + '</button> <span class="chip">' + esc(CT.t(kind === 'staff' ? 'fKindStaff' : 'fKindCamper')) + '</span></div>' + stepper(st) + history(d);
     if (X.note) { h += '<p class="hint">' + esc(X.note) + '</p>'; X.note = ''; }
     h += '<div class="fm-actions">';
     if (edit) h += '<button class="btn pri" id="fSave">' + esc(CT.t('fSave')) + '</button> <button class="btn danger" id="fDel">' + esc(CT.t('fDelete')) + '</button> ';
@@ -197,7 +228,7 @@
     if ($('fBlocks')) paintBlocks();
     var host = $('fRead'); if (host) { window.WolkoForm.renderForm(host, { blocks: X.c.blocks }, CT.lang() === 'en' ? 'en' : 'ko'); host.querySelectorAll('input,select,textarea').forEach(function (x) { x.disabled = true; }); }
     if (edit) paintSubmit();
-    bind(edit, finalEdit);
+    bind(edit, finalEdit); X.dirty = false;
   }
   /* 검토 요청 칸: 지난 캠프와 같은 값이 남아 있으면 목록을 보여 주고, 확인했다고 체크해야 버튼이 켜진다 */
   function sameList() { var kind = X.d.form.kind; return X.meta.fields.filter(function (f) { return (f.for === 'both' || f.for === kind) && isSame(f.key); }); }
@@ -212,7 +243,7 @@
   function parseOpts(t) { return String(t || '').split('\n').map(function (l) { var s = l.split('|'); return { ko: (s[0] || '').trim(), en: (s[1] || '').trim() }; }).filter(function (o) { return o.ko || o.en; }); }
   async function save(notify) {
     var body = { content: X.c, codeRequests: X.req, campId: X.campId }; if ($('fTitle') && !$('fTitle').disabled) body.title = $('fTitle').value; if (notify) body.notify = true;
-    await api(URL0 + '?id=' + encodeURIComponent(X.id), 'PATCH', body);
+    await api(URL0 + '?id=' + encodeURIComponent(X.id), 'PATCH', body); X.dirty = false;
   }
   async function act(action, extra) { return api(URL0 + '?id=' + encodeURIComponent(X.id), 'POST', Object.assign({ action: action }, extra || {})); }
   async function submit() {
@@ -230,7 +261,7 @@
     paintSubmit();
   }
   function bind(edit, finalEdit) {
-    $('fBack').onclick = function () { X.id = ''; load(); }; $('fPrev').onclick = preview;
+    $('fPrev').onclick = preview;
     var go = function (fn) { return async function () { try { await fn(); } catch (e) { err(e.message); } }; };
     if ($('fWithdraw')) $('fWithdraw').onclick = go(async function () { await act('withdraw'); await openForm(X.id); });
     if ($('fApprove')) $('fApprove').onclick = go(async function () { if (X.d.form.status === 'final') { if (!confirm(CT.t('fHandConfirm'))) return; await save(); } await act('approve'); await openForm(X.id); });
@@ -238,7 +269,7 @@
     if ($('fConfirm')) $('fConfirm').onclick = go(async function () { if (!confirm(CT.t('fConfirmAsk'))) return; await act('confirm'); await openForm(X.id); });
     if ($('fDReturn')) $('fDReturn').onclick = go(async function () { var why = prompt(CT.t('fReturnWhy')); if (!why || !why.trim()) return; await act('dreturn', { comment: why.trim() }); await openForm(X.id); });
     if ($('fDup')) $('fDup').onclick = go(async function () { var r = await act('duplicate'); await openForm(r.id); });
-    var root = $('pView');
+    var root = $('fDlgBody');
     root.addEventListener('click', async function (e) {
       var cp = e.target.closest('[data-cp]'); if (cp) { try { await navigator.clipboard.writeText(cp.dataset.cp); cp.textContent = CT.t('fCopied'); setTimeout(function () { cp.textContent = CT.t('fCopy'); }, 1200); } catch (x) { /* 복사 실패는 조용히 */ } return; }
       if (e.target.id === 'fCopyAll') { try { await navigator.clipboard.writeText(JSON.stringify(X.d.cms, null, 2) + '\n'); e.target.textContent = CT.t('fCopied'); setTimeout(function () { e.target.textContent = CT.t('fCopyAll'); }, 1200); } catch (x) { /* 무시 */ } }
@@ -246,21 +277,22 @@
     if (!edit && !finalEdit) return;
     var saved = function (n) { return go(async function () { await save(n); var e = $('fErr'); e.hidden = false; e.className = 'ok'; e.textContent = CT.t('fSaved'); setTimeout(function () { e.hidden = true; e.className = 'err'; }, 1500); }); };
     $('fSave').onclick = saved(false); if ($('fSaveN')) $('fSaveN').onclick = saved(true);
-    if ($('fDel')) $('fDel').onclick = go(async function () { if (!confirm(CT.t('fDelConfirm'))) return; await act('delete'); X.id = ''; load(); });
+    if ($('fDel')) $('fDel').onclick = go(async function () { if (!confirm(CT.t('fDelConfirm'))) return; await act('delete'); X.dirty = false; await closeDlg(); });
     $('fAi').onclick = go(async function () {
       $('fAiMsg').textContent = CT.t('fAiBusy'); var r = await act('aifill', { card: X.c.card }), n = 0;
       Object.keys(r.fills || {}).forEach(function (k) { if (X.c.card[k] === '' || X.c.card[k] === undefined) { X.c.card[k] = r.fills[k]; X.ai[k] = r.fills[k]; n++; } });
-      var open = X.open; renderDetail(); X.open = open; $('fAiMsg').textContent = n ? CT.t('fAiDone')(n) : CT.t('fAiNone');
+      var open = X.open; renderDetail(); X.dirty = true; X.open = open; $('fAiMsg').textContent = n ? CT.t('fAiDone')(n) : CT.t('fAiNone');
     });
     root.addEventListener('input', function (e) {
-      var t = e.target;
+      var t = e.target; X.dirty = true;
       if (t.dataset.card) cardInput(t); else if (t.id === 'fCampId') X.campId = t.value.trim().toLowerCase();
       else if (t.dataset.thanks) { X.c.thanks = X.c.thanks || {}; X.c.thanks[t.dataset.thanks] = t.value; }
       else if (t.dataset.rq) { X.req[+t.closest('[data-ri]').dataset.ri][t.dataset.rq] = t.value; }
       else if (t.dataset.bf) { var bi = +t.closest('[data-bi]').dataset.bi, b = X.c.blocks[bi], k = t.dataset.bf; if (k === 'required') b.required = t.checked; else if (k === 'options') b.options = parseOpts(t.value); else setPath(b, k, t.value); var lab = t.closest('.fm-block').querySelector('.fm-blab'); if (lab) lab.textContent = b.label.ko || b.label.en || '—'; }
     });
-    root.addEventListener('change', function (e) { var t = e.target; if (t.dataset.card && (t.type === 'checkbox' || t.tagName === 'SELECT')) cardInput(t); if (t.dataset.bf === 'required') t.dispatchEvent(new Event('input', { bubbles: true })); if (t.dataset.rq === 'state') X.req[+t.closest('[data-ri]').dataset.ri].state = t.value; });
+    root.addEventListener('change', function (e) { var t = e.target; X.dirty = true; if (t.dataset.card && (t.type === 'checkbox' || t.tagName === 'SELECT')) cardInput(t); if (t.dataset.bf === 'required') t.dispatchEvent(new Event('input', { bubbles: true })); if (t.dataset.rq === 'state') X.req[+t.closest('[data-ri]').dataset.ri].state = t.value; });
     root.addEventListener('click', function (e) {
+      if (e.target.closest('[data-bm],[data-rdel],#fReqAdd')) X.dirty = true;
       var bm = e.target.closest('[data-bm]'); if (bm) { var i = +bm.closest('[data-bi]').dataset.bi, bl = X.c.blocks, m = bm.dataset.bm;
         if (m === 'edit') X.open = X.open === i ? -1 : i; else if (m === 'del') { bl.splice(i, 1); X.open = -1; } else if (m === 'up' && i > 0) { bl.splice(i - 1, 0, bl.splice(i, 1)[0]); X.open = i - 1; } else if (m === 'down' && i < bl.length - 1) { bl.splice(i + 1, 0, bl.splice(i, 1)[0]); X.open = i + 1; }
         paintBlocks(); return; }
@@ -271,7 +303,7 @@
       var v = $('fAdd').value; if (!v) return; var nb;
       if (v.slice(0, 2) === 's:') { var s = X.meta.snippets.filter(function (x) { return 's:' + x.key === v; })[0]; nb = JSON.parse(JSON.stringify(s.block)); nb.help = nb.help || { ko: '', en: '' }; }
       else { var ty = v.slice(2); nb = { type: ty, label: { ko: '', en: '' }, help: { ko: '', en: '' }, required: false }; if (CHOICE.indexOf(ty) >= 0) nb.options = [1, 2].map(function (i) { return { ko: '선택 ' + i, en: 'Option ' + i }; }); }
-      nb.id = 'b' + Math.random().toString(36).slice(2, 10); if (nb.type === 'heading' || nb.type === 'paragraph') delete nb.required; X.c.blocks.push(nb); X.open = X.c.blocks.length - 1; $('fAdd').value = ''; paintBlocks();
+      X.dirty = true; nb.id = 'b' + Math.random().toString(36).slice(2, 10); if (nb.type === 'heading' || nb.type === 'paragraph') delete nb.required; X.c.blocks.push(nb); X.open = X.c.blocks.length - 1; $('fAdd').value = ''; paintBlocks();
     };
   }
 

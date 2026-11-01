@@ -75,9 +75,9 @@
     ['업무 제목은 한국어/영어로 자동 번역돼서 업무·홈·캠프 공간·달력·검색에서 언어를 바꿔 볼 수 있어요. 번역이 안 된 업무는 설정 화면의 「번역 안 된 업무 번역하기」로 한 번에 번역할 수 있어요.',
      'Task titles are translated automatically so you can switch language in Tasks, Home, Camp spaces, Calendar and Search. Untranslated tasks can be translated at once from Settings.'],
     { next: ['t_lang'] });
-  n('ai_translate_text', ['번역 도우미 (설교문·공지)', 'Translation helper'],
-    ['주소창에 /portal/campteam/translate/ 를 열거나 자료실 위의 「번역 도우미」 링크를 누르세요. 글을 붙여 넣고 종류(설교·공지·일정표)를 고르면 한국어↔영어로 옮겨 줘요. 용어집 단어는 그대로 지켜요. 결과는 꼭 한 번 읽고 고쳐 쓰세요. 하루 40번까지예요.',
-     'Open /portal/campteam/translate/ or the "Translation helper" link above Files. Paste text, pick the kind (sermon, notice, schedule) and it translates Korean ↔ English, keeping glossary terms. Always read and adjust the result. Up to 40 a day.']);
+  n('ai_translate_text', ['번역 도우미 (문서 파일 번역)', 'Translation helper (documents)'],
+    ['자료실 위의 「번역 도우미」(또는 /portal/campteam/translate/)에서 Word·PowerPoint·Excel 파일을 올리면 글꼴·표·배치는 그대로 두고 글만 한국어↔영어로 바꾼 새 파일을 내려받아요. PDF 는 글만 뽑아 새 Word 문서로 만들어 줘요(배치·표·그림은 사라져요). 장부·예산 같은 돈 관련 파일은 번역하지 않아요. 짧은 글(단톡에 올릴 말 등)은 루미의 「🌐 번역」 버튼을 쓰세요. 결과는 꼭 한 번 읽어 보고 쓰세요.',
+     'Use the "Translation helper" above Files (or /portal/campteam/translate/): upload a Word, PowerPoint or Excel file and download a new file with only the text changed Korean ↔ English; fonts, tables and layout stay. PDFs become a new Word file with text only (layout, tables and images are lost). Finance files such as ledgers and budgets are not translated. For short text use Lumi\'s "🌐 Translate" button. Always read the result before using it.']);
   n('ai_pair', ['한·영 짝 묶기 · 중복 정리', 'Pairing and duplicates'],
     ['자료실 위의 「정리 제안」을 누르면 같은 내용의 한국어·영어 자료 짝 후보와 중복·최신본 후보가 나와요. 「짝으로 묶기」「나머지는 휴지통으로」를 눌러야만 바뀌고, 휴지통에서 되살릴 수 있어요.',
      'Press "Tidy suggestions" above Files to see Korean/English pair candidates and duplicates. Nothing changes until you press "Pair them" or "Move the rest to trash", and the trash can be restored.']);
@@ -99,7 +99,7 @@
     ['AI 는 제안만 하고, 저장은 항상 사람이 눌러요. 금액(예산) 자료는 AI 에 보내지 않아요. 글(또는 PDF·사진)의 앞부분만 AI 서비스로 보내고 파일 자체는 저장되지 않아요. 저(루미)는 포털 자료를 볼 수 없어서 다른 사람의 업무·금액을 말하지 못해요.',
      'The AI only suggests; you always press Save. Budget (amount) files are never sent to the AI. Only the beginning of the text (or PDF/photo) is sent and the file is not stored. I (Lumi) cannot read portal data, so I cannot tell you anyone else\'s tasks or amounts.']);
   n('ai_lumi', ['루미는 뭘 할 수 있어요?', 'What can Lumi do?'],
-    ['저는 포털 사용법을 알려 드려요. 질문하시면 답하고, 필요하면 화면을 어둡게 하고 눌러야 할 곳을 밝게 보여 드려요. 자료를 대신 찾아 주거나 저장해 드리지는 못해요. 아래 질문을 골라도 되고, 직접 물어보셔도 돼요.',
+    ['저는 포털 사용법을 알려 드리고(💡 도움말), 포털 자료를 찾아 주고(🔎 찾기), 업무·일정을 만들거나 고치고 지우는 부탁을 받아 확인 카드로 보여 주고(✍ 부탁), 글을 한국어↔영어로 바꿔 줘요(🌐 번역). 저장은 항상 사람이 확인 버튼을 눌러야 돼요. 아래 질문을 골라도 되고, 직접 물어보셔도 돼요.',
      'I explain how to use the portal. I answer questions and, when useful, dim the screen and highlight what to press. I cannot search or save things for you. Pick a question below or just ask me.'],
     { next: ['upload', 'find', 'work', 'ai_lumi_memory'] });
   n('ai_lumi_memory', ['루미는 내 부탁을 기억해요? 고치거나 지울 수도 있어요?', 'Does Lumi remember my requests? Can it edit or delete?'],

@@ -3,10 +3,11 @@ import { audit, todayKST } from '../../lib/campteamDb.js';
 import { anthropicRoute } from '../../lib/anthropicRoute.js';
 import { isTeamMember } from './activity.js';
 import { DEFAULT_ASSIST_MODEL, chatClaude } from '../../lib/campteamAssist.js';
+import { aiLimit } from '../../lib/campteamLimits.js';
 import { DAILY_ASK, gatherContext, buildAskSystem, buildAskUser, parseAnswer, buildActSystem, buildActUser, parseAction, actTargets, cleanHistory } from '../../lib/campteamAsk.js';
 
 /**
- * 포털에게 물어보기 (루미). 캠프팀 팀원만, 사람마다 하루 40번. 질문 내용은 저장하지 않는다(「썼다」는 기록만).
+ * 포털에게 물어보기 (루미). 캠프팀 팀원은 하루 200번(1분 12번), 캠프팀 명단 밖의 월코 팀원은 「찾기」만 하루 20번(campteamLimits.js). 질문 내용은 저장하지 않는다(「썼다」는 기록만).
  *  POST { question, lang }  → { answer, sources:[{ref,type,title,url}], found }   그 사람이 볼 수 있는 자료만 찾아 AI 에게 주고, 출처를 달아 답한다. 관련 자료가 없으면 AI 를 부르지 않고 「못 찾았어요」.
  *  POST { action:'act', text, lang, history? } → { proposal:{type:'addTask'|'addEvent'|'editTask'|'editEvent'|'deleteTask'|'deleteEvent'|'none', …, say} | null }   「업무 추가해 줘」「그 일정 10시로 바꿔줘」「그 업무 지워줘」 같은 부탁을 제안 카드로 바꾼다.
  *     고치거나 지울 수 있는 것은 이 사람이 만들었거나 담당인 업무, 이 사람이 만든 일정뿐이다(번호로만 가리킨다). history 는 최근 대화 요약(내 말·루미가 한 일)으로 「그 일정」 같은 말을 알아듣는 데 쓴다.
@@ -15,19 +16,17 @@ import { DAILY_ASK, gatherContext, buildAskSystem, buildAskUser, parseAnswer, bu
 export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env); if (!s) return needLogin();
-  return json({ member: isTeamMember(s), configured: !!env.ANTHROPIC_API_KEY, canTask: canWrite(s.perms, 'tasks'), canEvent: canWrite(s.perms, 'calendar') });
+  return json({ member: isTeamMember(s), guest: !isTeamMember(s), configured: !!env.ANTHROPIC_API_KEY, canTask: canWrite(s.perms, 'tasks'), canEvent: canWrite(s.perms, 'calendar') });
 }
 export async function onRequestPost({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env); if (!s) return needLogin();
-  if (!isTeamMember(s)) return json({ error: '캠프팀 팀원만 쓸 수 있어요.', code: 'forbidden' }, 403);
   let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
   const lang = b.lang === 'en' ? 'en' : 'ko', act = b.action === 'act', text = String(act ? b.text : b.question || '').trim().slice(0, 500);
+  if (act && !isTeamMember(s)) return json({ error: '「부탁」은 캠프팀 팀원만 쓸 수 있어요.', code: 'forbidden' }, 403);
   if (!text) return badRequest(act ? '부탁할 내용을 적어 주세요.' : '질문을 적어 주세요.');
   if (!env.ANTHROPIC_API_KEY) return json({ error: 'AI 도우미가 아직 켜지지 않았어요. 위의 「찾기」 검색창은 쓸 수 있어요.', code: 'ai_off' }, 503);
-  const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-  const used = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE actor = ?1 AND action = 'ask' AND at >= ?2`).bind(s.email, since).first().catch(() => null))?.n || 0;
-  if (used >= DAILY_ASK) return json({ error: `오늘 질문 한도(${DAILY_ASK}개)를 다 썼어요. 내일 다시 물어봐 주세요.`, code: 'limit' }, 429);
+  { const lim = await aiLimit(env, s); if (lim) return lim; }
   const call = (system, user, maxTokens) => chatClaude({ apiKey: env.ANTHROPIC_API_KEY, model: env.CAMPTEAM_ASSIST_MODEL || env.CAMPTEAM_AI_MODEL || DEFAULT_ASSIST_MODEL, system, messages: [{ role: 'user', content: user }], maxTokens, ...anthropicRoute(env, env.CAMPTEAM_AI_URL || undefined) });
   const today = todayKST();
   try {
