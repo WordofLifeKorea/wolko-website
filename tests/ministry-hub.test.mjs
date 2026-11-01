@@ -33,8 +33,9 @@ test('public ministry entry points lead to the overview hub', async () => {
   ]);
 
   assert.match(layout, /<a href="\/ministry" data-direct-link class=\{`nav-link has-dropdown/);
-  assert.match(layout, /class="mobile-parent-link" href="\/ministry"/);
-  // 위 메뉴(컴퓨터 · 폰)와 푸터의 '사역' 제목, 세 곳만 개요 페이지로 간다
+  // 폰 메뉴의 '사역'은 하위 메뉴를 열고, 그 맨 위 '사역 전체 소개'가 개요 페이지로 간다
+  assert.match(layout, /<ul class="mobile-sub" id="mobileMinistrySub">\s*<li><a class="mobile-sub-overview" href="\/ministry">/);
+  // 컴퓨터 위 메뉴, 폰 메뉴의 '사역 전체 소개', 푸터의 '사역' 제목, 세 곳만 개요 페이지로 간다
   assert.equal((layout.match(/href="\/ministry"/g) || []).length, 3);
   assert.doesNotMatch(layout, /사역 한눈에 보기|Ministry Overview/);
   assert.match(about, /<a href="\/ministry" class="ph-cta">/);

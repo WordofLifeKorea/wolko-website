@@ -152,15 +152,14 @@ const {
 
     <div class="mobile-menu-divider"></div>
     <div class="mobile-menu-item">
-      <div class="mobile-parent-split">
-        <a class="mobile-parent-link" href="/ministry"><span class="wl-ko">사역</span><span class="wl-en">Ministry</span></a>
-        <button class="mobile-parent-toggle" type="button" onclick="toggleMobileSub(this)" aria-label="사역 세부 메뉴 / Ministry submenu" aria-controls="mobileMinistrySub" aria-expanded="false">
-          <span class="mobile-parent-chevron" aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="#004f68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-        </button>
-      </div>
+      <button class="mobile-parent" type="button" onclick="toggleMobileSub(this)" aria-controls="mobileMinistrySub" aria-expanded="false">
+        <span><span class="wl-ko">사역</span><span class="wl-en">Ministry</span></span>
+        <span class="mobile-parent-chevron" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="#004f68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
       <ul class="mobile-sub" id="mobileMinistrySub">
+        <li><a class="mobile-sub-overview" href="/ministry"><span class="wl-ko">사역 전체 소개</span><span class="wl-en">All Ministries</span></a></li>
         <li><a href="/camp"><span class="wl-ko">캠프사역</span><span class="wl-en">Camp Ministry</span></a></li>
         <li><a href="/wolbi-jeju"><span class="wl-ko">제주월비</span><span class="wl-en">Jeju WOLBI</span></a></li>
         <li><a href="/youth"><span class="wl-ko">청소년 사역</span><span class="wl-en">Youth Ministry</span></a></li>
@@ -369,7 +368,7 @@ const {
       // 다른 열린 항목 닫기
       document.querySelectorAll('.mobile-menu-item.is-open').forEach(function(el) {
         el.classList.remove('is-open');
-        el.querySelector('.mobile-parent-toggle')?.setAttribute('aria-expanded', 'false');
+        el.querySelector('[aria-expanded]')?.setAttribute('aria-expanded', 'false');
       });
       if (!isOpen) {
         item.classList.add('is-open');
