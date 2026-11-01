@@ -18,11 +18,12 @@ const KINDS = {
   template_items: { table: 'checklist_items', label: 'title', sub: `COALESCE(section,'')` },
   announcements: { table: 'announcements', label: 'title', sub: 'createdBy' },
   notices: { table: 'notices', label: 'message', sub: `COALESCE(messageEn,'')` },
+  library: { table: 'library_items', label: 'title', sub: 'kind' },
   budget: { table: 'budget_lines', label: 'label', sub: 'currency', money: true },
   ledger: { table: 'ledger_entries', label: `CASE WHEN description <> '' THEN description ELSE category END`, sub: `entryDate || ' · ' || amount`, money: true, where: `source <> 'carry'` }, // 장부 거래(이월금 줄은 시스템이 관리하므로 제외)
 };
 // 항목별 권한: 종류마다 어느 영역인지 (그 영역을 볼 수 있어야 목록에 나오고, 수정할 수 있어야 복구할 수 있다)
-const AREA = { tasks: 'tasks', events: 'calendar', templates: 'tasks', template_items: 'tasks', meetings: 'meetings', sections: 'meetings', decisions: 'meetings', files: 'files', camps: 'camps', camp_types: 'camps', notices: 'camps', announcements: 'notices', budget: 'money', ledger: 'ledger' };
+const AREA = { tasks: 'tasks', events: 'calendar', templates: 'tasks', template_items: 'tasks', meetings: 'meetings', sections: 'meetings', decisions: 'meetings', files: 'files', library: 'files', camps: 'camps', camp_types: 'camps', notices: 'camps', announcements: 'notices', budget: 'money', ledger: 'ledger' };
 async function gate(env, request) {
   if (!env.DB) return { res: noDb() };
   const s = await campSession(request, env);

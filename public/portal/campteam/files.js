@@ -695,6 +695,7 @@
     var up = new URLSearchParams(location.search); // 다른 화면에서 /portal/campteam/files/?category=budget 처럼 열 수 있다
     if (up.get('category')) $('fcat').value = up.get('category'); if (up.get('campId')) $('fcamp').value = 'camp:' + up.get('campId'); if (up.get('typeId')) $('fcamp').value = 'type:' + up.get('typeId'); if (up.get('folderId')) { S.view = 'folders'; S.folderId = up.get('folderId'); }
     if (up.get('category') || up.get('campId') || up.get('typeId') || up.get('folderId')) await loadList();
+    if (up.get('open')) showDetail(up.get('open')); // 보관함 등에서 자료 하나를 바로 열기
     ['fcamp', 'fcat', 'fstatus', 'fkind', 'fsort'].forEach(function (id) { $(id).onchange = loadList; });
     document.addEventListener('click', async function (e) {
       var tb = e.target.closest && e.target.closest('[data-tag]'); if (tb && $('tagBar') && $('tagBar').contains(tb)) { S.tag = S.tag === tb.dataset.tag ? '' : tb.dataset.tag; loadList(); return; }
