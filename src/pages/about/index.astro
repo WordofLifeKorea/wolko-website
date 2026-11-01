@@ -69,19 +69,11 @@ const ministries = [
   .who-title .accent { display:block; }
   .who-title-rule { width:1px; height:40px; margin:24px auto 0; background:rgba(0,79,104,0.3); }
 
-  /* ── 봉투 → 편지: 화면에 들어오면 한 번, 정해진 순서로 재생 (봉인 → 덮개 → 편지가 나옴 → 펼쳐짐) ── */
-  .intro-single-wrap { position:relative; isolation:isolate; }
-  .letter-anim { position:relative; z-index:2; transform-origin:50% 0; will-change:transform, clip-path; }
-  .env { display:none; position:absolute; pointer-events:none; }
-  .intro-single-wrap.is-anim .env { display:block; }
-  .env-back, .env-front, .env-flap { position:absolute; }
-  .env-back { inset:0; z-index:1; border-radius:8px; background:linear-gradient(180deg,#e7d8b4,#dcc99f); box-shadow:0 30px 50px -26px rgba(70,45,10,0.5), 0 0 0 1px rgba(150,115,60,0.25); }
-  .env-front { inset:0; z-index:3; border-radius:8px; background:linear-gradient(180deg,#f6ecd5,#efe1c0); clip-path:polygon(0 0,50% 56%,100% 0,100% 100%,0 100%); }
-  .env-front svg { position:absolute; inset:0; width:100%; height:100%; }
-  .env-flap { left:0; right:0; top:0; height:56%; z-index:4; transform-origin:50% 0; transform:perspective(1100px) rotateX(0deg); background:linear-gradient(180deg,#f3e7ca,#e9d8b2); clip-path:polygon(0 0,100% 0,50% 100%); }
-  .env-seal { position:absolute; z-index:5; left:50%; top:56%; width:54px; height:54px; margin:-27px 0 0 -27px; border-radius:50%; background:#fff url('/images/WOLKO%20Circle.png') center/38px no-repeat; border:3px solid #f6ecd5; box-shadow:0 8px 16px -6px rgba(0,79,104,0.5), 0 0 0 1px rgba(0,79,104,0.18); }
-  .env-burst { position:absolute; z-index:5; left:50%; top:56%; width:54px; height:54px; margin:-27px 0 0 -27px; border-radius:50%; border:2px solid rgba(214,170,90,.85); opacity:0; }
-  @media (max-width:640px) { .env-seal, .env-burst { width:44px; height:44px; margin:-22px 0 0 -22px; } .env-seal { background-size:30px; } }
+  /* ── 손글씨 편지: 화면에 들어오면 한 번 — 편지지가 놓이고 → 로고 도장 → 인사말이 한 글자씩 → 본문이 줄마다 잉크처럼 → 서명이 그려진다 ── */
+  .intro-single-wrap { position:relative; }
+  .letter-anim { position:relative; }
+  .intro-single-wrap.is-prep .letter-anim { opacity:0; }   /* 재생 직전까지만 숨긴다(자바스크립트가 붙이고 뗀다) */
+  .hw-ch { display:inline-block; white-space:pre; }
   /* ── INTRO: 초청장 같은 편지 ── */
   .intro-single-wrap { max-width:860px; margin:76px auto 0; }
   .intro-card {
@@ -328,14 +320,6 @@ const ministries = [
     <div class="who-title-rule"></div>
     </div>
     <div class="intro-single-wrap" id="letterStage">
-      <!-- 봉투: 스크롤하면 봉투가 열리고 편지가 쓰윽 올라온다 (자바스크립트가 켤 때만 보인다) -->
-      <div class="env" id="env" aria-hidden="true">
-        <div class="env-back"></div>
-        <div class="env-front"><svg viewBox="0 0 100 62" preserveAspectRatio="none"><path d="M0 0 L50 34.700 L100 0" fill="none" stroke="rgba(130,100,50,.38)" stroke-width="1" vector-effect="non-scaling-stroke"/></svg></div>
-        <div class="env-flap"></div>
-        <span class="env-burst"></span>
-        <span class="env-seal"></span>
-      </div>
       <div class="letter-anim" id="letterAnim">
       <div class="intro-card">
         <p class="intro-greet"><span class="wl-ko">소중한 여러분께,</span><span class="wl-en">Dear friend,</span></p>
@@ -654,102 +638,72 @@ const ministries = [
     }
   })();
 
-  // 월코소개 편지: 화면에 들어오면 봉투가 열리고 편지가 나와 펼쳐진다 — 스크롤 위치에 묶지 않고 한 번에 끝까지 재생한다
-  // (스크롤에 묶으면 멈춘 자리에서 덮개만 열린 어정쩡한 장면이 남았다). 움직임 줄이기 · 자바스크립트 꺼짐 · 이미 지나온 자리면 그냥 편지만 보인다.
+  // 월코소개 편지: 화면에 들어오면 손으로 써 내려가듯 한 번 재생한다 — 편지지가 놓이고 위쪽 로고가 도장처럼 찍힌 뒤, 인사말이 한 글자씩,
+  // 본문은 줄마다 잉크가 스미듯, 끝 서명은 펜으로 그리듯. 움직임 줄이기 · 자바스크립트 꺼짐 · 이미 지나온 자리면 그냥 편지만 보인다.
+  // 모든 단계는 한 시작점에서 지연(delay)으로 건다 — 타이머를 안 써서 백그라운드 탭에서도 순서가 어긋나지 않는다.
   (function () {
-    var stage = document.getElementById('letterStage'), letter = document.getElementById('letterAnim'), env = document.getElementById('env');
-    if (!stage || !letter || !env || !letter.animate || !('IntersectionObserver' in window)) return;
+    var stage = document.getElementById('letterStage'), paper = document.getElementById('letterAnim');
+    var card = paper && paper.querySelector('.intro-card');
+    if (!stage || !card || !paper.animate || !('IntersectionObserver' in window)) return;
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     if (stage.getBoundingClientRect().top < (window.innerHeight || 800) * 0.8) return;   // 새로고침 등으로 이미 보이는 자리면 재생하지 않는다
-    var flap = env.querySelector('.env-flap'), seal = env.querySelector('.env-seal'), burst = env.querySelector('.env-burst');
-    var card = letter.querySelector('.intro-card');
-    var m = null, played = false;
-    var EASE = 'cubic-bezier(.22,.8,.24,1)';
-    // 단계별 시간(ms) — 모두 한 시작점에서 지연으로 건다(타이머를 안 써서 백그라운드 탭에서도 순서가 어긋나지 않는다)
-    // 봉투가 떠오름 → 살짝 흔들림 → 봉인이 톡 떨어지며 금빛 고리 → 덮개 → 편지가 나옴 → 펼쳐짐 → 로고 도장 → 글이 한 줄씩
-    var T = { enter: 420, wiggleAt: 380, wiggle: 420, sealAt: 760, seal: 420, flapAt: 980, flap: 600, riseAt: 1420, rise: 650, spread: 950 };
-    function measure() {
-      var W = stage.clientWidth, H = letter.offsetHeight, narrow = W < 560;
-      var Ew = Math.min(W * (narrow ? 0.86 : 0.7), 520), Eh = Ew * 0.62;
-      var top = Eh * 0.66;                                  // 봉투는 편지 칸 위쪽에 — 폰에서 편지가 길어도 봉투가 화면에 보이고, 빠져나온 편지가 위 제목에 닿지 않는다
-      var s0 = (Ew * 0.82) / W;                             // 봉투 안에 들어갈 만큼 줄인 편지
-      m = { W: W, H: H, Eh: Eh, s0: s0,
-            vis0: (Eh * 0.72) / s0,                         // 봉투 안에 있을 때 보이는 편지 높이(줄이기 전 단위)
-            yIn: top + Eh * 0.18, yOut: top - Eh * 0.62 };  // 봉투 속 → 봉투 위로 빠져나온 자리
-      env.style.left = (W - Ew) / 2 + 'px'; env.style.top = top + 'px'; env.style.width = Ew + 'px'; env.style.height = Eh + 'px';
+    var played = false;
+    var MASK = 'linear-gradient(180deg,#000 0,#000 46%,transparent 54%,transparent 100%)';
+    function setMask(el, on) {
+      ['maskImage', 'webkitMaskImage'].forEach(function (k) { el.style[k] = on ? MASK : ''; });
+      ['maskSize', 'webkitMaskSize'].forEach(function (k) { el.style[k] = on ? '100% 300%' : ''; });
+      ['maskRepeat', 'webkitMaskRepeat'].forEach(function (k) { el.style[k] = on ? 'no-repeat' : ''; });
     }
-    function pose(y, s, vis, r) {
-      return { transform: 'translateY(' + y.toFixed(1) + 'px) scale(' + s.toFixed(4) + ') rotate(' + (r || 0) + 'deg)', clipPath: 'inset(-70px -60px ' + Math.max(0, m.H - vis).toFixed(1) + 'px -60px)' };
-    }
-    function setInitial() {
-      measure();
-      stage.classList.add('is-anim');
-      stage.style.opacity = '0';                            // 봉투는 화면에 들어올 때 떠오르며 나타난다
-      stage.style.transformOrigin = '50% ' + (parseFloat(env.style.top) + m.Eh / 2).toFixed(1) + 'px';
-      var p = pose(m.yIn, m.s0, m.vis0);
-      letter.style.transform = p.transform; letter.style.clipPath = p.clipPath; letter.style.zIndex = 2;
-    }
-    function finish() {
-      stage.classList.remove('is-anim');
-      stage.style.opacity = '';
-      if (stage.getAnimations) stage.getAnimations().forEach(function (a) { a.cancel(); });
-      letter.style.transform = 'none'; letter.style.clipPath = 'none'; letter.style.zIndex = '';
-      if (letter.getAnimations) letter.getAnimations().forEach(function (a) { a.cancel(); });
-    }
+    // 인사말은 글자마다 나눈다(두 언어 모두 — 보이는 쪽만 움직인다)
+    [].forEach.call(card.querySelectorAll('.intro-greet > span'), function (sp) {
+      var text = sp.textContent; sp.textContent = '';
+      sp.setAttribute('aria-label', text);
+      Array.from(text).forEach(function (ch) { var c = document.createElement('span'); c.className = 'hw-ch'; c.setAttribute('aria-hidden', 'true'); c.textContent = ch; sp.appendChild(c); });
+    });
+    stage.classList.add('is-prep');
+    var shown = function (el) { return el.offsetParent !== null; };
     function play() {
       if (played) return; played = true;
-      setInitial();
-      var spreadAt = T.riseAt + T.rise, total = spreadAt + T.spread;
-      var CLOSED = 'linear-gradient(180deg,#f3e7ca,#e9d8b2)', INNER = 'linear-gradient(0deg,#d9c698,#cdb88a)';
-      // 0) 봉투가 아래에서 떠오르고, 편지가 들었다는 듯 좌우로 살짝 흔들린다
-      stage.animate([{ opacity: 0, translate: '0 28px' }, { opacity: 1, translate: '0 0' }], { duration: T.enter, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'forwards' });
-      stage.animate([{ rotate: '0deg' }, { rotate: '-2.4deg', offset: 0.25 }, { rotate: '2deg', offset: 0.55 }, { rotate: '-.8deg', offset: 0.8 }, { rotate: '0deg' }],
-        { duration: T.wiggle, delay: T.wiggleAt, easing: 'ease-in-out' });
-      // 1) 봉인이 꾹 눌렸다가 톡 떨어지고, 그 자리에 금빛 고리가 퍼진다
-      seal.animate([{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(.86)', opacity: 1, offset: 0.25 }, { transform: 'scale(1.18)', opacity: 1, offset: 0.5 },
-        { transform: 'translateY(26px) rotate(24deg) scale(.7)', opacity: 0 }],
-        { duration: T.seal, delay: T.sealAt, easing: 'ease-in', fill: 'forwards' });
-      burst.animate([{ transform: 'scale(.7)', opacity: 0 }, { transform: 'scale(.9)', opacity: .9, offset: 0.15 }, { transform: 'scale(2.6)', opacity: 0 }],
-        { duration: 640, delay: T.sealAt + T.seal * 0.45, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'both' });
-      // 2) 덮개가 뒤로 젖혀진다 — 절반을 넘기면 안쪽 면(어두운 색)이 보이고 편지 뒤로 간다
-      flap.animate([
-        { transform: 'perspective(1100px) rotateX(0deg)', zIndex: 4, background: CLOSED, easing: 'cubic-bezier(.45,.05,.55,.95)' },
-        { transform: 'perspective(1100px) rotateX(-90deg)', zIndex: 4, background: CLOSED, offset: 0.5 },
-        { transform: 'perspective(1100px) rotateX(-90deg)', zIndex: 0, background: INNER, offset: 0.501, easing: 'cubic-bezier(.3,.6,.3,1)' },
-        { transform: 'perspective(1100px) rotateX(-180deg)', zIndex: 0, background: INNER }
-      ], { duration: T.flap, delay: T.flapAt, fill: 'both' });
-      // 3) 편지가 봉투 앞면 뒤에서 위로 빠져나오고, 4) 앞으로 꺼내져 제 크기로 펼쳐진다
-      var a = pose(m.yIn, m.s0, m.vis0), b = pose(m.yOut, m.s0, m.vis0, -1.6), c = pose(0, 1, m.H);
-      var k = function (o, at, z, easing) { var f = { transform: o.transform, clipPath: o.clipPath, zIndex: z, offset: at / total }; if (easing) f.easing = easing; return f; };
-      var run = letter.animate([
-        k(a, 0, 2), k(a, T.riseAt, 2, 'cubic-bezier(.3,.6,.25,1)'), k(b, spreadAt, 2), k(b, spreadAt + 1, 6, EASE), k(c, total, 6)
-      ], { duration: total, fill: 'forwards' });
-      // 봉투는 편지가 펼쳐지기 시작할 때 아래로 내려가며 사라진다 — 봉투 전체(.env)에 투명도를 걸면 한 덩어리 층이 되어
-      // 편지 아래로 깔리므로, 조각마다 따로 건다
-      var drop = Math.round(m.Eh * 0.35) + 'px';
-      [].forEach.call(env.querySelectorAll('.env-back, .env-front, .env-flap'), function (el) {
-        el.animate([{ opacity: 1, translate: '0 0' }, { opacity: 0, translate: '0 ' + drop }], { duration: 520, delay: spreadAt, easing: 'ease-in', fill: 'forwards' });
-      });
-      // 5) 편지 위 월코 로고는 봉투 안에서는 숨어 있다가(봉인과 겹쳐 보이지 않게) 다 펼쳐지면 도장처럼 쿵 찍힌다
+      stage.classList.remove('is-prep');
+      var t = 0, last = 0;
+      // 1) 편지지가 살짝 기운 채로 내려앉는다
+      paper.animate([{ opacity: 0, translate: '0 22px', rotate: '-1.4deg' }, { opacity: 1, translate: '0 0', rotate: '0deg' }],
+        { duration: 700, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'backwards' });
+      // 2) 위쪽 월코 로고가 도장처럼 쿵 찍힌다
       try {
-        card.animate([{ opacity: 0, transform: 'scale(1.7)' }, { opacity: 0, transform: 'scale(1.7)', offset: (total - 120) / (total + 460), easing: 'cubic-bezier(.5,0,.8,.4)' },
-          { opacity: 1, transform: 'scale(.92)', offset: (total + 240) / (total + 460), easing: 'ease-out' }, { opacity: 1, transform: 'scale(1)' }],
-          { duration: total + 460, pseudoElement: '::after' });
+        card.animate([{ opacity: 0, transform: 'scale(1.7)', offset: 0 }, { opacity: 0, transform: 'scale(1.7)', offset: 0.4, easing: 'cubic-bezier(.5,0,.8,.4)' },
+          { opacity: 1, transform: 'scale(.92)', offset: 0.75, easing: 'ease-out' }, { opacity: 1, transform: 'scale(1)' }],
+          { duration: 900, pseudoElement: '::after' });
       } catch (e) {}
-      // 6) 첫인사는 봉투에서 나올 때부터 보이고, 나머지 글은 펼쳐진 뒤 한 줄씩 떠오른다
-      [].filter.call(card.children, function (el) { return !el.classList.contains('intro-greet') && el.offsetParent !== null; }).forEach(function (el, i) {
-        el.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }],
-          { duration: 520, delay: total - 260 + i * 120, easing: 'ease-out', fill: 'backwards' });
+      t = 820;
+      // 3) 인사말 — 한 글자씩 펜으로 쓰듯(살짝 번졌다가 또렷해진다)
+      [].filter.call(card.querySelectorAll('.intro-greet .hw-ch'), shown).forEach(function (c, i) {
+        c.animate([{ opacity: 0, filter: 'blur(2.5px)', transform: 'translateY(3px)' }, { opacity: 1, filter: 'blur(0)', transform: 'none' }],
+          { duration: 320, delay: t + i * 90, easing: 'ease-out', fill: 'backwards' });
+        last = t + i * 90 + 320;
       });
-      run.onfinish = finish;
+      t = last + 160;
+      // 4) 본문 · 맺음말 — 위에서 아래로 줄마다 잉크가 스민다(문단 길이에 맞춰 줄당 시간, 너무 길지 않게)
+      var paras = [].filter.call(card.querySelectorAll(':scope > p:not(.intro-greet)'), shown);
+      var masked = [];
+      paras.forEach(function (p) {
+        var lh = parseFloat(getComputedStyle(p).lineHeight) || 30, lines = Math.max(1, Math.round(p.offsetHeight / lh));
+        var dur = Math.min(1500, 260 + lines * 260);
+        setMask(p, true); masked.push(p);
+        var a = p.animate([{ maskPosition: '0 100%', webkitMaskPosition: '0 100%' }, { maskPosition: '0 0', webkitMaskPosition: '0 0' }],
+          { duration: dur, delay: t, easing: 'cubic-bezier(.35,.1,.45,1)', fill: 'backwards' });
+        a.onfinish = function () { setMask(p, false); };
+        t += dur + 90;
+      });
+      // 5) 서명 — 'Word of Life Korea'가 왼쪽부터 펜으로 그려지고, 그 아래 줄과 '월코 드림'이 이어진다
+      var name = card.querySelector('.intro-sign-name'), by = card.querySelector('.intro-sign-by');
+      if (name) name.animate([{ clipPath: 'inset(-6px 100% -6px 0)' }, { clipPath: 'inset(-6px 0 -6px 0)' }], { duration: 950, delay: t, easing: 'cubic-bezier(.45,.05,.4,1)', fill: 'backwards' });
+      if (by) by.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 500, delay: t + 700, easing: 'ease-out', fill: 'backwards' });
     }
-    setInitial();
     var io = new IntersectionObserver(function (entries) {
       if (entries[0].isIntersecting) { io.disconnect(); play(); }
-    }, { rootMargin: '0px 0px -22% 0px' });                  // 편지 칸 윗부분(봉투)이 화면 아래 1/5을 넘어 올라오면 시작
+    }, { rootMargin: '0px 0px -22% 0px' });                  // 편지 칸 윗부분이 화면 아래 1/5을 넘어 올라오면 시작
     io.observe(stage);
-    window.addEventListener('resize', function () { if (!played) setInitial(); });
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (!played) setInitial(); });
   })();
 </script>
 
