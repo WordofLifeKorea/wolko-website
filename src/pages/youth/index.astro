@@ -392,9 +392,11 @@ import PageHero from '../../components/PageHero.astro';
 .ym-step-num { font-family: var(--ff-serif); font-size: 15px; letter-spacing: 0; color: var(--ym-deep); }
 .ym-step-title { margin-top: 16px; font-family: var(--ff-serif); font-size: clamp(26px, 2.4vw, 34px); font-weight: 700; line-height: 1.28; letter-spacing: -.03em; color: var(--ym-navy); }
 .ym-step-desc { margin-top: 18px; font-size: 15.5px; line-height: 1.85; color: var(--ym-text); }
-.ym-step-list { margin-top: 28px; }
-.ym-step-list li { padding: 14px 0; border-top: 1px solid var(--ym-line); font-size: 15px; font-weight: 600; line-height: 1.6; color: var(--ym-navy); }
-.ym-step-list li:last-child { border-bottom: 1px solid var(--ym-line); }
+/* 세 항목을 사선으로 — 첫째는 왼쪽, 둘째는 한 칸 들여, 셋째는 오른쪽 끝. 줄은 글 아래에만 */
+.ym-step-list { margin-top: 28px; display: flex; flex-direction: column; gap: 6px; }
+.ym-step-list li { width: fit-content; max-width: 82%; padding: 12px 2px; border-bottom: 1px solid var(--ym-line); font-size: 15px; font-weight: 600; line-height: 1.6; color: var(--ym-navy); word-break: keep-all; }
+.ym-step-list li:nth-child(2) { margin-left: 12%; }
+.ym-step-list li:nth-child(3) { margin-left: auto; text-align: right; }
 
 /* 사역의 흐름 — 왼쪽 제목 고정, 오른쪽 줄 목록 */
 .ym-flow { padding: 120px 0; background: var(--ym-soft); }
