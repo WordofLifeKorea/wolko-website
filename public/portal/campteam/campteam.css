@@ -373,10 +373,9 @@ details > table,details > div{margin-left:2px}
 @media (max-width:900px){.bell{margin-left:auto}.tdr b{font-size:15px}}
 html.al-open{overflow:hidden}
 /* 알림공지 페이지 */
-.alpage{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px;align-items:start}.alpage .sec{background:#fff;border:1px solid var(--border);border-radius: var(--ws-radius-sm, 8px);padding:14px 16px}.alpage .sec h2{margin:0 0 10px;font-size:15px;display:flex;align-items:center;gap:6px}.alpage .stack{display:grid;gap:8px}
+.alpage{display:block}.alpage .sec{background:#fff;border:1px solid var(--border);border-radius: var(--ws-radius-sm, 8px);padding:14px 16px}.alpage .sec h2{margin:0 0 10px;font-size:15px;display:flex;align-items:center;gap:6px}.alpage .stack{display:grid;gap:8px}
 .alpage .pickgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px;margin-top:6px}.alpage .pickgrid label{display:flex;gap:6px;align-items:center;font-size:13px;border:1px solid var(--border);border-radius: var(--ws-radius-sm, 8px);padding:6px 8px}
 .alform label{display:grid;gap:4px;font-size:12.5px;color:var(--mid)}.alform input,.alform textarea,.alform select{border:1px solid var(--border);border-radius: var(--ws-radius-sm, 8px);padding:9px 11px;font:500 14px var(--f-body);background:#fff;color:var(--text)}.alform textarea{min-height:120px;resize:vertical}
-@media (max-width:900px){.alpage{grid-template-columns:1fr}}
 /* 캠프 공간 내 화면 편집 */
 .lywrap{position:relative;border:2px dashed var(--blue-lt,#9cc4ee);border-radius: var(--ws-radius-sm, 8px);padding:4px;background:rgba(59,143,240,.04)}.lywrap.full{grid-column:1/-1}.lywrap.off{opacity:.5}.lywrap>.card{margin:0}.lyc{display:flex;gap:6px;justify-content:flex-end;padding:4px 6px 6px}.lyc button{border:1px solid var(--border);background:#fff;border-radius: var(--ws-radius-sm, 8px);padding:5px 10px;font:600 12px var(--f-body);cursor:pointer;color:var(--text)}.lyc button:disabled{opacity:.35;cursor:default}
 /* 설정: 항목별 권한 표 */
@@ -944,3 +943,89 @@ dialog.fm-dlg[open]{display:flex;flex-direction:column}dialog.fm-dlg::backdrop{b
 
 /* 좁은 화면 카드의 쪽 표시: 마우스로도 누를 수 있는 화살표와 점 */
 @media(max-width:900px){.pgr i[data-pg]{cursor:pointer;padding:0;box-sizing:content-box;border:6px solid transparent;background-clip:padding-box;margin:0 -3px}.pgr .pgb{border:0;background:#eaf0f3;color:var(--blue);width:28px;height:26px;border-radius:8px;font:800 17px/1 var(--f-body);cursor:pointer;padding:0}.pgr .pgb:disabled{opacity:.35;cursor:default}}
+
+/* ── 자료실 폴더 트리 (폴더 안의 폴더, 들여쓰기·끌어다 놓기·이동·삭제 창) ── */
+.ft-tool{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px}.ft-tool .hint{flex:1 1 160px;min-width:0;color:var(--blue)}
+.ft-dnd{margin:0 0 10px}
+.ft-portal{margin-bottom:10px}
+.ft-root{display:none;margin:0 0 10px;padding:10px 12px;border:2px dashed #b9cfd8;border-radius:var(--ws-radius-sm,8px);color:var(--mid);font:600 13px var(--f-body);text-align:center}
+.ft-dragging .ft-root{display:block}.ft-root.ft-root-on,.ft-loose.ft-root-on{border-color:var(--blue);background:#eaf4f9;color:var(--blue)}
+.ft-loose{margin-top:14px;border-radius:var(--ws-radius-sm,8px)}.ft-loose.ft-root-on{outline:2px dashed var(--blue);outline-offset:4px}
+.ft-tree{display:grid;gap:8px;margin:0 0 6px}
+.fnode{min-width:0}
+.fcard{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:#fff;border:1px solid var(--border);border-radius:var(--ws-radius-sm,8px);padding:8px 10px;transition:border-color .15s,box-shadow .15s}
+.fcard:hover{border-color:#c8dbe2}
+.fcard.focus{border-color:var(--blue);box-shadow:0 0 0 3px #cfe6f1}
+.fcaret{flex:none;width:32px;height:32px;border:0;background:none;color:var(--mid);font-size:16px;cursor:pointer;border-radius:6px}.fcaret:hover{background:#eef4f7;color:var(--text)}
+.fmain{flex:1 1 200px;min-width:0;display:flex;align-items:center;gap:10px;cursor:pointer;padding:4px 0}
+.fmain .fi{font-size:24px;line-height:1;flex:none}.fmain .ft{display:grid;min-width:0}.fmain b{font:700 14px var(--f-body);overflow-wrap:anywhere}.fmain small{color:var(--mid);font-size:12px}
+.fact{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.fkids{margin:6px 0 2px 16px;padding-left:12px;border-left:2px solid #d5e4eb;display:grid;gap:8px}
+.fkids .file-row{margin-bottom:0}
+.fempty{color:var(--mid);font-size:12.5px;padding:6px 4px}
+.fnode[data-depth="1"]>.fcard{background:#f7fbfd}
+.ft-src{opacity:.45}
+.fcard.ft-in,.file-row.ft-in{outline:3px solid var(--blue);outline-offset:-1px;background:#eaf4f9}
+.ft-before{box-shadow:0 -4px 0 0 var(--blue)}.ft-after{box-shadow:0 4px 0 0 var(--blue)}
+.file-row[draggable=true],.fcard[draggable=true]{cursor:grab}
+.file-row .actions{display:flex;gap:6px;flex-wrap:wrap}
+.ft-dlg{width:min(520px,calc(100vw - 24px));max-height:90vh;overflow:auto}
+.mvlist{display:grid;gap:4px;max-height:52vh;overflow:auto;margin:0 0 4px}
+.mvopt{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;min-height:44px;padding:8px 12px;border:1px solid var(--border);background:#fff;border-radius:var(--ws-radius-sm,8px);font:600 14px var(--f-body);color:var(--text);cursor:pointer}
+.mvopt span{overflow-wrap:anywhere}.mvopt small{flex:none;color:var(--mid);font-weight:500;font-size:12px}
+.mvopt:hover:not(:disabled){border-color:var(--blue);background:#eaf4f9}.mvopt:disabled{background:#f4f6f8;color:var(--mid);cursor:not-allowed}
+.delopts{display:grid;gap:8px;margin:10px 0}
+.delopt{display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid var(--border);border-radius:var(--ws-radius-sm,8px);cursor:pointer;line-height:1.5;font-size:14px}
+.delopt input{width:20px;height:20px;margin:1px 0 0;flex:none;accent-color:var(--blue)}
+.delopt:has(input:checked){border-color:var(--blue);background:#eaf4f9}
+.delnote{margin:0 0 4px}
+@media(max-width:900px){
+  .ft-tool .btn,.fact .btn,.file-row .actions .btn{height:40px;padding:0 12px;font-size:13px}
+  .fcard{padding:8px}.fcaret{width:40px;height:40px}.fact{margin-left:0;width:100%}
+  .fkids{margin-left:8px;padding-left:8px}
+  .mvopt{min-height:48px}
+  .delopt{padding:14px}
+  #ftDlg input{font-size:16px}
+}
+.fkids,.fnode,.fkids .file-row,.ft-tree{min-width:0;max-width:100%}.fkids .file-row .fm{min-width:0;overflow-wrap:anywhere}
+/* 알림 설정 팝오버: 「설정」 버튼 바로 아래. 폰(≤900px)에서는 아래에서 올라오는 시트 */
+.apwrap{position:relative}
+.appop{position:absolute;top:calc(100% + 8px);right:0;z-index:60;width:min(390px,92vw);max-height:min(76vh,680px);display:flex;flex-direction:column;background:#fff;border:1px solid var(--border);border-radius:var(--ws-radius,12px);box-shadow:0 14px 40px rgba(20,40,55,.22);overflow:hidden}
+.appop[hidden],.appopscrim[hidden]{display:none}
+.appopscrim{display:none}
+.appop .aphd{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border)}.appop .aphd b{font-size:15px}.appop .aphd .apmsg{margin:0 auto 0 4px;font-size:12px}
+.appop .apbody{overflow-y:auto;overscroll-behavior:contain;padding:4px 14px 16px;-webkit-overflow-scrolling:touch}
+.appop h3{margin:16px 0 6px;font:700 12px var(--f-body);color:var(--mid);letter-spacing:.02em;display:flex;align-items:center;gap:6px}
+.appop .hint{font-size:12px;color:var(--mid);margin:4px 0 0}
+.appop .aplist{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#fff}
+.appop .aplist>*+*{border-top:1px solid var(--border)}
+.appop .aprow.open{background:#f8fafb}
+.appop .aphead{display:flex;align-items:center;gap:8px;width:100%;min-height:46px;padding:8px 12px;background:transparent;border:0;text-align:left;font:600 14px var(--f-body);color:var(--text);cursor:pointer}
+.appop .aphead span{flex:none}.appop .aphead em{flex:1;min-width:0;text-align:right;font-style:normal;font-weight:500;font-size:13px;color:var(--mid);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.appop .apchev{flex:none;width:8px;height:8px;border-right:2px solid var(--mid);border-bottom:2px solid var(--mid);transform:rotate(-45deg);transition:transform .15s}.appop .aprow.open .apchev{transform:rotate(45deg)}
+.appop .apopts{max-height:250px;overflow-y:auto;border-top:1px solid var(--border);background:#fff}
+.appop .apopt{display:flex;align-items:center;gap:10px;width:100%;min-height:42px;padding:6px 12px;background:#fff;border:0;border-bottom:1px solid #eef2f4;text-align:left;font:500 14px var(--f-body);color:var(--text);cursor:pointer}
+.appop .apopt:hover:not(:disabled){background:#f4f8fa}.appop .apopt.lock{cursor:default;opacity:.85}
+.appop .apck{flex:none;width:22px;text-align:center;color:var(--blue);font-weight:800;font-size:16px}
+.appop .aptxt{display:grid;gap:1px;min-width:0}.appop .aptxt small{font-size:11.5px;color:var(--mid);font-weight:500}
+.appop .apcust{display:flex;align-items:center;gap:8px;padding:8px 12px;flex-wrap:wrap}.appop .apcust span{font-size:13px;flex:1 1 100%}.appop .apcust input{width:92px;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font:500 16px var(--f-body)}
+.appop .aperr{padding:0 12px 8px;margin:0;min-height:0}.appop .aperr:empty{display:none}
+.appop .apsw{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;min-height:50px;cursor:pointer;background:#fff}
+.appop .apsw b{font-size:14px;font-weight:600}
+.appop .apsw input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.appop .apsw-k{flex:none;position:relative;width:44px;height:26px;border-radius:13px;background:#cfd8de;transition:background .15s}
+.appop .apsw-k::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s}
+.appop .apsw input:checked+.apsw-k{background:var(--ok,#1f9d6b)}.appop .apsw input:checked+.apsw-k::after{transform:translateX(18px)}
+.appop .apsw input:focus-visible+.apsw-k{outline:2px solid var(--blue);outline-offset:2px}
+.appop .apquiet{display:flex;gap:10px;flex-wrap:wrap;padding:0 12px 12px;background:#fff}.appop .apquiet label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text)}.appop .apquiet input{border:1px solid var(--border);border-radius:8px;padding:7px 8px;font:500 16px var(--f-body)}
+.appop .aptest{margin-top:10px}.appop .aptest .btn{width:100%}
+.appop .apnum{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;font-size:13.5px;font-weight:600}.appop .apnum>span:last-child{display:flex;align-items:center;gap:6px;font-weight:500}.appop .apnum input{width:80px;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font:500 16px var(--f-body)}
+@media (max-width:900px){
+  .appopscrim{display:block;position:fixed;inset:0;z-index:59;background:rgba(15,30,40,.4)}
+  .appop{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;max-height:86vh;border-radius:16px 16px 0 0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom)}
+  .apwrap{position:static}
+  .appop .aphead{padding:14px 16px}.appop .apbody{padding:4px 16px 20px}
+  .appop .apopt,.appop .aphead{min-height:48px}
+  .alpage .sec{padding:12px}
+}
+@media (max-width:900px){html.ap-sheet-open{overflow:hidden}}
