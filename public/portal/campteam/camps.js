@@ -153,7 +153,7 @@
         '<div class="two"><label>' + esc(CT.t('fYear')) + '<input type="number" name="year" min="2000" max="2100" value="' + esc(row ? (row.year || '') : (preset.year || '')) + '"></label><label>' + esc(CT.t('fSeason')) + '<input name="season" maxlength="20" list="seasonList" autocomplete="off" value="' + esc(row ? row.season : (preset.season || '')) + '"></label></div><datalist id="seasonList">' + SEASONS.map(function (x) { return '<option value="' + esc(CT.lang() === 'en' ? x[1] : x[0]) + '">'; }).join('') + '</datalist>' +
         '<div class="two"><label>' + esc(CT.t('fStart')) + '<input type="date" name="startDate" value="' + esc(row && row.startDate || '') + '"></label><label>' + esc(CT.t('fEnd')) + '<input type="date" name="endDate" value="' + esc(row && row.endDate || '') + '"></label></div>' +
         '<label>' + esc(CT.t('fStatus')) + '<select name="status">' + STATUSES.map(function (s) { return '<option value="' + s + '"' + ((row ? row.status : 'planning') === s ? ' selected' : '') + '>' + esc(CT.t(s)) + '</option>'; }).join('') + '</select></label>' +
-        '<label>' + esc(CT.t('fLocation')) + '<input name="location" maxlength="120" value="' + esc(row ? row.location : '') + '"></label>' +
+        '<label>' + esc(CT.t('fLocation')) + '<input name="location" data-suggest="place" maxlength="120" value="' + esc(row ? row.location : '') + '"></label>' +
         '<label>' + esc(CT.t('fNotes')) + '<textarea name="notes" maxlength="1000">' + esc(row ? row.notes : '') + '</textarea></label>';
     }
     $('dlgFields').innerHTML = f; $('dlgErr').hidden = true;

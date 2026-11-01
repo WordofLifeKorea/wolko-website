@@ -17,7 +17,16 @@
   n('work', ['업무·회의·일정을 다루고 싶어요', 'Tasks, meetings and events'],
     ['어떤 일을 하실 건가요?', 'What would you like to do?'], { next: ['w_task', 'w_meeting', 'w_event', 'w_alerts', 'w_ooo', 'w_catchup'] });
   n('camp', ['캠프(행사)·TV 화면이 궁금해요', 'Camps and the TV screen'],
-    ['캠프 준비에 필요한 기능이에요.', 'These help you prepare camps.'], { next: ['c_create', 'c_space', 'c_tv'] });
+    ['캠프 준비에 필요한 기능이에요.', 'These help you prepare camps.'], { next: ['c_create', 'c_space', 'c_tv', 'c_prep', 'c_series', 'c_phonecal'] });
+  n('c_prep', ['진행표·준비물·연락처', 'Timeline, supplies, contacts'],
+    ['캠프별 공간 맨 위의 「📋 캠프 준비」(또는 /portal/campteam/prep/)를 열어요. 진행표 탭은 날짜별 시간표(엑셀에서 붙여넣기 가능, 지금 진행 중인 줄이 초록으로 표시), 준비물 탭은 필요/구입함/준비 끝 상태와 지난 캠프에서 복사, 연락처 탭은 교회·학교·업체·강사 연락처예요. 연락처는 캠프팀 명단에 있는 사람만 봐요.',
+     'Open "📋 Camp prep" at the top of a camp space (or /portal/campteam/prep/). Timeline: a schedule by day (paste from Excel; the running row turns green). Supplies: Needed/Bought/Ready with copy from a past camp. Contacts: churches, schools, vendors, speakers, visible only to camp team members.']);
+  n('c_series', ['반복되는 캠프 (교회·교회학교)', 'Recurring camps'],
+    ['캠프 준비 화면의 「반복 캠프」 탭에서 시리즈를 만들고 열리는 달(예: 3·7·12월)을 골라 두세요. 새 회차는 연도와 달을 골라 「새 회차 만들기」로 직접 만들어요. 자동으로 만들지 않아요.',
+     'In the "Recurring camps" tab of Camp prep, create a series and pick the months it runs (e.g. 3, 7, 12). Create each round yourself by choosing year and month. Nothing is created automatically.']);
+  n('c_phonecal', ['폰 캘린더에 일정 넣기', 'Phone calendar'],
+    ['캠프 준비 화면 위의 「📅 폰 캘린더 구독」에서 나만의 주소를 복사해 폰 캘린더의 「구독 캘린더」에 넣으면 팀 일정·캠프 기간·진행표·내 업무 마감이 보여요. 읽기 전용이고, 주소는 남에게 주지 마세요. 새 주소를 만들면 예전 주소는 멈춰요.',
+     'In Camp prep, "📅 Phone calendar" gives you a personal address. Add it as a subscribed calendar to see team events, camp dates, timelines and your task due dates. It is read-only; do not share the address. Creating a new one stops the old one.']);
   n('tips', ['화면·언어·권한이 궁금해요', 'Screen, language and permissions'],
     ['자주 헷갈리는 것들이에요.', 'Things that are often confusing.'], { next: ['t_lang', 't_phone', 't_trash', 't_perm', 't_off'] });
 
