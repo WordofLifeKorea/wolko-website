@@ -1096,3 +1096,135 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 .ex-fxchoice { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 16px; border: 1.5px solid var(--border); border-radius: var(--ws-radius-sm, 8px); background: #fff; font-weight: 600; cursor: pointer; }
 .ex-fxchoice:has(input:checked) { border-color: var(--blue); background: #e8f3f5; color: var(--blue); }
 @media (max-width: 640px) { .ex-fxgrid { grid-template-columns: minmax(0, 1fr); } .ex-fxbtns { width: 100%; } }
+
+/* ══ v200 — 디자인 업그레이드 (2026-11-02): 둥근 카드 · 분명한 위계 · 따라오는 합계 막대 · 진행 단계 표시 ══
+   앞의 여러 겹(v3~v109)과 공용 규칙(wolko-site/layout.css)을 덮어야 해서 :root:root body .ex-wrap 으로 시작한다 */
+:root { --ex-ink: #0b2430; --ex-deep: #004f68; --ex-line: #dde7ec; --ex-fill: #f4f8fa; --ex-soft: #eef5f8; --ex-green: #17975a; }
+
+/* 탭: 왼쪽 [+ 새 리포트] 주 버튼, 오른쪽에 나머지 화면을 한 줄 알약 묶음으로 */
+:root:root body .ex-wrap .ex-tabs { display: flex; align-items: center; flex-wrap: wrap; gap: 12px !important; margin: 0 0 22px; }
+:root:root body .ex-wrap .ex-seg { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; border: 1px solid var(--ex-line); border-radius: 13px; background: #fff; }
+:root:root body .ex-wrap .ex-seg .ex-tab { height: 38px; padding: 0 15px !important; border: 0 !important; border-radius: 9px !important; background: transparent; color: #4d6672; font-size: 13px !important; transition: background-color .15s, color .15s; }
+:root:root body .ex-wrap .ex-seg .ex-tab:hover { background: var(--ex-fill); color: var(--ex-ink); }
+:root:root body .ex-wrap .ex-seg .ex-tab.active { background: var(--ex-ink); color: #fff; }
+:root:root body .ex-wrap .ex-tab-new { height: 48px; margin: 0; padding: 0 22px 0 18px !important; border: 0 !important; border-radius: 13px !important; background: var(--ex-green); color: #fff; font-size: 14px !important; gap: 8px; box-shadow: none; transition: background-color .15s, transform .15s; }
+:root:root body .ex-wrap .ex-tab-new:not(.is-edit)::before { content: ''; width: 20px; height: 20px; margin: 0; border-radius: 50%; background: rgba(255,255,255,.22) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 5v10M5 10h10' stroke='%23fff' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E") center / 20px no-repeat; }
+:root:root body .ex-wrap .ex-tab-new:hover { background: #128049; }
+:root:root body .ex-wrap .ex-tab-new.active { background: #128049; box-shadow: 0 0 0 4px rgba(23,151,90,.18); }
+:root:root body .ex-wrap .ex-tab .ex-badge { margin-left: 2px; }
+
+/* 카드: 둥근 모서리, 넉넉한 안쪽 여백, 큰 제목 */
+:root:root body .ex-wrap .ex-card { border: 1px solid var(--ex-line) !important; border-radius: 18px !important; padding: 28px 30px !important; }
+:root:root body .ex-wrap .ex-card > h2 { margin: 0 0 4px; font-size: 22px; font-weight: 800; letter-spacing: -.025em; color: var(--ex-ink); }
+:root:root body .ex-wrap .ex-submitter { margin: 0 0 18px; font-size: 13.5px; color: #5b7480; }
+:root:root body .ex-wrap .ex-fxnote { margin: 0 0 22px; padding: 12px 16px; border: 0; border-radius: 12px; background: var(--ex-soft); color: #3e5a66; }
+:root:root body .ex-wrap .ex-fxnote b { color: var(--ex-deep); }
+:root:root body .ex-wrap .ex-fx-chips i { border: 0; background: #fff; color: var(--ex-deep); border-radius: 999px; padding: 3px 10px; }
+
+/* 위쪽 설명 · 제목 칸: 밑줄 대신 옅은 바탕 상자 */
+:root:root body .ex-wrap .ex-field label { margin-bottom: 7px; color: #45616d; }
+:root:root body .ex-wrap .ex-grid .ex-input { height: 48px !important; padding: 0 16px; border: 1px solid transparent !important; border-radius: 12px !important; background: var(--ex-fill); font-size: 15px !important; color: var(--ex-ink); transition: background-color .15s, border-color .15s, box-shadow .15s; }
+:root:root body .ex-wrap .ex-grid .ex-input:hover { border-color: #c9d9e0 !important; }
+:root:root body .ex-wrap .ex-grid .ex-input:focus { border-color: var(--ex-deep) !important; background: #fff; box-shadow: 0 0 0 4px rgba(0,79,104,.10) !important; }
+
+/* 항목: 흰 카드, 번호 동그라미, 칸은 옅은 바탕 상자로 통일 */
+:root:root body .ex-wrap .ex-rows { gap: 12px; margin-top: 22px; }
+:root:root body .ex-wrap .ex-row { padding: 18px 20px !important; border: 1px solid var(--ex-line) !important; border-radius: 16px !important; background: #fff !important; transition: border-color .15s, box-shadow .15s; }
+:root:root body .ex-wrap .ex-row:focus-within { border-color: #8dbccc !important; box-shadow: 0 0 0 4px rgba(0,79,104,.07) !important; }
+:root:root body .ex-wrap .ex-num { width: 26px; height: 26px; border-radius: 50%; background: var(--ex-ink); color: #fff; font-size: 12px; font-weight: 800; }
+:root:root body .ex-wrap .ex-row :is(.ex-input, .ex-select):not(.ex-rate-input) { height: 42px !important; min-height: 42px !important; border: 1px solid transparent !important; border-radius: 10px !important; background-color: var(--ex-fill) !important; box-shadow: none !important; color: var(--ex-ink); font-size: 14px !important; }
+:root:root body .ex-wrap .ex-row :is(.ex-input, .ex-select):not(.ex-rate-input):hover { border-color: #c9d9e0 !important; }
+:root:root body .ex-wrap .ex-row :is(.ex-input, .ex-select):not(.ex-rate-input):focus { border-color: var(--ex-deep) !important; background-color: #fff !important; box-shadow: 0 0 0 3px rgba(0,79,104,.10) !important; }
+:root:root body .ex-wrap .ex-row .ex-r1 .ex-item { font-weight: 600 !important; }
+:root:root body .ex-wrap .ex-row .ex-r2 .ex-amt { font-size: 16px !important; font-weight: 800 !important; font-variant-numeric: tabular-nums; }
+:root:root body .ex-wrap .ex-row .ex-r2 .ex-cur { color: var(--ex-deep); font-weight: 700 !important; }
+:root:root body .ex-wrap .ex-row .ex-select.is-empty { color: #8aa0aa; }
+/* 영수증: 점선 테두리 — 눌러서 올리는 곳임을 분명하게 */
+:root:root body .ex-wrap .ex-row .ex-btn.ex-attach { height: 42px; min-height: 42px !important; padding: 0 16px; border: 1.5px dashed #9cc3d1 !important; border-radius: 10px !important; background: #f2f9fb !important; color: var(--ex-deep) !important; }
+:root:root body .ex-wrap .ex-row .ex-btn.ex-attach:hover { border-style: solid !important; background: #e6f3f7 !important; }
+:root:root body .ex-wrap .ex-row .ex-btn.ex-more-btn { height: 42px; min-height: 42px !important; border: 0 !important; border-radius: 10px !important; background: var(--ex-fill) !important; color: #5b7480 !important; }
+:root:root body .ex-wrap .ex-row .ex-x { width: 30px; height: 30px; border-radius: 50%; color: #9db1ba; }
+:root:root body .ex-wrap .ex-row .ex-x:hover { background: #fdeceb; color: #c42a36; }
+:root:root body .ex-wrap .ex-chip { border: 1px solid var(--ex-line); border-radius: 10px; background: #fff; }
+:root:root body .ex-wrap .ex-btn[data-act="add-row"] { width: 100%; height: 50px; min-height: 50px !important; margin-top: 2px; border: 1.5px dashed #b9cfd8 !important; border-radius: 14px !important; background: transparent !important; color: var(--ex-deep) !important; font-size: 14px !important; }
+:root:root body .ex-wrap .ex-btn[data-act="add-row"]:hover { border-color: var(--ex-deep) !important; background: #f2f9fb !important; }
+
+/* 합계 · 제출: 화면 아래에 따라 붙는 막대 — 항목이 길어도 합계와 제출 버튼이 늘 보인다 */
+:root:root body .ex-wrap .ex-total-bar { position: sticky; bottom: 14px; z-index: 6; margin-top: 22px; padding: 14px 14px 14px 22px; border: 1px solid var(--ex-line); border-top: 1px solid var(--ex-line); border-radius: 16px; background: rgba(255,255,255,.95); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 14px 34px -16px rgba(11,36,48,.35); }
+:root:root body .ex-wrap .ex-total { font-size: 26px; font-weight: 800; letter-spacing: -.02em; color: var(--ex-ink); }
+:root:root body .ex-wrap .ex-total small { margin-bottom: 2px; font-size: 11.5px; letter-spacing: .02em; }
+:root:root body .ex-wrap .ex-total-bar .ex-btn { min-height: 46px !important; padding: 0 20px; border-radius: 12px !important; font-size: 13.5px !important; }
+:root:root body .ex-wrap .ex-total-bar .ex-btn.primary { padding: 0 26px; font-size: 14.5px !important; }
+
+/* 리포트 카드(승인 · 회계 · 전체): 제목과 합계를 크게, 머리 아래 선 */
+:root:root body .ex-wrap .ex-report-head { padding-bottom: 16px; border-bottom: 1px solid #e8eff2; }
+:root:root body .ex-wrap .ex-report-title { font-size: 18px; font-weight: 800; letter-spacing: -.02em; color: var(--ex-ink); }
+:root:root body .ex-wrap .ex-report-head .ex-meta { margin-top: 3px; }
+:root:root body .ex-wrap .ex-report-total { font-size: 24px; font-weight: 800; letter-spacing: -.02em; }
+:root:root body .ex-wrap .ex-report-head > div:last-child { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+:root:root body .ex-wrap .ex-status { padding: 4px 11px; border-radius: 999px; font-size: 11.5px; }
+:root:root body .ex-wrap .ex-card .ex-table thead th { padding-top: 14px; color: #7f97a2; }
+:root:root body .ex-wrap .ex-actions .ex-btn { border-radius: 10px !important; }
+
+/* 내 리포트: 날짜 칸 · 금액 · 상태 + 진행 단계(제출 → 승인 → 송금) */
+:root:root body .ex-wrap .ex-person { border: 1px solid var(--ex-line) !important; border-radius: 18px !important; overflow: hidden; }
+:root:root body .ex-wrap .ex-subs > li + li { border-top: 1px solid #edf2f5; }
+:root:root body .ex-wrap .ex-sub-row { grid-template-columns: 58px minmax(0, 1fr) auto 150px; gap: 16px; padding: 16px 22px; transition: background-color .15s; }
+:root:root body .ex-wrap .ex-sub-row:hover { background: #f7fafb; }
+:root:root body .ex-wrap .ex-sub-row[aria-expanded="true"] { background: #f4f9fb; }
+:root:root body .ex-wrap .ex-sub-date { display: grid; place-items: center; height: 44px; border-radius: 12px; background: var(--ex-soft); color: var(--ex-deep); font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
+:root:root body .ex-wrap .ex-sub-desc { font-size: 15px; font-weight: 700; color: var(--ex-ink); }
+:root:root body .ex-wrap .ex-sub-desc .ex-meta { display: block; margin-top: 2px; font-size: 12.5px; font-weight: 500; }
+:root:root body .ex-wrap .ex-sub-amt { font-size: 16px; font-weight: 800; color: var(--ex-ink); font-variant-numeric: tabular-nums; }
+.ex-sub-state { display: flex; flex-direction: column; align-items: flex-end; gap: 7px; }
+.ex-steps { display: flex; gap: 3px; }
+.ex-steps i { width: 26px; height: 5px; border-radius: 3px; background: #e2eaee; }
+.ex-steps.submitted i:nth-child(1) { background: #e07b00; }
+.ex-steps.approved i:nth-child(-n+2) { background: #0077a3; }
+.ex-steps.processed i { background: #1da462; }
+.ex-steps.rejected i:nth-child(1) { background: #c42a36; }
+:root:root body .ex-wrap .ex-detail { padding: 6px 22px 18px; background: #f4f9fb; }
+
+/* 비어 있을 때: 영수증 그림 + 안내 */
+:root:root body .ex-wrap .ex-empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 56px 16px; border: 1px dashed #cbdbe2; border-radius: 18px; background: #fff; color: #5b7480; font-size: 14.5px; font-weight: 600; }
+:root:root body .ex-wrap .ex-empty::before { content: ''; width: 64px; height: 64px; border-radius: 18px; background: var(--ex-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M8 5h16v22l-2.7-2-2.6 2-2.7-2-2.6 2-2.7-2L8 27z' fill='%23fff' stroke='%23004f68' stroke-width='1.6' stroke-linejoin='round'/%3E%3Cpath d='M12 11h8M12 15h8M12 19h5' stroke='%237fb3c6' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") center / 36px no-repeat; }
+
+/* 휴대폰 */
+@media (max-width: 640px) {
+  :root:root body .ex-wrap .ex-tabs { gap: 10px !important; }
+  :root:root body .ex-wrap .ex-tab-new { width: 100%; justify-content: center; }
+  :root:root body .ex-wrap .ex-seg { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); width: 100%; }
+  :root:root body .ex-wrap .ex-seg .ex-tab { justify-content: center; padding: 0 6px !important; white-space: nowrap; }
+  :root:root body .ex-wrap .ex-card { padding: 20px 16px !important; border-radius: 16px !important; }
+  :root:root body .ex-wrap .ex-card > h2 { font-size: 20px; }
+  :root:root body .ex-wrap .ex-row { padding: 14px !important; }
+  :root:root body .ex-wrap .ex-total-bar { bottom: 8px; padding: 12px; gap: 10px !important; }
+  :root:root body .ex-wrap .ex-total { font-size: 22px; }
+  :root:root body .ex-wrap .ex-total-bar .ex-actions { width: 100%; }
+  :root:root body .ex-wrap .ex-sub-row { grid-template-columns: 50px minmax(0, 1fr) auto; gap: 4px 12px; padding: 14px 16px; }
+  :root:root body .ex-wrap .ex-sub-row .ex-sub-state { grid-column: 2 / -1; flex-direction: row; align-items: center; justify-content: space-between; }
+  :root:root body .ex-wrap .ex-sub-date { height: 40px; font-size: 13px; }
+  :root:root body .ex-wrap .ex-detail { padding: 4px 12px 14px; }
+}
+@media (prefers-reduced-motion: reduce) { :root:root body .ex-wrap :is(.ex-row, .ex-tab, .ex-sub-row) { transition: none; } }
+
+/* 내 리포트를 펼친 항목: 영수증 | 날짜 · 품목 · 카테고리 | 금액 — 흰 카드 한 장씩 */
+:root:root body .ex-wrap .ex-d-item:has(> .ex-d-amt) { display: grid !important; grid-template-columns: 56px minmax(0, 1fr) auto; column-gap: 16px; row-gap: 3px; align-items: center; margin: 0 0 8px; padding: 14px 18px !important; border: 1px solid var(--ex-line) !important; border-radius: 14px !important; background: #fff !important; }
+:root:root body .ex-wrap .ex-d-item:has(> .ex-d-amt) > .ex-rcol { grid-column: 1; grid-row: 1 / span 3; align-self: center; margin: 0; }
+:root:root body .ex-wrap .ex-d-item:has(> .ex-d-amt) > .ex-d-date { grid-column: 2; grid-row: 1; }
+:root:root body .ex-wrap .ex-d-item:has(> .ex-d-amt) > .ex-d-main { grid-column: 2; grid-row: 2; }
+:root:root body .ex-wrap .ex-d-item:has(> .ex-d-amt) > .ex-d-sub { grid-column: 2; grid-row: 3; margin: 0; }
+:root:root body .ex-wrap .ex-d-item:has(> .ex-d-amt) > .ex-d-amt { grid-column: 3; grid-row: 1 / span 3; align-self: center; font-size: 15.5px; font-weight: 800; color: var(--ex-ink); }
+:root:root body .ex-wrap .ex-d-item:has(> .ex-d-amt) .ex-rthumb { width: 56px; height: 56px; border-radius: 12px; }
+:root:root body .ex-wrap .ex-detail .ex-note { border-radius: 12px; }
+:root:root body .ex-wrap .ex-detail .ex-actions { margin-top: 14px; }
+@media (max-width: 640px) {
+  :root:root body .ex-wrap .ex-d-item:has(> .ex-d-amt) { grid-template-columns: 48px minmax(0, 1fr); column-gap: 12px; padding: 12px 14px !important; }
+  :root:root body .ex-wrap .ex-d-item:has(> .ex-d-amt) > .ex-rcol { grid-row: 1 / span 4; align-self: start; }
+  :root:root body .ex-wrap .ex-d-item:has(> .ex-d-amt) > .ex-d-amt { grid-column: 2; grid-row: 4; align-self: start; text-align: left; margin-top: 2px; }
+  :root:root body .ex-wrap .ex-d-item:has(> .ex-d-amt) .ex-rthumb { width: 48px; height: 48px; }
+}
+:root:root body .ex-wrap .ex-d-item:has(> .ex-d-amt) { grid-auto-rows: min-content; align-content: center; }
+:root:root body .ex-wrap .ex-d-item:has(> .ex-d-amt) > :is(.ex-d-date, .ex-d-main, .ex-d-sub) { height: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; line-height: 1.5; }
+:root:root body .ex-wrap .ex-d-item:has(> .ex-d-amt) > .ex-d-main { font-size: 14.5px; }
+@media (max-width: 640px) { :root:root body .ex-wrap .ex-report-head > div:last-child { align-items: flex-start; } :root:root body .ex-wrap .ex-report-total { font-size: 26px; } }

@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=125">
+  <link rel="stylesheet" href="/expense.css?v=126">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=24">
   <link rel="stylesheet" href="/wolko-header.css?v=16">
@@ -44,6 +44,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   </header>
 
   <main class="ex-wrap">
+    <p class="wl-lead" data-t="headSub">영수증과 함께 경비를 제출하면 승인자와 회계 담당자가 차례로 확인해요.</p>
     <nav class="ex-tabs" id="exTabs"></nav>
     <section id="exView"></section>
   </main>
@@ -385,7 +386,9 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       if (me.isApprover) tabs.push({ id: 'approve', label: t('tabApprove'), n: counts.approve });
       if (me.isAccountant) tabs.push({ id: 'accounting', label: t('tabAcct'), n: counts.accounting });
       if (me.canViewAll) tabs.push({ id: 'all', label: t('tabAll') });
-      $('exTabs').innerHTML = tabs.map(x => `<button class="ex-tab ${x.id === 'new' ? (form?.editingId ? 'ex-tab-new is-edit' : 'ex-tab-new') : ''} ${x.id === tab ? 'active' : ''}" data-tab="${x.id}">${esc(x.label)}${x.n ? `<span class="ex-badge">${x.n}</span>` : ''}</button>`).join('');
+      const tabBtn = x => `<button class="ex-tab ${x.id === 'new' ? (form?.editingId ? 'ex-tab-new is-edit' : 'ex-tab-new') : ''} ${x.id === tab ? 'active' : ''}" data-tab="${x.id}">${esc(x.label)}${x.n ? `<span class="ex-badge">${x.n}</span>` : ''}</button>`;
+      // 새 리포트는 주 버튼으로 따로, 나머지 화면은 한 줄 알약 묶음으로
+      $('exTabs').innerHTML = tabBtn(tabs[0]) + `<div class="ex-seg">${tabs.slice(1).map(tabBtn).join('')}</div>`;
     }
 
     function projectOptions() {
@@ -714,9 +717,9 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
           <li>
             <button type="button" class="ex-sub-row" data-toggle="${esc(r.id)}" aria-expanded="${G.open.has(r.id)}">
               <span class="ex-sub-date">${esc(shortDate(r.submittedAt))}</span>
-              <span class="ex-sub-desc">${esc(r.description || t('noDesc'))}<span class="ex-meta"> · ${esc(t('gItems', r.rows.length))}${r.reviewedByName ? ' · ' + esc(t('approvedBy', r.reviewedByName)) : ''}</span></span>
+              <span class="ex-sub-desc">${esc(r.description || t('noDesc'))}<span class="ex-meta">${esc(t('gItems', r.rows.length))}${r.reviewedByName ? ' · ' + esc(t('approvedBy', r.reviewedByName)) : ''}</span></span>
               <span class="ex-sub-amt">${krw(r.total)}</span>
-              <span class="ex-status mini ${r.status}">${t('st_' + r.status)}</span>
+              <span class="ex-sub-state"><span class="ex-status mini ${r.status}">${t('st_' + r.status)}</span><span class="ex-steps ${r.status}" aria-hidden="true"><i></i><i></i><i></i></span></span>
             </button>
             <div class="ex-detail" id="d-${esc(r.id)}" ${G.open.has(r.id) ? '' : 'hidden'}>${detailHtml(r, 'mine')}</div>
           </li>`).join('')}</ul></section>` : `<div class="ex-empty">${t('emptyMine')}</div>`;
