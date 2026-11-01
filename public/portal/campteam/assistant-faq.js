@@ -17,7 +17,7 @@
   n('work', ['업무·회의·일정을 다루고 싶어요', 'Tasks, meetings and events'],
     ['어떤 일을 하실 건가요?', 'What would you like to do?'], { next: ['w_task', 'w_meeting', 'w_event', 'w_alerts', 'w_ooo', 'w_catchup'] });
   n('camp', ['캠프(행사)·TV 화면이 궁금해요', 'Camps and the TV screen'],
-    ['캠프 준비에 필요한 기능이에요.', 'These help you prepare camps.'], { next: ['c_create', 'c_space', 'c_tv', 'c_prep', 'c_series', 'c_phonecal'] });
+    ['캠프 준비에 필요한 기능이에요.', 'These help you prepare camps.'], { next: ['c_create', 'c_space', 'c_tv', 'c_prep', 'c_series', 'c_phonecal', 'c_wizard', 'c_close', 'c_survey'] });
   n('c_prep', ['진행표·준비물·연락처', 'Timeline, supplies, contacts'],
     ['캠프별 공간 맨 위의 「📋 캠프 준비」(또는 /portal/campteam/prep/)를 열어요. 진행표 탭은 날짜별 시간표(엑셀에서 붙여넣기 가능, 지금 진행 중인 줄이 초록으로 표시), 준비물 탭은 필요/구입함/준비 끝 상태와 지난 캠프에서 복사, 연락처 탭은 교회·학교·업체·강사 연락처예요. 연락처는 캠프팀 명단에 있는 사람만 봐요.',
      'Open "📋 Camp prep" at the top of a camp space (or /portal/campteam/prep/). Timeline: a schedule by day (paste from Excel; the running row turns green). Supplies: Needed/Bought/Ready with copy from a past camp. Contacts: churches, schools, vendors, speakers, visible only to camp team members.']);
@@ -27,6 +27,15 @@
   n('c_phonecal', ['폰 캘린더에 일정 넣기', 'Phone calendar'],
     ['캠프 준비 화면 위의 「📅 폰 캘린더 구독」에서 나만의 주소를 복사해 폰 캘린더의 「구독 캘린더」에 넣으면 팀 일정·캠프 기간·진행표·내 업무 마감이 보여요. 읽기 전용이고, 주소는 남에게 주지 마세요. 새 주소를 만들면 예전 주소는 멈춰요.',
      'In Camp prep, "📅 Phone calendar" gives you a personal address. Add it as a subscribed calendar to see team events, camp dates, timelines and your task due dates. It is read-only; do not share the address. Creating a new one stops the old one.']);
+  n('c_wizard', ['새 캠프 시작 마법사', 'Start wizard for a new camp'],
+    ['캠프 준비 화면의 「시작 마법사」 탭을 열고 위에서 새 캠프를 고르세요. 지난 캠프 후보가 나오고(「루미에게 추천받기」도 있어요), 하나를 고르면 업무·진행표·준비물·자료 후보가 보여요. 체크한 것만 복사돼요. 담당자는 비워지고 날짜는 시작일 차이만큼 옮겨져요.',
+     'In the "Start wizard" tab of Camp prep, pick the new camp at the top. Past camps appear (you can also ask Lumi to recommend); choose one to see tasks, timeline, supplies and files. Only ticked items are copied: owners stay empty and dates shift by the difference in start dates.']);
+  n('c_close', ['캠프 끝난 뒤 마감하기', 'Closing out a camp'],
+    ['캠프 준비 화면의 「마감 마법사」 탭에서 끝나지 않은 업무, 자료·준비물·회의 현황을 점검해요. 업무를 「해당 없음」으로 정리하고, 감사 인사·결과 보고서 같은 후속 업무를 골라 추가하고, 캠프 상태를 완료로 바꿀 수 있어요. 고른 것만 적용돼요.',
+     'In the "Close-out wizard" tab of Camp prep you review unfinished tasks and files/supplies/meetings, mark tasks not applicable, add follow-up tasks (thank-you notes, report) and set the camp to Done. Only what you choose is applied.']);
+  n('c_survey', ['캠프 평가 설문', 'Camp evaluation survey'],
+    ['캠프 준비 화면의 「평가 설문」 탭에서 설문을 만들고(기본 질문 6개), 「링크 켜기」로 만든 링크를 참가자·교회·스태프에게 보내세요. 로그인 없이 답할 수 있고 이름·연락처는 묻지 않아요. 결과는 캠프 담당자만 볼 수 있고, 필요 없어지면 링크를 끄면 돼요.',
+     'In the "Survey" tab of Camp prep, create a survey (6 default questions), turn the link on and send it to participants, churches or staff. No login needed and no name or contact is asked. Only camp managers see results; turn the link off when done.']);
   n('tips', ['화면·언어·권한이 궁금해요', 'Screen, language and permissions'],
     ['자주 헷갈리는 것들이에요.', 'Things that are often confusing.'], { next: ['t_lang', 't_phone', 't_trash', 't_perm', 't_off'] });
 
