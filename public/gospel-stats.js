@@ -250,7 +250,8 @@
       section.fields.forEach(function (f) {
         var desc = tx(f.label).split(' — ').slice(1).join(' — ');   // 본부 양식처럼 설명은 이름 아래에 그대로 보여 주고, ⓘ 에는 월코 쪽 추가 설명만 넣는다
         var extra = tx(f.note);   // 월코 정의서 각주 — 해당 항목에만 ⓘ
-        html += '<tr><td><span class="gs-itemname">' + esc(tx(f.short)) + '</span>' + infoBtn(extra, tx(f.short)) + (desc ? '<span class="gs-itemdesc">' + esc(desc) + '</span>' : '') + '</td>' + cols.map(function (c) { return '<td class="' + (tab === c[0] ? 'is-col ' : '') + (c[0] === 'all' ? 'gs-total' : '') + '">' + num(s[c[0]][f.id]) + '</td>'; }).join('') + '</tr>';
+        // 휴대폰에서는 이름·설명을 한 줄 전체로, 숫자 셋(평택·제주·합계)을 그 아래 한 줄로 놓는다 — data-label 이 숫자 위 작은 이름이 된다
+        html += '<tr><td><span class="gs-itemname">' + esc(tx(f.short)) + '</span>' + infoBtn(extra, tx(f.short)) + (desc ? '<span class="gs-itemdesc">' + esc(desc) + '</span>' : '') + '</td>' + cols.map(function (c) { return '<td class="' + (tab === c[0] ? 'is-col ' : '') + (c[0] === 'all' ? 'gs-total' : '') + '" data-label="' + esc(c[1]) + '">' + num(s[c[0]][f.id]) + '</td>'; }).join('') + '</tr>';
       });
     });
     $('statsTable').innerHTML = html + '</tbody>';

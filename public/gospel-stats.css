@@ -569,3 +569,18 @@ body.gs-writing { overflow: hidden; }
 .gs-choice-sub { font-size: 11.5px; font-weight: 600; line-height: 1.3; color: #7a909b; }
 .gs-meta .gs-choice:has(input:checked) .gs-choice-sub { color: #4f7d8c; }
 @media (max-width: 640px) { .gs-meta { padding: 14px; } }
+
+/* 항목별 통계 — 휴대폰: 옆으로 밀리지 않게 항목 이름·설명은 한 줄 전체, 숫자 셋은 그 아래 나란히 */
+@media (max-width: 640px) {
+  #statsTable { min-width: 0; }
+  #statsTable thead { display: none; }
+  #statsTable, #statsTable tbody { display: block; width: 100%; }
+  #statsTable tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1px solid #edf3f5; }
+  #statsTable tr.gs-section { display: block; }
+  #statsTable tr.gs-section td { display: block; padding: 14px 10px 8px; }
+  #statsTable td { display: block; border: 0; padding: 4px 6px 12px; text-align: center; }
+  #statsTable td:first-child { grid-column: 1 / -1; padding: 12px 10px 6px; text-align: left; }
+  #statsTable td[data-label]::before { content: attr(data-label); display: block; margin-bottom: 2px; color: var(--muted); font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #statsTable td.is-col { border-radius: 8px; }
+  #statsTable .gs-itemdesc { max-width: none; }
+}
