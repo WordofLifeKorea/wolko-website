@@ -15,8 +15,8 @@ const get = async (e, who) => As.onRequestGet({ env: e, request: await req(who, 
 const q = (t) => ({ messages: [{ role: 'user', content: t }], path: '/portal/campteam/files/', lang: 'ko' });
 
 test('GET: 팀원이면 member, 명단 밖이면 아님 · AI 키가 있어야 configured', async () => {
-  assert.deepEqual(await (await get(env(), U.mem)).json(), { member: true, configured: true });
-  assert.equal((await (await get(env(), U.out)).json()).member, false);
+  assert.deepEqual(await (await get(env(), U.mem)).json(), { member: true, guest: false, configured: true });
+  assert.deepEqual(await (await get(env(), U.out)).json(), { member: false, guest: true, configured: true }, '명단 밖의 월코 팀원은 guest(도움말·찾기만)');
   assert.equal((await (await get(env({}), U.mem)).json()).configured, false);
   assert.equal((await get(env(), null)).status, 401);
 });
@@ -41,12 +41,15 @@ test('이 챗은 포털 자료를 읽지 못한다: AI 에 가는 내용은 안�
   });
 });
 
-test('권한·한도·오류: 명단 밖 403 · 키 없으면 503 · 하루 한도를 넘으면 429(AI 호출 없음) · AI 오류는 502', async () => {
+test('권한·한도·오류: 명단 밖도 도움말은 되지만 하루 20개 · 키 없으면 503 · 팀원은 하루 200개를 넘으면 429(AI 호출 없음) · AI 오류는 502', async () => {
   const e = env();
   await withAi('x', async (calls) => {
-    assert.equal((await post(e, U.out, q('hi'))).status, 403); assert.equal((await post(e, null, q('hi'))).status, 401);
-    assert.equal((await post(e, U.mem, { messages: [] })).status, 400); assert.equal(calls.length, 0);
-    for (let i = 0; i < DAILY_LIMIT; i++) e.DB.sqlite.prepare("INSERT INTO audit_log (id, at, actor, action, entity, entityId, detail) VALUES (?1,?2,?3,'assistant','chat','','')").run('as' + i, new Date().toISOString(), U.mem);
+    assert.equal((await post(e, U.out, q('hi'))).status, 200, '명단 밖 월코 팀원도 도움말은 쓴다'); assert.equal((await post(e, null, q('hi'))).status, 401);
+    calls.length = 0; assert.equal((await post(e, U.mem, { messages: [] })).status, 400); assert.equal(calls.length, 0);
+    const old = (i, who) => e.DB.sqlite.prepare("INSERT INTO audit_log (id, at, actor, action, entity, entityId, detail) VALUES (?1,?2,?3,'assistant','chat','','')").run('as' + i + who, new Date(Date.now() - 2 * 60000 - i).toISOString(), who);
+    for (let i = 0; i < 20; i++) old(i, U.out); calls.length = 0; assert.equal((await post(e, U.out, q('21번째'))).status, 429, '명단 밖은 하루 20개'); assert.equal(calls.length, 0);
+    for (let i = 0; i < 199; i++) old(i, U.mem); assert.equal((await post(e, U.mem, q('200번째'))).status, 200, '팀원은 하루 200개까지');
+    calls.length = 0;
     const r = await post(e, U.mem, q('또 물어요')); assert.equal(r.status, 429); assert.equal((await r.json()).code, 'limit'); assert.equal(calls.length, 0);
     assert.equal((await post(e, U.dir, q('다른 사람은 괜찮다'))).status, 200, '한도는 사람마다');
   });

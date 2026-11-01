@@ -3,6 +3,7 @@ import { audit } from '../../lib/campteamDb.js';
 import { anthropicRoute } from '../../lib/anthropicRoute.js';
 import { isTeamMember } from './activity.js';
 import { DEFAULT_ASSIST_MODEL, chatClaude } from '../../lib/campteamAssist.js';
+import { aiLimit } from '../../lib/campteamLimits.js';
 import { MAX_TEXT, DAILY_TRANSLATE, cleanKind, detectTarget, buildTextPrompt, cleanOutput } from '../../lib/campteamTranslateText.js';
 
 /**
@@ -25,9 +26,7 @@ export async function onRequestPost({ env, request }) {
   const text = String(b.text || '').trim();
   if (!text) return badRequest('번역할 글을 넣어 주세요.');
   if (text.length > MAX_TEXT) return json({ error: `글이 너무 길어요 (${MAX_TEXT.toLocaleString()}자까지). 나눠서 번역해 주세요.`, code: 'too_long' }, 413);
-  const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-  const used = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE actor = ?1 AND action = 'translate_text' AND at >= ?2`).bind(s.email, since).first().catch(() => null))?.n || 0;
-  if (used >= DAILY_TRANSLATE) return json({ error: `오늘 번역 한도(${DAILY_TRANSLATE}번)를 다 썼어요. 내일 다시 해 주세요.`, code: 'limit' }, 429);
+  { const lim = await aiLimit(env, s); if (lim) return lim; }
   const to = detectTarget(text, b.to), kind = cleanKind(b.kind);
   let glossary = []; try { glossary = (await env.DB.prepare('SELECT termKo, termEn, keep FROM glossary WHERE deletedAt IS NULL').all()).results; } catch { glossary = []; }
   try {
