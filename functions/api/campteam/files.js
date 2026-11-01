@@ -5,6 +5,7 @@ import { CATEGORIES, FILE_STATUSES, restrictedFor, validExternalUrl, linkKindFor
 
 const SORTS = {
   newest: 'f.createdAt DESC', oldest: 'f.createdAt ASC', updated: 'f.updatedAt DESC', name: 'f.title COLLATE NOCASE ASC',
+  manual: 'COALESCE(f.sortOrder, 0) ASC, f.createdAt DESC',   // 폴더별 보기: 사람이 정한 순서(안 정한 것은 새것이 위)
 };
 const SELECT = `SELECT f.id, f.campId, f.typeId, f.title, f.description, f.category, f.topic, f.tags, f.lang, f.scripture, f.speaker, f.pairId, f.kind, f.storage, f.linkKind, f.externalUrl,
     f.uploadedBy, f.statusLabel, f.restricted, f.createdAt, f.updatedAt, f.isTest,
@@ -25,7 +26,7 @@ const NO_TAGS = (sql) => sql.replace('f.tags, f.lang, f.scripture, f.speaker,', 
 const NO_PAIR = (sql) => sql.replace('f.pairId,', 'NULL AS pairId,');   // 0025(한·영 짝) 전
 const NO_FOLDER = (sql) => sql.replace('f.folderId, fd.name AS folderName, fd.nameEn AS folderNameEn,', 'NULL AS folderId, NULL AS folderName, NULL AS folderNameEn,').replace('LEFT JOIN file_folders fd ON fd.id = f.folderId AND fd.deletedAt IS NULL\n  ', '');
 
-/** 목록 · 검색 · 필터 · 정렬: ?q= &campId=(없으면 전체, none=공통) &folderId=(none=폴더 없음) &typeId= &category= &status= &kind= &sort= &limit= &offset= */
+/** 목록 · 검색 · 필터 · 정렬: ?q= &campId=(없으면 전체, none=공통) &folderId=(none=폴더 없음) &typeId= &category= &status= &kind= &sort=(newest|oldest|updated|name|manual) &limit= &offset= */
 export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
@@ -33,7 +34,7 @@ export async function onRequestGet({ env, request }) {
   { const dv = denyView(s.perms, 'files', '자료실'); if (dv) return dv; }
   const p = new URL(request.url).searchParams;
   const q = text(p.get('q'), 80), campId = p.get('campId'), typeId = p.get('typeId'), kind = p.get('kind'), folderId = text(p.get('folderId'), 60), tag = text(p.get('tag'), 24);
-  const order = SORTS[p.get('sort')] || SORTS.newest;
+  let order = SORTS[p.get('sort')] || SORTS.newest;
   const limit = Math.min(Math.max(parseInt(p.get('limit'), 10) || 100, 1), 200), offset = Math.max(parseInt(p.get('offset'), 10) || 0, 0);
   const build = (folder, tg) => {
     const where = ['f.deletedAt IS NULL'], args = [];
@@ -67,8 +68,9 @@ export async function onRequestGet({ env, request }) {
       total = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM files f ${folder ? 'LEFT JOIN file_folders fd ON fd.id = f.folderId AND fd.deletedAt IS NULL' : ''} LEFT JOIN camps c ON c.id = f.campId LEFT JOIN file_versions v ON v.id = f.currentVersionId WHERE ${clause}`).bind(...args).first()).n;
       break;
     } catch (e) {
-      const m = String((e && e.message) || e), noFolder = folder && /file_folders|folderId/.test(m), noPub = pub && /file_public/.test(m), noTg = tg && /\b(tags|scripture|speaker)\b/.test(m), noPr = pr && /pairId/.test(m);
-      if (attempt > 4 || (!noFolder && !noPub && !noTg && !noPr)) throw e;
+      const m = String((e && e.message) || e), noFolder = folder && /file_folders|folderId/.test(m), noPub = pub && /file_public/.test(m), noTg = tg && /\b(tags|scripture|speaker)\b/.test(m), noPr = pr && /pairId/.test(m), noSort = order === SORTS.manual && /sortOrder/.test(m);
+      if (attempt > 5 || (!noFolder && !noPub && !noTg && !noPr && !noSort)) throw e;
+      if (noSort) order = SORTS.newest; // 0036(순서) 전: 새것이 위
       if (noPr) pr = false; if (noFolder) folder = false; if (noPub) pub = false; if (noTg) tg = false; // 0018·0023 적용 전에도 목록은 열린다
     }
   }

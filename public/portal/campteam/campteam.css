@@ -944,3 +944,48 @@ dialog.fm-dlg[open]{display:flex;flex-direction:column}dialog.fm-dlg::backdrop{b
 
 /* 좁은 화면 카드의 쪽 표시: 마우스로도 누를 수 있는 화살표와 점 */
 @media(max-width:900px){.pgr i[data-pg]{cursor:pointer;padding:0;box-sizing:content-box;border:6px solid transparent;background-clip:padding-box;margin:0 -3px}.pgr .pgb{border:0;background:#eaf0f3;color:var(--blue);width:28px;height:26px;border-radius:8px;font:800 17px/1 var(--f-body);cursor:pointer;padding:0}.pgr .pgb:disabled{opacity:.35;cursor:default}}
+
+/* ── 자료실 폴더 트리 (폴더 안의 폴더, 들여쓰기·끌어다 놓기·이동·삭제 창) ── */
+.ft-tool{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px}.ft-tool .hint{flex:1 1 160px;min-width:0;color:var(--blue)}
+.ft-dnd{margin:0 0 10px}
+.ft-portal{margin-bottom:10px}
+.ft-root{display:none;margin:0 0 10px;padding:10px 12px;border:2px dashed #b9cfd8;border-radius:var(--ws-radius-sm,8px);color:var(--mid);font:600 13px var(--f-body);text-align:center}
+.ft-dragging .ft-root{display:block}.ft-root.ft-root-on,.ft-loose.ft-root-on{border-color:var(--blue);background:#eaf4f9;color:var(--blue)}
+.ft-loose{margin-top:14px;border-radius:var(--ws-radius-sm,8px)}.ft-loose.ft-root-on{outline:2px dashed var(--blue);outline-offset:4px}
+.ft-tree{display:grid;gap:8px;margin:0 0 6px}
+.fnode{min-width:0}
+.fcard{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:#fff;border:1px solid var(--border);border-radius:var(--ws-radius-sm,8px);padding:8px 10px;transition:border-color .15s,box-shadow .15s}
+.fcard:hover{border-color:#c8dbe2}
+.fcard.focus{border-color:var(--blue);box-shadow:0 0 0 3px #cfe6f1}
+.fcaret{flex:none;width:32px;height:32px;border:0;background:none;color:var(--mid);font-size:16px;cursor:pointer;border-radius:6px}.fcaret:hover{background:#eef4f7;color:var(--text)}
+.fmain{flex:1 1 200px;min-width:0;display:flex;align-items:center;gap:10px;cursor:pointer;padding:4px 0}
+.fmain .fi{font-size:24px;line-height:1;flex:none}.fmain .ft{display:grid;min-width:0}.fmain b{font:700 14px var(--f-body);overflow-wrap:anywhere}.fmain small{color:var(--mid);font-size:12px}
+.fact{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.fkids{margin:6px 0 2px 16px;padding-left:12px;border-left:2px solid #d5e4eb;display:grid;gap:8px}
+.fkids .file-row{margin-bottom:0}
+.fempty{color:var(--mid);font-size:12.5px;padding:6px 4px}
+.fnode[data-depth="1"]>.fcard{background:#f7fbfd}
+.ft-src{opacity:.45}
+.fcard.ft-in,.file-row.ft-in{outline:3px solid var(--blue);outline-offset:-1px;background:#eaf4f9}
+.ft-before{box-shadow:0 -4px 0 0 var(--blue)}.ft-after{box-shadow:0 4px 0 0 var(--blue)}
+.file-row[draggable=true],.fcard[draggable=true]{cursor:grab}
+.file-row .actions{display:flex;gap:6px;flex-wrap:wrap}
+.ft-dlg{width:min(520px,calc(100vw - 24px));max-height:90vh;overflow:auto}
+.mvlist{display:grid;gap:4px;max-height:52vh;overflow:auto;margin:0 0 4px}
+.mvopt{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;min-height:44px;padding:8px 12px;border:1px solid var(--border);background:#fff;border-radius:var(--ws-radius-sm,8px);font:600 14px var(--f-body);color:var(--text);cursor:pointer}
+.mvopt span{overflow-wrap:anywhere}.mvopt small{flex:none;color:var(--mid);font-weight:500;font-size:12px}
+.mvopt:hover:not(:disabled){border-color:var(--blue);background:#eaf4f9}.mvopt:disabled{background:#f4f6f8;color:var(--mid);cursor:not-allowed}
+.delopts{display:grid;gap:8px;margin:10px 0}
+.delopt{display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid var(--border);border-radius:var(--ws-radius-sm,8px);cursor:pointer;line-height:1.5;font-size:14px}
+.delopt input{width:20px;height:20px;margin:1px 0 0;flex:none;accent-color:var(--blue)}
+.delopt:has(input:checked){border-color:var(--blue);background:#eaf4f9}
+.delnote{margin:0 0 4px}
+@media(max-width:900px){
+  .ft-tool .btn,.fact .btn,.file-row .actions .btn{height:40px;padding:0 12px;font-size:13px}
+  .fcard{padding:8px}.fcaret{width:40px;height:40px}.fact{margin-left:0;width:100%}
+  .fkids{margin-left:8px;padding-left:8px}
+  .mvopt{min-height:48px}
+  .delopt{padding:14px}
+  #ftDlg input{font-size:16px}
+}
+.fkids,.fnode,.fkids .file-row,.ft-tree{min-width:0;max-width:100%}.fkids .file-row .fm{min-width:0;overflow-wrap:anywhere}

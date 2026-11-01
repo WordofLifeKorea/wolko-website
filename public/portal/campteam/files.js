@@ -66,7 +66,7 @@
   var STATUS = ['draft', 'active', 'archived'];
   var KINDS = ['pdf', 'doc', 'xls', 'ppt', 'img', 'audio', 'video', 'link', 'etc'];
   var KIND_LABEL = { img: 'kindimg' };
-  var S = { items: [], total: 0, types: [], perms: null, detailId: null, folders: [], portal: [], portalTotal: 0, portalCamps: [], portalOrder: {}, pcamp: '', pp: [], ppFlat: false, view: 'folders', folderId: '', pick: null, tag: '', tagStats: [] };
+  var S = { items: [], total: 0, types: [], perms: null, detailId: null, folders: [], portal: [], portalTotal: 0, portalCamps: [], portalOrder: {}, pcamp: '', pp: [], ppFlat: false, view: 'folders', folderId: '', focus: '', filtered: false, pick: null, tag: '', tagStats: [] };
   try { if (localStorage.getItem('ct-files-view') === 'all') S.view = 'all'; } catch (e) { /* 저장 못 해도 괜찮다 */ }
   var MAX_PICK = 200; // 한 번에 올릴 수 있는 파일 수
   var HIDDEN = /(^|\/)(\.[^/]*|__MACOSX|Thumbs\.db|desktop\.ini|~\$[^/]*)(\/|$)/i; // 숨김·시스템 파일(.DS_Store 등)은 올리지 않는다
@@ -106,14 +106,25 @@
     ['fcat:category', 'fstatus:status', 'fkind:kind', 'fsort:sort'].forEach(function (m) { var p = m.split(':'), v = $(p[0]).value; if (v) q.set(p[1], v); });
     var pcamp = t.indexOf('portal:') === 0 ? t.slice(7) : '', inPortal = !term && !pcamp && S.view === 'folders' && S.folderId === 'portal', filtered = !!((t && !pcamp) || $('fcat').value || $('fstatus').value || $('fkind').value);
     if (pcamp) t = '';
-    if (!term && S.view === 'folders' && !inPortal) q.set('folderId', S.folderId || 'none'); // 폴더별 보기: 폴더 안, 또는 폴더 없는 자료
+    var tree = !term && !pcamp && S.view === 'folders' && !inPortal; // 폴더별 보기: 모든 폴더와 파일을 한 번에 가져와 트리로 그린다(순서는 사람이 정한 순서)
+    if (tree) { q.set('sort', 'manual'); q.set('limit', '200'); }
+    S.filtered = filtered || !!S.tag;
     var fq = term ? '?q=' + encodeURIComponent(term) : '', none = { items: [], total: 0 };
-    var res = await Promise.all([inPortal || pcamp ? Promise.resolve({ items: [], total: 0, perms: S.perms }) : CT.api('/api/campteam/files?' + q.toString()),
+    var res = await Promise.all([inPortal || pcamp ? Promise.resolve({ items: [], total: 0, perms: S.perms }) : (tree ? fetchAllFiles(q) : CT.api('/api/campteam/files?' + q.toString())),
       CT.api('/api/campteam/folders' + fq).catch(function () { return { folders: [] }; }),
       filtered ? Promise.resolve(none) : CT.api('/api/campteam/portal-files' + fq).catch(function () { return none; })]); // 월코 포털 자료(읽기 전용, 캠프팀 명단 사람만)
     S.items = res[0].items; S.total = res[0].total; S.tagStats = res[0].tagStats || []; S.perms = res[0].perms; S.folders = res[1].folders || []; S.portal = res[2].items || []; S.portalTotal = res[2].total || 0; S.portalCamps = res[2].camps || []; S.portalOrder = res[2].teamOrder || {}; S.pcamp = pcamp;
     if (pcamp) { var all = S.portal; S.portal = all.filter(function (i) { return campKeys(i).indexOf(pcamp) >= 0; }); S.portalTotal = all.length; }
+    if (S.focus && window.CTTree) CTTree.reveal(S.focus); // 검색 결과·올린 폴더를 눌렀을 때: 그 폴더와 윗 폴더를 펼친다
     renderList(); renderTagBar(); loadUndo();
+  }
+  async function fetchAllFiles(q) { // 200개씩 끊어 오는 목록을 끝까지(최대 2000개) 이어 붙인다
+    var first = await CT.api('/api/campteam/files?' + q.toString()), items = first.items.slice();
+    for (var n = 0; items.length < first.total && n < 9; n++) {
+      var q2 = new URLSearchParams(q.toString()); q2.set('offset', String(items.length));
+      var r = await CT.api('/api/campteam/files?' + q2.toString()); if (!r.items.length) break; items = items.concat(r.items);
+    }
+    first.items = items; return first;
   }
   /* ---- 태그로 거르기 · 방금 올린 묶음 한 번에 되돌리기 ---- */
   function renderTagBar() {
@@ -161,20 +172,28 @@
   }
   function ppInTree() { return !S.pcamp && S.view === 'folders' && S.folderId === 'portal' && !$('fq').value.trim(); }
   function ppFiles() { var g = ppGroups(S.pp); return (!g.length || S.ppFlat) ? ppItems(S.pp) : []; } // 묶음 카드가 있으면 카드만, 없으면(또는 모두 보기) 파일
+  function treeMode() { return S.view === 'folders' && S.folderId !== 'portal' && !$('fq').value.trim() && !S.pcamp; }
+  function fileRowHtml(f, o) { // o.tree: 폴더 트리 안의 줄(끌어다 놓기·위/아래 버튼), o.up/o.down: 위·아래로 옮길 수 있는지
+    o = o || {};
+    var meta = [f.folderName && !o.tree ? '📁 ' + (CT.lang() === 'en' && f.folderNameEn ? f.folderNameEn : f.folderName) : '', where(f), CT.t('cat' + f.category), f.topic, f.scripture, f.speaker, f.tags ? f.tags.split(',').map(function (t) { return '#' + tagLabel(t); }).join(' ') : '', f.uploadedBy, day(f.createdAt), f.isPublic ? '🌐 ' + CT.t('publicChip') : '', f.pairId ? '🇰🇷↔🇺🇸' : ''].filter(Boolean).map(esc).join(' · ');
+    if (f.storage !== 'link' && f.versionNo) meta += ' · v' + f.versionNo + (f.sizeBytes ? ' · ' + fmtSize(f.sizeBytes) : '');
+    if (f.storage === 'link') meta += ' · ' + esc(linkLabel(f.linkKind));
+    var mv = perms().write && canEdit(f), drag = o.tree && mv;
+    return '<div class="file-row' + (o.tree ? ' in-tree' : '') + '" data-id="' + esc(f.id) + '"' + (drag ? ' draggable="true" data-drag="file:' + esc(f.id) + '"' : '') + '>' + kindChip(f) +
+      '<div class="fm"><b data-open="' + esc(f.id) + '">' + esc(f.title) + '</b>' + (f.isTest ? '<span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + statusChip(f) + (f.restricted ? '<span class="chip lock">🔒 ' + esc(CT.t('locked')) + '</span>' + CT.help('restricted') : '') +
+      '<small>' + meta + '</small></div>' +
+      '<div class="actions"><button class="btn sm" data-open="' + esc(f.id) + '">' + esc(CT.t('details')) + '</button>' +
+      (f.storage === 'link' ? '<a class="btn sm pri" href="' + esc(f.externalUrl) + '" target="_blank" rel="noopener noreferrer">' + esc(CT.t('openExternal')) + '</a>' : '<button class="btn sm pri" data-dl="' + esc(f.id) + '">' + esc(CT.t('download')) + '</button>') +
+      (mv ? '<button type="button" class="btn sm" data-fmovefile="' + esc(f.id) + '">' + esc(CT.t('folderMove')) + '</button>' : '') +
+      (drag && o.up ? '<button type="button" class="btn sm" data-fup="file:' + esc(f.id) + '">' + esc(CT.t('moveUp')) + '</button>' : '') + (drag && o.down ? '<button type="button" class="btn sm" data-fdown="file:' + esc(f.id) + '">' + esc(CT.t('moveDown')) + '</button>' : '') + '</div></div>';
+  }
   function renderList() {
     $('addFile').hidden = !canAdd(); renderFolders();
-    var tree = ppInTree(), pl = tree ? ppFiles() : S.portal, showPortal = pl.length && ($('fq').value.trim() || S.view === 'all' || S.folderId === 'portal' || S.pcamp);
-    $('countLine').textContent = tree ? ppItems(S.pp).length + CT.t('count') : (S.total + (showPortal ? pl.length : 0)) + CT.t('count');
-    $('list').innerHTML = S.items.length ? S.items.map(function (f) {
-      var meta = [f.folderName ? '📁 ' + (CT.lang() === 'en' && f.folderNameEn ? f.folderNameEn : f.folderName) : '', where(f), CT.t('cat' + f.category), f.topic, f.scripture, f.speaker, f.tags ? f.tags.split(',').map(function (t) { return '#' + tagLabel(t); }).join(' ') : '', f.uploadedBy, day(f.createdAt), f.isPublic ? '🌐 ' + CT.t('publicChip') : '', f.pairId ? '🇰🇷↔🇺🇸' : ''].filter(Boolean).map(esc).join(' · ');
-      if (f.storage !== 'link' && f.versionNo) meta += ' · v' + f.versionNo + (f.sizeBytes ? ' · ' + fmtSize(f.sizeBytes) : '');
-      if (f.storage === 'link') meta += ' · ' + esc(linkLabel(f.linkKind));
-      return '<div class="file-row" data-id="' + esc(f.id) + '">' + kindChip(f) +
-        '<div class="fm"><b data-open="' + esc(f.id) + '">' + esc(f.title) + '</b>' + (f.isTest ? '<span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + statusChip(f) + (f.restricted ? '<span class="chip lock">🔒 ' + esc(CT.t('locked')) + '</span>' + CT.help('restricted') : '') +
-        '<small>' + meta + '</small></div>' +
-        '<div class="actions"><button class="btn sm" data-open="' + esc(f.id) + '">' + esc(CT.t('details')) + '</button>' +
-        (f.storage === 'link' ? '<a class="btn sm pri" href="' + esc(f.externalUrl) + '" target="_blank" rel="noopener noreferrer">' + esc(CT.t('openExternal')) + '</a>' : '<button class="btn sm pri" data-dl="' + esc(f.id) + '">' + esc(CT.t('download')) + '</button>') + '</div></div>';
-    }).join('') + (showPortal ? pl.map(portalRow).join('') : '') : (showPortal ? pl.map(portalRow).join('') : (tree && ppGroups(S.pp).length ? '' : '<div class="empty">' + esc(CT.t('noFiles')) + '</div>'));
+    var tree = treeMode(); $('fsort').hidden = tree; // 폴더별 보기는 사람이 정한 순서를 쓰므로 정렬 선택은 숨긴다
+    if (tree) { $('countLine').textContent = S.total + CT.t('count'); $('list').innerHTML = ''; if (window.CTTree) CTTree.afterRender(); return; }
+    var ptree = ppInTree(), pl = ptree ? ppFiles() : S.portal, showPortal = pl.length && ($('fq').value.trim() || S.view === 'all' || S.folderId === 'portal' || S.pcamp);
+    $('countLine').textContent = ptree ? ppItems(S.pp).length + CT.t('count') : (S.total + (showPortal ? pl.length : 0)) + CT.t('count');
+    $('list').innerHTML = S.items.length ? S.items.map(function (f) { return fileRowHtml(f, {}); }).join('') + (showPortal ? pl.map(portalRow).join('') : '') : (showPortal ? pl.map(portalRow).join('') : (ptree && ppGroups(S.pp).length ? '' : '<div class="empty">' + esc(CT.t('noFiles')) + '</div>'));
   }
   function portalRow(f) { // 월코 포털 자료: 열기만 된다
     var tree = ppInTree(), tab = CT.lang() === 'en' ? f.tabEn : f.tabKo, meta = [tree ? '' : tab, tree && S.pp.length > 2 ? '' : f.team, f.person, tree ? '' : (CT.lang() === 'en' ? f.camps : (f.campsKo || f.camps)).join(', '), f.uploadedBy, day(f.createdAt)].filter(Boolean).map(esc).join(' · ');
@@ -184,7 +203,7 @@
 
   /* ---- 폴더 보기 ---- */
   function renderFolders() {
-    var term = $('fq').value.trim(), box = $('folders'), cur = S.folderId && S.folders.filter(function (d) { return d.id === S.folderId; })[0], can = canAdd();
+    var term = $('fq').value.trim(), box = $('folders');
     $('viewBar').innerHTML = ['folders', 'all'].map(function (v) { return '<button type="button" class="tab' + (S.view === v ? ' on' : '') + '" data-view="' + v + '">' + esc(CT.t(v === 'folders' ? 'viewFolders' : 'viewAll')) + '</button>'; }).join('');
     $('viewBar').hidden = !!term || !!S.pcamp;
     var h = '';
@@ -199,26 +218,22 @@
         h += '<div class="folder-grid">' + (S.ppFlat ? '' : groups.map(function (g) { return '<button type="button" class="folder-card" data-pp="' + esc(g.key) + '"><span class="fi">' + icon + '</span><b>' + esc(g.label) + '</b><small>' + g.count + esc(CT.t('folderFiles')) + '</small></button>'; }).join('')) + '</div>' +
           '<div class="actions" style="margin:0 0 10px"><button type="button" class="btn sm" data-ppflat="1">' + esc(CT.t(S.ppFlat ? 'ppCards' : 'ppAll')) + '</button></div>';
       }
-    } else if (!term && S.view === 'folders' && S.folderId) {
-      h = '<div class="crumb"><button type="button" class="btn sm" data-folder="">' + esc(CT.t('backAll')) + '</button><b>📁 ' + esc(cur ? folderLabel(cur) : '') + '</b>' +
-        (cur && can ? '<button type="button" class="btn sm" data-frename="' + esc(cur.id) + '">' + esc(CT.t('folderRename')) + '</button><button type="button" class="btn sm danger" data-fdel="' + esc(cur.id) + '">' + esc(CT.t('folderDel')) + '</button>' : '') + '</div>';
-    } else if ((term || S.view === 'folders') && (S.folders.length || (S.portalTotal && !term))) {
-      h = '<div class="folder-grid">' + (S.portalTotal && !term ? '<button type="button" class="folder-card" data-folder="portal"><span class="fi">🌐</span><b>' + esc(CT.t('portalFolder')) + '</b><small>' + S.portalTotal + esc(CT.t('folderFiles')) + ' · ' + esc(CT.t('portalRO')) + '</small></button>' : '') + S.folders.map(function (d) {
-        return '<button type="button" class="folder-card" data-folder="' + esc(d.id) + '"><span class="fi">📁</span><b>' + esc(folderLabel(d)) + '</b><small>' + d.fileCount + esc(CT.t('folderFiles')) + (d.campKo || d.campEn ? ' · ' + esc(CT.lang() === 'en' ? (d.campEn || d.campKo) : (d.campKo || d.campEn)) : '') + '</small></button>'; }).join('') + '</div>' +
-        (!term && S.view === 'folders' ? '<h4 class="subhead">' + esc(CT.t('noFolderFiles')) + '</h4>' : '');
+    } else if (!term && S.view === 'folders') {
+      h = window.CTTree ? CTTree.html() : ''; // 폴더 안의 폴더(최대 5단계)를 들여쓴 트리 — files-tree.js
+    } else if (term && S.folders.length) { // 검색 중: 이름이 맞는 폴더를 카드로 (누르면 그 폴더를 트리에서 열어 보여 준다)
+      h = '<div class="folder-grid">' + S.folders.map(function (d) {
+        return '<button type="button" class="folder-card" data-folder="' + esc(d.id) + '"><span class="fi">📁</span><b>' + esc(folderLabel(d)) + '</b><small>' + (d.treeCount != null ? d.treeCount : d.fileCount) + esc(CT.t('folderFiles')) + (d.campKo || d.campEn ? ' · ' + esc(CT.lang() === 'en' ? (d.campEn || d.campKo) : (d.campKo || d.campEn)) : '') + '</small></button>'; }).join('') + '</div>';
     }
     box.innerHTML = h; box.hidden = !h;
   }
   async function onFolderClick(e) {
-    var o = e.target.closest('[data-folder]'), rn = e.target.closest('[data-frename]'), dl = e.target.closest('[data-fdel]');
+    var o = e.target.closest('[data-folder]');
     try {
       var pp = e.target.closest('[data-pp]'), ppi = e.target.closest('[data-ppi]'), pf = e.target.closest('[data-ppflat]');
       if (pp) { S.pp.push(pp.dataset.pp); S.ppFlat = false; renderList(); }
       else if (ppi) { S.pp = S.pp.slice(0, Number(ppi.dataset.ppi)); S.ppFlat = false; renderList(); }
       else if (pf) { S.ppFlat = !S.ppFlat; renderList(); }
-      else if (o) { S.view = 'folders'; S.folderId = o.dataset.folder; S.pp = []; S.ppFlat = false; if ($('fq').value) $('fq').value = ''; await loadList(); }
-      else if (rn) { var d = S.folders.filter(function (x) { return x.id === rn.dataset.frename; })[0], nm = prompt(CT.t('folderRename'), d ? d.name : ''); if (nm == null || !nm.trim()) return; await CT.api('/api/campteam/folders?id=' + encodeURIComponent(rn.dataset.frename), { method: 'PATCH', body: { name: nm.trim() } }); await loadList(); }
-      else if (dl) { if (!confirm(CT.t('confirmFolderDel'))) return; await CT.api('/api/campteam/folders?id=' + encodeURIComponent(dl.dataset.fdel), { method: 'DELETE' }); S.folderId = ''; await loadList(); }
+      else if (o) { var id = o.dataset.folder; S.view = 'folders'; S.folderId = id === 'portal' ? 'portal' : ''; S.focus = id === 'portal' ? '' : id; S.pp = []; S.ppFlat = false; if ($('fq').value) $('fq').value = ''; await loadList(); }
     } catch (err) { alert(err.message); }
   }
 
@@ -305,8 +320,14 @@
   function newDocsHtml() {
     return '<div class="newdocs" data-guide="files.newdocs"><b>' + esc(CT.t('newDocs')) + '</b>' + NEW_DOCS.map(function (n) { return '<a class="btn sm" target="_blank" rel="noopener noreferrer" href="' + n[1] + '">' + n[2] + ' ' + esc(CT.t(n[0])) + ' ↗</a>'; }).join('') + '<small class="hint">' + esc(CT.t('newDocHint')) + '</small></div>';
   }
+  function folderPreorder() { // 폴더를 위 폴더 바로 아래에 들여써서 차례로 (위 폴더가 목록에 없으면 맨 위로 본다)
+    var byId = {}, kids = { '': [] }, out = []; S.folders.forEach(function (d) { byId[d.id] = d; });
+    S.folders.forEach(function (d) { var p = d.parentId && byId[d.parentId] ? d.parentId : ''; (kids[p] = kids[p] || []).push(d); });
+    (function walk(p, depth) { (kids[p] || []).forEach(function (d) { out.push({ d: d, depth: depth }); walk(d.id, depth + 1); }); })('', 0);
+    return out;
+  }
   function folderOptions(selected) {
-    return '<option value="">' + esc(CT.t('folderNone')) + '</option>' + S.folders.map(function (d) { return '<option value="' + esc(d.id) + '"' + (selected === d.id ? ' selected' : '') + '>📁 ' + esc(folderLabel(d)) + '</option>'; }).join('');
+    return '<option value="">' + esc(CT.t('folderNone')) + '</option>' + folderPreorder().map(function (x) { return '<option value="' + esc(x.d.id) + '"' + (selected === x.d.id ? ' selected' : '') + '>' + new Array(x.depth + 1).join('\u2003') + '📁 ' + esc(folderLabel(x.d)) + '</option>'; }).join('');
   }
   /** 태그는 「한글/영어」 짝으로 저장돼 있다(예: 기도/prayer) — 화면 언어에 맞는 쪽을 보여 준다(검색은 어느 쪽으로도 된다) */
   function tagLabel(t) { var p = String(t).split('/'); if (p.length < 2) return String(t); var koFirst = /[가-힣]/.test(p[0]), ko = koFirst ? p[0] : p[1], en = koFirst ? p[1] : p[0]; return CT.lang() === 'en' ? en : ko; }
@@ -605,7 +626,7 @@
         $('prog').hidden = false; $('formSave').textContent = CT.t('uploading');
         await xhrUpload(file, q, function (r) { $('prog').firstElementChild.style.width = Math.round(r * 100) + '%'; });
       }
-      dlg.close(); S.pick = null; if (folderGo) { S.view = 'folders'; S.folderId = folderGo; } await loadList(); if (mode !== 'file' && mode !== 'link') showDetail(id);
+      dlg.close(); S.pick = null; if (folderGo) { S.view = 'folders'; S.folderId = ''; S.focus = folderGo; } await loadList(); if (mode !== 'file' && mode !== 'link') showDetail(id);
     } catch (e) { $('formErr').textContent = e.message; $('formErr').hidden = false; }
     $('formSave').disabled = false; $('formSave').textContent = CT.t('save');
   }
@@ -690,10 +711,11 @@
   var timer = null;
   CT.pre('/api/campteam/camps'); CT.pre('/api/campteam/files?');
   CT.boot(async function () {
+    if (window.CTTree) CTTree.init({ S: S, label: folderLabel, can: function () { return perms().write; }, fileRow: fileRowHtml, reload: function () { return loadList(); }, render: function () { renderList(); }, boxes: [$('folders'), $('list')] });
     try { S.types = (await CT.api('/api/campteam/camps')).types; await loadList(); } catch (e) { $('main').insertAdjacentHTML('afterbegin', '<div class="err">' + esc(e.message) + '</div>'); return; }
     filterOptions(); CT.applyI18n(); filterOptions(); renderList();
     var up = new URLSearchParams(location.search); // 다른 화면에서 /portal/campteam/files/?category=budget 처럼 열 수 있다
-    if (up.get('category')) $('fcat').value = up.get('category'); if (up.get('campId')) $('fcamp').value = 'camp:' + up.get('campId'); if (up.get('typeId')) $('fcamp').value = 'type:' + up.get('typeId'); if (up.get('folderId')) { S.view = 'folders'; S.folderId = up.get('folderId'); }
+    if (up.get('category')) $('fcat').value = up.get('category'); if (up.get('campId')) $('fcamp').value = 'camp:' + up.get('campId'); if (up.get('typeId')) $('fcamp').value = 'type:' + up.get('typeId'); if (up.get('folderId')) { S.view = 'folders'; S.folderId = ''; S.focus = up.get('folderId'); }
     if (up.get('category') || up.get('campId') || up.get('typeId') || up.get('folderId')) await loadList();
     if (up.get('open')) showDetail(up.get('open')); // 보관함 등에서 자료 하나를 바로 열기
     ['fcamp', 'fcat', 'fstatus', 'fkind', 'fsort'].forEach(function (id) { $(id).onchange = loadList; });
@@ -710,11 +732,12 @@
     $('formCancel').onclick = function () { $('formDlg').close(); S.pick = null; };
     $('formDlg').addEventListener('close', function () { if ($('formDlg').dataset.mode === 'file') S.pick = null; });
     $('form').onsubmit = submitForm;
-    $('list').addEventListener('click', function (e) {
+    var openOrDl = function (e) {
       var o = e.target.closest('[data-open]'), d = e.target.closest('[data-dl]');
       if (o) showDetail(o.dataset.open); else if (d) download(d.dataset.dl);
-    });
-    $('viewBar').addEventListener('click', function (e) { var b = e.target.closest('[data-view]'); if (!b) return; S.view = b.dataset.view; S.folderId = ''; try { localStorage.setItem('ct-files-view', S.view); } catch (x) {} loadList(); });
+    };
+    $('list').addEventListener('click', openOrDl); $('folders').addEventListener('click', openOrDl);
+    $('viewBar').addEventListener('click', function (e) { var b = e.target.closest('[data-view]'); if (!b) return; S.view = b.dataset.view; S.folderId = ''; S.focus = ''; try { localStorage.setItem('ct-files-view', S.view); } catch (x) {} loadList(); });
     $('folders').addEventListener('click', onFolderClick);
     document.addEventListener('ct-files-changed', function () { loadList(); });
     document.addEventListener('ct-lang', function () { CT.applyI18n(); filterOptions(); renderList(); renderTagBar(); loadUndo(); if (S.pick) renderPick(); });
