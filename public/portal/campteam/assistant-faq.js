@@ -13,14 +13,14 @@
   n('upload', ['자료를 올리고 싶어요', 'I want to add a file'],
     ['어떻게 올리실 건가요?', 'How would you like to add it?'], { next: ['up_file', 'up_many', 'up_link', 'up_share', 'up_undo'] });
   n('find', ['자료·업무를 찾고 싶어요', 'I want to find something'],
-    ['무엇을 찾으세요?', 'What are you looking for?'], { next: ['find_all', 'find_tag', 'find_camp', 'find_portal', 'find_library'] });
+    ['무엇을 찾으세요?', 'What are you looking for?'], { next: ['find_all', 'find_tag', 'find_camp', 'find_portal', 'find_library', 'find_filelib'] });
   n('work', ['업무·회의·일정을 다루고 싶어요', 'Tasks, meetings and events'],
     ['어떤 일을 하실 건가요?', 'What would you like to do?'], { next: ['w_task', 'w_meeting', 'w_event', 'w_alerts', 'w_ooo', 'w_catchup'] });
   n('camp', ['캠프(행사)·TV 화면이 궁금해요', 'Camps and the TV screen'],
     ['캠프 준비에 필요한 기능이에요.', 'These help you prepare camps.'], { next: ['c_create', 'c_space', 'c_tv', 'c_prep', 'c_series', 'c_phonecal', 'c_wizard', 'c_close', 'c_survey', 'c_assign'] });
   n('c_prep', ['진행표·준비물·연락처', 'Timeline, supplies, contacts'],
-    ['캠프별 공간 맨 위의 「📋 캠프 준비」(또는 /portal/campteam/prep/)를 열어요. 진행표 탭은 날짜별 시간표(엑셀에서 붙여넣기 가능, 지금 진행 중인 줄이 초록으로 표시), 준비물 탭은 필요/구입함/준비 끝 상태와 지난 캠프에서 복사, 연락처 탭은 교회·학교·업체·강사 연락처예요. 연락처는 캠프팀 명단에 있는 사람만 봐요.',
-     'Open "📋 Camp prep" at the top of a camp space (or /portal/campteam/prep/). Timeline: a schedule by day (paste from Excel; the running row turns green). Supplies: Needed/Bought/Ready with copy from a past camp. Contacts: churches, schools, vendors, speakers, visible only to camp team members.']);
+    ['왼쪽 메뉴의 「캠프 준비」(또는 캠프별 공간 맨 위의 「📋 캠프 준비」)를 열어요. 진행표 탭은 날짜별 시간표(엑셀에서 붙여넣기 가능, 지금 진행 중인 줄이 초록으로 표시), 준비물 탭은 필요/구입함/준비 끝 상태와 지난 캠프에서 복사, 연락처 탭은 교회·학교·업체·강사 연락처예요. 연락처는 캠프팀 명단에 있는 사람만 봐요.',
+     'Open "Camp Prep" in the left menu (or "📋 Camp prep" at the top of a camp space). Timeline: a schedule by day (paste from Excel; the running row turns green). Supplies: Needed/Bought/Ready with copy from a past camp. Contacts: churches, schools, vendors, speakers, visible only to camp team members.']);
   n('c_series', ['반복되는 캠프 (교회·교회학교)', 'Recurring camps'],
     ['캠프 준비 화면의 「반복 캠프」 탭에서 시리즈를 만들고 열리는 달(예: 3·7·12월)을 골라 두세요. 새 회차는 연도와 달을 골라 「새 회차 만들기」로 직접 만들어요. 자동으로 만들지 않아요.',
      'In the "Recurring camps" tab of Camp prep, create a series and pick the months it runs (e.g. 3, 7, 12). Create each round yourself by choosing year and month. Nothing is created automatically.']);
@@ -78,6 +78,9 @@
   n('ai_checklist', ['체크리스트 파일 → 업무', 'Checklist file → tasks'],
     ['체크리스트 파일(체크 표시나 목록으로 된 글)을 AI 정리함으로 읽으면 「업무 N개를 추가할까요?」 질문이 나와요. 담당자·기한은 비워 두고, 같은 이름 업무는 건너뛰어요.',
      'When Lumi reads a checklist file she asks "Add N tasks?". Owners and due dates stay empty and tasks with the same name are skipped.'], { guide: 'addFile' });
+  n('find_filelib', ['자료실과 보관함은 뭐가 달라요?', 'Files vs Library: what is the difference?'],
+    ['자료실은 실제 파일(PPT·PDF·사진·영상)과 링크를 올려 두는 「파일 창고」이고, 보관함은 설교·찬양 콘티·게임·장소를 정보 카드로 정리해 두는 곳이에요. 파일을 올릴 때는 자료실, 다시 꺼내 쓸 내용(게임 규칙, 찬양 순서, 장소 답사 메모)은 보관함에 적어 두세요. 보관함 카드에서 자료실 파일을 연결할 수도 있고, 「자료실에서 가져오기」로 카드를 한 번에 만들 수도 있어요.',
+     'Files is the warehouse for real files (PPT, PDF, photos, video) and links. Library holds info cards for sermons, worship setlists, games and venues. Upload files in Files; keep what you will reuse (game rules, song order, venue visit notes) as Library cards. A card can link a file, and "Import from Files" builds cards in one go.']);
   n('find_library', ['설교·찬양·게임·장소 찾기 (보관함)', 'Sermons, worship, games, venues (Library)'],
     ['왼쪽 메뉴의 「보관함」을 열면 설교·메시지 / 찬양 콘티 / 게임·활동 / 장소·시설 탭이 있어요. 검색창에 제목·성경 본문·설교자·태그를 쓰면 찾아져요. 「자료실에서 가져오기」로 AI 정리함으로 태그를 단 자료를 옮겨 올 수 있어요. 노래 가사는 글로 저장하지 않고 자료실 파일로 연결해요.',
      'Open "Library" in the left menu: tabs for Sermons, Worship sets, Games & activities and Venues. Search by title, scripture, speaker or tag. "Import from Files" brings in files Lumi has tagged. Lyrics are not stored as text; link lyric files from Files instead.']);

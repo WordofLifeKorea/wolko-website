@@ -43,7 +43,7 @@
         { sel: '.gsearch input', text: { ko: '여기에 찾고 싶은 말(제목·캠프 이름·폴더 이름 등)을 두 글자 이상 쓰고 Enter를 눌러요. 업무·회의·결정·파일·폴더가 한꺼번에 나와요.', en: 'Type at least two letters of what you want (title, camp or folder name) and press Enter. Tasks, meetings, decisions, files and folders appear together.' } }
       ] },
       switchLang: { title: { ko: '한국어/영어 바꾸기', en: 'Switch language' }, steps: [
-        { sel: '.lang, .langmini', text: { ko: 'KO는 한국어, EN은 영어예요. 누르면 화면 전체가 바로 바뀌어요.', en: 'KO is Korean and EN is English. The whole screen switches right away.' } }
+        { sel: '.ct-lang, .lang, .langmini', text: { ko: 'KO는 한국어, EN은 영어예요. 누르면 화면 전체가 바로 바뀌어요.', en: 'KO is Korean and EN is English. The whole screen switches right away.' } }
       ] },
       openAlerts: { title: { ko: '알림 확인하기', en: 'Check alerts' }, steps: [
         { sel: '#bellBtn, #alertsNav', text: { ko: '종 모양(또는 「알림공지」)을 누르면 마감·회의·공지 알림을 한곳에서 볼 수 있어요.', en: 'Click the bell (or "Alerts") to see deadlines, meetings and notices in one place.' } }

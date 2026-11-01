@@ -827,3 +827,28 @@ aside{background:var(--ws-rail-bg,var(--ws-navy,#0b2430))!important;background-i
 .a-tablewrap{overflow-x:auto}.a-table{width:100%;border-collapse:collapse;font-size:13.5px}.a-table th,.a-table td{padding:7px 8px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}.a-table th{color:var(--mid);font-weight:600;font-size:12.5px}.a-table select{font:inherit;font-size:13px;padding:4px 6px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);max-width:130px}
 .a-warn{list-style:none;padding:0}.a-warn li{padding:7px 10px;border-radius:9px;margin:4px 0;font-size:13.5px;background:var(--card);border:1px solid var(--border)}.a-warn .w-danger{border-color:var(--accent);background:rgba(196,42,54,.08)}.a-warn .w-warn{border-color:var(--warn);background:rgba(217,130,43,.1)}
 .p-pre{white-space:pre-wrap;word-break:break-all;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:8px;font-size:12px}
+
+/* ── 위쪽 머리글(컴퓨터 화면): 월코 포털처럼 화면 이름 + 오른쪽에 계정 · 언어 · 로그아웃. 폰에서는 숨기고 예전 위쪽 막대·서랍을 쓴다 ── */
+.ct-col{min-width:0;display:flex;flex-direction:column}
+.ct-top{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:14px;height:60px;padding:0 32px;background:#fff;border-bottom:1px solid var(--border)}
+.ct-brand{display:flex;align-items:center;gap:10px;min-width:0;color:var(--ws-navy,#0b2430);font:700 19px/1.2 var(--f-sans);letter-spacing:-.02em;text-decoration:none}
+.ct-brand img{width:30px;height:30px;border-radius:50%;flex:none}
+.ct-brand span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ct-top-r{display:flex;align-items:center;gap:10px;flex:none}
+.ct-chip{display:inline-flex;align-items:center;gap:9px;height:40px;padding:0 12px 0 4px;border:1px solid var(--border);border-radius:var(--ws-radius-sm,8px);background:#fff;max-width:260px}
+.ct-av{display:grid;place-items:center;width:32px;height:32px;border-radius:var(--ws-radius-sm,8px);background:var(--ws-navy,#0b2430);color:#fff;font:700 14px var(--f-sans);flex:none}
+.ct-who{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.ct-who b{font-size:13px;color:var(--ws-navy,#0b2430);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ct-who small{font-size:11px;color:var(--mid);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ct-lang{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--border);border-radius:var(--ws-radius-sm,8px);background:#fff}
+.ct-lang button{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;padding:7px 10px;border-radius:6px;font:800 11px/1 var(--f-body);letter-spacing:.02em;color:var(--mid);cursor:pointer}
+.ct-lang button img{display:block;border-radius:2px}
+.ct-lang button:hover{color:var(--ws-navy,#0b2430)}
+.ct-lang button.on{background:var(--ws-deep,#004f68);color:#fff}
+.ct-logout{height:40px;padding:0 16px;border:1px solid var(--border);border-radius:var(--ws-radius-sm,8px);background:#fff;font:700 13px var(--f-sans);color:var(--ws-navy,#0b2430);cursor:pointer}
+.ct-logout:hover{background:var(--bg)}
+@media (min-width:901px){.side-foot{display:none!important}}
+@media (max-width:900px){.ct-top{display:none}}
+/* 왼쪽 메뉴에 마우스를 올리면 보이는 한 줄 설명(shell.js) */
+.ct-tip{position:fixed;z-index:80;max-width:280px;padding:8px 11px;border-radius:var(--ws-radius-sm,8px);background:#0b2430;color:#fff;font:600 12px/1.45 var(--f-sans);box-shadow:0 6px 18px #0004;pointer-events:none}
+.ct-tip[hidden]{display:none}
