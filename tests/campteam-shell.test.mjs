@@ -35,11 +35,10 @@ test('시간대 색: 메뉴 본체(#drawer)도 --ws-rail-bg 를 쓴다(남색 �
   assert.match(css, /body > aside:not\(\.apanel\), #drawer \{ background: var\(--ws-rail-bg, var\(--ws-navy\)\) !important/);
 });
 
-test('루미: 여러 줄 입력칸(3줄)·내려놓기 버튼·되묻기 선택지', () => {
+test('루미: 여러 줄 입력칸(3줄)·닫기 하나(최소화 막대 없음)·되묻기 선택지', () => {
   const js = read('public/portal/campteam/assistant.js'), css = read('public/portal/campteam/assistant.css');
   assert.ok(js.includes('<textarea id="asstIn"'));
-  assert.ok(js.includes('id="asstMin"'));
+  assert.ok(!js.includes('id="asstMin"'), '최소화 막대는 없고 닫기 하나만 둔다');
   assert.ok(js.includes('data-qo=') && js.includes('data-qc=') && js.includes('data-ps='), '담당자·캠프 선택과 건너뛰기');
-  assert.match(css, /\.asst-form textarea\{[^}]*max-height:78px/);
-  assert.match(css, /\.asst-panel\.min\{height:auto\}/);
+  assert.match(css, /\.asst-form textarea\{max-height:92px\}/);
 });
