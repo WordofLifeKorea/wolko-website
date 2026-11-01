@@ -934,3 +934,13 @@ dialog.fm-dlg[open]{display:flex;flex-direction:column}dialog.fm-dlg::backdrop{b
 /* 폰: 내용이 짧은 화면에서 맨 위 막대가 늘어나 위가 넓게 비던 문제(남는 높이는 본문이 가진다) · iPhone 에서 입력칸을 누르면 화면이 확대되던 문제(입력 글자 16px) */
 @media(max-width:900px){.app{grid-template-rows:auto 1fr}}
 @supports (-webkit-touch-callout:none){@media(max-width:900px){input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=color]):not([type=button]):not([type=submit]),select,textarea{font-size:16px !important}}}
+
+/* 업무·회의록·보관함·자료실·보관(자료) 위쪽 메뉴: 캠프 준비처럼 밑줄 탭 */
+.tabs.utabs{display:flex;flex-wrap:nowrap;gap:26px;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;margin-bottom:14px}.tabs.utabs::-webkit-scrollbar{display:none}
+.tabs.utabs .tab{flex:none;border:0;background:none;border-radius:0;padding:10px 2px 11px;margin-bottom:-1px;border-bottom:3px solid transparent;font:600 15.5px var(--f-body);color:var(--mid);white-space:nowrap;word-break:keep-all}
+.tabs.utabs .tab:hover{color:var(--text)}.tabs.utabs .tab.on{background:none;color:var(--blue);font-weight:800;border-bottom-color:var(--blue)}
+.tabs.utabs .tab b{margin-left:4px;font-size:12px;font-weight:700;color:var(--mid);background:#eaf0f3;border-radius:999px;padding:1px 7px}.tabs.utabs .tab.on b{color:var(--blue);background:#dcebf3}
+@media(max-width:900px){.tabs.utabs{gap:20px}.tabs.utabs .tab{padding:12px 2px}}
+
+/* 좁은 화면 카드의 쪽 표시: 마우스로도 누를 수 있는 화살표와 점 */
+@media(max-width:900px){.pgr i[data-pg]{cursor:pointer;padding:0;box-sizing:content-box;border:6px solid transparent;background-clip:padding-box;margin:0 -3px}.pgr .pgb{border:0;background:#eaf0f3;color:var(--blue);width:28px;height:26px;border-radius:8px;font:800 17px/1 var(--f-body);cursor:pointer;padding:0}.pgr .pgb:disabled{opacity:.35;cursor:default}}
