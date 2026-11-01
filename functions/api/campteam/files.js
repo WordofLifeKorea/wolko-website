@@ -6,7 +6,7 @@ import { CATEGORIES, FILE_STATUSES, restrictedFor, validExternalUrl, linkKindFor
 const SORTS = {
   newest: 'f.createdAt DESC', oldest: 'f.createdAt ASC', updated: 'f.updatedAt DESC', name: 'f.title COLLATE NOCASE ASC',
 };
-const SELECT = `SELECT f.id, f.campId, f.typeId, f.title, f.description, f.category, f.topic, f.tags, f.lang, f.scripture, f.speaker, f.kind, f.storage, f.linkKind, f.externalUrl,
+const SELECT = `SELECT f.id, f.campId, f.typeId, f.title, f.description, f.category, f.topic, f.tags, f.lang, f.scripture, f.speaker, f.pairId, f.kind, f.storage, f.linkKind, f.externalUrl,
     f.uploadedBy, f.statusLabel, f.restricted, f.createdAt, f.updatedAt, f.isTest,
     (SELECT COUNT(*) FROM file_public pb WHERE pb.fileId = f.id) AS isPublic,
     f.folderId, fd.name AS folderName, fd.nameEn AS folderNameEn,
@@ -22,6 +22,7 @@ const SELECT = `SELECT f.id, f.campId, f.typeId, f.title, f.description, f.categ
 // 마이그레이션(0018 공개 표, 0023 폴더)이 아직 없는 DB 에서도 목록은 열린다: 없는 부분만 빼고 다시 묻는다
 const NO_PUBLIC = (sql) => sql.replace('(SELECT COUNT(*) FROM file_public pb WHERE pb.fileId = f.id) AS isPublic', '0 AS isPublic');
 const NO_TAGS = (sql) => sql.replace('f.tags, f.lang, f.scripture, f.speaker,', "'' AS tags, f.lang, '' AS scripture, '' AS speaker,");   // 0024(태그) 전
+const NO_PAIR = (sql) => sql.replace('f.pairId,', 'NULL AS pairId,');   // 0025(한·영 짝) 전
 const NO_FOLDER = (sql) => sql.replace('f.folderId, fd.name AS folderName, fd.nameEn AS folderNameEn,', 'NULL AS folderId, NULL AS folderName, NULL AS folderNameEn,').replace('LEFT JOIN file_folders fd ON fd.id = f.folderId AND fd.deletedAt IS NULL\n  ', '');
 
 /** 목록 · 검색 · 필터 · 정렬: ?q= &campId=(없으면 전체, none=공통) &folderId=(none=폴더 없음) &typeId= &category= &status= &kind= &sort= &limit= &offset= */
@@ -57,18 +58,18 @@ export async function onRequestGet({ env, request }) {
     else if (kind) { where.push('f.kind = ?'); args.push(text(kind, 10)); }
     return { clause: where.join(' AND '), args };
   };
-  let folder = true, pub = true, tg = true, rows, total;
+  let folder = true, pub = true, tg = true, pr = true, rows, total;
   for (let attempt = 0; ; attempt++) {
     const { clause, args } = build(folder, tg);
-    let sel = SELECT; if (!pub) sel = NO_PUBLIC(sel); if (!folder) sel = NO_FOLDER(sel); if (!tg) sel = NO_TAGS(sel);
+    let sel = SELECT; if (!pub) sel = NO_PUBLIC(sel); if (!folder) sel = NO_FOLDER(sel); if (!tg) sel = NO_TAGS(sel); if (!pr) sel = NO_PAIR(sel);
     try {
       rows = (await env.DB.prepare(`${sel} WHERE ${clause} ORDER BY ${order}, f.id LIMIT ? OFFSET ?`).bind(...args, limit, offset).all()).results;
       total = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM files f ${folder ? 'LEFT JOIN file_folders fd ON fd.id = f.folderId AND fd.deletedAt IS NULL' : ''} LEFT JOIN camps c ON c.id = f.campId LEFT JOIN file_versions v ON v.id = f.currentVersionId WHERE ${clause}`).bind(...args).first()).n;
       break;
     } catch (e) {
-      const m = String((e && e.message) || e), noFolder = folder && /file_folders|folderId/.test(m), noPub = pub && /file_public/.test(m), noTg = tg && /\b(tags|scripture|speaker)\b/.test(m);
-      if (attempt > 3 || (!noFolder && !noPub && !noTg)) throw e;
-      if (noFolder) folder = false; if (noPub) pub = false; if (noTg) tg = false; // 0018·0023 적용 전에도 목록은 열린다
+      const m = String((e && e.message) || e), noFolder = folder && /file_folders|folderId/.test(m), noPub = pub && /file_public/.test(m), noTg = tg && /\b(tags|scripture|speaker)\b/.test(m), noPr = pr && /pairId/.test(m);
+      if (attempt > 4 || (!noFolder && !noPub && !noTg && !noPr)) throw e;
+      if (noPr) pr = false; if (noFolder) folder = false; if (noPub) pub = false; if (noTg) tg = false; // 0018·0023 적용 전에도 목록은 열린다
     }
   }
   // 자주 쓰인 태그 (보이는 자료만) — 화면의 태그 거르기와 AI 가 「기존 태그」를 고를 때 쓴다

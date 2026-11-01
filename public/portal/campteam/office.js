@@ -18,7 +18,13 @@
     };
   }
   // 관리자가 올린 캐릭터 그림이 있으면 그림으로, 없으면 코드로 그린 캐릭터로 보여 준다
-  function art(m, enter) { return A.ready(m.avatar.sprite) ? A.deskImg(m.avatar, m.seated, enter) : A.desk(m.avatar, m.seated); }
+  // 그림을 불러오는 중에는 코드 캐릭터 대신 빈 책상을 보여 준다(모양이 갑자기 바뀌어 보이지 않게). 끝내 못 불러오면 그때 코드 캐릭터로 대신한다
+  var settled = false;
+  function art(m, enter) {
+    var sp = m.avatar && m.avatar.sprite;
+    if (A.ready(sp)) return A.deskImg(m.avatar, m.seated, enter);
+    return sp && !settled ? A.desk(m.avatar, false) : A.desk(m.avatar, m.seated);
+  }
   function cellHtml(m, enter) { return art(m, enter) + (m.ooo ? '<span class="ofc-sign' + (m.seated ? ' wfh' : '') + '">' + esc(CT.t(m.seated ? 'ofWfh' : 'ofOoo')) + '</span>' : '') + '<span class="ofc-name">' + esc(m.name) + '</span>'; }
   function guestHtml(g, enter) { return (A.guestReady() ? A.guestImg(enter) : A.guest()) + '<span class="ofc-name">' + esc(g.name) + '</span><span class="ofc-tag">' + esc(CT.t('ofGuest')) + '</span>'; }
 
@@ -66,8 +72,9 @@
       state.members.forEach(function (m) { var sp = m.avatar && m.avatar.sprite, k = sp && sp + m.avatar.glasses; if (!sp || loading[k]) return; loading[k] = 1; need.push(A.load(sp, m.avatar.glasses)); (m.you ? need : later).push(A.loadWalk(sp)); });
       if (state.guests.length && !loading.guest) { loading.guest = 1; later.push(A.loadGuest()); }
       if (need.length) await Promise.race([Promise.all(need), new Promise(function (r) { setTimeout(r, 2500); })]);
+      if (!need.length) settled = true;
       render(state);
-      var rest = need.concat(later); if (rest.length) Promise.all(rest).then(function () { render(state); });
+      var rest = need.concat(later); if (rest.length) Promise.all(rest).then(function () { settled = true; render(state); }, function () { settled = true; render(state); });
     } catch (e) { /* 사무실이 안 보여도 홈은 그대로 */ }
   }
   function start() {

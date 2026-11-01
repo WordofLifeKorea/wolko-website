@@ -1,4 +1,4 @@
-import { isFilePublic } from '../../lib/campteamFiles.js';
+import { isFilePublic, PUBLIC_SQL } from '../../lib/campteamFiles.js';
 import { campSession, json, needLogin, noDb, denyView } from '../../lib/campteamAuth.js';
 
 /** 파일 하나의 자세한 정보: 버전 이력과 연결된 캠프 포함 */
@@ -16,5 +16,7 @@ export async function onRequestGet({ env, request }) {
     FROM file_versions WHERE fileId = ?1 AND deletedAt IS NULL ORDER BY versionNo DESC`).bind(id).all()).results;
   const links = (await env.DB.prepare(`SELECT l.campId, c.nameKo, c.nameEn FROM file_links l JOIN camps c ON c.id = l.campId
     WHERE l.fileId = ?1 AND l.deletedAt IS NULL AND c.deletedAt IS NULL ORDER BY c.nameKo`).bind(id).all()).results;
-  return json({ file: f, versions, links, perms: s.perms });
+  let partner = null; // 한·영 짝 (0025 이후): 같은 내용의 다른 언어 자료
+  if (f.pairId) partner = await env.DB.prepare(`SELECT id, title, lang FROM files WHERE pairId = ?1 AND id <> ?2 AND deletedAt IS NULL AND restricted = 0${s.campRole ? '' : ' AND ' + PUBLIC_SQL.replace(/\bf\./g, '')}`).bind(f.pairId, f.id).first().catch(() => null);
+  return json({ file: f, versions, links, partner, perms: s.perms });
 }

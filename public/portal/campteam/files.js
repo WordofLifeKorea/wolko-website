@@ -11,6 +11,7 @@
       aiTitle: '✨ AI 도우미', aiSwitch: '파일을 고르거나 제목을 입력하면 AI가 제목·종류·캠프를 추천해 줘요', aiNote: '켜면 고른 파일의 앞부분 글(또는 PDF·사진), 파일 없이 제목만 입력했다면 그 제목이 AI 서비스로 전송돼요. 파일은 저장되지 않고, 저장은 직접 눌러야 해요. 예산(금액) 자료는 보내지 않아요.', aiGo: '✨ 추천 받기', aiBusy: 'AI가 파일을 읽는 중…', aiDone: 'AI가 채웠어요 — 고쳐도 돼요.', aiKoRow: '한글 제목', aiEnRow: 'English title', aiOffMsg: 'AI 추천이 아직 켜지지 않았어요 (관리자가 서버 설정에서 켜야 해요).', aiBudget: '예산(금액) 자료는 AI에 보내지 않아요.', aiFail: 'AI 추천을 받지 못했어요: ', aiNeedFile: '먼저 파일을 골라 주세요.', aiChip: 'AI', aiCamp: '관련 캠프: ', aiNoRead: '이 형식은 내용을 읽지 못해 파일 이름만 보고 추천했어요.', autoChip: '자동', fTags: '태그 (쉼표로 · 한글/영어 짝이 자동으로 붙어요)', fTagsPh: '예: 구원, 기도, 게임', fLang: '자료 언어', fScripture: '성경 본문', fSpeaker: '설교자·강사', langNone: '(모름)', langKo: '한국어', langEn: 'English', langBoth: '한·영 함께',
       kvTags: '태그', kvScripture: '성경 본문', kvSpeaker: '설교자·강사', kvLang: '언어', tagBarL: '태그', tagAllBtn: '전체',
       qHead: '루미가 읽어 보니 알 수 없는 게 있었어요. 아는 것만 알려 주세요 — 모르면 건너뛰어도 저장할 수 있어요.', qApply: '적용', qSkip: '건너뛰기', qPickCamp: '캠프 고르기…', qPickCat: '종류 고르기…', qSpkPh: '설교자 이름', qAnswered: '적용했어요',
+      qChkT: function (name, n) { return '「' + name + '」은 체크리스트 같아요. 업무 ' + n + '개를 추가할까요? (담당자·기한은 비워 둬요)'; }, qChkGo: '업무로 추가', qChkDone: function (n, k) { return '업무 ' + n + '개를 추가했어요' + (k ? ' (같은 이름 ' + k + '개는 건너뜀)' : '') + '.'; }, qChkNoCamp: '캠프 없이(공통)',
       qCampT: function (n, y, se) { return (y && se ? '「' + y + ' ' + se + '」 자료로 보이는 ' : '캠프를 알 수 없는 ') + '파일 ' + n + '개 — 어느 캠프 자료인가요?'; }, qCatT: function (n) { return '종류를 알 수 없는 파일 ' + n + '개 — 어떤 종류인가요?'; }, qSpkT: function (n) { return '설교·메시지로 보이는 파일 ' + n + '개 — 설교자를 아시면 적어 주세요.'; },
       mDescPh: '설명', mTopicPh: '주제', mAlts: '제목 후보',
       deepGo: '✨ 파일 내용을 읽고 정리하기', deepBusy: function (i, n) { return 'AI가 파일을 읽는 중… ' + i + '/' + n; }, deepStop: '멈추기', deepDone: function (n) { return n + '개를 읽고 정리했어요 — 확인하고 고친 뒤 「저장」을 눌러요.'; },
@@ -40,6 +41,7 @@
       aiTitle: '✨ AI helper', aiSwitch: 'When you pick a file or type a title, AI suggests title, type and camp', aiNote: 'When on, the beginning of the file text (or the PDF/photo) — or, without a file, the title you type — is sent to the AI service. The file itself is not stored, and you still press Save yourself. Budget (amount) files are never sent.', aiGo: '✨ Suggest', aiBusy: 'AI is reading the file…', aiDone: 'Filled in by AI — you can edit it.', aiKoRow: '한글 제목', aiEnRow: 'English title', aiOffMsg: 'AI suggestions are not turned on yet (an admin must enable them in the server settings).', aiBudget: 'Budget (amount) files are never sent to AI.', aiFail: 'Could not get AI suggestions: ', aiNeedFile: 'Please choose a file first.', aiChip: 'AI', aiCamp: 'Related camp: ', aiNoRead: 'This format could not be read, so the suggestion is based on the file name only.', autoChip: 'Auto', fTags: 'Tags (comma separated · Korean/English pair added automatically)', fTagsPh: 'e.g. salvation, prayer, game', fLang: 'Language of the file', fScripture: 'Scripture', fSpeaker: 'Speaker', langNone: '(unknown)', langKo: 'Korean', langEn: 'English', langBoth: 'Korean + English',
       kvTags: 'Tags', kvScripture: 'Scripture', kvSpeaker: 'Speaker', kvLang: 'Language', tagBarL: 'Tags', tagAllBtn: 'All',
       qHead: "Lumi could not tell a few things from the files. Tell me only what you know — you can skip and still save.", qApply: 'Apply', qSkip: 'Skip', qPickCamp: 'Choose camp…', qPickCat: 'Choose type…', qSpkPh: 'Speaker name', qAnswered: 'Applied',
+      qChkT: function (name, n) { return '"' + name + '" looks like a checklist. Add ' + n + ' tasks? (owners and due dates stay empty)'; }, qChkGo: 'Add as tasks', qChkDone: function (n, k) { return 'Added ' + n + ' tasks' + (k ? ' (' + k + ' with the same name skipped)' : '') + '.'; }, qChkNoCamp: 'No camp (shared)',
       qCampT: function (n, y, se) { return n + ' file' + (n > 1 ? 's' : '') + (y && se ? ' look like "' + y + ' ' + se + '" materials' : ' with no camp found') + ' — which camp are they for?'; }, qCatT: function (n) { return n + ' file' + (n > 1 ? 's' : '') + ' with unknown type — what type are they?'; }, qSpkT: function (n) { return n + ' file' + (n > 1 ? 's' : '') + ' look like sermons — who is the speaker, if you know?'; },
       mDescPh: 'Description', mTopicPh: 'Topic', mAlts: 'Title ideas',
       deepGo: '✨ Read the files and organize', deepBusy: function (i, n) { return 'AI is reading the files… ' + i + '/' + n; }, deepStop: 'Stop', deepDone: function (n) { return 'Read and organized ' + n + ' files — check, edit, then press Save.'; },
@@ -164,7 +166,7 @@
     var tree = ppInTree(), pl = tree ? ppFiles() : S.portal, showPortal = pl.length && ($('fq').value.trim() || S.view === 'all' || S.folderId === 'portal' || S.pcamp);
     $('countLine').textContent = tree ? ppItems(S.pp).length + CT.t('count') : (S.total + (showPortal ? pl.length : 0)) + CT.t('count');
     $('list').innerHTML = S.items.length ? S.items.map(function (f) {
-      var meta = [f.folderName ? '📁 ' + (CT.lang() === 'en' && f.folderNameEn ? f.folderNameEn : f.folderName) : '', where(f), CT.t('cat' + f.category), f.topic, f.scripture, f.speaker, f.tags ? f.tags.split(',').map(function (t) { return '#' + tagLabel(t); }).join(' ') : '', f.uploadedBy, day(f.createdAt), f.isPublic ? '🌐 ' + CT.t('publicChip') : ''].filter(Boolean).map(esc).join(' · ');
+      var meta = [f.folderName ? '📁 ' + (CT.lang() === 'en' && f.folderNameEn ? f.folderNameEn : f.folderName) : '', where(f), CT.t('cat' + f.category), f.topic, f.scripture, f.speaker, f.tags ? f.tags.split(',').map(function (t) { return '#' + tagLabel(t); }).join(' ') : '', f.uploadedBy, day(f.createdAt), f.isPublic ? '🌐 ' + CT.t('publicChip') : '', f.pairId ? '🇰🇷↔🇺🇸' : ''].filter(Boolean).map(esc).join(' · ');
       if (f.storage !== 'link' && f.versionNo) meta += ' · v' + f.versionNo + (f.sizeBytes ? ' · ' + fmtSize(f.sizeBytes) : '');
       if (f.storage === 'link') meta += ' · ' + esc(linkLabel(f.linkKind));
       return '<div class="file-row" data-id="' + esc(f.id) + '">' + kindChip(f) +
@@ -252,6 +254,7 @@
       (f.tags ? '<dt>' + esc(CT.t('kvTags')) + '</dt><dd>' + f.tags.split(',').map(function (t) { return '<span class="tagchip" title="' + esc(t) + '">#' + esc(tagLabel(t)) + '</span>'; }).join(' ') + '</dd>' : '') +
       (f.scripture ? '<dt>' + esc(CT.t('kvScripture')) + '</dt><dd>' + esc(f.scripture) + '</dd>' : '') + (f.speaker ? '<dt>' + esc(CT.t('kvSpeaker')) + '</dt><dd>' + esc(f.speaker) + '</dd>' : '') +
       (f.lang ? '<dt>' + esc(CT.t('kvLang')) + '</dt><dd>' + esc(CT.t({ ko: 'langKo', en: 'langEn', both: 'langBoth' }[f.lang] || 'langNone')) + '</dd>' : '') +
+      (d.partner && window.CTTidy ? CTTidy.partnerHtml(d.partner) : '') +
       '<dt>' + esc(CT.t('kvUploader')) + '</dt><dd>' + esc(f.uploadedBy) + '</dd>' +
       '<dt>' + esc(CT.t('kvCreated')) + '</dt><dd>' + esc(day(f.createdAt)) + '</dd><dt>' + esc(CT.t('kvUpdated')) + '</dt><dd>' + esc(day(f.updatedAt)) + '</dd>' +
       (f.storage === 'link' ? '<dt>' + esc(CT.t('kvSource')) + '</dt><dd>' + esc(linkLabel(f.linkKind)) + ' — <a href="' + esc(f.externalUrl) + '" target="_blank" rel="noopener noreferrer">' + esc(f.externalUrl) + '</a></dd>' : (cur ? '<dt>' + esc(CT.t('kvFile')) + '</dt><dd>' + esc(cur.fileName) + ' · ' + fmtSize(cur.sizeBytes) + '</dd>' : '')) + '</dl>';
@@ -279,12 +282,14 @@
     if ($('dDel')) $('dDel').onclick = async function () { if (!confirm(CT.t('confirmDel'))) return; try { await CT.api('/api/campteam/files?id=' + encodeURIComponent(id), { method: 'DELETE' }); $('detail').close(); await loadList(); } catch (e) { alert(e.message); } };
     if ($('linkBtn')) $('linkBtn').onclick = async function () { var v = $('linkSel').value; if (!v) return; try { await CT.api('/api/campteam/files?id=' + encodeURIComponent(id), { method: 'PATCH', body: { addCampId: v } }); await loadList(); showDetail(id); } catch (e) { alert(e.message); } };
   }
+  $('detailBody').addEventListener('click', function (e) { var a = e.target.closest('[data-open-partner]'); if (a) { e.preventDefault(); showDetail(a.dataset.openPartner); } });
   $('detailBody').addEventListener('click', async function (e) {
     var b = e.target.closest('button'); if (!b) return; var id = S.detailId;
     try {
       if (b.dataset.vopen) { $('pv').hidden = false; preview(id, b.dataset.vopen, $('pv')); }
       else if (b.dataset.vdl) download(id, b.dataset.vdl);
       else if (b.dataset.vapply) { if (!confirm(CT.t('confirmApply'))) return; await CT.api('/api/campteam/files?id=' + encodeURIComponent(id), { method: 'PATCH', body: { currentVersionId: b.dataset.vapply } }); await loadList(); showDetail(id); }
+      else if (b.dataset.unpair) { if (!confirm(CT.t('tdUnpairConfirm'))) return; await CT.api('/api/campteam/file-tidy', { method: 'POST', body: { action: 'unpair', id: id } }); await loadList(); showDetail(id); }
       else if (b.dataset.unlink) { await CT.api('/api/campteam/files?id=' + encodeURIComponent(id), { method: 'PATCH', body: { removeCampId: b.dataset.unlink } }); await loadList(); showDetail(id); }
     } catch (err) { alert(err.message); }
   });
@@ -370,7 +375,9 @@
     $('mRows').addEventListener('click', function (e) { var a = e.target.closest('[data-malt]'); if (!a) return; var ij = a.dataset.malt.split(':'), x = S.pick.items[+ij[0]]; if (x && x.alts[+ij[1]] != null) { x.title = (x.dir ? x.dir + ' / ' : '') + x.alts[+ij[1]]; x.dirty = true; renderPick(); } });
     $('mQs').addEventListener('click', function (e) { var b = e.target.closest('[data-qa],[data-qs]'); if (!b || !S.pick || !S.pick.qs) return; var q = S.pick.qs[+(b.dataset.qa != null ? b.dataset.qa : b.dataset.qs)]; if (!q) return;
       if (b.dataset.qs != null) { q.done = 'skip'; renderPick(); return; }
-      var card = b.closest('.mq'), val = (card.querySelector('select,input') || {}).value || ''; if (!val) return; applyAnswer(q, val); q.done = 'ok'; renderPick(); });
+      var card = b.closest('.mq'), val = (card.querySelector('select,input') || {}).value || ''; if (!val) return;
+      if (q.t === 'chk') { var cx = S.pick.items[q.idx[0]]; b.disabled = true; CT.api('/api/campteam/checklist-tasks', { method: 'POST', body: { campId: val === 'none' ? '' : val, items: cx.chk.items } }).then(function (r) { q.done = 'ok'; if (S.pick && S.pick.deep) S.pick.deep.msg = CT.t('qChkDone')(r.created, r.skipped); if (S.pick) renderPick(); }).catch(function (er) { b.disabled = false; alert(er.message); }); return; }
+      applyAnswer(q, val); q.done = 'ok'; renderPick(); });
     $('mRows').addEventListener('click', function (e) { var b = e.target.closest('[data-mcampx]'); if (!b) return; var x = S.pick.items[+b.dataset.mcampx]; if (x) { x.campId = ''; x.campName = ''; renderPick(); } });
     $('mDeep').onclick = function () { deepAnalyze(); }; $('mDeepStop').onclick = function () { if (S.pick && S.pick.deep) S.pick.deep.cancel = true; };
     $('mMetaTog').onclick = function () { S.pick.meta = !S.pick.meta; renderPick(); };
@@ -503,6 +510,7 @@
     if (!dlgCamp) { var g = {}; p.items.forEach(function (x, i) { if (!x.campId) { var k = x.year && x.season ? x.year + '|' + x.season : '|'; (g[k] = g[k] || []).push(i); } }); Object.keys(g).sort().forEach(function (k) { var y = k.split('|'); qs.push({ t: 'camp', idx: g[k], year: y[0], season: y[1], done: '' }); }); }
     var noCat = []; p.items.forEach(function (x, i) { if (!x.cat) noCat.push(i); }); if (noCat.length) qs.push({ t: 'cat', idx: noCat, done: '' });
     var spk = []; p.items.forEach(function (x, i) { if (!x.speaker && (x.scripture || /설교|메시지|sermon|message/i.test(x.tags + ' ' + x.title))) spk.push(i); }); if (spk.length) qs.push({ t: 'spk', idx: spk, done: '' });
+    p.items.forEach(function (x, i) { if (x.chk) qs.push({ t: 'chk', idx: [i], done: '' }); });
     p.qs = qs;
   }
   function campOptions() { return '<option value="">' + esc(CT.t('qPickCamp')) + '</option>' + S.types.map(function (t) { return '<optgroup label="' + esc(CT.pick(t, 'name')) + '">' + t.camps.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(CT.pick(c, 'name')) + '</option>'; }).join('') + '</optgroup>'; }).join(''); }
@@ -511,6 +519,7 @@
     if (!qs || !qs.length) { el.innerHTML = ''; return; }
     el.innerHTML = '<div class="mqh"><span class="aichip st">' + esc(CT.t('aiChip')) + '</span> ' + esc(CT.t('qHead')) + '</div>' + p.qs.map(function (q, i) {
       if (q.done) return '';
+      if (q.t === 'chk') { var cx = p.items[q.idx[0]]; return '<div class="mq"><b>' + esc(CT.t('qChkT')(cx.title || cx.file.name, cx.chk.count)) + '</b><div class="mqc"><select>' + campOptions().replace('<option value="">' + esc(CT.t('qPickCamp')) + '</option>', '<option value="none">' + esc(CT.t('qChkNoCamp')) + '</option>').replace('value="' + esc(cx.campId || '-') + '"', 'value="' + esc(cx.campId || '-') + '" selected') + '</select><button type="button" class="btn sm pri" data-qa="' + i + '">' + esc(CT.t('qChkGo')) + '</button><button type="button" class="btn sm" data-qs="' + i + '">' + esc(CT.t('qSkip')) + '</button></div></div>'; }
       var title = q.t === 'camp' ? CT.t('qCampT')(q.idx.length, q.year, q.season) : q.t === 'cat' ? CT.t('qCatT')(q.idx.length) : CT.t('qSpkT')(q.idx.length);
       var ctl = q.t === 'camp' ? '<select>' + campOptions() + '</select>' : q.t === 'cat' ? '<select><option value="">' + esc(CT.t('qPickCat')) + '</option>' + allowedCats().map(function (c) { return '<option value="' + c + '">' + esc(CT.t('cat' + c)) + '</option>'; }).join('') + '</select>' : '<input maxlength="40" placeholder="' + esc(CT.t('qSpkPh')) + '">';
       return '<div class="mq"><b>' + esc(title) + '</b><div class="mqc">' + ctl + '<button type="button" class="btn sm pri" data-qa="' + i + '">' + esc(CT.t('qApply')) + '</button><button type="button" class="btn sm" data-qs="' + i + '">' + esc(CT.t('qSkip')) + '</button></div></div>';
@@ -542,6 +551,7 @@
           if (s.campId) { x.campId = s.campId; var o = [].filter.call(document.querySelectorAll('#formFields [name=target] option'), function (op) { return op.value === 'camp:' + s.campId; })[0]; x.campName = o ? o.textContent : ''; if (!o) x.campId = ''; }
           if (s.description && !p.desc) { /* 설명은 파일마다 달라서 일괄로 채우지 않는다 */ }
           x.ai = true;
+          if (prep.kind === 'text' && prep.text && CT.can('tasks', 'edit')) { try { var pv = await CT.api('/api/campteam/checklist-tasks', { method: 'POST', body: { preview: true, text: prep.text } }); if (pv.looks) x.chk = { items: pv.items, count: pv.itemCount }; } catch (e2) { /* 체크리스트 확인은 덤이라 실패해도 넘어간다 */ } }
         } catch (e) { dp.fail++; if (e && (e.status === 503 || e.status === 403)) { dp.cancel = true; dp.msg = e.message; } }
         dp.done++; if (!p.meta) p.meta = true; renderPick();
       }
@@ -705,6 +715,7 @@
     });
     $('viewBar').addEventListener('click', function (e) { var b = e.target.closest('[data-view]'); if (!b) return; S.view = b.dataset.view; S.folderId = ''; try { localStorage.setItem('ct-files-view', S.view); } catch (x) {} loadList(); });
     $('folders').addEventListener('click', onFolderClick);
+    document.addEventListener('ct-files-changed', function () { loadList(); });
     document.addEventListener('ct-lang', function () { CT.applyI18n(); filterOptions(); renderList(); renderTagBar(); loadUndo(); if (S.pick) renderPick(); });
   });
 })();
