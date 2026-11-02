@@ -302,6 +302,13 @@ async function initLocationMap(key, elId) {
     center: pos,
     zoom: 16,
     scrollWheel: false,   // 페이지를 내리다 지도가 확대 · 축소되지 않게 — 오른쪽 위 +/− 단추로
+    // 끌어서 옮기기 · 두 손가락 확대 · 두 번 눌러 확대 · 키보드 이동도 막는다 — 오른쪽 위 +/− 단추만
+    draggable: false,
+    pinchZoom: false,
+    disableDoubleClickZoom: true,
+    disableDoubleTapZoom: true,
+    disableTwoFingerTapZoom: true,
+    keyboardShortcuts: false,
     zoomControl: true,
     zoomControlOptions: { position: naver.maps.Position.TOP_RIGHT },
   });
