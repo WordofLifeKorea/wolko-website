@@ -1,0 +1,106 @@
+---
+/**
+ * 사명 그림 — 한 친구에게서 시작된 복음이 친구에서 친구로 이어진다.
+ * 사람마다: 흐린 모양(아직 못 들음) → 하늘색 고리(들음) → 금색(믿음) → 다음 친구들에게 곡선(전함).
+ * 화면에 들어오면 한 번 재생하고, [data-rl-replay] 단추로 다시 볼 수 있다.
+ * 자바스크립트가 없거나 움직임 줄이기 설정이면 처음부터 다 이어진 그림을 보여 준다.
+ */
+interface Props { labelKo: string; labelEn: string }
+const { labelKo, labelEn } = Astro.props;
+
+const W = 900, H = 480;
+// 같은 그림이 늘 나오도록 고정된 난수
+let seed = 7;
+const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+const f = (v: number) => Math.round(v * 10) / 10;
+
+type Person = { x: number; y: number; g: number; parent: Person | null; at: number };
+const genX = [46, 230, 410, 590, 770];
+const shares = [[2], [2, 2], [2, 2, 1, 2], [1, 2, 1, 2, 1, 2, 1]]; // 세대마다 한 사람이 전한 친구 수
+const people: Person[] = [{ x: genX[0], y: H / 2, g: 0, parent: null, at: 0.5 }];
+let prev = [people[0]];
+for (let g = 1; g < genX.length; g++) {
+  const counts = shares[g - 1];
+  const total = counts.reduce((a, b) => a + b, 0);
+  const pad = g === 1 ? 120 : g === 2 ? 70 : 34;
+  const cur: Person[] = [];
+  let k = 0;
+  prev.forEach((p, i) => {
+    for (let c = 0; c < counts[i]; c++, k++) {
+      const y = pad + (H - 2 * pad) * (k / (total - 1)) + (rnd() - 0.5) * 22;
+      const x = genX[g] + (rnd() - 0.5) * 44;
+      const n = { x, y, g, parent: p, at: 0 };
+      people.push(n); cur.push(n);
+    }
+  });
+  prev = cur;
+}
+// 믿는 시각 = 전해 준 친구가 믿은 뒤 약 1초
+people.forEach(n => { if (n.parent) n.at = n.parent.at + 1 + rnd() * 0.18; });
+
+const curve = (a: { x: number; y: number }, b: { x: number; y: number }) => {
+  const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy);
+  const bend = (b.y < a.y ? -1 : 1) * Math.min(26, len * 0.14);
+  return `M${f(a.x)} ${f(a.y)} Q${f((a.x + b.x) / 2 - dy / len * bend)} ${f((a.y + b.y) / 2 + dx / len * bend)} ${f(b.x)} ${f(b.y)}`;
+};
+const arcs = people.filter(n => n.parent).map(n => ({ d: curve(n.parent!, n), delay: f(n.parent!.at + 0.15), out: false }));
+// 마지막 친구들에게서 그림 밖으로 이어지는 선 — 계속 퍼져 나간다
+const last = people.filter(n => n.g === genX.length - 1);
+[last[1], last[4], last[8]].forEach(n => arcs.push({ d: curve(n, { x: W + 40, y: n.y + (rnd() - 0.5) * 60 }), delay: f(n.at + 0.25), out: true }));
+
+// 아직 복음을 듣지 못한 친구들 — 빈자리에 흐리게
+const waiting: { x: number; y: number }[] = [];
+for (let tries = 0; waiting.length < 13 && tries < 4000; tries++) {
+  const x = 150 + rnd() * (W - 210), y = 24 + rnd() * (H - 48);
+  if (![...people, ...waiting].some(n => Math.hypot(n.x - x, n.y - y) < 46)) waiting.push({ x, y });
+}
+---
+<p class="sr-only"><span class="wl-ko">{labelKo}</span><span class="wl-en">{labelEn}</span></p>
+<svg class="rl" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+  <defs>
+    <g id="rl-person"><circle cx="0" cy="-5" r="5" /><path d="M-9 11C-9 3-5 1 0 1s9 2 9 10z" /></g>
+  </defs>
+  {arcs.map(a => <path class:list={['rl-arc', { 'rl-arc-out': a.out }]} pathLength="1" d={a.d} style={`--d:${a.delay}s`} />)}
+  {waiting.map(w => <use href="#rl-person" class="rl-waiting" x={f(w.x)} y={f(w.y)} />)}
+  {people.map(n => <circle class="rl-ring" cx={f(n.x)} cy={f(n.y)} r={n.g ? 15 : 20} style={`--d:${f(n.at - 0.15)}s`} />)}
+  {people.map(n => <use href="#rl-person" class="rl-person" x={f(n.x)} y={f(n.y)} style={`--d:${f(n.at)}s`} />)}
+</svg>
+
+<style>
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  .rl { display:block; width:100%; height:auto; overflow:visible; }
+  /* 다 이어진 모습 — 자바스크립트가 없거나 움직임 줄이기 설정일 때, 그리고 재생이 끝난 뒤 */
+  .rl-arc { fill:none; stroke:#f3dca6; stroke-width:1.6; stroke-linecap:round; stroke-dasharray:1; stroke-dashoffset:0; opacity:.7; }
+  .rl-arc-out { opacity:.35; }
+  .rl-person { fill:#f3dca6; filter:drop-shadow(0 0 7px rgba(243,220,166,.6)); }
+  .rl-waiting { fill:rgba(255,255,255,.14); }
+  .rl-ring { fill:none; stroke:#73d1f5; stroke-width:1.5; opacity:0; transform-box:fill-box; transform-origin:center; }
+  /* 재생 준비(.is-armed): 아무도 아직 못 들은 모습 → 화면에 들어오면(.is-on) 차례대로 */
+  .rl.is-armed .rl-arc { stroke-dashoffset:1; }
+  .rl.is-armed .rl-person { fill:rgba(255,255,255,.24); filter:none; }
+  .rl.is-armed.is-on .rl-arc { animation:rl-draw .75s cubic-bezier(.4,0,.2,1) var(--d) both; }
+  .rl.is-armed.is-on .rl-person { animation:rl-believe .7s ease-out var(--d) both; }
+  .rl.is-armed.is-on .rl-ring { animation:rl-hear 1.2s ease-out var(--d) both; }
+  @keyframes rl-draw { from { stroke-dashoffset:1; } to { stroke-dashoffset:0; } }
+  @keyframes rl-believe {
+    0% { fill:rgba(255,255,255,.24); filter:none; }
+    35% { fill:#fff; }
+    100% { fill:#f3dca6; filter:drop-shadow(0 0 7px rgba(243,220,166,.6)); }
+  }
+  @keyframes rl-hear { 0% { opacity:0; transform:scale(.3); } 25% { opacity:.95; } 100% { opacity:0; transform:scale(1.6); } }
+</style>
+
+<script>
+  const still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll<SVGSVGElement>('svg.rl').forEach(svg => {
+    if (still || !('IntersectionObserver' in window)) return;
+    svg.classList.add('is-armed');
+    const play = () => { svg.classList.remove('is-on'); void svg.getBoundingClientRect(); svg.classList.add('is-on'); };
+    const io = new IntersectionObserver(entries => {
+      if (entries.some(e => e.isIntersecting)) { play(); io.disconnect(); }
+    }, { threshold: 0.4 });
+    io.observe(svg);
+    const scope = svg.closest('section') || document;
+    scope.querySelectorAll('[data-rl-replay]').forEach(btn => { (btn as HTMLElement).hidden = false; btn.addEventListener('click', play); });
+  });
+</script>
