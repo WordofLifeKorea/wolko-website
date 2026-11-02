@@ -2,6 +2,11 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 
+// 사명 문장 — 큰 글씨로 가운데에, 화면에 들어오면 단어가 하나씩 흐릿했다가 또렷해진다(단어마다 --wd 만큼 늦게)
+const missionKo = '월코는 성경의 원리에 따라 청소년을 전도하고 제자로 훈련하여, 예수 그리스도의 교회가 건강하게 성장하도록 섬깁니다.';
+const missionEn = 'The mission of Word of Life Fellowship is the evangelization and discipleship of youth through various means consistent with the Holy Scriptures to strengthen and build up the church of Jesus Christ.';
+const missionWords = (t: string, step: number) => t.split(' ').map((w, i) => ({ w, d: (0.25 + i * step).toFixed(2) + 's' }));
+
 // 주요 사역 — 왼쪽 목록과 오른쪽 큰 사진이 같은 목록을 쓴다
 const ministries = [
   { href: '/camp', img: '/images/ministries/camp.jpg', tag: 'CAMP MINISTRY',
@@ -154,9 +159,13 @@ const ministries = [
   /* ── MISSION: 남색 띠 — 왼쪽 제목, 오른쪽 사명 문장 ── */
   .mission-band { background:#0b2430; color:#fff; padding-top:88px; padding-bottom:88px; }
   .mission-band .section-badge { color:rgba(255,255,255,0.78); }
-  .mission-inner { max-width:1240px; margin:0 auto; display:grid; grid-template-columns:minmax(0,4fr) minmax(0,8fr); gap:80px; align-items:baseline; }
-  .mission-title { margin-top:16px; font-family:var(--ff-serif); font-size:32px; font-weight:700; letter-spacing:-0.02em; color:#fff; }
-  .mission-text { font-size:21px; line-height:1.75; color:rgba(255,255,255,0.88); }
+  /* 큰 문장 — 작은 표시 아래 사명 문장을 크게 가운데에. 화면에 들어오면(.ms-on) 단어가 하나씩 흐릿함에서 또렷하게 */
+  .mission-inner { max-width:1080px; margin:0 auto; text-align:center; }
+  .mission-badge { margin:0 auto; }
+  .mission-badge::after { content:""; width:28px; height:1px; background:currentColor; }
+  .mission-text { margin-top:28px; font-family:var(--ff-serif); font-size:clamp(24px, 2.9vw, 38px); font-weight:700; line-height:1.55; letter-spacing:-0.025em; color:#fff; word-break:keep-all; }
+  .ms-w { display:inline-block; transition:opacity .9s ease var(--wd, 0s), filter .9s ease var(--wd, 0s), transform .9s cubic-bezier(.2,.7,.2,1) var(--wd, 0s); }
+  :global(.wl-motion) .mission-band:not(.ms-on) .ms-w { opacity:0; filter:blur(6px); transform:translateY(8px); }
 
   /* ── COMMITMENTS: 2×2 — 테두리만 있는 큰 번호, 굵은 윗선 ── */
   .commit-inner { max-width:1240px; margin:56px auto 0; }
@@ -269,8 +278,9 @@ const ministries = [
     .vision-photo { min-height:440px; }
     .vision-statement { font-size:28px; }
     .mission-band { padding-top:64px; padding-bottom:64px; }
-    .mission-title { font-size:26px; }
-    .mission-text { font-size:17px; }
+    .mission-text { margin-top:22px; font-size:22px; }
+    .mission-badge { white-space:nowrap; font-size:12px; }
+    .mission-badge::before, .mission-badge::after { display:none; }
     .commit-card { grid-template-columns:64px minmax(0,1fr); padding:28px 0 30px; }
     .commit-num { font-size:44px; }
     .commit-card h4 { font-size:18px; }
@@ -454,11 +464,12 @@ const ministries = [
 </section>
 <section class="section mission-band">
   <div class="page-wrap mission-inner">
-    <div>
-      <span class="section-badge">MISSION STATEMENT</span>
-      <h3 class="mission-title"><span class="wl-ko">우리의 사명</span><span class="wl-en">Our Mission</span></h3>
-    </div>
-    <p class="mission-text"><span class="wl-ko">월코는 성경의 원리에 따라 청소년을 전도하고 제자로 훈련하여, 예수 그리스도의 교회가 건강하게 성장하도록 섬깁니다.</span><span class="wl-en">The mission of Word of Life Fellowship is the evangelization and discipleship of youth through various means consistent with the Holy Scriptures to strengthen and build up the church of Jesus Christ.</span></p>
+    <span class="section-badge mission-badge"><span class="wl-ko">MISSION STATEMENT · 우리의 사명</span><span class="wl-en">MISSION STATEMENT</span></span>
+    <h3 class="sr-only"><span class="wl-ko">우리의 사명</span><span class="wl-en">Our Mission</span></h3>
+    <p class="mission-text">
+      <span class="wl-ko">{missionWords(missionKo, 0.12).map((x, i) => <>{i > 0 && ' '}<span class="ms-w" style={`--wd:${x.d}`}>{x.w}</span></>)}</span>
+      <span class="wl-en">{missionWords(missionEn, 0.07).map((x, i) => <>{i > 0 && ' '}<span class="ms-w" style={`--wd:${x.d}`}>{x.w}</span></>)}</span>
+    </p>
   </div>
 </section>
 
@@ -566,6 +577,15 @@ const ministries = [
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     document.documentElement.classList.add('wl-motion');
 
+    // 사명 띠: 화면에 들어오면 단어가 하나씩 또렷해진다(.ms-on — 떠오르기 표시와 달리 떼지 않는다)
+    var msBand = document.querySelector('.mission-band');
+    if (msBand) {
+      var mio = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('ms-on'); mio.unobserve(en.target); } });
+      }, { threshold: 0.35 });
+      mio.observe(msBand);
+    }
+
     // 숫자 올라가기 — 처음엔 시작 숫자를 보여 주고, 보이면 2.4초 동안 끝 숫자까지
     // 맨 위 배너 숫자는 배너(PageHero)가 직접 올린다
     var counters = [].slice.call(document.querySelectorAll('[data-count-from]')).filter(function (el) { return !el.closest('.ph'); });
@@ -595,7 +615,7 @@ const ministries = [
     var groups = ['.history-grid', '.values-grid', '.commit-grid', '.ministry-list'];
     var items = [];
     [].forEach.call(document.querySelectorAll('.section'), function (sec) {
-      [].forEach.call(sec.querySelectorAll('.section-badge, .section-title, .who-title-rule, .section-desc, .vision-statement, .mission-title, .mission-text, .values-big'), function (el, i) {
+      [].forEach.call(sec.querySelectorAll('.section-badge, .section-title, .who-title-rule, .section-desc, .vision-statement, .values-big'), function (el, i) {
         el.style.setProperty('--d', i * 0.14 + 's'); items.push(el);
       });
     });
