@@ -329,7 +329,9 @@ span.wl-en   { display: none; }
 @media (max-width: 900px) {
   .nav-menu { display: none; }
   .nav-hamburger { display: flex; }
-  .footer-inner { grid-template-columns: 1fr 1fr 1fr; }
+  /* 태블릿: 로고·소개는 한 줄 가득, 아래에 소개·사역·소통·후원 네 칸을 나란히 */
+  .footer-inner { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px 24px; }
+  .footer-logo { grid-column: 1 / -1; }
 
   /* 모바일: 네비 패딩/로고 마진 축소 → 햄버거 잘림 방지 */
   .nav { padding: 0 14px; }
@@ -353,8 +355,13 @@ span.wl-en   { display: none; }
   .nav-hamburger span { background: var(--blue-dark) !important; }
 }
 @media (max-width: 768px) {
-  .footer-inner { grid-template-columns: 1fr; gap: 32px; }
+  .footer-inner { gap: 28px 20px; padding-bottom: 32px; }
   .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+}
+@media (max-width: 560px) {
+  /* 폰: 네 칸을 두 칸씩 두 줄로 — 한 줄로 길게 늘어서지 않게 */
+  .footer-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 16px; }
+  .footer-col a { margin-bottom: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; opacity: 1 !important; transform: none !important; }
