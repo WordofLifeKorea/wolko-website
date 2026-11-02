@@ -151,11 +151,11 @@ const missionWorks = [
   .vm-flow .vm-steps { gap:10px 12px; font-size:clamp(24px, 2.1vw, 30px); }
   .vm-step { display:inline-flex; align-items:center; gap:8px; white-space:nowrap; }
   .vm-step-num { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; border:1.5px solid #f3dca6; box-sizing:border-box; color:#f3dca6; font:700 12px/1 var(--ff-sans); letter-spacing:0; }
-  /* 세 걸음은 그림 속 1·2·3 표시와 같은 때에 밝아진다 — 지연(--d)은 GospelRelay 의 steps 값과 맞춘다 (GospelRelay 가 section 에 is-armed / is-on / is-fading 을 붙임) */
-  .vm.is-armed .vm-step { opacity:.35; transition:opacity .9s ease; }
-  .vm.is-armed.is-on .vm-step { animation:vm-step .6s ease-out var(--d) both; }
-  .vm.is-armed.is-fading .vm-step { animation:none; opacity:.35; }
-  @keyframes vm-step { from { opacity:.35; } to { opacity:1; } }
+  /* 세 걸음은 그림 속 1·2·3 표시와 같은 때에 밝아진다 — 원마다 1 → 2 → 3 을 다시 밟는다 (GospelRelay 가 section 에 is-armed 와 data-rl-step 을 붙임) */
+  .vm.is-armed .vm-step { opacity:.35; transition:opacity .45s ease; }
+  .vm[data-rl-step="1"] .vm-step[data-n="1"],
+  .vm[data-rl-step="2"] .vm-step:is([data-n="1"], [data-n="2"]),
+  .vm[data-rl-step="3"] .vm-step { opacity:1; }
   .vm-step-arrow { width:20px; height:12px; fill:none; stroke:#f3dca6; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
   .vm-flow-desc { margin:0; font-size:16px; line-height:1.75; color:rgba(255,255,255,0.78); word-break:keep-all; }
   .vm-mission { padding-top:72px; padding-bottom:128px; border-top:1px solid rgba(255,255,255,0.14); }
@@ -238,7 +238,11 @@ const missionWorks = [
     .vm-flow { grid-template-columns:1fr; gap:20px; padding-bottom:64px; }
     /* 휴대폰: 세 걸음과 설명 바로 아래에 그림, 그 다음 범례와 다시 보기 */
     .vm-flow-text { display:contents; }
-    .vm-steps { font-size:24px; gap:8px 12px; }
+    /* 세 걸음은 휴대폰에서도 한 줄 */
+    .vm-flow .vm-steps { flex-wrap:nowrap; font-size:clamp(17px, 5.6vw, 22px); gap:0 7px; }
+    .vm-step { gap:5px; }
+    .vm-step-num { width:20px; height:20px; font-size:11px; border-width:1.3px; }
+    .vm-step-arrow { width:14px; height:10px; flex:none; }
     .vm-flow-desc { font-size:15px; }
     .vm-relay { order:1; margin:4px -6px 0; }
     .vm-legend { order:2; margin-top:0; }
@@ -432,11 +436,11 @@ const missionWorks = [
   <div class="page-wrap vm-wrap vm-flow">
     <div class="vm-flow-text">
       <p class="vm-steps" aria-label="듣고, 구원받고, 전하고">
-        <span class="vm-step" style="--d:1.68s"><span class="vm-step-num" aria-hidden="true">1</span><span class="wl-ko">듣고</span><span class="wl-en">Hear</span></span>
+        <span class="vm-step" data-n="1"><span class="vm-step-num" aria-hidden="true">1</span><span class="wl-ko">듣고</span><span class="wl-en">Hear</span></span>
         <svg class="vm-step-arrow" viewBox="0 0 20 12" aria-hidden="true"><path d="M1 6h16M12 1.5 17 6l-5 4.5" /></svg>
-        <span class="vm-step" style="--d:2.1s"><span class="vm-step-num" aria-hidden="true">2</span><span class="wl-ko">구원받고</span><span class="wl-en">Believe</span></span>
+        <span class="vm-step" data-n="2"><span class="vm-step-num" aria-hidden="true">2</span><span class="wl-ko">구원받고</span><span class="wl-en">Believe</span></span>
         <svg class="vm-step-arrow" viewBox="0 0 20 12" aria-hidden="true"><path d="M1 6h16M12 1.5 17 6l-5 4.5" /></svg>
-        <span class="vm-step" style="--d:2.5s"><span class="vm-step-num" aria-hidden="true">3</span><span class="wl-ko">전하고</span><span class="wl-en">Pass it on</span></span>
+        <span class="vm-step" data-n="3"><span class="vm-step-num" aria-hidden="true">3</span><span class="wl-ko">전하고</span><span class="wl-en">Pass it on</span></span>
       </p>
       <p class="vm-flow-desc">
         <span class="wl-ko">친구로부터 복음을 듣고 예수님을 믿어 구원받은 청소년이, 그 복음을 또 다른 친구에게 전합니다. 그렇게 복음이 친구에서 친구로 이어집니다.</span>
