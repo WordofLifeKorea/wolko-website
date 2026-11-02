@@ -436,10 +436,6 @@ body.account-modal-open { overflow:hidden; }
   border-color: color-mix(in srgb, var(--card-camp-border, var(--line)) 35%, #fff);
 }
 .camp-cards .camp-card:not(.camp-season-card).active { background: var(--card-camp-bg, var(--card)); }
-.camp-cards .camp-card:not(.camp-season-card) .camp-card-kicker::before {
-  content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 7px; border-radius: 50%;
-  background: var(--card-camp-border, var(--blue)); vertical-align: 1px;
-}
 @media (max-width: 680px) {
   .camp-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .camp-cards .camp-card { padding: 14px 14px; }
@@ -2716,14 +2712,6 @@ tbody tr.camp-tint.is-dedicated:hover td {
   font-weight: 800;
   letter-spacing: -.005em;
 }
-.group-notes-entry-name::before {
-  content: '';
-  flex-shrink: 0;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--blue);
-}
 .group-notes-entry-row {
   display: block;
 }
@@ -3607,13 +3595,12 @@ tbody tr.camp-tint.is-dedicated:hover td {
     align-items: center;
     gap: 7px;
   }
-  /* 캠프명 앞 작은 색 점으로 캠프 식별 (헤비한 색 밴드 대체) */
-  .camp-section-head::before {
-    content: "";
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--camp-row-border, var(--blue));
-    flex: 0 0 auto;
+  /* 캠프 식별은 캠프명 아래 캠프 색 밑줄로 (앞에 붙는 동그라미 점은 쓰지 않는다) */
+  .camp-section-head .camp-section-title {
+    text-decoration: underline;
+    text-decoration-color: var(--camp-row-border, var(--blue));
+    text-decoration-thickness: 3px;
+    text-underline-offset: 4px;
   }
   .camp-section-title {
     font-size: 11px;
