@@ -1,5 +1,6 @@
 import { campSession, json, needLogin, needPerm, badRequest, noDb, canWrite, canView } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, text, isDate, CAMP_STATUSES, audit } from '../../lib/campteamDb.js';
+import { moveTemplateDueDates } from '../../lib/campteamDateMove.js';
 
 /** 캠프 주제(TV 표시용), 정원, 기존 신청 시스템의 캠프 ID(신청 인원 숫자만 읽어 오는 용도) — 모두 선택 */
 function extras(b, base = {}) {
@@ -104,7 +105,8 @@ export async function onRequestPatch({ env, request }) {
       .bind(id, nameKo, 'nameEn' in b ? text(b.nameEn, 80) : row.nameEn, start, end, status,
         'location' in b ? text(b.location, 120) : row.location, 'notes' in b ? text(b.notes, 1000) : row.notes, now, ex.theme, ex.capacity, ex.registrationCampId, ex.year, ex.season).run();
     await audit(env, s.email, 'update', 'camp', id, nameKo);
-    return json({ ok: true });
+    const { moved } = await moveTemplateDueDates(env, id, row.startDate, start, s.email); // 시작일이 바뀌면 템플릿 업무 기한도 함께 옮김
+    return json({ ok: true, movedTasks: moved });
   }
   return badRequest('종류(kind)가 올바르지 않습니다.');
 }

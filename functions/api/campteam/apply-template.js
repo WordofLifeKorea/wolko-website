@@ -29,9 +29,18 @@ export async function onRequestPost({ env, request }) {
   const summary = { campHasDate: !!camp.startDate, toCreate: plan.filter(p => !p.skip).length, skipped: plan.filter(p => p.skip).length };
   if (b.preview) return json({ preview: true, summary, plan });
   const now = nowIso();
+  let ext = true; // 0038(템플릿 항목 번호·기준일 칸)이 아직 없는 DB 에서는 예전 방식으로 만든다
   for (const p of plan.filter(x => !x.skip)) {
-    await env.DB.prepare(`INSERT INTO tasks (id,campId,title,ownerName,ownerSuggestion,dueDate,status,priority,notes,sourceKey,section,createdAt,updatedAt,createdBy) VALUES (?1,?2,?3,?4,?5,?6,'Not Started',?7,?8,?9,?12,?10,?10,?11)`)
-      .bind(uuid(), camp.id, p.title, p.ownerName, p.ownerSuggestion, p.dueDate, p.priority, p.notes, p.sourceKey, now, s.email, p.section).run();
+    const base = [uuid(), camp.id, p.title, p.ownerName, p.ownerSuggestion, p.dueDate, p.priority, p.notes, p.sourceKey, now, s.email, p.section];
+    if (ext) {
+      try {
+        // 캠프 시작일이 나중에 바뀌면 기준일로 기한을 다시 계산한다(기한을 직접 고친 업무는 제외)
+        await env.DB.prepare(`INSERT INTO tasks (id,campId,title,ownerName,ownerSuggestion,dueDate,status,priority,notes,sourceKey,section,createdAt,updatedAt,createdBy,templateItemId,offsetDays) VALUES (?1,?2,?3,?4,?5,?6,'Not Started',?7,?8,?9,?12,?10,?10,?11,?13,?14)`)
+          .bind(...base, p.itemId, camp.startDate && p.offsetDays != null ? p.offsetDays : null).run();
+        continue;
+      } catch { ext = false; }
+    }
+    await env.DB.prepare(`INSERT INTO tasks (id,campId,title,ownerName,ownerSuggestion,dueDate,status,priority,notes,sourceKey,section,createdAt,updatedAt,createdBy) VALUES (?1,?2,?3,?4,?5,?6,'Not Started',?7,?8,?9,?12,?10,?10,?11)`).bind(...base).run();
   }
   await audit(env, s.email, 'apply_template', 'camp', camp.id, `${tpl.nameKo}: +${summary.toCreate} skip ${summary.skipped}`);
   return json({ created: summary.toCreate, skipped: summary.skipped, summary }, 201);

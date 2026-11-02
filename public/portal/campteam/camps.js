@@ -178,15 +178,22 @@
     };
   }
 
+  /** 캠프 시작일을 바꿔서 업무 기한이 함께 옮겨졌을 때 잠깐 알려 준다 */
+  function moveToast(n) {
+    var el = document.createElement('div'); el.className = 'ct-toast'; el.setAttribute('role', 'status');
+    el.textContent = CT.lang() === 'en' ? n + ' task due date(s) moved with the camp' : '업무 기한 ' + n + '개를 함께 옮겼어요';
+    document.body.appendChild(el); setTimeout(function () { el.remove(); }, 4500);
+  }
   async function submit(ev) {
     ev.preventDefault();
     var dlg = $('dlg'), kind = dlg.dataset.kind, id = dlg.dataset.id, fd = new FormData($('dlgForm')), body = { kind: kind };
     fd.forEach(function (v, k) { body[k] = v; });
     if (kind === 'camp' && !body.year && body.startDate) body.year = body.startDate.slice(0, 4); // 연도를 비워 두면 시작일의 연도를 쓴다
     try {
-      if (id) await CT.api('/api/campteam/camps?kind=' + kind + '&id=' + encodeURIComponent(id), { method: 'PATCH', body: body });
-      else await CT.api('/api/campteam/camps', { method: 'POST', body: body });
+      var res = id ? await CT.api('/api/campteam/camps?kind=' + kind + '&id=' + encodeURIComponent(id), { method: 'PATCH', body: body })
+        : await CT.api('/api/campteam/camps', { method: 'POST', body: body });
       dlg.close(); await load();
+      if (res && res.movedTasks) moveToast(res.movedTasks); // 시작일을 바꾸면 템플릿 업무 기한도 함께 옮겨진다
     } catch (e) { $('dlgErr').textContent = e.message; $('dlgErr').hidden = false; }
   }
 
