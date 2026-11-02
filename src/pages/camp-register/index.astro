@@ -165,7 +165,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
 /* ── REG GRID / CARD ── */
 .crp-reg-grid {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px;
-  align-items: stretch;
+  align-items: start; /* '자세히 보기'를 펼쳐도 옆 카드가 같이 늘어나 빈칸이 생기지 않게 — 카드마다 제 높이 */
 }
 .crp-camp-pair { display: flex; flex-direction: column; gap: 12px; min-width: 0; width: 100%; }
 .crp-reg-card {
@@ -193,7 +193,8 @@ html, body { overflow-x: hidden; max-width: 100%; }
 }
 /* 일정 · 대상 · 신청 기간 · 참가비 — 가는 선으로 나눈 줄 */
 .crp-reg-scholar { display: flex; flex-direction: column; gap: 8px; white-space: normal; } /* 장학금 줄: 한 항목에 한 줄 — 이름(왼쪽) · 금액(오른쪽) */
-.crp-sch-item { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.crp-sch-item { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 12px; }
+.crp-sch-name { flex: 1 1 6em; min-width: 0; } /* 칸이 좁으면 이름을 글자마다 끊지 않고 금액을 아랫줄로 내린다 */
 .crp-sch-name small { display: block; margin-top: 1px; font-size: .82em; color: #6b7d86; }
 .crp-sch-amt { flex: none; white-space: nowrap; font-weight: 700; color: #004f68; }
 .crp-sch-note { font-size: .85em; color: #6b7d86; }
