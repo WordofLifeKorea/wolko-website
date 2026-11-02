@@ -318,8 +318,9 @@ const mapPlaces = [
     .pp-hl { font-style: normal; color: #fff; background: linear-gradient(90deg, #e9c27a, #f3dca6) no-repeat 0 92% / 0% 5px; padding-bottom: 4px; animation: pp-mark 1s .9s cubic-bezier(.6,0,.2,1) forwards; }
     @keyframes pp-mark { to { background-size: 100% 5px; } }
     .pp-lead-copy { max-width: 500px; font-size: 17px; line-height: 1.8; color: rgba(255,255,255,.78); }
-    .pp-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 520px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,.18); }
-    .pp-stats > div { padding: 18px 0 0 20px; border-left: 1px solid rgba(255,255,255,.14); }
+    /* 숫자 칸: 칸 너비는 글자만큼, 나눔선 양옆 여백은 똑같이 — 첫 칸만 왼쪽에 붙어 칸 비율이 어긋나 보이지 않게 */
+    .pp-stats { display: grid; grid-template-columns: repeat(3, auto); justify-content: start; max-width: 520px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,.18); }
+    .pp-stats > div { padding: 18px 36px 0; border-left: 1px solid rgba(255,255,255,.14); }
     .pp-stats > div:first-child { padding-left: 0; border-left: 0; }
     .pp-stats dt { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.6); }
     .pp-stats dd { margin: 8px 0 0; font-family: var(--ff-serif); font-size: 44px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
@@ -441,6 +442,8 @@ const mapPlaces = [
       .pp-hero { padding-top: 116px; }
       .pp-hero-grid { padding-bottom: 32px; }
       .pp-stats dd { font-size: 34px; }
+      .pp-stats > div { padding: 16px 24px 0; }
+      .pp-stats > div:first-child { padding-left: 0; }
       .pp-place { padding: 6px 12px 6px 6px; gap: 8px; transform: translate(26px, -50%); }
       .pp-faces img { width: 24px; height: 24px; }
       .pp-place-name { font-size: 12.5px; }
