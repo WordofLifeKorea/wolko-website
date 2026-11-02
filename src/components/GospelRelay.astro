@@ -44,14 +44,18 @@ const curve = (a: { x: number; y: number }, b: { x: number; y: number }) => {
   return `M${f(a.x)} ${f(a.y)} Q${f((a.x + b.x) / 2 - dy / len * bend)} ${f((a.y + b.y) / 2 + dx / len * bend)} ${f(b.x)} ${f(b.y)}`;
 };
 const arcs = people.filter(n => n.parent).map(n => ({ d: curve(n.parent!, n), delay: f(n.parent!.at + 0.15), out: false }));
-// 마지막 친구들에게서 그림 밖으로 이어지는 선 — 계속 퍼져 나간다
+// 마지막 친구들마다 오른쪽으로 짧은 꼬리 — 그림 안에서 서서히 흐려지며 끝나, 복음이 또 이어진다는 느낌만 남긴다
 const last = people.filter(n => n.g === genX.length - 1);
-[last[1], last[4], last[8]].forEach(n => arcs.push({ d: curve(n, { x: W + 40, y: n.y + (rnd() - 0.5) * 60 }), delay: f(n.at + 0.25), out: true }));
+last.forEach(n => arcs.push({ d: curve(n, { x: n.x + 72, y: n.y + (rnd() - 0.5) * 28 }), delay: f(n.at + 0.3), out: true }));
 
 ---
 <p class="sr-only"><span class="wl-ko">{labelKo}</span><span class="wl-en">{labelEn}</span></p>
 <svg class="rl" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
   <defs>
+    <linearGradient id="rl-fade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f3dca6" stop-opacity=".7" />
+      <stop offset="1" stop-color="#f3dca6" stop-opacity="0" />
+    </linearGradient>
     <g id="rl-person"><circle cx="0" cy="-5" r="5" /><path d="M-9 11C-9 3-5 1 0 1s9 2 9 10z" /></g>
   </defs>
   {arcs.map(a => <path class:list={['rl-arc', { 'rl-arc-out': a.out }]} pathLength="1" d={a.d} style={`--d:${a.delay}s`} />)}
@@ -64,7 +68,7 @@ const last = people.filter(n => n.g === genX.length - 1);
   .rl { display:block; width:100%; height:auto; overflow:visible; }
   /* 다 이어진 모습 — 자바스크립트가 없거나 움직임 줄이기 설정일 때, 그리고 재생이 끝난 뒤 */
   .rl-arc { fill:none; stroke:#f3dca6; stroke-width:1.6; stroke-linecap:round; stroke-dasharray:1; stroke-dashoffset:0; opacity:.7; }
-  .rl-arc-out { opacity:.35; }
+  .rl-arc-out { stroke:url(#rl-fade); opacity:1; }
   .rl-person { fill:#f3dca6; filter:drop-shadow(0 0 7px rgba(243,220,166,.6)); }
   .rl-ring { fill:none; stroke:#73d1f5; stroke-width:1.5; opacity:0; transform-box:fill-box; transform-origin:center; }
   /* 재생 준비(.is-armed): 아무도 아직 못 들은 모습 → 화면에 들어오면(.is-on) 차례대로 */
