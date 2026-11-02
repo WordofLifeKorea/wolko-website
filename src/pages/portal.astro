@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=89">
+  <link rel="stylesheet" href="/hub.css?v=90">
   <link rel="stylesheet" href="/hub-sky.css?v=13">
   <script src="/hub-sky.js?v=6" defer></script>
   <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
@@ -188,6 +188,7 @@
           <span class="hub-sidebar-brand-sub">Word of Life Korea</span>
         </span>
       </a>
+      <span class="hub-bell-slot hub-bell-slot--m" data-bell-slot="m"></span>
 
       <div class="hub-nav" id="hubNav"></div>
       <div class="hub-nav-backdrop" id="hubNavBackdrop" onclick="toggleHubNav(false)"></div>
@@ -218,6 +219,7 @@
       <header class="app-header hub-topbar">
         <a class="app-brand hub-topbar-brand" href="/portal"><img src="/images/WOLKO Circle.png" alt="WOLKO"><span data-t="homeTitle">포탈 홈</span></a>
         <div class="hub-topbar-right">
+          <span class="hub-bell-slot" data-bell-slot="top"></span>
           <div class="wl-lang-toggle" role="group" aria-label="Language">
             <button type="button" class="wl-lang-btn" data-hub-lang="ko" onclick="setHubLang('ko')" aria-label="한국어" title="한국어"><img src="/images/flags/kr.svg" alt=""><span>KO</span></button>
             <button type="button" class="wl-lang-btn" data-hub-lang="en" onclick="setHubLang('en')" aria-label="English" title="English"><img src="/images/flags/us.svg" alt=""><span>EN</span></button>
@@ -886,8 +888,17 @@
         + BELL_SVG
         + (n ? '<span class="hub-bell-badge">' + n + '</span>' : '') + '</button>';
       const switcher = d.canSwitchCampus ? '<div class="hub-campus-switch" role="group" aria-label="' + esc(t('campusView')) + '">' + ['wolko', 'jeju'].map(c => '<button type="button" data-campus-view="' + c + '" class="' + (d.campus === c ? 'is-on' : '') + '" aria-pressed="' + (d.campus === c) + '">' + esc(campusLabel(c)) + '</button>').join('') + '</div>' : '';
-      return '<div class="hub-dash-top"><div class="hub-dash-date"><b>' + esc(full) + '</b></div>' + bell + switcher + '</div>';
+      renderBell(bell);
+      return '<div class="hub-dash-top"><div class="hub-dash-date"><b>' + esc(full) + '</b></div>' + switcher + '</div>';
     }
+    /** 알림 종은 맨 위 머리줄에 — 컴퓨터·태블릿은 오른쪽 머리글(언어 단추 앞), 폰은 위 가로 바(로고 오른쪽). 보이는 자리 한 곳에만 그린다 */
+    const bellWide = window.matchMedia('(min-width: 768px)');
+    let lastBellHtml = '';
+    function renderBell(html) {
+      if (html != null) lastBellHtml = html;
+      document.querySelectorAll('[data-bell-slot]').forEach(slot => { slot.innerHTML = (slot.dataset.bellSlot === (bellWide.matches ? 'top' : 'm')) ? lastBellHtml : ''; });
+    }
+    if (bellWide.addEventListener) bellWide.addEventListener('change', () => { const open = !bellPanel().hidden; renderBell(); if (open) placeBellPanel(); });
     /** 내 알림 — 오늘 내가 맡은 주방·차량, 아직 안 낸 지난달 복음 통계 보고. 해당하는 것이 없으면 빈 목록 */
     function todayItems(d) {
       const me = d && d.me;

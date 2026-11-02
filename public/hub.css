@@ -1237,3 +1237,20 @@ body.hub-modal-open { overflow: hidden; }
 :root:root .hub-dcard.hub-dcard-kitchen, :root:root .hub-dcard.hub-dcard-car { container-type: inline-size; }
 .hk-scene { height: clamp(108px, calc(37.33cqw - 9px), 150px); }
 :root:root .hub-dcard.hub-dcard-kitchen, :root:root .hub-dcard.hub-dcard-car { padding-bottom: clamp(136px, calc(37.33% + 2px), 178px) !important; }
+
+/* ── 알림 종: 맨 위 머리줄로 (2026-11) — 컴퓨터·태블릿은 흰 머리글 오른쪽(언어 단추 앞), 폰은 위 가로 바 로고 오른쪽 ── */
+.hub-bell-slot { display: inline-flex; align-items: center; }
+.hub-bell-slot:empty { display: none; }
+.hub-bell-slot--m { display: none; }
+.hub-topbar .hub-bell svg { filter: none; }
+@media (max-width: 767px) {
+  .hub-bell-slot--m:not(:empty) { display: inline-flex; order: 2; margin-left: 6px; }
+}
+
+/* ── 태블릿(641–1279px): 카드를 한 줄 가득 대신 반씩 두 단으로 (2026-11) — 공지·키친 / 차량·일정 / 기도·교회 ── */
+@media (min-width: 641px) and (max-width: 1279px) {
+  .hub-dash .hub-dcard, .hub-dash .hub-dcard-notice, .hub-dash .hub-dcard-events, .hub-dash .hub-dcard-prayer, .hub-dash .hub-dcard-churches,
+  .hub-dash .hub-dcard-kitchen, .hub-dash .hub-dcard-car { grid-column: span 6; }
+  .hub-dash .hub-dcard-wide { grid-column: 1 / -1; }
+  .hub-meals, .hub-runs { grid-template-columns: minmax(0, 1fr); }
+}
