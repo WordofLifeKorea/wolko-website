@@ -1,0 +1,19 @@
+---
+// 「지금」 — 폰 한 손으로 보는 현재·다음 일정 화면 (로그인한 캠프팀 팀원). 그리는 일은 now-view.js, 계산은 now-core.js.
+import CampTeamLayout from '../../../layouts/CampTeamLayout.astro';
+---
+<CampTeamLayout title="지금" active="now">
+  <link slot="head" rel="stylesheet" href="/portal/campteam/now-view.css?v=1">
+  <div class="top">
+    <div><div class="h1row"><h1 data-t="nowTitle"></h1></div><div class="sub" data-t="nowSub"></div></div>
+    <div class="actions"><button class="btn" id="nowShare" type="button" data-t="nowShare" hidden></button> <button class="btn" id="nowHow" type="button" data-t="nowHow"></button></div>
+  </div>
+  <div id="nowHint"></div>
+  <div id="nowView"></div>
+  <dialog id="nowDlg"><div id="nowDlgBody"></div></dialog>
+  <dialog id="shDlg" class="wide"><div id="shBody"></div></dialog>
+  <script is:inline slot="scripts" src="/portal/campteam/now-core.js?v=1"></script>
+  <script is:inline slot="scripts" src="/portal/campteam/now-view.js?v=1"></script>
+  <script is:inline slot="scripts" src="/portal/campteam/share-links.js?v=1"></script>
+  <script is:inline slot="scripts" src="/portal/campteam/now.js?v=1"></script>
+</CampTeamLayout>

@@ -1,0 +1,59 @@
+/* 「지금」 화면 모양 — 팀원 화면(/portal/campteam/now/)과 공개 링크 화면(/portal/campteam/cue/)이 같이 쓴다.
+   색은 캠프팀 포털 색(--blue 등)을 쓰고, 없으면 아래 기본값. 폰(≤900px)에서 한 손으로 보도록 글자는 크게, 누르는 칸은 40px 이상. */
+.nv{--nv-ac:var(--blue,#004f68);--nv-on:#fff;--nv-warn:var(--warn,#d9822b);--nv-bg:var(--card,#fff);--nv-bd:var(--border,#e4eaee);--nv-mid:var(--mid,#5a7585);--nv-tx:var(--text,#1a2d38);
+  max-width:760px;margin:0 auto;padding-bottom:28px;min-width:0;color:var(--nv-tx)}
+.nv *{box-sizing:border-box}
+.nv-head{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin:4px 0 6px}
+.nv-clock{font:800 clamp(60px,19vw,112px)/1 var(--f-sans,'Montserrat',system-ui,sans-serif);letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--nv-ac)}
+.nv-clock small{font-size:.28em;letter-spacing:0;margin-left:6px;color:var(--nv-mid);font-weight:700}
+.nv-sub{padding-bottom:8px}.nv-date{font-weight:800;font-size:clamp(18px,5vw,24px)}.nv-kst{font-size:12.5px;color:var(--nv-mid);font-weight:600}
+.nv-campbar{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;margin:2px 0 10px}
+.nv-camp{font-size:clamp(17px,4.6vw,21px);overflow-wrap:anywhere}
+.nv-ph{display:inline-block;padding:4px 12px;border-radius:999px;background:var(--nv-ac);color:var(--nv-on);font-weight:800;font-size:14px}
+.nv-lbl{color:var(--nv-mid);font-size:13px}
+.nv-pick{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:14px}.nv-pick select{flex:1;min-width:0;min-height:44px;font:inherit;font-size:16px;padding:0 10px;border:1px solid var(--nv-bd);border-radius:10px;background:var(--nv-bg);color:var(--nv-tx)}
+.nv-stale{margin:6px 0;padding:10px 12px;border-radius:10px;background:#fff4e5;color:#8a4b00;font-size:14px}
+.nv-days{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;margin:0 -2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}.nv-days::-webkit-scrollbar{display:none}
+.nv-teams{display:flex;gap:8px;overflow-x:auto;align-items:center;padding:2px 2px 8px;margin:0 -2px;scrollbar-width:none}.nv-teams::-webkit-scrollbar{display:none}.nv-teams:empty{display:none}
+.nv-tl{flex:none;font-size:13px;color:var(--nv-mid);font-weight:700}
+.nv-chip{flex:none;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--nv-bd);background:var(--nv-bg);color:var(--nv-tx);font:700 15px var(--f-body,'Noto Sans KR',system-ui,sans-serif);cursor:pointer;white-space:nowrap}
+.nv-chip.on{background:var(--nv-ac);color:var(--nv-on);border-color:var(--nv-ac)}.nv-chip.dim:not(.on){color:var(--nv-mid);opacity:.75}
+.nv-chip:focus-visible,.nv-btn:focus-visible{outline:3px solid var(--blue-lt,#0077a3);outline-offset:2px}
+/* 카드: 「지금」은 진한 색 바탕, 「다음」은 흰 바탕+왼쪽 띠 */
+.nv-card{border-radius:20px;padding:18px 18px 16px;margin:12px 0;background:var(--nv-bg);border:1px solid var(--nv-bd);overflow-wrap:anywhere}
+.nv-lab{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-weight:800;font-size:15px}.nv-lab em{font-style:normal;margin-left:auto;font-size:clamp(17px,5vw,22px)}
+.nv-lab span{display:inline-block;padding:3px 12px;border-radius:999px;background:rgba(0,79,104,.12);color:var(--nv-ac)}
+.nv-time{margin-top:10px;font:800 clamp(22px,6.4vw,30px)/1.1 var(--f-sans,'Montserrat',system-ui,sans-serif);font-variant-numeric:tabular-nums}
+.nv-title{margin:6px 0 8px;font:800 clamp(28px,8.2vw,40px)/1.2 var(--f-body,'Noto Sans KR',system-ui,sans-serif);letter-spacing:-.01em}
+.nv-now{background:var(--nv-ac);color:var(--nv-on);border-color:var(--nv-ac)}.nv-now .nv-lab span{background:rgba(255,255,255,.2);color:#fff}.nv-now .nv-place,.nv-now .nv-own,.nv-now .nv-items b,.nv-now .nv-pn b{color:rgba(255,255,255,.88)}
+.nv-now .nv-tag{background:rgba(255,255,255,.2);color:#fff}.nv-now .nv-items,.nv-now .nv-pn{background:rgba(255,255,255,.12)}
+.nv-now.alt,.nv-next.alt{margin-top:-4px}
+.nv-next{border-left:8px solid var(--nv-ac)}.nv-next .nv-cd{color:var(--nv-ac)}
+.nv-next.prep{border-color:var(--nv-warn);border-left-color:var(--nv-warn);background:#fff4e5;color:#3b2a10}.nv-next.prep .nv-cd,.nv-next.prep .nv-lab span{color:#8a4b00}.nv-next.prep .nv-lab span{background:rgba(217,130,43,.2)}
+.nv-prepflag{display:block;flex:1 1 100%;order:9;padding:8px 12px;border-radius:12px;background:var(--nv-warn);color:#fff;font:800 clamp(17px,4.8vw,20px) var(--f-body,'Noto Sans KR',system-ui,sans-serif);animation:nvPulse 1.6s ease-in-out infinite}
+.nv-prepat{flex:1 1 100%;color:var(--nv-mid);font-weight:600;font-size:13px}
+@keyframes nvPulse{50%{filter:brightness(1.12)}}@media (prefers-reduced-motion:reduce){.nv-prepflag{animation:none}}
+.nv-meta{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:clamp(16px,4.4vw,19px);font-weight:600}.nv-place{color:var(--nv-tx)}.nv-own{color:var(--nv-mid)}
+.nv-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.nv-tag{display:inline-block;padding:4px 12px;border-radius:999px;font-weight:800;font-size:14px;background:color-mix(in srgb,var(--tc,#0077a3) 18%,#fff);color:var(--nv-tx);border:1px solid color-mix(in srgb,var(--tc,#0077a3) 55%,#fff)}
+.nv-items,.nv-pn{margin-top:12px;padding:10px 14px;border-radius:12px;background:rgba(0,79,104,.07);font-size:clamp(15px,4.2vw,17px);line-height:1.55}
+.nv-items b,.nv-pn b{display:block;font-size:13px;color:var(--nv-mid);margin-bottom:2px}.nv-items ul{margin:0;padding-left:20px}.nv-pn p{margin:0}
+.nv-h{margin:20px 2px 6px;font-size:15px;color:var(--nv-mid);font-weight:800}
+.nv-row{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--nv-bd);border-radius:14px;margin:6px 0;background:var(--nv-bg);overflow-wrap:anywhere}
+.nv-rt{flex:none;min-width:58px;font:800 18px var(--f-sans,'Montserrat',system-ui,sans-serif);font-variant-numeric:tabular-nums;color:var(--nv-ac)}
+.nv-rm{min-width:0;flex:1}.nv-rm>b{font-size:clamp(17px,4.8vw,20px);line-height:1.35}.nv-rm .nv-meta{font-size:15px;margin-top:2px}
+.nv-row.prep{border-color:var(--nv-warn);background:#fff4e5;color:#3b2a10}.nv-row .nv-prepflag{margin-top:6px;font-size:16px}
+.nv-up{margin:6px 0}.nv-ud{display:block;margin:10px 2px 0;font-weight:800;font-size:14px;color:var(--nv-ac)}
+.nv-empty{padding:28px 16px;text-align:center;font-size:18px;line-height:1.7;border:1px dashed var(--nv-bd);border-radius:16px;background:var(--nv-bg)}.nv-empty.soft{font-size:17px;color:var(--nv-mid);padding:22px 16px;margin:12px 0}
+.nv-empty .btn{margin-top:12px;min-height:44px;text-decoration:none}
+.nv-btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;margin:14px 0 4px;border:1px solid var(--nv-bd);border-radius:14px;background:var(--nv-bg);color:var(--nv-ac);font:800 16px var(--f-body,'Noto Sans KR',system-ui,sans-serif);cursor:pointer}
+.nv-btn.sm{width:auto;min-height:40px;margin:0;padding:0 16px;font-size:14px}
+.nv-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;color:var(--nv-mid);font-size:13px}
+.nv-printall{display:none}
+@media (max-width:900px){.nv-card{padding:16px 14px}.nv-rt{min-width:52px;font-size:17px}}
+@media print{
+  .nv-head,.nv-campbar,.nv-pick,.nv-stale,.nv-days,.nv-teams,#nvBody,.nv-foot,.nv-btn{display:none !important}
+  .nv-printall{display:block !important}.nv-ph2{margin:0 0 8px;font-size:20px}
+  .nv-row{break-inside:avoid;border:0;border-bottom:1px solid #ccc;border-radius:0;padding:6px 0;margin:0;background:#fff;color:#000}.nv-row.prep{background:#fff;color:#000}.nv-prepflag{display:none}
+  .nv-h{color:#000;margin:14px 0 4px;font-size:15px}.nv-tag{border:1px solid #888;background:#fff;color:#000}
+}
