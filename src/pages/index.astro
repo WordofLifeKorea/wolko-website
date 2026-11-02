@@ -296,15 +296,21 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 .hm-vision-item { outline: none; }
 .hm-vision-item:focus-visible { box-shadow: 0 0 0 2px var(--hm-deep); border-radius: 2px; }
 .hm-vision-full { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows .45s cubic-bezier(.2,.7,.2,1), opacity .35s; }
-.hm-vision-full > p { min-height: 0; overflow: hidden; padding-top: 12px; font-size: 14px; line-height: 1.75; color: var(--hm-muted); }
+.hm-vision-full > p { min-height: 0; overflow: hidden; padding-top: 0; font-size: 14px; line-height: 1.75; color: var(--hm-muted); transition: padding-top .45s cubic-bezier(.2,.7,.2,1); }
 .hm-vision-item.is-open .hm-vision-full { grid-template-rows: 1fr; opacity: 1; }
+.hm-vision-item.is-open .hm-vision-full > p { padding-top: 12px; }
 .hm-vision-name { transition: color .25s; }
 @media (hover: hover) and (pointer: fine) {
   .hm-vision-item:is(:hover, :focus-visible) .hm-vision-full { grid-template-rows: 1fr; opacity: 1; }
+  .hm-vision-item:is(:hover, :focus-visible) .hm-vision-full > p { padding-top: 12px; }
   .hm-vision-item:is(:hover, :focus-visible) .hm-vision-name { color: var(--hm-deep); }
   .hm-vision-item .hm-vision-more { display: none; }
 }
-.hm-vision-more { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; margin-top: 6px; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; font-size: 13px; font-weight: 600; color: var(--hm-deep); }
+/* 터치 화면: 칸 높이를 늘리지 않도록 '자세히'는 글자 없이 이름 오른쪽 꺾쇠만 두고, 칸 어디를 눌러도 펼쳐진다 */
+.hm-vision-item { position: relative; }
+.hm-vision-more { position: absolute; top: 14px; right: -8px; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 0; background: none; cursor: pointer; color: var(--hm-deep); }
+.hm-vision-more > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (hover: none), (pointer: coarse) { .hm-vision-list .hm-vision-item { cursor: pointer; padding-right: 30px; -webkit-tap-highlight-color: transparent; } }
 .hm-vision-more::after { content: ''; width: 7px; height: 7px; margin-top: -3px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); transition: transform .2s, margin .2s; }
 .hm-vision-item.is-open .hm-vision-more::after { margin-top: 3px; transform: rotate(-135deg); }
 @media (prefers-reduced-motion: reduce) { .hm-vision-full { transition: none; } }
@@ -463,8 +469,8 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
   .hm-vision-item { padding: 16px 0 14px; }
   .hm-vision-name { font-size: 19px; }
   .hm-vision-text { grid-column: 2; margin-top: 6px; font-size: 14.5px; line-height: 1.65; }
-  .hm-vision-full, .hm-vision-more { grid-column: 2; }
-  .hm-vision-more { margin-top: 2px; justify-self: start; }
+  .hm-vision-full { grid-column: 2; }
+  .hm-vision-more { top: 8px; }
 
   .hm-min-grid { margin-top: 40px; }
   .hm-min-title { font-size: 20px; }
@@ -1054,10 +1060,12 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
     restart();
   })();
 
-  // ── 비전: 터치 화면에선 '자세히'를 눌러 긴 글을 펼치고 접는다 (마우스 화면은 올리기만 해도 펼쳐진다) ──
-  document.querySelectorAll('.hm-vision-more').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      const item = btn.closest('.hm-vision-item');
+  // ── 비전: 터치 화면에선 칸을 누르면(오른쪽 꺾쇠 포함) 긴 글을 펼치고 접는다 (마우스 화면은 올리기만 해도 펼쳐진다) ──
+  document.querySelectorAll('.hm-vision-item').forEach(function(item) {
+    const btn = item.querySelector('.hm-vision-more');
+    if (!btn) return;
+    item.addEventListener('click', function() {
+      if (getComputedStyle(btn).display === 'none') return;   // 마우스 화면은 올리기만 하면 펼쳐진다
       const open = item.classList.toggle('is-open');
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
