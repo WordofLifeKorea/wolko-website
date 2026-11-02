@@ -301,6 +301,8 @@
     if (t === 'check' && window.CTCheck) window.CTCheck.show();
   }
 
+  // 「AI 추천」 칸(tasks-ai.js)에서 ✓ 로 업무를 만들면: 템플릿에도 넣었으면 템플릿 표를 다시 읽고, 업무 목록 탭은 다음에 열 때 새로 읽는다
+  document.addEventListener('ct-ai-suggest-changed', function (e) { if (e.detail && e.detail.template && S.tab === 'tpl') loadTpl(); var lb = document.querySelector('#tabs [data-tab="list"]'); if (lb && !lb._aiStale) { lb._aiStale = true; lb.addEventListener('click', function f() { lb._aiStale = false; lb.removeEventListener('click', f); loadTasks(); }); } });
   // 직전에 본 목록이 있으면 서버 응답을 기다리는 동안 먼저 보여 준다(흐리게). 새 응답이 오면 바로 바뀐다.
   try { var cc = JSON.parse(sessionStorage.getItem('ct-c-tasks') || 'null'); if (cc && cc.k === CT.token().slice(-10) && cc.types && cc.tasks) { S.types = cc.types; fillFilters(); S.tasks = cc.tasks; S.perms = cc.tasks.perms; renderTasks(); $('tlist').classList.add('is-stale'); } } catch (e) { /* 무시 */ }
   CT.boot(async function () {

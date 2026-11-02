@@ -7,7 +7,7 @@ import { json } from './campteamAuth.js';
  * 세는 것은 audit_log 의 AI 사용 기록(도움말·찾기·부탁·글 번역·신청서 AI 채우기·설문 AI 채우기)을 합친 개수다. 문서 번역의 조각 요청은 따로 센다(번역 쪽에서).
  * 운영에서 숫자를 바꾸려면 Cloudflare 변수 CAMPTEAM_AI_DAILY · CAMPTEAM_AI_DAILY_GUEST · CAMPTEAM_AI_PER_MIN 을 넣는다.
  */
-export const AI_ACTIONS = ['ask', 'assistant', 'translate_text', 'ai_form', 'ai_survey'];
+export const AI_ACTIONS = ['ask', 'assistant', 'translate_text', 'ai_form', 'ai_survey', 'ai_task_suggest'];
 export const TEAM_DAILY = 200, GUEST_DAILY = 20, PER_MIN = 12;
 const num = (v, d) => { const n = parseInt(v, 10); return Number.isFinite(n) && n > 0 ? n : d; };
 /** 한도에 걸리면 429 응답(Response)을, 괜찮으면 null 을 돌려준다 */

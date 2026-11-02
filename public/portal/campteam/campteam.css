@@ -1118,3 +1118,37 @@ dialog.fm-dlg[open]{display:flex;flex-direction:column}dialog.fm-dlg::backdrop{b
 .tpldlg-note{margin:6px 0;color:var(--mid);font-size:13.5px;line-height:1.5}
 .fm-prepnote{margin:4px 0 8px;color:var(--mid);font-size:13px;line-height:1.5}
 /* ==== /batch-D prep-period ==== */
+/* ==== batch-D ai-suggest ==== */
+/* 업무 > 템플릿 탭: 왼쪽 템플릿 표 + 오른쪽 「AI 추천」 칸 (폰·좁은 화면에서는 아래로) */
+.aisg-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}
+.aisg-layout>*{min-width:0}
+.aisg{position:sticky;top:12px;padding:14px 16px}
+.aisg.is-closed{padding:10px 14px}
+.aisg-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.aisg-head h2{margin:0;font-size:16px}
+.aisg-btn{min-height:40px;height:auto}
+.aisg .form{display:grid;gap:10px;margin:12px 0 10px}
+.aisg .form select{width:100%;min-height:40px}
+.aisg-go{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.aisg-go .meta{margin:0}
+.aisg #aisgMsg{margin-bottom:10px}
+.aisg .aisg-note{margin-bottom:10px}
+.aisg-also{display:flex;align-items:center;gap:10px;min-height:40px;font-size:13px;color:var(--text);margin:4px 0 6px;cursor:pointer}
+.aisg-also input{width:20px;height:20px;flex:0 0 auto}
+.aisg-row{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:10px 0;border-top:1px solid var(--border)}
+.aisg-txt{min-width:0;flex:1 1 auto}
+.aisg-title{font-weight:700;font-size:14px;line-height:1.45;word-break:break-word}
+.aisg-meta{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;align-items:center}
+.aisg-meta .chip,.aisg-meta .tag{margin-left:0}
+.aisg-why{font-size:12px;color:var(--mid);line-height:1.55;margin-top:4px;word-break:break-word}
+.aisg-btns{display:flex;gap:6px;flex:0 0 auto}
+.aisg-ok,.aisg-no{width:44px;height:44px;border-radius:var(--ws-radius-sm,8px);border:1px solid var(--border);background:#fff;font:700 18px var(--f-sans);cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.aisg-ok{color:var(--ok);border-color:#bfe6d4}.aisg-ok:hover{background:#e3f5ec}
+.aisg-no{color:var(--accent);border-color:#f2c5c9}.aisg-no:hover{background:#fde8ea}
+.aisg-ok:disabled,.aisg-no:disabled{opacity:.45;cursor:default}
+.aisg-dropped{margin-top:12px;border-top:1px solid var(--border);padding-top:6px}
+.aisg-dropped summary{cursor:pointer;min-height:40px;display:flex;align-items:center;font-size:13px;color:var(--mid);font-weight:600}
+.aisg-dropped .aisg-row{opacity:.85}
+@media(max-width:1100px){.aisg-layout{grid-template-columns:minmax(0,1fr)}.aisg{position:static}}
+@media(max-width:900px){.aisg{padding:12px}.aisg-go .btn{flex:1 1 auto;justify-content:center}}
+/* ==== /batch-D ai-suggest ==== */
