@@ -4,9 +4,9 @@ import { nowIso } from '../../lib/campteamDb.js';
 /**
  * 화면 설정 기억 — 계정마다 작은 값(예: 사용법 카드를 접어 둠)을 서버에 둔다. 본인 것만 읽고 쓴다.
  *  GET → { prefs:{ 키: 값 } }      PUT { key, value } → 저장(value 가 빈 글이면 지움)
- * 키는 「howto:화면이름」 꼴만, 값은 짧은 글만 받는다. 표가 아직 없으면(DB 반영 전) 조용히 빈 값으로 동작하고, 화면은 이 브라우저에만 기억한다.
+ * 키는 「howto:화면이름」 꼴과 ai-suggest-open 만, 값은 짧은 글만 받는다. 표가 아직 없으면(DB 반영 전) 조용히 빈 값으로 동작하고, 화면은 이 브라우저에만 기억한다.
  */
-export const KEY_RE = /^howto:[a-z]{2,20}$/;
+export const KEY_RE = /^(howto:[a-z]{2,20}|ai-suggest-open)$/;   // ai-suggest-open: 업무 > 템플릿 탭의 「AI 추천」 칸을 펼쳐 둘지 ('1' 펼침 · '0' 접음)
 async function gate(env, request) {
   if (!env.DB) return { res: noDb() };
   const s = await campSession(request, env); if (!s) return { res: needLogin() };
