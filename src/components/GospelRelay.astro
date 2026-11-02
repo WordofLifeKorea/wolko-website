@@ -2,7 +2,8 @@
 /**
  * 비전 그림 — 가운데 먼저 믿은 한 친구에게서 복음이 원을 그리며 친구에서 친구로 퍼진다.
  * 사람마다: 흐린 모양(아직 못 들음) → 하늘색 고리(들음) → 금색(믿음) → 바깥 친구들에게 선(전함).
- * 흐린 바탕 그물 위로 빛이 선을 타고 다음 친구에게 가고, 받은 친구는 금빛 배지로 밝아진다. 화면에 보이는 동안 계속 되풀이한다.
+ * 흐린 바탕 그물 위로 빛이 선을 타고 다음 친구에게 가고, 받은 친구는 금빛 배지로 밝아진다.
+ * 셋째 원까지 퍼지면 그림 전체가 확 줄어들고, 바깥 친구들에게서 복음이 마구잡이로 뻗어 나간다. 화면에 보이는 동안 계속 되풀이한다.
  * 1·2·3 표시는 가운데 친구 · 첫 원 · 둘째 원 친구 곁에 하나씩, 퍼지는 차례대로 켜지며 그림 옆 '믿고 → 전하고 → 또 전하고'와 짝을 이룬다.
  * 재생 중에는 감싼 section 에도 is-armed / is-on / is-fading 과 data-rl-step(1·2·3)을 붙여, 페이지가 세 걸음을 같은 때에 밝힐 수 있게 한다.
  * 자바스크립트가 없거나 움직임 줄이기 설정이면 처음부터 다 퍼진 그림을 보여 준다.
@@ -33,8 +34,32 @@ ring3.forEach(p => {
   const a = at(R[3] + 16, p.a), b = at(R[3] + 52, p.a);
   arcs.push({ d: `M${a.x} ${a.y} L${b.x} ${b.y}`, delay: f(p.t + LINE), out: true });
 });
-// 한 바퀴 길이(초) — 마지막 꼬리까지 다 그려지는 시각
-const cycle = f(Math.max(...arcs.map(a => a.delay)) + 0.9);
+// 마지막 장면: 그림 전체가 확 줄어들며, 바깥 친구들에게서 복음이 마구잡이로 뻗어 나간다
+let seed = 11; // 같은 그림이 늘 나오도록 고정된 난수
+const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+const ZOOM = 0.43;                // 줄어든 크기 — 반지름 690 까지 그림 안에 든다
+const zoomAt = f(Math.max(...ring3.map(p => p.t)) + 0.9);
+const burstAt = zoomAt + 1.1;     // 다 줄어들 즈음부터 뻗기 시작
+type Tip = { x: number; y: number; a: number; r: number };
+const burst: { d: string; x: number; y: number; delay: number }[] = [];
+let tips: Tip[] = ring3.map(p => ({ x: p.x, y: p.y, a: p.a, r: R[3] }));
+[[2, 2], [1, 3], [1, 3]].forEach(([lo, hi], level) => { // 단계마다 한 사람이 전하는 친구 수(최소, 최대)
+  const next: Tip[] = [];
+  tips.forEach(tip => {
+    const n = lo + Math.floor(rnd() * (hi - lo + 1));
+    for (let k = 0; k < n; k++) {
+      const a = tip.a + (rnd() - 0.5) * (level ? 56 : 40);
+      const r = Math.min(690, tip.r + 75 + rnd() * 60);
+      const end = at(r, a);
+      const mx = (tip.x + end.x) / 2 + (rnd() - 0.5) * 50, my = (tip.y + end.y) / 2 + (rnd() - 0.5) * 50;
+      burst.push({ d: `M${f(tip.x)} ${f(tip.y)} Q${f(mx)} ${f(my)} ${end.x} ${end.y}`, x: end.x, y: end.y, delay: f(burstAt + level * 0.45 + rnd() * 0.35) });
+      next.push({ ...end, a, r });
+    }
+  });
+  tips = next;
+});
+// 한 바퀴 길이(초) — 마지막으로 뻗은 친구가 밝아지는 시각
+const cycle = f(Math.max(...burst.map(b => b.delay)) + 0.8);
 
 // 원 이름표 — 오른쪽 위(-30°) 빈 길목을 따라
 const names = [['내 친구', 'My friends'], ['친구의 친구', 'Their friends'], ['그다음 친구', 'And theirs']]
@@ -50,7 +75,7 @@ const marks = [
 const stepTimes = marks.map(m => m.delay);
 ---
 <p class="sr-only"><span class="wl-ko">{labelKo}</span><span class="wl-en">{labelEn}</span></p>
-<svg class="rl" viewBox="0 0 600 600" aria-hidden="true" data-cycle={cycle} data-steps={JSON.stringify(stepTimes)}>
+<svg class="rl" viewBox="0 0 600 600" aria-hidden="true" data-cycle={cycle} data-steps={JSON.stringify(stepTimes)} style={`--z:${zoomAt}s;--zoom:${ZOOM}`}>
   <defs>
     <radialGradient id="rl-fade" gradientUnits="userSpaceOnUse" cx={C} cy={C} r={R[3] + 52}>
       <stop offset={f((R[3] + 16) / (R[3] + 52) * 100) / 100} stop-color="#f3dca6" stop-opacity=".75" />
@@ -73,6 +98,7 @@ const stepTimes = marks.map(m => m.delay);
     <g id="rl-person"><circle cx="0" cy="-5" r="5" /><path d="M-9 11C-9 3-5 1 0 1s9 2 9 10z" /></g>
   </defs>
 
+  <g class="rl-world">
   <!-- 바탕: 아직 아무도 듣지 못한 모습 — 늘 흐리게 깔려 있다 -->
   <g class="rl-ghost">
     {R.slice(1).map(r => <circle class="rl-guide" cx={C} cy={C} r={r} />)}
@@ -110,6 +136,13 @@ const stepTimes = marks.map(m => m.delay);
       </g>
     ))}
   </g>
+
+  <!-- 마지막 장면: 줄어든 그림 바깥으로 마구잡이로 뻗어 나가는 복음 (재생할 때만) -->
+  <g class="rl-burst">
+    {burst.map(b => <path pathLength="1" d={b.d} style={`--d:${b.delay}s`} />)}
+    {burst.map(b => <circle cx={b.x} cy={b.y} r="8" style={`--d:${f(b.delay + 0.4)}s`} />)}
+  </g>
+  </g>
   <text class="rl-note wl-ko" x={C} y="352" text-anchor="middle">먼저 믿은 친구</text>
   <text class="rl-note wl-en" x={C} y="352" text-anchor="middle">First to believe</text>
 </svg>
@@ -135,7 +168,7 @@ const stepTimes = marks.map(m => m.delay);
   .rl-node .rl-badge use { fill:#0b3442; }
   .rl-node-first .rl-badge circle { stroke-width:1.4; }
   .rl-name { fill:#f3dca6; font:700 15px var(--ff-sans); }
-  .rl-note { fill:rgba(255,255,255,.72); font:500 14px var(--ff-sans); }
+  .rl-note { fill:rgba(255,255,255,.72); font:500 14px var(--ff-sans); transition:opacity .9s ease; }
   .rl-mark circle { fill:#052833; stroke:#f3dca6; stroke-width:1.6; }
   .rl-mark text { fill:#f3dca6; font:700 14px var(--ff-sans); }
   /* 휴대폰: 그림이 줄어드는 만큼 글씨를 키운다 */
@@ -156,8 +189,21 @@ const stepTimes = marks.map(m => m.delay);
   .rl.is-armed.is-on .rl-badge { animation:rl-believe .7s cubic-bezier(.34,1.56,.64,1) var(--d) both; }
   .rl.is-armed.is-on .rl-halo { animation:rl-bloom 1s cubic-bezier(.2,.7,.2,1) var(--d) both, rl-breathe 3.4s ease-in-out calc(var(--d) + 1s) infinite alternate; }
   .rl.is-armed.is-on .rl-node-first .rl-halo { animation:rl-bloom 1s cubic-bezier(.2,.7,.2,1) var(--d) both, rl-breathe 2.6s ease-in-out calc(var(--d) + 1s) infinite alternate; }
-  .rl.is-armed.is-on .rl-guide-lit, .rl.is-armed.is-on .rl-name { animation:rl-show .8s ease-out var(--d) both; }
-  .rl.is-armed.is-on .rl-mark { animation:rl-believe .5s cubic-bezier(.34,1.56,.64,1) var(--d) both; }  .rl.is-fading .rl-live { opacity:0; }
+  .rl.is-armed.is-on .rl-guide-lit { animation:rl-show .8s ease-out var(--d) both; }
+  /* 글자와 1·2·3 은 그림이 줄어들기 시작하면 사라진다 */
+  .rl.is-armed.is-on .rl-name { animation:rl-show .8s ease-out var(--d) both, rl-hide .4s ease-in var(--z) forwards; }
+  .rl.is-armed.is-on .rl-mark { animation:rl-believe .5s cubic-bezier(.34,1.56,.64,1) var(--d) both, rl-hide .4s ease-in var(--z) forwards; }
+  .rl.is-armed.is-on .rl-note { animation:rl-hide .4s ease-in var(--z) forwards; }
+  /* 마지막 장면: 확 줄어든 뒤 바깥으로 마구잡이로 뻗는다 */
+  .rl-world { transform-box:view-box; transform-origin:300px 300px; transition:opacity .9s ease; }
+  .rl-burst { display:none; }
+  .rl.is-armed .rl-burst { display:inline; }
+  .rl-burst path { fill:none; stroke:#f3dca6; stroke-width:2.6; stroke-linecap:round; stroke-dasharray:1; stroke-dashoffset:1; opacity:.7; }
+  .rl-burst circle { fill:#f3dca6; opacity:0; }
+  .rl.is-armed.is-on .rl-world { animation:rl-zoom 1.3s cubic-bezier(.7,0,.2,1) var(--z) both; }
+  .rl.is-armed.is-on .rl-burst path { animation:rl-draw .5s ease-out var(--d) both; }
+  .rl.is-armed.is-on .rl-burst circle { animation:rl-show .3s ease-out var(--d) both; }
+  .rl.is-fading .rl-world, .rl.is-fading .rl-note { opacity:0; }
 
   @keyframes rl-draw { from { stroke-dashoffset:1; } to { stroke-dashoffset:0; } }
   @keyframes rl-spark {
@@ -170,7 +216,9 @@ const stepTimes = marks.map(m => m.delay);
   @keyframes rl-believe { 0% { opacity:0; transform:scale(.55); } 40% { opacity:1; } 100% { opacity:1; transform:scale(1); } }
   @keyframes rl-bloom { 0% { opacity:0; transform:scale(.4); } 45% { opacity:1; transform:scale(1.15); } 100% { opacity:.8; transform:scale(1); } }
   @keyframes rl-breathe { from { opacity:.8; transform:scale(1); } to { opacity:.45; transform:scale(.86); } }
-  @keyframes rl-show { from { opacity:0; } to { opacity:1; } }</style>
+  @keyframes rl-show { from { opacity:0; } to { opacity:1; } }
+  @keyframes rl-hide { to { opacity:0; } }
+  @keyframes rl-zoom { from { transform:scale(1); } to { transform:scale(var(--zoom)); } }</style>
 
 <script>
   // 화면에 보이는 동안 계속 되풀이한다: 한 친구에서 시작해 다 퍼지면 → 잠시 머문 뒤 → 금빛 층이 부드럽게 사라지고 → 다시 처음부터.
