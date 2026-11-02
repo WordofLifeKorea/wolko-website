@@ -18,6 +18,13 @@ const ministries = [
     ko: '제주월비 (WOLBI)', en: 'WOLBI Jeju',
     descKo: '제주에서 이루어지는 깊이 있는 성경학교 훈련입니다.', descEn: 'A deep Bible training ministry in Jeju where students are grounded through the Word of God.' },
 ];
+// 사명 아래 '그래서 월코는 이런 자리를 섬깁니다' — 듣고(캠프) → 자라고(청소년·월비) → 전하고(Jr. SYME) 순서
+const missionWorks = [
+  { href: '/camp', ko: '캠프 사역', en: 'Camp Ministry', roleKo: '복음을 듣고 삶의 전환점을 맞도록', roleEn: 'Where youth hear the Gospel and find a turning point' },
+  { href: '/youth', ko: '청소년 사역', en: 'Youth Ministry', roleKo: '교회와 일상에서 믿음이 자라도록', roleEn: 'Where faith grows in church and everyday life' },
+  { href: '/wolbi-jeju', ko: '제주 월비', en: 'WOLBI Jeju', roleKo: '말씀 위에 깊이 뿌리내리도록', roleEn: 'Where students are rooted deeply in the Word' },
+  { href: '/jr-syme', ko: 'Jr. SYME', en: 'Jr. SYME', roleKo: '복음을 전하는 리더로 서도록', roleEn: 'Where students grow into leaders who share the Gospel' },
+];
 ---
 
 <BaseLayout
@@ -153,9 +160,23 @@ const ministries = [
   .vm-vision .vm-wrap { position:relative; z-index:1; }
   .vm-label { margin:0; font-family:var(--ff-sans); font-size:16px; font-weight:700; letter-spacing:-0.01em; color:#f3dca6; }
   .vision-statement { max-width:820px; margin:22px 0 0; font-family:var(--ff-serif); font-size:clamp(34px, 4.3vw, 62px); font-weight:700; line-height:1.26; letter-spacing:-0.035em; color:#fff; word-break:keep-all; }
-  .vm-mission { display:grid; grid-template-columns:minmax(0,5fr) minmax(0,7fr); gap:56px; align-items:center; padding-top:8px; padding-bottom:128px; }
-  .vm-mission-text { display:flex; flex-direction:column; align-items:flex-start; gap:20px; }
-  .mission-statement { margin:0; font-family:var(--ff-serif); font-size:clamp(22px, 2.1vw, 30px); font-weight:700; line-height:1.5; letter-spacing:-0.025em; color:#fff; word-break:keep-all; }
+  .vm-flow { display:grid; grid-template-columns:minmax(0,5fr) minmax(0,7fr); gap:56px; align-items:center; padding-top:8px; padding-bottom:96px; }
+  .vm-flow-text { display:flex; flex-direction:column; align-items:flex-start; gap:20px; }
+  .vm-steps { display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; margin:0; font-family:var(--ff-serif); font-size:clamp(26px, 2.4vw, 34px); font-weight:700; letter-spacing:-0.03em; color:#fff; }
+  .vm-step-arrow { width:20px; height:12px; fill:none; stroke:#f3dca6; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .vm-flow-desc { margin:0; font-size:16px; line-height:1.75; color:rgba(255,255,255,0.78); word-break:keep-all; }
+  .vm-mission { padding-top:72px; padding-bottom:128px; border-top:1px solid rgba(255,255,255,0.14); }
+  .mission-statement { max-width:900px; margin:20px 0 0; font-family:var(--ff-serif); font-size:clamp(24px, 2.6vw, 36px); font-weight:700; line-height:1.45; letter-spacing:-0.025em; color:#fff; word-break:keep-all; }
+  .vm-mission-lead { margin:48px 0 0; font-size:15px; font-weight:600; color:rgba(255,255,255,0.62); }
+  .vm-works { list-style:none; display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:0 28px; margin:16px 0 0; padding:0; }
+  .vm-work { display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"num arrow" "name name" "role role"; gap:10px 12px; height:100%; padding:22px 0 26px; border-top:2px solid rgba(243,220,166,0.55); color:#fff; text-decoration:none; transition:border-color .2s; }
+  .vm-work:hover { border-top-color:#f3dca6; }
+  .vm-work:focus-visible { outline:2px solid var(--blue-light); outline-offset:4px; }
+  .vm-work-num { grid-area:num; font-size:13px; font-weight:700; letter-spacing:.08em; color:#f3dca6; }
+  .vm-work-arrow { grid-area:arrow; width:16px; height:16px; color:rgba(255,255,255,0.55); transition:transform .2s, color .2s; }
+  .vm-work:hover .vm-work-arrow { transform:translateX(4px); color:#f3dca6; }
+  .vm-work-name { grid-area:name; font-family:var(--ff-serif); font-size:22px; font-weight:700; letter-spacing:-0.02em; }
+  .vm-work-role { grid-area:role; font-size:15px; line-height:1.6; color:rgba(255,255,255,0.72); word-break:keep-all; }
   .vm-legend { list-style:none; align-self:stretch; display:flex; flex-direction:column; gap:12px; margin:10px 0 0; padding:24px 0 0; border-top:1px solid rgba(255,255,255,0.14); }
   .vm-legend li { display:flex; align-items:center; gap:14px; font-size:15px; color:rgba(255,255,255,0.78); }
   .vm-legend svg { flex:none; fill:rgba(255,255,255,0.3); }
@@ -222,6 +243,7 @@ const ministries = [
     .ministry-stage { min-height:500px; }
     .ms-cap { left:30px; right:30px; bottom:30px; flex-direction:column; align-items:flex-start; gap:22px; }
     .ms-title { font-size:26px; }
+    .vm-works { grid-template-columns:repeat(2, minmax(0,1fr)); }
   }
   /* 좁은 화면: 큰 사진을 걷어내고 사진 + 글이 한 줄씩 내려가는 목록으로 */
   @media (max-width:860px) {
@@ -279,13 +301,21 @@ const ministries = [
     .vm-vision { padding:92px 0 120px; background-position:60% 30%; }
     .vm-vision::before { background:rgba(5,40,51,0.74); }
     .vision-statement { font-size:28px; margin-top:16px; }
-    .vm-mission { grid-template-columns:1fr; gap:20px; padding-bottom:80px; }
-    /* 휴대폰: 사명 문장 바로 아래에 그림, 그 다음 범례와 다시 보기 */
-    .vm-mission-text { display:contents; }
+    .vm-flow { grid-template-columns:1fr; gap:20px; padding-bottom:64px; }
+    /* 휴대폰: 세 걸음과 설명 바로 아래에 그림, 그 다음 범례와 다시 보기 */
+    .vm-flow-text { display:contents; }
+    .vm-steps { font-size:24px; gap:8px 12px; }
+    .vm-flow-desc { font-size:15px; }
     .vm-relay { order:1; margin:4px -6px 0; }
     .vm-legend { order:2; margin-top:0; }
     .vm-replay { order:3; justify-self:start; margin-top:0; }
-    .mission-statement { font-size:21px; }
+    .vm-mission { padding-top:52px; padding-bottom:80px; }
+    .mission-statement { font-size:21px; margin-top:14px; }
+    .vm-mission-lead { margin-top:32px; font-size:14px; }
+    .vm-works { grid-template-columns:1fr; }
+    .vm-work { padding:16px 0 18px; border-top-width:1px; }
+    .vm-work-name { font-size:19px; }
+    .vm-work-role { font-size:14px; }
     .vm-legend li { font-size:14px; }
     .commit-card { grid-template-columns:64px minmax(0,1fr); padding:28px 0 30px; }
     .commit-num { font-size:44px; }
@@ -457,7 +487,7 @@ const ministries = [
   </div>
 </section>
 
-<!-- ══ VISION & MISSION — 사진 위 비전, 이어서 같은 어두운 바탕에 사명과 '친구에서 친구로' 그림 ══ -->
+<!-- ══ VISION & MISSION — 사진 위 비전 → 비전이 이루어지는 모습(듣고·구원받고·전하고 + '친구에서 친구로' 그림) → 사명과 그 일을 하는 사역 ══ -->
 <section class="section vm">
   <h2 class="sr-only"><span class="wl-ko">비전과 사명</span><span class="wl-en">Our Vision & Mission</span></h2>
   <div class="vm-vision">
@@ -469,12 +499,18 @@ const ministries = [
       </p>
     </div>
   </div>
-  <div class="page-wrap vm-wrap vm-mission">
-    <div class="vm-mission-text">
-      <h3 class="vm-label"><span class="wl-ko">우리의 사명</span><span class="wl-en">Our mission</span></h3>
-      <p class="mission-statement">
-        <span class="wl-ko">모든 청소년이 친구로부터 복음을 듣고 구원받아, 그 복음을 또 다른 친구에게 전하는&nbsp;것</span>
-        <span class="wl-en">Every young person hearing the Gospel from a friend, coming to faith, and passing it on to the next friend</span>
+  <div class="page-wrap vm-wrap vm-flow">
+    <div class="vm-flow-text">
+      <p class="vm-steps" aria-label="듣고, 구원받고, 전하고">
+        <span><span class="wl-ko">듣고</span><span class="wl-en">Hear</span></span>
+        <svg class="vm-step-arrow" viewBox="0 0 20 12" aria-hidden="true"><path d="M1 6h16M12 1.5 17 6l-5 4.5" /></svg>
+        <span><span class="wl-ko">구원받고</span><span class="wl-en">Believe</span></span>
+        <svg class="vm-step-arrow" viewBox="0 0 20 12" aria-hidden="true"><path d="M1 6h16M12 1.5 17 6l-5 4.5" /></svg>
+        <span><span class="wl-ko">전하고</span><span class="wl-en">Pass it on</span></span>
+      </p>
+      <p class="vm-flow-desc">
+        <span class="wl-ko">친구로부터 복음을 듣고 예수님을 믿어 구원받은 청소년이, 그 복음을 또 다른 친구에게 전합니다. 그렇게 복음이 친구에서 친구로 이어집니다.</span>
+        <span class="wl-en">A young person hears the Gospel from a friend, believes in Jesus, and passes it on to another friend — and so the Gospel travels from friend to friend.</span>
       </p>
       <ul class="vm-legend">
         <li><svg width="22" height="24" viewBox="-11 -12 22 24" aria-hidden="true"><circle cx="0" cy="-5" r="5" /><path d="M-9 11C-9 3-5 1 0 1s9 2 9 10z" /></svg><span class="wl-ko">아직 복음을 듣지 못한 친구</span><span class="wl-en">A friend who hasn't heard yet</span></li>
@@ -492,6 +528,26 @@ const ministries = [
         labelEn="A picture of the Gospel starting with one friend and passing to two, four, seven, then ten friends, who pass it on again"
       />
     </div>
+  </div>
+  <div class="page-wrap vm-wrap vm-mission">
+    <h3 class="vm-label"><span class="wl-ko">우리의 사명</span><span class="wl-en">Our mission</span></h3>
+    <p class="mission-statement">
+      <span class="wl-ko">모든 청소년이 친구로부터 복음을 듣고 구원받아, 그 복음을 또 다른 친구에게 전할 수 있도록 돕는&nbsp;것</span>
+      <span class="wl-en">To help every young person hear the Gospel from a friend, come to faith, and pass it on to the next friend</span>
+    </p>
+    <p class="vm-mission-lead"><span class="wl-ko">그래서 월코는 이런 자리를 섬깁니다</span><span class="wl-en">So WOLKO serves in these places</span></p>
+    <ol class="vm-works">
+      {missionWorks.map((w, i) => (
+        <li>
+          <a href={w.href} class="vm-work">
+            <span class="vm-work-num">{String(i + 1).padStart(2, '0')}</span>
+            <span class="vm-work-name"><span class="wl-ko">{w.ko}</span><span class="wl-en">{w.en}</span></span>
+            <span class="vm-work-role"><span class="wl-ko">{w.roleKo}</span><span class="wl-en">{w.roleEn}</span></span>
+            <svg class="vm-work-arrow" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
+          </a>
+        </li>
+      ))}
+    </ol>
   </div>
 </section>
 
