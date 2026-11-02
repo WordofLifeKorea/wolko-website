@@ -70,7 +70,7 @@
       if (eb) { var r = TL.filter(function (x) { return x.id === eb.dataset.e; })[0]; dialog(CT.t('tTimeline'), F, r, async function (o) { await api('/api/campteam/timeline?id=' + encodeURIComponent(r.id), 'PATCH', o); await loadTimeline(); }); }
       if (db) del('/api/campteam/timeline', db.dataset.d, loadTimeline);
     };
-    if (window.CTPrep && window.CTPrep.onTimeline) window.CTPrep.onTimeline();
+    if (window.CTPrep && window.CTPrep.onTimeline) window.CTPrep.onTimeline(TL);
   }
   function pasteDlg() {
     $('pBody').innerHTML = '<h3>' + esc(CT.t('paste')) + '</h3><p class="hint">' + esc(CT.t('pasteHint')) + '</p><textarea id="pasteTx" rows="10" style="width:100%"></textarea><div class="hint" id="pasteMsg"></div><div class="err" id="pErr" hidden></div><div class="dlg-actions"><button type="button" class="btn" id="pCancel">' + esc(CT.t('cancel')) + '</button><button type="button" class="btn" id="pastePv">' + esc(CT.t('pastePv')) + '</button><button type="button" class="btn pri" id="pasteGo">' + esc(CT.t('pasteGo')) + '</button></div>';
@@ -81,17 +81,17 @@
 
   /* ---- 준비물 ---- */
   var SU = [];
-  async function loadSupplies() { SU = (await CT.api('/api/campteam/supplies?campId=' + encodeURIComponent(S.campId))).items; renderSupplies(); }
+  async function loadSupplies() { SU = (await CT.api('/api/campteam/supplies?campId=' + encodeURIComponent(S.campId))).items; if (window.CTCue) await window.CTCue.loadTeams(S.campId); renderSupplies(); }
   function renderSupplies() {
     var w = canW(), ready = SU.filter(function (r) { return r.status === 'ready' || r.status === 'skip'; }).length;
     var others = S.camps.filter(function (c) { return c.id !== S.campId; });
     var h = '<div class="p-bar">' + (w ? '<button class="btn pri" id="suAdd">' + esc(CT.t('add')) + '</button> ' : '') + (w && others.length ? '<select id="suFrom"><option value="">' + esc(CT.t('copyFrom')) + '…</option>' + others.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(campLabel(c)) + '</option>'; }).join('') + '</select> <button class="btn" id="suCopy">' + esc(CT.t('copyGo')) + '</button>' : '') + '<span class="p-prog">' + esc(CT.t('readyOf')(ready, SU.length)) + '</span></div>';
     h += SU.map(function (r) {
-      return '<div class="p-row s-' + r.status + '"><span class="p-main"><b>' + esc(CT.lang() === 'en' && r.nameEn ? r.nameEn : r.name) + (r.qty ? ' <small>× ' + esc(r.qty) + '</small>' : '') + '</b><small>' + [r.ownerName, r.notes].filter(Boolean).map(esc).join(' · ') + '</small></span>' +
+      return '<div class="p-row s-' + r.status + '"><span class="p-main"><b>' + esc(CT.lang() === 'en' && r.nameEn ? r.nameEn : r.name) + (r.qty ? ' <small>× ' + esc(r.qty) + '</small>' : '') + '</b><small>' + [r.team, r.ownerName, r.notes].filter(Boolean).map(esc).join(' · ') + '</small></span>' +
         (w ? '<select class="p-st" data-st="' + esc(r.id) + '">' + ST.map(function (s) { return '<option value="' + s + '"' + (s === r.status ? ' selected' : '') + '>' + esc(CT.t(STL[s])) + '</option>'; }).join('') + '</select><span class="p-act"><button class="btn sm" data-e="' + esc(r.id) + '">' + esc(CT.t('edit')) + '</button> <button class="btn sm danger" data-d="' + esc(r.id) + '">' + esc(CT.t('del')) + '</button></span>' : '<span class="chip">' + esc(CT.t(STL[r.status])) + '</span>') + '</div>';
     }).join('') || '<div class="empty">' + esc(CT.t('none')) + '</div>';
     $('pView').innerHTML = h;
-    var F = [{ n: 'name', l: 'fName' }, { n: 'qty', l: 'fQty' }, { n: 'status', l: 'fStatus', t: 'select', o: ST.map(function (s) { return [s, CT.t(STL[s])]; }) }, { n: 'ownerName', l: 'fOwner' }, { n: 'notes', l: 'fNotes', t: 'area' }];
+    var F = [{ n: 'name', l: 'fName' }, { n: 'qty', l: 'fQty' }, { n: 'status', l: 'fStatus', t: 'select', o: ST.map(function (s) { return [s, CT.t(STL[s])]; }) }, { n: 'ownerName', l: 'fOwner' }, { n: 'notes', l: 'fNotes', t: 'area' }].concat(window.CTCue ? [{ n: 'team', l: 'fTeam', t: 'select', o: window.CTCue.teamOptions() }] : []);   // 담당 팀(큐시트)
     if ($('suAdd')) $('suAdd').onclick = function () { dialog(CT.t('tSupplies'), F, { status: 'need' }, async function (o) { o.campId = S.campId; await api('/api/campteam/supplies', 'POST', o); await loadSupplies(); }); };
     if ($('suCopy')) $('suCopy').onclick = async function () { var f = $('suFrom').value; if (!f) return; try { var r = await api('/api/campteam/supplies', 'POST', { action: 'copy', fromCampId: f, campId: S.campId }); await loadSupplies(); alert(CT.t('copyDone')(r.created, r.skipped)); } catch (e) { alert(e.message); } };
     $('pView').onclick = function (e) { var eb = e.target.closest('[data-e]'), db = e.target.closest('[data-d]'); if (eb) { var r = SU.filter(function (x) { return x.id === eb.dataset.e; })[0]; dialog(CT.t('tSupplies'), F, r, async function (o) { await api('/api/campteam/supplies?id=' + encodeURIComponent(r.id), 'PATCH', o); await loadSupplies(); }); } if (db) del('/api/campteam/supplies', db.dataset.d, loadSupplies); };
