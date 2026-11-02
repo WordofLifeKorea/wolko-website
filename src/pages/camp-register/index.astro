@@ -931,27 +931,21 @@ body:has(#crpModal.crp-modal--unity) .crp-refund-section--deposit { display: non
   [data-jump-target], #staff-recruit { scroll-margin-top: 140px; }
 }
 
-/* ── 카드의 '자세히 보기' — 컴퓨터는 늘 펼쳐 두고 제목 줄을 숨긴다, 폰은 눌러서 펼친다 ── */
+/* ── 카드의 '자세히 보기' — 폰·태블릿·컴퓨터 모두 접어 두고 눌러서 펼친다 ── */
 .crp-more { margin: 0; }
-.crp-more-summary { display: none; }
 .crp-more-meta { margin-top: 0; border-top: 0; }
-/* 컴퓨터: 위 줄들과 '자세히' 줄들이 한 목록처럼 이어지게(사이 선이 두 번 겹치지 않게) */
-@media (min-width: 741px) {
-  .crp-reg-meta:has(+ .crp-more) { margin-bottom: 0; }
-  .crp-reg-meta:has(+ .crp-more) .crp-reg-meta-row:last-child { border-bottom: 0; }
+.crp-more-summary {
+  display: flex; align-items: center; justify-content: center; gap: 6px; list-style: none; cursor: pointer;
+  margin: 4px 0 12px; padding: 9px 12px; border-radius: 8px; background: #f3f7f9; color: #004f68; font-size: 13px; font-weight: 700;
+  transition: background-color .2s;
 }
-@media (max-width: 740px) {
-  .crp-more-summary {
-    display: flex; align-items: center; justify-content: center; gap: 6px; list-style: none; cursor: pointer;
-    margin: 4px 0 12px; padding: 9px 12px; border-radius: 8px; background: #f3f7f9; color: #004f68; font-size: 13px; font-weight: 700;
-  }
-  .crp-more-summary::-webkit-details-marker { display: none; }
-  .crp-more-summary svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; transition: transform .2s; }
-  .crp-more[open] .crp-more-summary svg { transform: rotate(180deg); }
-  .crp-more-close, .crp-more[open] .crp-more-open { display: none; }
-  .crp-more[open] .crp-more-close { display: inline; }
-  .crp-more[open] .crp-more-summary { margin-bottom: 4px; }
-}
+.crp-more-summary:hover { background: #e6f0f4; }
+.crp-more-summary::-webkit-details-marker { display: none; }
+.crp-more-summary svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; transition: transform .2s; }
+.crp-more[open] .crp-more-summary svg { transform: rotate(180deg); }
+.crp-more-close, .crp-more[open] .crp-more-open { display: none; }
+.crp-more[open] .crp-more-close { display: inline; }
+.crp-more[open] .crp-more-summary { margin-bottom: 4px; }
 
 /* 생년월일 · 지원 연령 */
 #crpBirthField .crp-birth-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
@@ -1392,13 +1386,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
       </nav>
     )}
     <script is:inline>
-      // 카드 '자세히 보기': 폰(740px 이하)에서는 접어 두고, 컴퓨터에서는 늘 펼친다. 화면 폭이 바뀌면 다시 맞춘다.
       // 바로가기 줄: 지금 보고 있는 구역의 단추를 진하게, 누르면 그 구역으로 부드럽게(움직임 줄이기면 바로) 이동.
       (function () {
-        var phone = window.matchMedia('(max-width: 740px)');
-        function syncMore() { document.querySelectorAll('[data-crp-more]').forEach(function (d) { d.open = !phone.matches; }); }
-        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', syncMore); else syncMore();
-        if (phone.addEventListener) phone.addEventListener('change', syncMore);
         document.addEventListener('DOMContentLoaded', function () {
           var pills = [].slice.call(document.querySelectorAll('.crp-jump-pill'));
           if (!pills.length) return;
@@ -1488,9 +1477,9 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                         </div>
                       )}
                     </div>
-                    {/* 신청 기간 · 장학금 · 안내 글: 폰에서는 '자세히 보기'를 눌러야 펼쳐진다(컴퓨터는 늘 펼침 — 아래 스크립트) */}
+                    {/* 신청 기간 · 장학금 · 안내 글: 어느 화면에서든 '자세히 보기'를 눌러야 펼쳐진다 */}
                     {(d.deadline_ko || d.deadline_en || usesWinterCampPolicy(s.id) || d.notes_ko || d.notes_en) && (
-                      <details class="crp-more" open data-crp-more>
+                      <details class="crp-more" data-crp-more>
                         <summary class="crp-more-summary">
                           <span class="crp-more-open"><span class="wl-ko">자세히 보기</span><span class="wl-en">More details</span></span>
                           <span class="crp-more-close"><span class="wl-ko">접기</span><span class="wl-en">Show less</span></span>
@@ -1741,9 +1730,9 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                         </div>
                       )}
                     </div>
-                    {/* 신청 기간 · 장학금 · 안내 글: 폰에서는 '자세히 보기'를 눌러야 펼쳐진다(컴퓨터는 늘 펼침 — 아래 스크립트) */}
+                    {/* 신청 기간 · 장학금 · 안내 글: 어느 화면에서든 '자세히 보기'를 눌러야 펼쳐진다 */}
                     {(d.deadline_ko || d.deadline_en || usesWinterCampPolicy(s.id) || d.notes_ko || d.notes_en) && (
-                      <details class="crp-more" open data-crp-more>
+                      <details class="crp-more" data-crp-more>
                         <summary class="crp-more-summary">
                           <span class="crp-more-open"><span class="wl-ko">자세히 보기</span><span class="wl-en">More details</span></span>
                           <span class="crp-more-close"><span class="wl-ko">접기</span><span class="wl-en">Show less</span></span>
