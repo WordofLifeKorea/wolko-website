@@ -416,7 +416,9 @@ const mapPlaces = [
     .pp-join { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; align-items: center; padding: 40px; background: var(--pp-navy); border-radius: 22px; color: #fff; }
     .pp-join-kicker { font-size: 12px; font-weight: 800; letter-spacing: .16em; color: #8fd0e4; }
     .pp-join-title { margin-top: 10px; font-family: var(--ff-serif); font-size: 28px; font-weight: 900; line-height: 1.35; letter-spacing: -.02em; }
-    .pp-join-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+    .pp-join-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; width: 100%; max-width: 460px; justify-self: end; }
+    /* 두 버튼은 늘 같은 폭 — 나란히면 반씩, 줄이 바뀌면 둘 다 한 줄 가득 */
+    .pp-join-btns .pp-btn { flex: 1 1 200px; }
     .pp-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 22px; border-radius: 10px; font-weight: 800; font-size: 15px; text-decoration: none; transition: background-color .2s, color .2s; }
     .pp-btn--light { background: #fff; color: var(--pp-navy); }
     .pp-btn--light:hover { background: #dff1f6; color: var(--pp-navy); }
@@ -453,7 +455,7 @@ const mapPlaces = [
       .pp-seg-long { display: none; }
       .pp-main { gap: 56px; padding: 40px 0 72px; }
       .pp-join { padding: 28px 22px; }
-      .pp-join-btns { justify-content: flex-start; }
+      .pp-join-btns { justify-content: flex-start; max-width: none; }
     }
     @media (hover: none) { .pp-card:hover { transform: none; } .pp-card:hover img { transform: none; } }
     /* 태블릿: 글과 지도를 나란히 두되, 지도는 제 크기만큼만 차지하고 나머지는 글이 쓴다 */
