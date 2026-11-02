@@ -1,5 +1,6 @@
 /** 캠프 준비(진행표·준비물·연락처·시리즈) 정리 + 엑셀에서 복사한 진행표 읽기 + 폰 캘린더(ICS) 만들기 */
 import { S, L, isDay, clock, pick } from './campteamCrud.js';
+import { cleanCueFields, cleanTeamName } from './campteamCue.js';
 
 export const SUPPLY_STATUS = ['need', 'bought', 'ready', 'skip'];
 export const CONTACT_KINDS = ['church', 'school', 'vendor', 'speaker', 'venue', 'other'];
@@ -13,13 +14,14 @@ export async function cleanTimeline(b, base, env) {
   const startTime = pick(b, base, 'startTime', clock), endTime = pick(b, base, 'endTime', clock);
   if (startTime && endTime && endTime < startTime) return { error: '끝나는 시간이 시작 시간보다 빨라요.' };
   const so = 'sortOrder' in b ? parseInt(b.sortOrder, 10) : base.sortOrder;
-  return { v: { campId, dayDate, startTime, endTime, title, titleEn: pick(b, base, 'titleEn', (x) => S(x, 120)), place: pick(b, base, 'place', (x) => S(x, 80)), ownerName: pick(b, base, 'ownerName', (x) => S(x, 60)), notes: pick(b, base, 'notes', (x) => L(x, 600)), sortOrder: Number.isFinite(so) ? so : 0 } };
+  const cue = cleanCueFields(b, base); if (cue.error) return { error: cue.error };   // 큐시트 칸(팀·할 일·준비물·준비 몇 분 전)
+  return { v: { ...cue.v, campId, dayDate, startTime, endTime, title, titleEn: pick(b, base, 'titleEn', (x) => S(x, 120)), place: pick(b, base, 'place', (x) => S(x, 80)), ownerName: pick(b, base, 'ownerName', (x) => S(x, 60)), notes: pick(b, base, 'notes', (x) => L(x, 600)), sortOrder: Number.isFinite(so) ? so : 0 } };
 }
 export async function cleanSupply(b, base, env) {
   const campId = base.campId || S(b.campId, 60); if (!campId || !(await campOk(env, campId))) return { error: '캠프를 찾지 못했어요.' };
   const name = pick(b, base, 'name', (x) => S(x, 100)); if (!name) return { error: '물품 이름을 입력해주세요.' };
   const status = 'status' in b ? (SUPPLY_STATUS.includes(b.status) ? b.status : base.status || 'need') : base.status || 'need';
-  return { v: { campId, name, nameEn: pick(b, base, 'nameEn', (x) => S(x, 100)), qty: pick(b, base, 'qty', (x) => S(x, 40)), status, ownerName: pick(b, base, 'ownerName', (x) => S(x, 60)), notes: pick(b, base, 'notes', (x) => L(x, 400)) } };
+  return { v: { campId, name, nameEn: pick(b, base, 'nameEn', (x) => S(x, 100)), qty: pick(b, base, 'qty', (x) => S(x, 40)), status, ownerName: pick(b, base, 'ownerName', (x) => S(x, 60)), notes: pick(b, base, 'notes', (x) => L(x, 400)), team: pick(b, base, 'team', cleanTeamName) } };
 }
 export async function cleanContact(b, base, env) {
   const name = pick(b, base, 'name', (x) => S(x, 80)); if (!name) return { error: '이름을 입력해주세요.' };
