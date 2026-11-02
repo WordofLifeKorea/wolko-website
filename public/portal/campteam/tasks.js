@@ -227,8 +227,9 @@
     };
   }
   function tplForm(t) {
-    ask(CT.t('addTpl'), '<label>' + esc(CT.t('tplName')) + '<input name="nameKo" required maxlength="80" value="' + esc(t ? t.nameKo : '') + '"></label><label>' + esc(CT.t('tplNameEn')) + '<input name="nameEn" maxlength="80" value="' + esc(t ? t.nameEn : '') + '"></label><label>' + esc(CT.t('tplDesc')) + '<input name="description" maxlength="300" value="' + esc(t ? t.description : '') + '"></label>',
+    ask(CT.t('addTpl'), '<label>' + esc(CT.t('tplName')) + '<input name="nameKo" required maxlength="80" value="' + esc(t ? t.nameKo : '') + '"></label><label>' + esc(CT.t('tplNameEn')) + '<input name="nameEn" maxlength="80" value="' + esc(t ? t.nameEn : '') + '"></label><label>' + esc(CT.t('tplDesc')) + '<input name="description" maxlength="300" value="' + esc(t ? t.description : '') + '"></label><div id="tplAutoMount"></div>',
       async function (fd) { if (t) await CT.api('/api/campteam/templates?kind=template&id=' + encodeURIComponent(t.id), { method: 'PATCH', body: fd }); else await CT.api('/api/campteam/templates', { method: 'POST', body: Object.assign({ kind: 'template' }, fd) }); await loadTpl(); });
+    if (window.CTTplAuto) CTTplAuto.mountSwitch($('tplAutoMount'), t); // 새 캠프를 만들면 물어보기 스위치 (tpl-auto.js)
   }
   function itemForm(tplId, it) {
     var parts = DO.offsetToParts(it ? it.offsetDays : null), kinds = [['before', 'offBefore'], ['after', 'offAfter'], ['same', 'offSame'], ['none', 'offNone']];
