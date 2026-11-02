@@ -266,7 +266,7 @@ test('화면 연결: 캠프 저장창의 준비기간 칸·채우기 버튼, 새
   const fn = new Function('return ' + /function addDaysStr[\s\S]*?\n  }/.exec(camps)[0].replace(/^function addDaysStr/, 'function'))();
   assert.equal(fn('2026-12-27', -7), '2026-12-20'); assert.equal(fn('2026-12-27', -1), '2026-12-26'); assert.equal(fn('2027-01-03', -7), '2026-12-27', '해를 넘겨도 맞다'); assert.equal(fn('2028-03-01', -1), '2028-02-29');
   assert.ok(/prepStart'\)\.value = addDaysStr\(st, -7\); q\('prepEnd'\)\.value = addDaysStr\(st, -1\)/.test(camps), '끝=시작 전날, 시작=7일 전');
-  assert.ok(/created = await CT\.api\('\/api\/campteam\/camps', \{ method: 'POST'/.test(camps) && /if \(created && kind === 'camp' && window\.CTTplAuto\) CTTplAuto\.offer\(/.test(camps), '새로 만들 때만 물어본다(수정에서는 안 물음)');
+  assert.ok(/: await CT\.api\('\/api\/campteam\/camps', \{ method: 'POST'/.test(camps) && /if \(!id\) created = res;/.test(camps) && /if \(created && kind === 'camp' && window\.CTTplAuto\) CTTplAuto\.offer\(/.test(camps), '새로 만들 때만 물어본다(수정에서는 안 물음)');
   const tasks = readFileSync(root + 'public/portal/campteam/tasks.js', 'utf8'); assert.ok(tasks.includes('id="tplAutoMount"') && tasks.includes('CTTplAuto.mountSwitch($(\'tplAutoMount\'), t)'));
   for (const [page, js] of [['camps', 'camps.js'], ['tasks', 'tasks.js']]) { const a = readFileSync(root + `src/pages/portal/campteam/${page}.astro`, 'utf8'); const i = a.indexOf('/portal/campteam/tpl-auto.js'), j = a.indexOf('/portal/campteam/' + js); assert.ok(i > 0 && i < j, `${page}: tpl-auto.js 가 ${js} 보다 먼저`); }
   const forms = readFileSync(root + 'public/portal/campteam/prep-forms.js', 'utf8'); assert.ok(forms.includes('fPrepCamp') && forms.includes('prepinfo') && forms.includes("W.setPrep(prepFor())") && forms.includes('prep: prepFor()'));
