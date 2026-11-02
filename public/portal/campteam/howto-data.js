@@ -20,8 +20,8 @@
   c('tasks', 'tpl', '체크리스트 템플릿', 'Checklist templates',
     ['템플릿은 자주 쓰는 업무 묶음이에요. 항목마다 캠프 시작일 기준 「기준일」이 있어요.', '「+ 템플릿」으로 만들거나, 「체크리스트 붙여넣어 가져오기」로 Word·엑셀 표를 그대로 붙여 넣어요.', '템플릿의 「캠프에 적용」을 누르고 캠프를 고른 뒤 「미리보기」로 확인해요.', '「이대로 적용」을 누르면 업무가 만들어져요. 이미 있는 업무는 건너뛰고, 담당 제안은 체크한 것만 확정돼요.'],
     ['A template is a ready-made bundle of tasks. Each item has an offset counted from the camp start date.', 'Make one with “+ Template”, or paste a Word/Excel checklist table with “Import checklist by pasting”.', 'Press “Apply to camp” on a template, choose the camp, then check it with “Preview”.', 'Press “Apply as shown” to create the tasks. Tasks that already exist are skipped, and owner suggestions are confirmed only when ticked.'],
-    ['접수 안내 데스크 준비', '캠프 시작 14일 전(-14d) · 제안 담당 Jason · 우선순위 높음 · 구역 현장 준비'],
-    ['Set up the registration desk', '14 days before camp (-14d) · suggested owner Jason · High priority · section On-site prep']);
+    ['접수 안내 데스크 준비', '캠프 시작 14일 전 · 제안 담당 Jason · 우선순위 높음 · 구역 현장 준비'],
+    ['Set up the registration desk', '14 days before camp · suggested owner Jason · High priority · section On-site prep']);
   c('tasks', 'imp', '시트에서 가져오기', 'Import from sheet',
     ['기존 Google 시트에서 업무 칸 전체(맨 윗줄 머리글 포함)를 복사해요.', '아래 칸에 붙여넣고 「미리보기」를 눌러요. 아직 저장되지 않아요.', '담당자·기한은 시트에 적힌 그대로 가져와요. 같은 캠프에 같은 이름의 업무가 있으면 건너뛰어요.', '「이대로 가져오기」를 누르면 저장돼요. 「비활성 상태로 가져오기」를 켜 두면 확인한 뒤 활성으로 바꿀 수 있어요.'],
     ['In the existing Google Sheet, copy all task cells (including the header row).', 'Paste them below and press “Preview”. Nothing is saved yet.', 'Owners and due dates are imported exactly as written. A task with the same name in the same camp is skipped.', 'Press “Import as shown” to save. Keep “Import as inactive” ticked to review first and activate later.'],
