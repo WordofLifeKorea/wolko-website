@@ -35,19 +35,19 @@ ring3.forEach(p => {
   arcs.push({ d: `M${a.x} ${a.y} L${b.x} ${b.y}`, delay: f(p.t + LINE), out: true });
 });
 // 마지막 장면: 그림 전체가 확 줄어들고, 바깥 친구들에게서 복음이 규칙대로 퍼져 소용돌이 꽃처럼 피어난다
-// 규칙: 한 사람이 꼭 두 친구에게 전한다(10 → 20 → 40 → 80 → 160). 두 친구는 전해 준 친구가 맡은 방향을 절반씩 나눠 맡고,
+// 규칙: 한 사람이 꼭 두 친구에게 전한다(10 → 20 → 40 → 80). 두 친구는 전해 준 친구가 맡은 방향을 절반씩 나눠 맡고,
 // 원이 한 겹 넓어질 때마다 모두 같은 쪽으로 TWIST 만큼 돌며 같은 쪽으로 휜 선으로 이어져 소용돌이가 된다.
 // 한 겹 안에서는 시계 방향으로 훑듯 차례로 켜지고, 겹이 바뀔수록 빨라진다.
-const ZOOM = 0.5;                 // 줄어든 크기 — 가장 바깥 겹(반지름 575)까지 그림 안에 든다
+const ZOOM = 0.52;                // 줄어든 크기 — 가장 바깥 겹(반지름 555)까지 그림 안에 든다
 const zoomAt = f(Math.max(...ring3.map(p => p.t)) + 0.9);
 const burstAt = zoomAt + 1.1;     // 다 줄어들 즈음부터 퍼지기 시작
 const norm = (d: number) => ((d % 360) + 360) % 360;
-const BURST_R = [335, 415, 495, 575];   // 겹마다 반지름
-const GAPS = [0.55, 0.45, 0.36];        // 다음 겹이 시작하기까지(초) — 점점 빨라진다
+const BURST_R = [355, 455, 555];        // 겹마다 반지름
+const GAPS = [0.55, 0.45];              // 다음 겹이 시작하기까지(초) — 점점 빨라진다
 const SWEEP = 0.32;                     // 한 겹을 한 바퀴 훑는 시간(초)
 const TWIST = 7, SWIRL = -6;            // 겹마다 도는 각도, 선이 휘는 각도
-// 겹마다 사람 배지 반지름(r), 선 굵기(w), 선 진하기(o) — 바깥일수록 작고 흐리게. 가장 바깥 겹(160명)도 서로 겹치지 않는 크기
-const LOOK = [{ r: 11, w: 2.4, o: .8 }, { r: 10, w: 2, o: .7 }, { r: 9, w: 1.6, o: .6 }, { r: 8, w: 1.3, o: .5 }];
+// 겹마다 사람 배지 반지름(r), 선 굵기(w), 선 진하기(o) — 바깥일수록 작고 흐리게
+const LOOK = [{ r: 12, w: 2.4, o: .8 }, { r: 11, w: 2, o: .68 }, { r: 10, w: 1.6, o: .56 }];
 type Tip = { x: number; y: number; a: number; r: number; lo: number; hi: number };
 const outer = [...ring3].sort((p, q) => norm(p.a) - norm(q.a));
 let tips: Tip[] = outer.map((p, i) => { // 바깥 친구마다 맡은 방향 = 양옆 친구와의 가운데까지
@@ -58,8 +58,9 @@ let tips: Tip[] = outer.map((p, i) => { // 바깥 친구마다 맡은 방향 = �
   return { x: p.x, y: p.y, a, r: R[3], lo: (prev + a) / 2, hi: (a + next) / 2 };
 });
 const burst: { d: string; x: number; y: number; delay: number; level: number }[] = [];
-let start = burstAt;
+let start = burstAt, lastStart = burstAt;
 BURST_R.forEach((r, level) => {
+  lastStart = start;
   const next: Tip[] = [];
   tips.forEach(tip => {
     const mid = (tip.lo + tip.hi) / 2;
@@ -73,7 +74,7 @@ BURST_R.forEach((r, level) => {
   tips = next;
   start += GAPS[level] ?? 0;
 });
-const shockAt = f(start - (GAPS[GAPS.length - 1] ?? 0)); // 가장 바깥 겹이 켜질 때 한 번 퍼지는 빛 물결
+const shockAt = f(lastStart); // 가장 바깥 겹이 켜질 때 한 번 퍼지는 빛 물결
 // 한 바퀴 길이(초) — 가장 바깥 겹이 다 밝아지는 시각
 const cycle = f(Math.max(...burst.map(b => b.delay)) + 1);
 
