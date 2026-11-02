@@ -226,7 +226,7 @@ test('공개 보기: 모르는 링크·기한 지난 링크·끈 링크는 완�
 test('공개 보기: 보내는 내용은 스태프용 칸뿐 (notes·담당자·이메일·전화·돈 없음), 담당자는 켠 링크만', async () => {
   const { env, camp, slot, q } = mk(); camp('c1', '여름 캠프', d(-1), d(1));
   q.prepare(`UPDATE camps SET notes='예산 비밀 5,000,000원', location='ella@example.org 010-1234-5678' WHERE id='c1'`).run();
-  q.prepare(`INSERT INTO camp_teams (id,campId,name,color,sortOrder) VALUES ('t1','c1','찬양팀','#7a5af0',0),('t2','c1','게임팀','#f0a020',1)`).run();
+  q.prepare(`INSERT INTO camp_teams (id,campId,name,color,sortOrder,createdAt,updatedAt) VALUES ('t1','c1','찬양팀','#7a5af0',0,'2026-01-01T00:00:00Z','2026-01-01T00:00:00Z'),('t2','c1','게임팀','#f0a020',1,'2026-01-01T00:00:00Z','2026-01-01T00:00:00Z')`).run();
   slot('s1', 'c1', T0, '09:00', '개회 예배', { place: '강당', owner: 'Jason Kim', notes: 'SECRET-INTERNAL-NOTE jason@example.org', team: 't1', prepNotes: '마이크 확인', items: '마이크\n의자', pm: 20, end: '10:00' });
   slot('s2', 'c1', T0, '11:00', '게임', { team: '게임팀', owner: 'Ella Lim' }); slot('s3', 'c1', T0, '12:00', '공통 점심');
   const mkLink = async (b) => (await LINKS(env, U.mem, { method: 'POST', body: { campId: 'c1', ...b } })).body.item;

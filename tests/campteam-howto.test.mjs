@@ -14,7 +14,7 @@ const D = (() => { const sb = { window: {} }; vm.runInNewContext(dataSrc, sb); r
 
 /* 화면 이름 → 주소 · 화면 파일 · 글자를 찾아볼 파일들 */
 const PAGE = {
-  tasks: { astro: 'tasks', js: ['tasks.js'] },
+  tasks: { astro: 'tasks', js: ['tasks.js', 'tasks-check.js'] },
   meetings: { astro: 'meetings', js: ['meetings.js'] },
   files: { astro: 'files', js: ['files.js', 'files-tree.js', 'files-tidy.js'] },
   library: { astro: 'library', js: ['library.js'] },
@@ -57,7 +57,7 @@ test('사용법 카드가 붙는 화면: 캠프팀 공통 틀을 쓰고(= howto.
   /* 공통 틀을 쓰는 화면은 모두 카드가 있다 (새 화면을 만들고 카드를 빠뜨리는 일을 막는다). 공개 화면(설문 답하기·메일 끄기)과 옛 포털을 감싼 자료 화면은 틀이 달라 제외 */
   const withLayout = readdirSync(root + PAGES).filter((f) => f.endsWith('.astro') && /import CampTeamLayout from/.test(read(PAGES + f))).map((f) => f.replace('.astro', ''));
   const have = new Set(Object.values(PAGE).map((p) => p.astro));
-  for (const f of withLayout) assert.ok(have.has(f), f + ' 화면에 사용법 카드가 없어요');
+  for (const f of withLayout) assert.ok(have.has(f) || f === 'now', f + ' 화면에 사용법 카드가 없어요'); // now = 폰 한 손용 「지금」 화면(자체 안내·홈 화면 추가 안내가 있음)
   for (const f of ['survey', 'email-off', 'resources']) assert.doesNotMatch(read(PAGES + f + '.astro'), /import CampTeamLayout from/, f + ' 는 카드를 붙이지 않는 화면이에요');
 });
 
