@@ -3,8 +3,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 
 // 사명 문장 — 큰 글씨로 가운데에, 화면에 들어오면 단어가 하나씩 흐릿했다가 또렷해진다(단어마다 --wd 만큼 늦게)
-const missionKo = '월코는 성경의 원리에 따라 청소년을 전도하고 제자로 훈련하여, 예수 그리스도의 교회가 건강하게 성장하도록 섬깁니다.';
-const missionEn = 'The mission of Word of Life Fellowship is the evangelization and discipleship of youth through various means consistent with the Holy Scriptures to strengthen and build up the church of Jesus Christ.';
+const missionKo = '“모든 청소년이 친구로부터 복음을 듣고 구원받아, 그 복음을 또 다른 친구에게 전하는 것”'; // 좁은 화면에서 '것”'만 혼자 줄바꿈되지 않게 붙인다
+const missionEn = '“Every young person hearing the Gospel from a friend, coming to faith, and passing it on to the next friend”';
 const missionWords = (t: string, step: number) => t.split(' ').map((w, i) => ({ w, d: (0.25 + i * step).toFixed(2) + 's' }));
 
 // 주요 사역 — 왼쪽 목록과 오른쪽 큰 사진이 같은 목록을 쓴다
@@ -466,7 +466,7 @@ const ministries = [
       <span class="section-badge mission-badge"><span class="wl-ko">MISSION · 그래서 우리가 하는 일</span><span class="wl-en">MISSION · How we get there</span></span>
       <h3 class="sr-only"><span class="wl-ko">우리의 사명</span><span class="wl-en">Our Mission</span></h3>
       <p class="mission-text">
-        <span class="wl-ko">{missionWords(missionKo, 0.12).map((x, i) => <>{i > 0 && ' '}<span class="ms-w" style={`--wd:${x.d}`}>{x.w}</span></>)}</span>
+        <span class="wl-ko">{missionWords(missionKo, 0.12).map((x, i, all) => <>{i > 0 && (all[i - 1].w.endsWith(',') ? <br /> : ' ')}<span class="ms-w" style={`--wd:${x.d}`}>{x.w}</span></>)}</span>
         <span class="wl-en">{missionWords(missionEn, 0.07).map((x, i) => <>{i > 0 && ' '}<span class="ms-w" style={`--wd:${x.d}`}>{x.w}</span></>)}</span>
       </p>
     </div>
