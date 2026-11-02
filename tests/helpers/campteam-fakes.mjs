@@ -50,3 +50,10 @@ export async function req(email, { method = 'GET', body, url = 'http://localhost
   return new Request(url, { method, headers: h, body });
 }
 export const U = { admin: 'test-admin@wolko.org', dir: 'test-director@wolko.org', fin: 'test-finance@wolko.org', tre: 'test-treasurer@wolko.org', mem: 'test-member@wolko.org', view: 'test-viewer@wolko.org', out: 'test-outsider@wolko.org' };
+
+/** 진행표 새 칸(team·prepNotes·items·prepMinutes)과 팀 표(camp_teams)가 아직 마이그레이션에 없으면 시험용 DB 에만 덧붙인다 (이미 있으면 아무것도 안 함) */
+export function ensureCueSchema(sqlite) {
+  const have = new Set(sqlite.prepare('PRAGMA table_info(camp_timeline)').all().map((c) => c.name));
+  for (const [c, def] of [['team', "TEXT NOT NULL DEFAULT ''"], ['prepNotes', "TEXT NOT NULL DEFAULT ''"], ['items', "TEXT NOT NULL DEFAULT ''"], ['prepMinutes', 'INTEGER NOT NULL DEFAULT 0']]) if (!have.has(c)) sqlite.exec(`ALTER TABLE camp_timeline ADD COLUMN ${c} ${def}`);
+  sqlite.exec(`CREATE TABLE IF NOT EXISTS camp_teams (id TEXT PRIMARY KEY, campId TEXT NOT NULL, name TEXT NOT NULL, color TEXT NOT NULL DEFAULT '', sortOrder INTEGER NOT NULL DEFAULT 0, deletedAt TEXT)`);
+}

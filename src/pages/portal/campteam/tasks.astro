@@ -11,6 +11,7 @@ import CampTeamLayout from '../../../layouts/CampTeamLayout.astro';
     <button class="tab on" data-tab="list" data-t="tabList"></button>
     <button class="tab" data-tab="tpl" data-t="tabTpl"></button>
     <button class="tab" data-tab="imp" data-t="tabImp" id="impTab" hidden></button>
+    <button class="tab" data-tab="check" data-t="tabCheck"></button>
   </div>
 
   <section id="paneList">
@@ -40,6 +41,17 @@ import CampTeamLayout from '../../../layouts/CampTeamLayout.astro';
     </div>
   </section>
 
+  <section id="paneCheck" hidden>
+    <div class="hintbox" data-t="ckHelp" style="margin-bottom:12px"></div>
+    <div class="hintbox" id="ckViewOnly" data-t="ckViewOnly" hidden style="margin-bottom:12px"></div>
+    <div class="ck-top">
+      <label class="ck-pick"><span data-t="ckCamp"></span><select id="ckCamp"></select></label>
+      <div class="ck-seg" id="ckMode" role="group"><button type="button" data-m="all" class="on" data-t="ckAll"></button><button type="button" data-m="todo" data-t="ckTodo"></button></div>
+    </div>
+    <div class="ck-prog" id="ckProg"></div>
+    <div id="ckBody"></div>
+  </section>
+
   <dialog id="tdetail" class="wide"><h3 id="tdTitle"></h3><div id="tdBody"></div><div class="dlg-actions" id="tdActions"></div></dialog>
   <dialog id="dlg" class="wide">
     <h3 id="dlgTitle"></h3>
@@ -47,5 +59,9 @@ import CampTeamLayout from '../../../layouts/CampTeamLayout.astro';
       <div class="dlg-actions" id="dlgActions"></div></form>
   </dialog>
   <script is:inline slot="scripts" src="/portal/campteam/owner-picker.js?v=1"></script>
-  <script is:inline slot="scripts" src="/portal/campteam/tasks.js?v=10"></script>
+  <script is:inline slot="scripts" src="/portal/campteam/date-offset-picker.js?v=1"></script>
+  <script is:inline slot="scripts" src="/portal/campteam/tasks-check.js?v=1"></script>
+  <script is:inline slot="scripts" src="/portal/campteam/tpl-auto.js?v=1"></script>
+  <script is:inline slot="scripts" src="/portal/campteam/tasks.js?v=11"></script>
+  <script is:inline slot="scripts" src="/portal/campteam/tasks-ai.js?v=1"></script>
 </CampTeamLayout>

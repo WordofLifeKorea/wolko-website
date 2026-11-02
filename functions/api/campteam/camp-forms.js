@@ -5,6 +5,7 @@ import { anthropicRoute } from '../../lib/anthropicRoute.js';
 import { DEFAULT_ASSIST_MODEL, chatClaude } from '../../lib/campteamAssist.js';
 import { KINDS, CAMP_TYPES, ROLES, SNIPPETS, FIELDS, GROUPS, cleanContent, cleanCard, cardFromCms, cardToCms, checkReady, unchangedFields, suggestCampId, starterContent, copyContent } from '../../lib/campForms.js';
 import { homepageFeed, inboxAdd, inboxDone, inboxRead, announce, syncLive } from '../../lib/campFormFlow.js';
+import { prepForForm } from '../../lib/campteamPrepPeriod.js';
 
 /**
  * 다음 캠프의 카드(홈페이지 CMS 와 같은 항목) · 신청서 질문 · 스태프/크루 지원서를 포털 안에서 만들고, 환규 선교사님께 인계한다. 홈페이지·CMS 에는 아무것도 쓰지 않는다.
@@ -77,7 +78,7 @@ export async function onRequestGet({ env, request }) {
     await inboxRead(env, s.email, r.id);
     const content = cleanContent(parse(r.content)), { feed } = await takenIds(env, request, r.id);
     const baseCms = feed.find((x) => x.id === r.baseCampId)?.raw;
-    return json({ form: { ...summary(r), content, ack: !!r.ack, codeRequests: parse(r.codeRequests) || [] }, approvals: await approvalsOf(env, r.id, r.version), roles, me, unchanged: unchangedFields(content.card, content.base), cms: r.status === 'handed' || r.status === 'confirmed' ? cardToCms(content.card) : null, baseCmsKnown: !!baseCms });
+    return json({ form: { ...summary(r), content, ack: !!r.ack, codeRequests: parse(r.codeRequests) || [] }, approvals: await approvalsOf(env, r.id, r.version), roles, me, unchanged: unchangedFields(content.card, content.base), cms: r.status === 'handed' || r.status === 'confirmed' ? cardToCms(content.card) : null, baseCmsKnown: !!baseCms, prep: await prepForForm(env, content) });
   }
   const rows = (await env.DB.prepare('SELECT * FROM camp_forms WHERE deletedAt IS NULL ORDER BY updatedAt DESC LIMIT 200').all().catch(() => ({ results: [] }))).results;
   const items = []; for (const r of rows) items.push({ ...summary(r), card: cleanContent(parse(r.content)).card, approvals: r.status === 'review' || r.status === 'final' ? await approvalsOf(env, r.id, r.version) : [] });

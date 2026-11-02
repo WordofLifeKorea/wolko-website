@@ -7,9 +7,11 @@ import { translateTasks, titleCols } from '../../lib/campteamTranslate.js';
 const later = (context, p) => { try { context.waitUntil ? context.waitUntil(p) : p; } catch { /* 무시 */ } };
 
 const CLOSED = `('Completed','Not Applicable')`;
-const SELECT = `SELECT k.id, k.campId, k.title, k.ownerName, k.ownerEmail, k.ownerSuggestion, k.dueDate, k.status, k.priority, k.notes, k.sourceKey, k.section, k.inactive, k.titleKo, k.titleEn, k.meetingId, k.createdAt, k.updatedAt, k.isTest,
+const SELECT_OLD = `SELECT k.id, k.campId, k.title, k.ownerName, k.ownerEmail, k.ownerSuggestion, k.dueDate, k.status, k.priority, k.notes, k.sourceKey, k.section, k.inactive, k.titleKo, k.titleEn, k.meetingId, k.createdAt, k.updatedAt, k.isTest,
     c.nameKo AS campKo, c.nameEn AS campEn
   FROM tasks k LEFT JOIN camps c ON c.id = k.campId`;
+// 확인(체크)한 사람·시각과 템플릿 기준일 칸(0038). 이 칸이 아직 없는 DB 에서는 예전 조회로 한 번 더 시도한다.
+const SELECT = SELECT_OLD.replace('k.isTest,', 'k.isTest, k.completedBy, k.completedAt, k.templateItemId, k.offsetDays, k.dueEdited,');
 const SORTS = {
   due: `(k.dueDate IS NULL), k.dueDate, k.createdAt`, priority: `CASE k.priority WHEN 'High' THEN 0 WHEN 'Medium' THEN 1 ELSE 2 END, (k.dueDate IS NULL), k.dueDate`,
   newest: `k.createdAt DESC`, title: `k.title COLLATE NOCASE`,
@@ -39,7 +41,8 @@ export async function onRequestGet({ env, request }) {
   const q = text(p.get('q'), 80);
   if (q) { const like = `%${q.replace(/[%_\\]/g, m => '\\' + m)}%`; where.push(`(k.title LIKE ? ESCAPE '\\' OR k.ownerName LIKE ? ESCAPE '\\' OR k.notes LIKE ? ESCAPE '\\')`); args.push(like, like, like); }
   // 세 조회(목록·집계·담당자 이름)를 동시에 DB 로 보낸다 — 차례로 기다리면 DB 를 세 번 다녀와야 해서 느리다
-  const rowsQ = env.DB.prepare(`${SELECT} WHERE ${where.join(' AND ')} ORDER BY ${SORTS[p.get('sort')] || SORTS.due} LIMIT ${owner ? 5000 : 500}`).bind(...args).all();
+  const listQ = async (sel) => env.DB.prepare(`${sel} WHERE ${where.join(' AND ')} ORDER BY ${SORTS[p.get('sort')] || SORTS.due} LIMIT ${owner ? 5000 : 500}`).bind(...args).all();
+  const rowsQ = listQ(SELECT).catch(() => listQ(SELECT_OLD));
   const countsQ = env.DB.prepare(`SELECT
       SUM(CASE WHEN inactive = 0 AND status NOT IN ${CLOSED} THEN 1 ELSE 0 END) AS open,
       SUM(CASE WHEN inactive = 0 AND status NOT IN ${CLOSED} AND dueDate IS NOT NULL AND dueDate < ?1 THEN 1 ELSE 0 END) AS overdue,
@@ -119,11 +122,31 @@ export async function onRequestPatch(context) {
   let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
   const { v, error } = await clean(env, b, row, { email: s.email, admin: !!s.perms.manageMembers }); if (error) return badRequest(error);
   const titleChanged = v.title !== row.title, tc = titleChanged ? titleCols(v.title) : { titleKo: row.titleKo, titleEn: row.titleEn };
+  const at = nowIso();
   await env.DB.prepare(`UPDATE tasks SET campId=?2,title=?3,ownerName=?4,ownerEmail=?5,dueDate=?6,status=?7,priority=?8,notes=?9,updatedAt=?10,inactive=?11,titleKo=?12,titleEn=?13 WHERE id=?1`)
-    .bind(id, v.campId, v.title, v.ownerName, v.ownerEmail, v.dueDate, v.status, v.priority, v.notes, nowIso(), v.inactive, tc.titleKo, tc.titleEn).run();
+    .bind(id, v.campId, v.title, v.ownerName, v.ownerEmail, v.dueDate, v.status, v.priority, v.notes, at, v.inactive, tc.titleKo, tc.titleEn).run();
+  const chk = await saveCheckState(env, s, row, v, id, at);
   if (titleChanged || !tc.titleKo || !tc.titleEn) later(context, translateTasks(env, { ids: [id] }));
   await audit(env, s.email, 'update', 'task', id, `${row.status}→${v.status} ${v.title}${(row.inactive ? 1 : 0) !== v.inactive ? (v.inactive ? ' [비활성]' : ' [활성]') : ''}`);
-  return json({ ok: true });
+  return json({ ok: true, ...chk });
+}
+
+/**
+ * 확인(체크) 상태와 "기한을 직접 고침" 표시를 저장한다 (0038 칸이 없는 DB 에서는 조용히 건너뛴다).
+ *  - 완료로 바뀌면 누가·언제 확인했는지 남기고, 완료에서 다른 상태로 돌아가면 둘 다 비운다. 둘 다 감사 기록에 남는다.
+ *  - 기한이나 캠프를 사람이 바꾸면 dueEdited=1 → 캠프 날짜가 바뀌어도 이 업무의 기한은 자동으로 옮기지 않는다.
+ */
+async function saveCheckState(env, s, row, v, id, at) {
+  const was = row.status === 'Completed', is = v.status === 'Completed', sets = [], args = [];
+  const out = { status: v.status, completedBy: was ? row.completedBy ?? null : null, completedAt: was ? row.completedAt ?? null : null };
+  if (is && !was) {
+    let name = ''; try { name = (await env.DB.prepare('SELECT name FROM camp_members WHERE LOWER(email) = LOWER(?1)').bind(s.email).first())?.name || ''; } catch { name = ''; }
+    out.completedBy = name || s.email; out.completedAt = at; sets.push('completedBy = ?', 'completedAt = ?'); args.push(out.completedBy, out.completedAt);
+  } else if (!is && was) { out.completedBy = null; out.completedAt = null; sets.push('completedBy = NULL', 'completedAt = NULL'); }
+  if ((row.dueDate || null) !== (v.dueDate || null) || (row.campId || null) !== (v.campId || null)) sets.push('dueEdited = 1');
+  if (sets.length) { try { await env.DB.prepare(`UPDATE tasks SET ${sets.join(', ')} WHERE id = ?`).bind(...args, id).run(); } catch { /* 0038 이 아직 없으면 건너뜀 */ } }
+  if (is !== was) await audit(env, s.email, is ? 'check' : 'uncheck', 'task', id, `${v.title}${is ? ` · ${out.completedBy} · ${at}` : ''}`);
+  return out;
 }
 
 export async function onRequestDelete({ env, request }) {

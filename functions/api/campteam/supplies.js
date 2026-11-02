@@ -4,11 +4,14 @@ import { json, badRequest } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, audit } from '../../lib/campteamDb.js';
 
 /**
- * 준비물·재고 목록. GET ?campId= · POST {campId,name,qty,status,ownerName,notes} · PATCH ?id · DELETE ?id
+ * 준비물·재고 목록. GET ?campId= · POST {campId,name,qty,status,ownerName,notes,team} · PATCH ?id · DELETE ?id
  *  POST { action:'copy', fromCampId, campId } — 지난 캠프의 준비물을 「필요」 상태로 복사한다(같은 이름은 건너뜀).
  */
-const h = crud({ table: 'camp_supplies', entity: 'supply', area: 'camps', cols: ['campId', 'name', 'nameEn', 'qty', 'status', 'ownerName', 'notes'], clean: cleanSupply, order: `CASE status WHEN 'need' THEN 0 WHEN 'bought' THEN 1 WHEN 'ready' THEN 2 ELSE 3 END, name COLLATE NOCASE`, filters: { campId: 'campId' }, search: ['name', 'nameEn', 'notes'] });
-export const onRequestGet = h.onRequestGet, onRequestPatch = h.onRequestPatch, onRequestDelete = h.onRequestDelete;
+const COLS = ['campId', 'name', 'nameEn', 'qty', 'status', 'ownerName', 'notes'];
+const mk = (cols) => crud({ table: 'camp_supplies', entity: 'supply', area: 'camps', cols, clean: cleanSupply, order: `CASE status WHEN 'need' THEN 0 WHEN 'bought' THEN 1 WHEN 'ready' THEN 2 ELSE 3 END, name COLLATE NOCASE`, filters: { campId: 'campId' }, search: ['name', 'nameEn', 'notes'] });
+const h = mk([...COLS, 'team']), legacy = mk(COLS);   // team = 어느 팀이 챙기는지(큐시트). 0041 반영 전에도 목록(GET)은 예전 칸만으로 동작
+export const onRequestGet = async (ctx) => { try { return await h.onRequestGet(ctx); } catch { return legacy.onRequestGet(ctx); } };
+export const onRequestPatch = h.onRequestPatch, onRequestDelete = h.onRequestDelete;
 export async function onRequestPost(ctx) {
   const { env, request } = ctx; let b; try { b = await request.clone().json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
   if (b.action !== 'copy') return h.onRequestPost(ctx);
