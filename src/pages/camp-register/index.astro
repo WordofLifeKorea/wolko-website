@@ -13,6 +13,11 @@ const schedules = visibleAll.filter(s => !s.data.public_card_hidden); // 공개 
 const jejuCamps   = schedules.filter(s => s.data.camp_type === 'jeju');
 // 카드의 일정·신청 기간 값: ' · ' 자리에서 줄을 바꿔 '5박 / 6일'처럼 말 중간에서 끊기지 않게 하고, 'N박 N일'은 한 덩어리로 묶는다
 const metaLines = (v) => String(v || '').replace(/ · /g, '\n').replace(/(\d+박) (\d+일)/g, '$1\u00a0$2').replace(/(\d+ nights?) \/ (\d+ days?)/g, '$1\u00a0/\u00a0$2');
+// 카드 값(일정·대상·참가비·마감)은 띄어쓰기 자리에서만 줄을 바꾼다 — '20일(' / '수)', '10,' / '000원'처럼 괄호·쉼표에서 끊기지 않게
+// 낱말마다 줄바꿈 금지 칸으로 감싸고, 기간을 잇는 ' – '·' ~ '는 뒤 낱말에 붙여 다음 줄 맨 앞으로 함께 내려가게 한다
+const escMeta = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const metaHtml = (v) => metaLines(v).replace(/ ([–~-]) /g, ' $1\u00a0').split('\n')
+  .map(line => line.split(' ').filter(Boolean).map(w => `<span class="crp-nb">${escMeta(w)}</span>`).join(' ')).join('\n');
 const inlandCamps = schedules.filter(s => s.data.camp_type !== 'jeju');
 // 스태프 지원의 체크박스 목록은 카드에서 숨긴 캠프(예: 우리학교 캠프)도 포함한다
 const staffInland = visibleAll.filter(s => s.data.camp_type !== 'jeju');
@@ -209,7 +214,9 @@ html, body { overflow-x: hidden; max-width: 100%; }
   white-space: pre-line; /* 신청 기간처럼 두 줄로 적은 값의 줄바꿈을 살린다 */
   font-size: 14.5px; font-weight: 500; color: var(--c-ink); line-height: 1.65; word-break: keep-all;
   font-variant-numeric: tabular-nums;
+  text-wrap: balance; /* 두 줄로 넘칠 때 한 줄에 한 낱말만 남지 않게 줄 길이를 고르게 */
 }
+.crp-nb { white-space: nowrap; }
 .crp-reg-notes { white-space: pre-line; /* 안내를 여러 줄로 적으면 줄바꿈을 살린다 */ font-size: 13.5px; line-height: 1.75; color: var(--c-muted); margin: -4px 0 20px; word-break: keep-all; }
 
 /* ── CAPACITY BAR — 가는 막대, 각진 끝 ── */
@@ -1465,16 +1472,16 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                     <div class="crp-reg-meta">
                       <div class="crp-reg-meta-row">
                         <span class="crp-reg-meta-label"><span class="wl-ko">일정</span><span class="wl-en">Dates</span></span>
-                        <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.date_ko)}</span><span class="wl-en">{metaLines(d.date_en)}</span></span>
+                        <span class="crp-reg-meta-value"><span class="wl-ko" set:html={metaHtml(d.date_ko)}></span><span class="wl-en" set:html={metaHtml(d.date_en)}></span></span>
                       </div>
                       <div class="crp-reg-meta-row">
                         <span class="crp-reg-meta-label"><span class="wl-ko">대상</span><span class="wl-en">For</span></span>
-                        <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.target_ko)}</span><span class="wl-en">{metaLines(d.target_en)}</span></span>
+                        <span class="crp-reg-meta-value"><span class="wl-ko" set:html={metaHtml(d.target_ko)}></span><span class="wl-en" set:html={metaHtml(d.target_en)}></span></span>
                       </div>
                       {(d.price_ko || d.price_en) && (
                         <div class="crp-reg-meta-row">
                           <span class="crp-reg-meta-label"><span class="wl-ko">참가비</span><span class="wl-en">Fee</span></span>
-                          <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.price_ko)}</span><span class="wl-en">{metaLines(d.price_en)}</span></span>
+                          <span class="crp-reg-meta-value"><span class="wl-ko" set:html={metaHtml(d.price_ko)}></span><span class="wl-en" set:html={metaHtml(d.price_en)}></span></span>
                         </div>
                       )}
                     </div>
@@ -1490,7 +1497,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                           {(d.deadline_ko || d.deadline_en) && (
                             <div class="crp-reg-meta-row">
                               <span class="crp-reg-meta-label"><span class="wl-ko">신청 기간</span><span class="wl-en">Registration</span></span>
-                              <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.deadline_ko)}</span><span class="wl-en">{metaLines(d.deadline_en)}</span></span>
+                              <span class="crp-reg-meta-value"><span class="wl-ko" set:html={metaHtml(d.deadline_ko)}></span><span class="wl-en" set:html={metaHtml(d.deadline_en)}></span></span>
                             </div>
                           )}
                           {usesWinterCampPolicy(s.id) && (
@@ -1718,16 +1725,16 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                     <div class="crp-reg-meta">
                       <div class="crp-reg-meta-row">
                         <span class="crp-reg-meta-label"><span class="wl-ko">일정</span><span class="wl-en">Dates</span></span>
-                        <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.date_ko)}</span><span class="wl-en">{metaLines(d.date_en)}</span></span>
+                        <span class="crp-reg-meta-value"><span class="wl-ko" set:html={metaHtml(d.date_ko)}></span><span class="wl-en" set:html={metaHtml(d.date_en)}></span></span>
                       </div>
                       <div class="crp-reg-meta-row">
                         <span class="crp-reg-meta-label"><span class="wl-ko">대상</span><span class="wl-en">For</span></span>
-                        <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.target_ko)}</span><span class="wl-en">{metaLines(d.target_en)}</span></span>
+                        <span class="crp-reg-meta-value"><span class="wl-ko" set:html={metaHtml(d.target_ko)}></span><span class="wl-en" set:html={metaHtml(d.target_en)}></span></span>
                       </div>
                       {(d.price_ko || d.price_en) && (
                         <div class="crp-reg-meta-row">
                           <span class="crp-reg-meta-label"><span class="wl-ko">참가비</span><span class="wl-en">Fee</span></span>
-                          <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.price_ko)}</span><span class="wl-en">{metaLines(d.price_en)}</span></span>
+                          <span class="crp-reg-meta-value"><span class="wl-ko" set:html={metaHtml(d.price_ko)}></span><span class="wl-en" set:html={metaHtml(d.price_en)}></span></span>
                         </div>
                       )}
                     </div>
@@ -1743,7 +1750,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                           {(d.deadline_ko || d.deadline_en) && (
                             <div class="crp-reg-meta-row">
                               <span class="crp-reg-meta-label"><span class="wl-ko">신청 기간</span><span class="wl-en">Registration</span></span>
-                              <span class="crp-reg-meta-value"><span class="wl-ko">{metaLines(d.deadline_ko)}</span><span class="wl-en">{metaLines(d.deadline_en)}</span></span>
+                              <span class="crp-reg-meta-value"><span class="wl-ko" set:html={metaHtml(d.deadline_ko)}></span><span class="wl-en" set:html={metaHtml(d.deadline_en)}></span></span>
                             </div>
                           )}
                           {usesWinterCampPolicy(s.id) && (
