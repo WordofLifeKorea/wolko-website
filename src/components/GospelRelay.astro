@@ -35,8 +35,8 @@ ring3.forEach(p => {
   arcs.push({ d: `M${a.x} ${a.y} L${b.x} ${b.y}`, delay: f(p.t + LINE), out: true });
 });
 // 마지막 장면: 그림 전체가 확 줄어들고, 바깥 친구들에게서 복음이 규칙대로 퍼져 소용돌이 꽃처럼 피어난다
-// 규칙: 한 사람이 꼭 두 친구에게 전한다(10 → 20 → 40 → 80). 친구마다 맡은 방향(부채꼴)이 있고, 두 친구는 그 부채꼴을
-// 전해 준 친구가 선 자리에서 둘로 나눠 맡는다. 선은 제 부채꼴 안에서만 바깥으로 뻗으므로 서로 겹치지 않는다.
+// 규칙: 한 사람이 한 명 또는 두 명에게 전한다(두 명일 확률 TWO). 친구마다 맡은 방향(부채꼴)이 있고, 두 친구에게 전하면
+// 전해 준 친구가 선 자리에서 부채꼴을 둘로 나눠 맡는다. 선은 제 부채꼴 안에서만 바깥으로 뻗으므로 서로 겹치지 않는다.
 // 소용돌이는 그린 뒤 그림 전체를 '멀수록 더 돌리는' 한 가지 규칙으로 비틀어 만든다(겹치지 않는 그림은 비틀어도 겹치지 않는다).
 // 한 겹 안에서는 시계 방향으로 훑듯 차례로 켜지고, 바깥 겹으로 갈수록 천천히 퍼진다.
 const ZOOM = 0.47;                // 줄어든 크기 — 가장 멀리 뻗은 친구까지 그림 안에 든다
@@ -44,6 +44,7 @@ const zoomAt = f(Math.max(...ring3.map(p => p.t)) + 0.9);
 const burstAt = zoomAt + 1.1;     // 다 줄어들 즈음부터 퍼지기 시작
 const norm = (d: number) => ((d % 360) + 360) % 360;
 const LEVELS = 3;                       // 겹 수
+const TWO = 0.6;                        // 두 명에게 전할 확률 — 나머지는 한 명
 const STEP = 100;                       // 한 번 전할 때 뻗는 평균 길이 — 친구마다 0.7~1.3배로 달라 끝이 둥근 원이 되지 않는다
 let seed = 11;                          // 같은 그림이 늘 나오도록 고정된 난수
 const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
@@ -70,7 +71,8 @@ Array.from({ length: LEVELS }, (_, level) => level).forEach(level => {
   lastStart = start;
   const next: Tip[] = [];
   tips.forEach(tip => {
-    [[tip.lo, tip.a], [tip.a, tip.hi]].forEach(([lo, hi]) => {
+    // 한 명 또는 두 명에게 전한다 — 한 명이면 부채꼴을 통째로, 두 명이면 둘로 나눠 맡는다
+    (rnd() < TWO ? [[tip.lo, tip.a], [tip.a, tip.hi]] : [[tip.lo, tip.hi]]).forEach(([lo, hi]) => {
       const child: Tip = { lo, hi, a: (lo + hi) / 2, r: tip.r + STEP * (0.7 + 0.6 * rnd()) };
       // 선: 각도와 반지름을 함께 고르게 바꿔 가며 잇고(제 부채꼴을 벗어나지 않음), 소용돌이로 비튼다
       const pts = Array.from({ length: 9 }, (_, k) => {
