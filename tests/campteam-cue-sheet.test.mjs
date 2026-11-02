@@ -301,5 +301,5 @@ test('prep-cue.js: 진행표 탭 그리기(하루/한 주/팀 걸러 보기)와 
   // 읽기 전용 계정은 만들기·고치기 단추가 없다
   P.canW = () => false; P.onTimeline(rows); await new Promise((r) => setTimeout(r, 20)); assert.ok(!html().includes('data-a="add"') && !html().includes('data-e='));
   // 준비물 탭에서 쓰는 팀 고르기 목록
-  const opts = ctx.CTCue.teamOptions(); assert.deepEqual(opts.slice(0, 3).map((o) => o[0]), ['', '전체', '찬양팀']);
+  const opts = ctx.CTCue.teamOptions(); assert.equal(JSON.stringify(opts.slice(0, 3).map((o) => o[0])), JSON.stringify(['', '전체', '찬양팀']));
 });
