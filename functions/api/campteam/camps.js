@@ -1,5 +1,6 @@
 import { campSession, json, needLogin, needPerm, badRequest, noDb, canWrite, canView } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, text, isDate, CAMP_STATUSES, audit } from '../../lib/campteamDb.js';
+import { cleanPrep, isMissingColumn, withFallback, NOT_MIGRATED } from '../../lib/campteamPrepPeriod.js';
 
 /** 캠프 주제(TV 표시용), 정원, 기존 신청 시스템의 캠프 ID(신청 인원 숫자만 읽어 오는 용도) — 모두 선택 */
 function extras(b, base = {}) {
@@ -23,11 +24,13 @@ export async function onRequestGet({ env, request }) {
   if (!s) return needLogin();
   if (!['tasks', 'meetings', 'files', 'camps'].some((a) => canView(s.perms, a))) return needPerm('캠프 목록을 볼 권한이 없어요. 관리자에게 요청해 주세요.');
   const typesQ = (env.DB.prepare('SELECT id, nameKo, nameEn, description, sortOrder, isTest FROM camp_types WHERE deletedAt IS NULL ORDER BY sortOrder, nameKo').all());
-  const campsQ = (env.DB.prepare(`SELECT c.id, c.typeId, c.nameKo, c.nameEn, c.startDate, c.endDate, c.status, c.location, c.notes, c.theme, c.capacity, c.registrationCampId, c.year, c.season, c.isTest,
+  const campsSql = (prep) => `SELECT c.id, c.typeId, c.nameKo, c.nameEn, c.startDate, c.endDate, c.status, c.location, c.notes, c.theme, c.capacity, c.registrationCampId, c.year, c.season, c.isTest${prep ? ', c.prepStart, c.prepEnd' : ''},
       (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.inactive = 0 AND k.status <> 'Not Applicable') AS taskTotal,
       (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.inactive = 0 AND k.status = 'Completed') AS taskDone,
       (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.inactive = 1) AS taskInactive
-    FROM camps c WHERE c.deletedAt IS NULL ORDER BY c.startDate IS NULL, c.startDate DESC, c.nameKo`).all());
+    FROM camps c WHERE c.deletedAt IS NULL ORDER BY c.startDate IS NULL, c.startDate DESC, c.nameKo`;
+  // 준비기간 칸(0039)이 아직 없는 DB 에서도 목록은 열린다 — 그때는 준비기간 없음(null)으로 보여 준다
+  const campsQ = withFallback(() => env.DB.prepare(campsSql(true)).all(), () => env.DB.prepare(campsSql(false)).all().then((r) => ({ results: r.results.map((c) => ({ ...c, prepStart: null, prepEnd: null })) })));
   const [types, camps] = await Promise.all([typesQ.then((r) => r.results), campsQ.then((r) => r.results)]); // 두 조회를 동시에 보낸다
   // 업무 영역을 볼 수 없는 계정(명단 밖 월코 팀 등)에게는 업무 개수도 알려주지 않는다
   if (!canView(s.perms, 'tasks')) for (const c of camps) { c.taskTotal = null; c.taskDone = null; c.taskInactive = null; }
@@ -59,10 +62,14 @@ export async function onRequestPost({ env, request }) {
     if (start && end && end < start) return badRequest('종료일이 시작일보다 빠릅니다.');
     const status = CAMP_STATUSES.includes(b.status) ? b.status : 'planning';
     const ex = extras(b); if (ex.error) return badRequest(ex.error);
+    const pp = cleanPrep(b); if (pp.error) return badRequest(pp.error);
     if (ex.registrationCampId && !s.perms.moneyWrite) return needPerm('포털 캠프 연결은 디렉터·캠프 재정 담당·관리자만 설정할 수 있어요.');
-    await env.DB.prepare(`INSERT INTO camps (id,typeId,nameKo,nameEn,startDate,endDate,status,location,notes,theme,capacity,registrationCampId,year,season,createdAt,updatedAt,createdBy)
-      VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?12,?13,?14,?15,?16,?10,?10,?11)`)
-      .bind(id, type.id, nameKo, text(b.nameEn, 80), start, end, status, text(b.location, 120), text(b.notes, 1000), now, s.email, ex.theme, ex.capacity, ex.registrationCampId, ex.year, ex.season).run();
+    const withPrep = !!pp.prepStart; // 준비기간을 넣었을 때만 새 칸을 쓴다(0039 전의 DB 에서도 평소 캠프 만들기는 그대로 된다)
+    try {
+      await env.DB.prepare(`INSERT INTO camps (id,typeId,nameKo,nameEn,startDate,endDate,status,location,notes,theme,capacity,registrationCampId,year,season,createdAt,updatedAt,createdBy${withPrep ? ',prepStart,prepEnd' : ''})
+      VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?12,?13,?14,?15,?16,?10,?10,?11${withPrep ? ',?17,?18' : ''})`)
+        .bind(id, type.id, nameKo, text(b.nameEn, 80), start, end, status, text(b.location, 120), text(b.notes, 1000), now, s.email, ex.theme, ex.capacity, ex.registrationCampId, ex.year, ex.season, ...(withPrep ? [pp.prepStart, pp.prepEnd] : [])).run();
+    } catch (e) { if (withPrep && isMissingColumn(e)) return badRequest(NOT_MIGRATED); throw e; }
     await audit(env, s.email, 'create', 'camp', id, nameKo);
     return json({ id }, 201);
   }
@@ -99,7 +106,12 @@ export async function onRequestPatch({ env, request }) {
     if (start && end && end < start) return badRequest('종료일이 시작일보다 빠릅니다.');
     const status = 'status' in b ? (CAMP_STATUSES.includes(b.status) ? b.status : row.status) : row.status;
     const ex = extras(b, row); if (ex.error) return badRequest(ex.error);
+    const pp = cleanPrep(b, row); if (pp.error) return badRequest(pp.error);
     if (ex.registrationCampId !== (row.registrationCampId ?? '') && !s.perms.moneyWrite) return needPerm('포털 캠프 연결은 디렉터·캠프 재정 담당·관리자만 바꿀 수 있어요.');
+    if (pp.touched) { // 준비기간은 보냈을 때만 바꾼다 (0039 가 없으면 아무것도 바뀌기 전에 여기서 멈춘다)
+      try { await env.DB.prepare('UPDATE camps SET prepStart=?2, prepEnd=?3 WHERE id=?1').bind(id, pp.prepStart, pp.prepEnd).run(); }
+      catch (e) { if (isMissingColumn(e)) return badRequest(NOT_MIGRATED); throw e; }
+    }
     await env.DB.prepare('UPDATE camps SET nameKo=?2,nameEn=?3,startDate=?4,endDate=?5,status=?6,location=?7,notes=?8,theme=?10,capacity=?11,registrationCampId=?12,year=?13,season=?14,updatedAt=?9 WHERE id=?1')
       .bind(id, nameKo, 'nameEn' in b ? text(b.nameEn, 80) : row.nameEn, start, end, status,
         'location' in b ? text(b.location, 120) : row.location, 'notes' in b ? text(b.notes, 1000) : row.notes, now, ex.theme, ex.capacity, ex.registrationCampId, ex.year, ex.season).run();

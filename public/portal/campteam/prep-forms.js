@@ -40,10 +40,18 @@
       fHandTitle: 'Handed over to HwanKyu', fHandHow: 'Open "Camp Schedule → New" in the CMS (wolko.org/admin) and paste each value into the same box in this order. To use the whole file at once, use "Copy file content".', fCopy: 'Copy', fCopied: 'Copied', fCopyAll: 'Copy file content', fCmsOpen: 'Open CMS new camp page', fConfirmBtn: 'I checked it', fDReturn: 'Send back', fConfirmAsk: 'Mark as checked? The whole camp team gets a completion alert.', fCodeReqs: 'Code change requests', fPr: 'View pull request', fPrLabel: 'Pull request link', fNoteLabel: 'Explanation', fReady: 'Code ready', fDrop: 'Do not do', fPending: 'Not handled yet', fCodeNote: 'The code is not merged or deployed; HwanKyu decides.', fFileName: 'File name', fQuestions: 'Form questions', fStateL: 'State',
       fDlgDraft: 'Writing a new form', fDlgReview: 'Review the form', fDlgFinal: 'Final check', fDlgHanded: 'Handover to HwanKyu', fDlgDone: 'Form', fCloseAsk: 'You have unsaved changes.', fCloseSave: 'Save and close', fCloseDiscard: 'Close without saving', fCloseStay: 'Keep writing', fAuto: 'Auto-saved', fMineN: function (n) { return n + ' form(s) are waiting for you'; } }
   });
+  CT.addDict({
+    ko: { bPrepInfo: '📅 준비기간 안내', fSecPrep: '준비기간 안내', fPrepCampL: '준비기간을 가져올 캠프', fPrepAuto: '자동 (캠프 시작일이 같은 캠프)', fPrepNoPeriod: '준비기간 없음',
+      fPrepNowYes: function (r) { return '지금 이 신청서에 보이는 준비기간: ' + r; }, fPrepNowNo: '이 캠프에는 준비기간이 없어요. 「캠프별 공간」에서 캠프를 열어 「준비기간」을 넣으면 준비기간 안내 칸이 자동으로 채워져요. 그때까지는 안내 칸과 {준비기간} 글자가 화면에 아무것도 나타나지 않아요.',
+      fPrepTokenHint: '신청서 글 안에 {준비기간} 이라고 쓰면 날짜(예: 12/20(토) ~ 12/26(금))로 바뀌어요. 「📅 준비기간 안내」 칸은 아래 「칸 추가」 → 스태프·크루 지원서에서 넣을 수 있어요.', fPrepBlockNote: '이 칸은 글을 따로 쓰지 않아요. 캠프의 준비기간으로 자동으로 채워지고, 준비기간이 없으면 화면에 나타나지 않아요.' },
+    en: { bPrepInfo: '📅 Prep period notice', fSecPrep: 'Prep period notice', fPrepCampL: 'Camp to take the prep period from', fPrepAuto: 'Automatic (the camp with the same start date)', fPrepNoPeriod: 'no prep period',
+      fPrepNowYes: function (r) { return 'Prep period shown on this form: ' + r; }, fPrepNowNo: 'This camp has no prep period. Open the camp in "Camp spaces" and set its "Prep period" to fill the notice automatically. Until then, the notice block and {준비기간} show nothing.',
+      fPrepTokenHint: 'Writing {준비기간} anywhere in the form text is replaced by the dates (e.g. Sat 12/20 – Fri 12/26). Add the "📅 Prep period notice" block from "Add" → staff / crew application.', fPrepBlockNote: 'This block has no text of its own. It is filled from the camp\'s prep period and is hidden when there is none.' }
+  });
   var $ = function (id) { return document.getElementById(id); }, esc = P.esc, api = P.api, URL0 = '/api/campteam/camp-forms';
   var X = { dirty: false, timer: 0, id: '', d: null, c: null, req: [], campId: '', meta: null, feed: null, open: -1, preLang: 'ko', ai: {} };
   var ST = { draft: 'fStDraft', review: 'fStReview', final: 'fStFinal', handed: 'fStHanded', confirmed: 'fStConfirmed' }, STEP = { draft: 0, review: 1, final: 2, handed: 3, confirmed: 4 };
-  var BT = { text: 'bText', textarea: 'bTextarea', phone: 'bPhone', email: 'bEmail', date: 'bDate', select: 'bSelect', radio: 'bRadio', checkbox: 'bCheckbox', consent: 'bConsent', heading: 'bHeading', paragraph: 'bParagraph' };
+  var BT = { text: 'bText', textarea: 'bTextarea', phone: 'bPhone', email: 'bEmail', date: 'bDate', select: 'bSelect', radio: 'bRadio', checkbox: 'bCheckbox', consent: 'bConsent', heading: 'bHeading', paragraph: 'bParagraph', prepinfo: 'bPrepInfo' };
   var TY = { english: 'tEnglish', union: 'tUnion', jeju: 'tJeju', other: 'tOther' }, CHOICE = ['select', 'radio', 'checkbox'], NOSAME = ['campType', 'order', 'status'];
   var who = function (list) { return list && list.length ? list.map(function (x) { return esc(x.name); }).join(', ') : '<i>' + esc(CT.t('fNoRole')) + '</i>'; };
   var date = function (s) { return String(s || '').slice(0, 10); };
@@ -118,6 +126,7 @@
   var DLG_TITLE = { draft: 'fDlgDraft', review: 'fDlgReview', final: 'fDlgFinal', handed: 'fDlgHanded', confirmed: 'fDlgDone' };
   async function openForm(id) {
     var d = await CT.api(URL0 + '?id=' + encodeURIComponent(id)); X.id = id; X.d = d; X.c = JSON.parse(JSON.stringify(d.form.content)); X.req = JSON.parse(JSON.stringify(d.form.codeRequests || [])); X.campId = d.form.campId; X.open = -1; X.ai = {};
+    try { X.camps = []; (await CT.api('/api/campteam/camps')).types.forEach(function (t) { t.camps.forEach(function (c) { X.camps.push(c); }); }); } catch (e) { X.camps = null; } // 준비기간을 가져올 캠프 목록(못 읽어도 신청서는 열린다)
     var dlg = ensureDlg(); if (!dlg.open) dlg.showModal(); renderDetail();
     clearInterval(X.timer); X.timer = setInterval(autoSave, 15000);
   }
@@ -159,16 +168,30 @@
     });
     return h;
   }
+  /* 준비기간: 이 신청서가 가리키는 캠프(고른 캠프, 없으면 시작일이 같은 캠프)의 { start, end } — 없으면 null. 목록을 못 읽었으면 서버가 계산해 준 값(X.d.prep)을 쓴다 */
+  function prepFor() {
+    if (!X.camps) return X.d && X.d.prep ? { start: X.d.prep.start, end: X.d.prep.end } : null;
+    var id = X.c.prepCampId, day = String((X.c.card && X.c.card.startDate) || '').slice(0, 10);
+    var c = id ? X.camps.filter(function (x) { return x.id === id; })[0] : (day ? X.camps.filter(function (x) { return x.startDate === day && x.status !== 'canceled' && x.prepStart && x.prepEnd; })[0] : null);
+    return c && c.prepStart && c.prepEnd ? { start: c.prepStart, end: c.prepEnd } : null;
+  }
+  function prepNow() { var p = prepFor(), t = p && window.WolkoForm.prepText(p); return t ? esc(CT.t('fPrepNowYes')(CT.lang() === 'en' ? t.en : t.ko)) : esc(CT.t('fPrepNowNo')); }
+  function prepSection() {
+    var ls = CT.lang(), sel = X.c.prepCampId || '', W = window.WolkoForm;
+    var opts = '<option value="">' + esc(CT.t('fPrepAuto')) + '</option>' + (X.camps || []).map(function (c) { var t = c.prepStart && c.prepEnd ? W.prepText({ start: c.prepStart, end: c.prepEnd }) : null; return '<option value="' + esc(c.id) + '"' + (sel === c.id ? ' selected' : '') + '>' + esc(CT.pick(c, 'name') + ' · ' + (t ? (ls === 'en' ? t.en : t.ko) : CT.t('fPrepNoPeriod'))) + '</option>'; }).join('');
+    return '<h4 class="fm-sec">' + esc(CT.t('fSecPrep')) + '</h4><label class="fm-f">' + esc(CT.t('fPrepCampL')) + '<select id="fPrepCamp">' + opts + '</select></label><div class="fm-prepnote" id="fPrepNow">' + prepNow() + '</div><small class="hint">' + esc(CT.t('fPrepTokenHint')) + '</small>';
+  }
   function blockRow(b, i, n) {
     var lab = b.label.ko || b.label.en || '—', open = X.open === i;
     var h = '<div class="fm-block' + (open ? ' open' : '') + '" data-bi="' + i + '"><div class="fm-brow"><span class="chip">' + esc(CT.t(BT[b.type])) + '</span><b class="fm-blab">' + esc(lab.length > 70 ? lab.slice(0, 70) + '…' : lab) + '</b>' + (b.required ? '<span class="chip warn">' + esc(CT.t('fReq')) + '</span>' : '') +
       '<span class="p-act"><button class="btn sm" data-bm="up"' + (i === 0 ? ' disabled' : '') + ' title="' + esc(CT.t('fUp')) + '">▲</button><button class="btn sm" data-bm="down"' + (i === n - 1 ? ' disabled' : '') + ' title="' + esc(CT.t('fDown')) + '">▼</button><button class="btn sm" data-bm="edit">' + esc(CT.t(open ? 'fDone' : 'fEdit')) + '</button><button class="btn sm danger" data-bm="del">' + esc(CT.t('fRemove')) + '</button></span></div>';
     if (open) {
       var pair = function (k, lbl, area) { return '<div class="fm-pair">' + ['ko', 'en'].map(function (l) { return '<label class="fm-f">' + esc(CT.t(lbl) + ' · ' + (l === 'ko' ? '한국어' : 'English')) + (area ? '<textarea rows="3" data-bf="' + k + '.' + l + '">' + esc(b[k][l] || '') + '</textarea>' : '<input data-bf="' + k + '.' + l + '" value="' + esc(b[k][l] || '') + '" maxlength="200">') + '</label>'; }).join('') + '</div>'; };
-      h += '<div class="fm-bedit">' + pair('label', b.type === 'paragraph' || b.type === 'consent' ? 'bConsent' : 'fLabelL', b.type === 'paragraph' || b.type === 'consent');
-      if (b.type !== 'heading' && b.type !== 'paragraph') h += pair('help', 'fHelpL') + '<label class="fm-chk"><input type="checkbox" data-bf="required"' + (b.required ? ' checked' : '') + '> ' + esc(CT.t('fReq')) + '</label>';
+      if (b.type === 'prepinfo') h += '<div class="fm-bedit"><p class="fm-prepnote">' + esc(CT.t('fPrepBlockNote')) + '</p><div class="fm-prepnote">' + prepNow() + '</div></div>';
+      else h += '<div class="fm-bedit">' + pair('label', b.type === 'paragraph' || b.type === 'consent' ? 'bConsent' : 'fLabelL', b.type === 'paragraph' || b.type === 'consent');
+      if (b.type !== 'heading' && b.type !== 'paragraph' && b.type !== 'prepinfo') h += pair('help', 'fHelpL') + '<label class="fm-chk"><input type="checkbox" data-bf="required"' + (b.required ? ' checked' : '') + '> ' + esc(CT.t('fReq')) + '</label>';
       if (CHOICE.indexOf(b.type) >= 0) h += '<label class="fm-f">' + esc(CT.t('fOptsL')) + '<textarea rows="4" data-bf="options">' + esc((b.options || []).map(function (o) { return o.ko + (o.en ? ' | ' + o.en : ''); }).join('\n')) + '</textarea></label>';
-      h += '</div>';
+      if (b.type !== 'prepinfo') h += '</div>';
     }
     return h + '</div>';
   }
@@ -216,7 +239,7 @@
     if (st === 'handed' || st === 'confirmed') h += handSection();
     else if (edit || finalEdit) {
       h += '<label class="fm-f">' + esc(CT.t('fTitleL')) + '<input id="fTitle" value="' + esc(f.title) + '" maxlength="120"' + (edit ? '' : ' disabled') + '></label>';
-      h += '<label class="fm-f">' + esc(CT.t('fCampIdL')) + '<input id="fCampId" value="' + esc(X.campId) + '" maxlength="61"><small class="hint">' + esc(CT.t('fCampIdHint')) + '</small></label>' + cardSection(true);
+      h += '<label class="fm-f">' + esc(CT.t('fCampIdL')) + '<input id="fCampId" value="' + esc(X.campId) + '" maxlength="61"><small class="hint">' + esc(CT.t('fCampIdHint')) + '</small></label>' + cardSection(true) + prepSection();
       h += '<h4 class="fm-sec">' + esc(CT.t('fSecBlocks')) + '</h4><div id="fBlocks"></div>' + (edit ? '<div class="p-bar">' + addMenu() + '</div>' : '') +
         '<h4 class="fm-sec">' + esc(CT.t('fSecThanks')) + '</h4><div class="fm-pair">' + ['ko', 'en'].map(function (l) { return '<label class="fm-f">' + esc(l === 'ko' ? '한국어' : 'English') + '<textarea rows="2" data-thanks="' + l + '">' + esc((X.c.thanks || {})[l] || '') + '</textarea></label>'; }).join('') + '</div>' +
         '<h4 class="fm-sec">' + esc(CT.t('fSecReq')) + '</h4><div id="fReqs">' + reqSection(edit ? 'draft' : 'final') + '</div>';
@@ -226,7 +249,7 @@
     }
     v.innerHTML = h;
     if ($('fBlocks')) paintBlocks();
-    var host = $('fRead'); if (host) { window.WolkoForm.renderForm(host, { blocks: X.c.blocks }, CT.lang() === 'en' ? 'en' : 'ko'); host.querySelectorAll('input,select,textarea').forEach(function (x) { x.disabled = true; }); }
+    var host = $('fRead'); if (host) { window.WolkoForm.renderForm(host, { blocks: X.c.blocks, prep: prepFor() }, CT.lang() === 'en' ? 'en' : 'ko'); host.querySelectorAll('input,select,textarea').forEach(function (x) { x.disabled = true; }); }
     if (edit) paintSubmit();
     bind(edit, finalEdit); X.dirty = false;
   }
@@ -290,7 +313,7 @@
       else if (t.dataset.rq) { X.req[+t.closest('[data-ri]').dataset.ri][t.dataset.rq] = t.value; }
       else if (t.dataset.bf) { var bi = +t.closest('[data-bi]').dataset.bi, b = X.c.blocks[bi], k = t.dataset.bf; if (k === 'required') b.required = t.checked; else if (k === 'options') b.options = parseOpts(t.value); else setPath(b, k, t.value); var lab = t.closest('.fm-block').querySelector('.fm-blab'); if (lab) lab.textContent = b.label.ko || b.label.en || '—'; }
     });
-    root.addEventListener('change', function (e) { var t = e.target; X.dirty = true; if (t.dataset.card && (t.type === 'checkbox' || t.tagName === 'SELECT')) cardInput(t); if (t.dataset.bf === 'required') t.dispatchEvent(new Event('input', { bubbles: true })); if (t.dataset.rq === 'state') X.req[+t.closest('[data-ri]').dataset.ri].state = t.value; });
+    root.addEventListener('change', function (e) { var t = e.target; X.dirty = true; if (t.id === 'fPrepCamp') { X.c.prepCampId = t.value; $('fPrepNow').innerHTML = prepNow(); paintBlocks(); } if (t.dataset.card && (t.type === 'checkbox' || t.tagName === 'SELECT')) cardInput(t); if (t.dataset.bf === 'required') t.dispatchEvent(new Event('input', { bubbles: true })); if (t.dataset.rq === 'state') X.req[+t.closest('[data-ri]').dataset.ri].state = t.value; });
     root.addEventListener('click', function (e) {
       if (e.target.closest('[data-bm],[data-rdel],#fReqAdd')) X.dirty = true;
       var bm = e.target.closest('[data-bm]'); if (bm) { var i = +bm.closest('[data-bi]').dataset.bi, bl = X.c.blocks, m = bm.dataset.bm;
@@ -303,7 +326,7 @@
       var v = $('fAdd').value; if (!v) return; var nb;
       if (v.slice(0, 2) === 's:') { var s = X.meta.snippets.filter(function (x) { return 's:' + x.key === v; })[0]; nb = JSON.parse(JSON.stringify(s.block)); nb.help = nb.help || { ko: '', en: '' }; }
       else { var ty = v.slice(2); nb = { type: ty, label: { ko: '', en: '' }, help: { ko: '', en: '' }, required: false }; if (CHOICE.indexOf(ty) >= 0) nb.options = [1, 2].map(function (i) { return { ko: '선택 ' + i, en: 'Option ' + i }; }); }
-      X.dirty = true; nb.id = 'b' + Math.random().toString(36).slice(2, 10); if (nb.type === 'heading' || nb.type === 'paragraph') delete nb.required; X.c.blocks.push(nb); X.open = X.c.blocks.length - 1; $('fAdd').value = ''; paintBlocks();
+      X.dirty = true; nb.id = 'b' + Math.random().toString(36).slice(2, 10); if (nb.type === 'prepinfo' && !nb.label.ko) nb.label = { ko: '📅 준비기간 안내', en: '📅 Prep period notice' }; if (nb.type === 'heading' || nb.type === 'paragraph' || nb.type === 'prepinfo') delete nb.required; X.c.blocks.push(nb); X.open = X.c.blocks.length - 1; $('fAdd').value = ''; paintBlocks();
     };
   }
 
@@ -311,9 +334,9 @@
   function preview() {
     var c = X.c, lang = X.preLang;
     $('pBody').innerHTML = '<div class="cf cf-prev"><div class="fm-prevbar"><button type="button" class="btn sm' + (lang === 'ko' ? ' pri' : '') + '" data-pl="ko">KO</button> <button type="button" class="btn sm' + (lang === 'en' ? ' pri' : '') + '" data-pl="en">EN</button></div><div class="cf-card"><div class="cf-head"><div class="cf-badge">WORD OF LIFE KOREA</div><h1 class="cf-title" id="pvT"></h1></div><div class="cf-body"><dl class="cf-facts" id="pvF"></dl><div id="pvB"></div><button class="cf-submit" type="button" disabled id="pvS"></button></div></div><div class="dlg-actions"><button class="btn" id="pCancel">' + esc(CT.t('close')) + '</button></div></div>';
-    var W = window.WolkoForm, k = c.card; $('pvT').textContent = (lang === 'en' ? k.titleEn || k.titleKo : k.titleKo || k.titleEn) || '';
+    var W = window.WolkoForm, k = c.card; W.setPrep(prepFor()); $('pvT').textContent = (lang === 'en' ? k.titleEn || k.titleKo : k.titleKo || k.titleEn) || '';
     W.cardRows(k).forEach(function (r) { var dd = W.el('div', 'cf-fact'); dd.appendChild(W.bi('dt', '', r.label, lang)); dd.appendChild(W.bi('dd', '', r.value, lang)); $('pvF').appendChild(dd); });
-    W.renderForm($('pvB'), c, lang); $('pvS').textContent = lang === 'en' ? 'Submit' : '신청 완료하기';
+    W.renderForm($('pvB'), { blocks: c.blocks, prep: prepFor() }, lang); $('pvS').textContent = lang === 'en' ? 'Submit' : '신청 완료하기';
     $('pDlg').showModal(); $('pCancel').onclick = function () { $('pDlg').close(); };
     $('pBody').querySelectorAll('[data-pl]').forEach(function (b) { b.onclick = function () { X.preLang = b.dataset.pl; preview(); }; });
   }

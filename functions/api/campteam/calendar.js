@@ -1,5 +1,6 @@
 import { campSession, json, needLogin, noDb, canView } from '../../lib/campteamAuth.js';
 import { isDate } from '../../lib/campteamDb.js';
+import { withFallback } from '../../lib/campteamPrepPeriod.js';
 
 /** 달력용 한 번에 보기: ?from=&to= — 팀 일정, 캠프 기간, 업무 마감, 회의 */
 export async function onRequestGet({ env, request }) {
@@ -12,7 +13,10 @@ export async function onRequestGet({ env, request }) {
   const [events, camps, tasks, meetings] = await Promise.all([
     db.prepare(`SELECT e.id, e.title, e.kind, e.startDate, e.endDate, e.startTime, e.endTime, e.isTest, c.nameKo AS campKo, c.nameEn AS campEn FROM events e LEFT JOIN camps c ON c.id = e.campId
       WHERE e.deletedAt IS NULL AND e.startDate <= ?2 AND COALESCE(e.endDate, e.startDate) >= ?1 ORDER BY e.startDate, e.startTime`).bind(from, to).all(),
-    db.prepare(`SELECT id, nameKo, nameEn, startDate, endDate, status, isTest FROM camps WHERE deletedAt IS NULL AND status <> 'canceled' AND startDate IS NOT NULL AND startDate <= ?2 AND COALESCE(endDate, startDate) >= ?1`).bind(from, to).all(),
+    // 준비기간(캠프 시작 전)이 이 달 범위에 걸치면 캠프 기간이 범위 밖이어도 같이 보내 준다. 0039 전의 DB 에서는 예전 조회로 되돌아간다
+    withFallback(() => db.prepare(`SELECT id, nameKo, nameEn, startDate, endDate, status, isTest, prepStart, prepEnd FROM camps WHERE deletedAt IS NULL AND status <> 'canceled' AND startDate IS NOT NULL
+      AND ((startDate <= ?2 AND COALESCE(endDate, startDate) >= ?1) OR (prepStart IS NOT NULL AND prepEnd IS NOT NULL AND prepStart <= ?2 AND prepEnd >= ?1))`).bind(from, to).all(),
+      () => db.prepare(`SELECT id, nameKo, nameEn, startDate, endDate, status, isTest FROM camps WHERE deletedAt IS NULL AND status <> 'canceled' AND startDate IS NOT NULL AND startDate <= ?2 AND COALESCE(endDate, startDate) >= ?1`).bind(from, to).all()),
     db.prepare(`SELECT k.id, k.title, k.titleKo, k.titleEn, k.dueDate, k.status, k.priority, k.ownerName, k.isTest, c.nameKo AS campKo, c.nameEn AS campEn FROM tasks k LEFT JOIN camps c ON c.id = k.campId
       WHERE k.deletedAt IS NULL AND k.inactive = 0 AND k.dueDate BETWEEN ?1 AND ?2 AND k.status <> 'Not Applicable' ORDER BY k.dueDate`).bind(from, to).all(),
     db.prepare(`SELECT id, title, meetDate, meetTime, isTest FROM meetings WHERE deletedAt IS NULL AND meetDate BETWEEN ?1 AND ?2 ORDER BY meetDate, meetTime`).bind(from, to).all(),

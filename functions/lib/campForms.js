@@ -7,7 +7,8 @@ export const KINDS = ['camper', 'staff'];
 export const CAMP_TYPES = ['english', 'union', 'jeju', 'other'];
 export const STATUSES = ['draft', 'review', 'final', 'handed', 'confirmed'];
 export const ROLES = ['editor', 'reviewer', 'approver', 'deployer'];
-export const BLOCK_TYPES = ['heading', 'paragraph', 'text', 'textarea', 'phone', 'email', 'date', 'select', 'radio', 'checkbox', 'consent'];
+/** prepinfo = 읽기 전용 「📅 준비기간 안내」 — 글은 비워 두고, 보일 때 캠프의 준비기간(camps.prepStart/prepEnd)으로 채운다. 준비기간이 없으면 아무것도 보이지 않는다. 글 안의 {준비기간} 도 같은 날짜로 바뀐다 */
+export const BLOCK_TYPES = ['heading', 'paragraph', 'text', 'textarea', 'phone', 'email', 'date', 'select', 'radio', 'checkbox', 'consent', 'prepinfo'];
 const CHOICE = ['select', 'radio', 'checkbox'], INPUT = ['text', 'textarea', 'phone', 'email', 'date', ...CHOICE, 'consent'];
 export const isInput = (t) => INPUT.includes(t);
 const LIM = { blocks: 80, label: 200, body: 2000, help: 600, opt: 100, opts: 30, card: 300, cardLong: 1500 };
@@ -133,6 +134,7 @@ export function cleanContent(raw) {
     blocks.push(o);
   }
   const out = { card: cleanCard(r.card), blocks, thanks: pair(r.thanks, 400) };
+  if (/^[A-Za-z0-9_-]{1,60}$/.test(String(r.prepCampId || ''))) out.prepCampId = String(r.prepCampId); // 준비기간을 가져올 캠프(포털 캠프 번호). 비우면 시작일이 같은 캠프를 자동으로 찾는다
   if (r.base && typeof r.base === 'object') out.base = cleanCard(r.base);
   return out;
 }
@@ -159,6 +161,7 @@ export function checkReady(content, kind, ctx = {}) {
   const inputs = content.blocks.filter((b) => isInput(b.type));
   if (!inputs.length) p.push('받을 정보 칸을 하나 이상 넣어 주세요.');
   for (const b of content.blocks) {
+    if (b.type === 'prepinfo') continue; // 준비기간 안내는 글이 비어 있어도 된다(보일 때 날짜로 채워진다)
     if (b.type !== 'consent' && b.type !== 'paragraph' && !b.label.ko && !b.label.en) p.push('이름이 비어 있는 질문 칸이 있어요.');
     if ((b.type === 'consent' || b.type === 'paragraph') && !b.label.ko && !b.label.en) p.push('내용이 비어 있는 안내·동의 칸이 있어요.');
     if (CHOICE.includes(b.type) && (b.options || []).length < 2 && b.type !== 'checkbox') p.push(`「${b.label.ko || b.label.en}」 칸의 선택지를 두 개 이상 넣어 주세요.`);
@@ -188,6 +191,7 @@ export const SNIPPETS = [
   { key: 'consent_privacy', group: 'consent', name: L('개인정보 수집·이용 동의', 'Privacy consent'), block: { type: 'consent', label: L('개인정보 수집·이용에 동의합니다. 수집한 정보(이름·연락처 등)는 캠프 운영과 안내 목적으로만 쓰고, 캠프가 끝난 뒤 정해진 기간이 지나면 지웁니다.', 'I agree to the collection and use of my personal information. It is used only to run and communicate about the camp, and is deleted after the retention period.'), required: true } },
   { key: 'consent_media', group: 'consent', name: L('사진·영상 공유 동의', 'Photo / video consent'), block: { type: 'radio', label: L('캠프 사진·영상을 월코 홍보에 써도 될까요?', 'May we use camp photos and videos for WOLKO promotion?'), required: true, options: [L('동의', 'Agree'), L('동의 안 함', 'Do not agree')] } },
   { key: 'consent_rules', group: 'consent', name: L('캠프 규칙 동의', 'Camp rules consent'), block: { type: 'consent', label: L('캠프 안내와 규칙을 읽었고 지키겠습니다.', 'I have read the camp information and rules and will follow them.'), required: true } },
+  { key: 'prep_info', group: 'staff', name: L('📅 준비기간 안내', '📅 Prep period notice'), block: { type: 'prepinfo', label: L('📅 준비기간 안내', '📅 Prep period notice') } },
   { key: 'section_faith', group: 'staff', name: L('제목: 신앙과 교회', 'Heading: Faith and church'), block: { type: 'heading', label: L('신앙과 교회', 'Faith and church') } },
   { key: 'intro', group: 'staff', name: L('간단한 자기소개', 'Short introduction'), block: { type: 'textarea', label: L('간단한 자기소개', 'Short introduction'), required: true } },
   { key: 'faith', group: 'staff', name: L('신앙 간증', 'Faith story'), block: { type: 'textarea', label: L('언제, 어떻게 예수님을 믿게 되었나요?', 'When and how did you come to believe in Jesus?'), required: true } },
