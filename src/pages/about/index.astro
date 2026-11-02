@@ -167,13 +167,12 @@ const missionWorks = [
   .vm-work-role { grid-area:role; font-size:15px; line-height:1.6; color:rgba(255,255,255,0.72); word-break:keep-all; }
   .vm-legend { list-style:none; align-self:stretch; display:flex; flex-direction:column; gap:12px; margin:10px 0 0; padding:24px 0 0; border-top:1px solid rgba(255,255,255,0.14); }
   .vm-legend li { display:flex; align-items:center; gap:14px; font-size:15px; color:rgba(255,255,255,0.78); }
-  .vm-legend svg { flex:none; fill:rgba(255,255,255,0.3); }
-  .vm-legend .is-lit svg { fill:#f3dca6; }
+  .vm-legend svg { flex:none; overflow:visible; }
+  .vm-legend .lg-ghost { fill:rgba(255,255,255,.03); stroke:rgba(255,255,255,.3); stroke-width:1; }
+  .vm-legend .lg-ghost-p { fill:rgba(255,255,255,.4); }
+  .vm-legend .lg-lit { fill:#f3dca6; stroke:rgba(255,246,220,.9); stroke-width:1; filter:drop-shadow(0 0 5px rgba(243,220,166,.55)); }
+  .vm-legend .lg-lit-p { fill:#0b3442; }
   .vm-legend .is-arc svg { fill:none; stroke:#f3dca6; stroke-width:1.8; stroke-linecap:round; }
-  .vm-replay { display:inline-flex; align-items:center; gap:8px; min-height:44px; margin-top:6px; padding:0 18px; border-radius:999px; border:1px solid rgba(243,220,166,0.45); background:transparent; color:#f3dca6; font:600 15px/1 var(--ff-sans); cursor:pointer; transition:background .2s; }
-  .vm-replay[hidden] { display:none; }
-  .vm-replay:hover { background:rgba(243,220,166,0.1); }
-  .vm-replay:focus-visible { outline:2px solid var(--blue-light); outline-offset:3px; }
 
   /* ── COMMITMENTS: 2×2 — 테두리만 있는 큰 번호, 굵은 윗선 ── */
   .commit-inner { max-width:1240px; margin:56px auto 0; }
@@ -235,8 +234,7 @@ const missionWorks = [
     .vm-flow-desc { font-size:15px; }
     .vm-relay { order:1; margin:4px -6px 0; }
     .vm-legend { order:2; margin-top:0; }
-    .vm-replay { order:3; justify-self:start; margin-top:0; }
-    .vm-mission { padding-top:52px; padding-bottom:80px; }
+      .vm-mission { padding-top:52px; padding-bottom:80px; }
     .mission-statement { font-size:21px; margin-top:14px; }
     .vm-mission-lead { margin-top:32px; font-size:14px; }
     .vm-works { grid-template-columns:1fr; }
@@ -437,14 +435,10 @@ const missionWorks = [
         <span class="wl-en">A young person hears the Gospel from a friend, believes in Jesus, and passes it on to another friend — and so the Gospel travels from friend to friend.</span>
       </p>
       <ul class="vm-legend">
-        <li><svg width="22" height="24" viewBox="-11 -12 22 24" aria-hidden="true"><circle cx="0" cy="-5" r="5" /><path d="M-9 11C-9 3-5 1 0 1s9 2 9 10z" /></svg><span class="wl-ko">아직 복음을 듣지 못한 친구</span><span class="wl-en">A friend who hasn't heard yet</span></li>
-        <li class="is-lit"><svg width="22" height="24" viewBox="-11 -12 22 24" aria-hidden="true"><circle cx="0" cy="-5" r="5" /><path d="M-9 11C-9 3-5 1 0 1s9 2 9 10z" /></svg><span class="wl-ko">복음을 듣고 예수님을 믿은 친구</span><span class="wl-en">A friend who heard and believed</span></li>
-        <li class="is-arc"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M2 16Q11 2 20 8" /></svg><span class="wl-ko">친구에게 전해진 복음</span><span class="wl-en">The Gospel passed to a friend</span></li>
+        <li><svg width="26" height="26" viewBox="-13 -13 26 26" aria-hidden="true"><circle class="lg-ghost" r="12" /><use href="#rl-person" class="lg-ghost-p" transform="scale(.68)" /></svg><span class="wl-ko">아직 복음을 듣지 못한 친구</span><span class="wl-en">A friend who hasn't heard yet</span></li>
+        <li class="is-lit"><svg width="26" height="26" viewBox="-13 -13 26 26" aria-hidden="true"><circle class="lg-lit" r="12" /><use href="#rl-person" class="lg-lit-p" transform="scale(.68)" /></svg><span class="wl-ko">복음을 듣고 예수님을 믿은 친구</span><span class="wl-en">A friend who heard and believed</span></li>
+        <li class="is-arc"><svg width="26" height="22" viewBox="-2 0 26 22" aria-hidden="true"><path d="M2 16Q11 2 20 8" /></svg><span class="wl-ko">친구에게 전해진 복음</span><span class="wl-en">The Gospel passed to a friend</span></li>
       </ul>
-      <button type="button" class="vm-replay" data-rl-replay hidden>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></svg>
-        <span class="wl-ko">다시 보기</span><span class="wl-en">Replay</span>
-      </button>
     </div>
     <div class="vm-relay">
       <GospelRelay
