@@ -157,6 +157,24 @@ const ministries = [
   .mission-inner { max-width:1240px; margin:0 auto; display:grid; grid-template-columns:minmax(0,4fr) minmax(0,8fr); gap:80px; align-items:baseline; }
   .mission-title { margin-top:16px; font-family:var(--ff-serif); font-size:32px; font-weight:700; letter-spacing:-0.02em; color:#fff; }
   .mission-text { font-size:21px; line-height:1.75; color:rgba(255,255,255,0.88); }
+  /* 사명 고급화 — 오른쪽 위 금빛이 천천히 떠돌고, 핵심 말에 은은한 금빛 형광 띠가 차례로 칠해진 뒤, 전도 → 제자훈련 → 교회 세 단계가 가는 금선을 따라 나타난다 */
+  .mission-band { position:relative; overflow:hidden; background:radial-gradient(80% 100% at 90% 0%, #123a4a 0%, #0b2430 55%, #081c26 100%); }
+  .mission-glow { position:absolute; top:-260px; right:-180px; width:680px; height:680px; border-radius:50%; background:radial-gradient(circle, rgba(233,194,122,.15) 0%, rgba(233,194,122,0) 65%); pointer-events:none; animation:msGlow 18s ease-in-out infinite alternate; }
+  @keyframes msGlow { from { transform:translate(0,0) scale(1); } to { transform:translate(-140px,90px) scale(1.15); } }
+  .mission-inner { position:relative; }
+  .ms-hl { font-style:normal; color:#fff; background-image:linear-gradient(rgba(233,194,122,.3), rgba(233,194,122,.3)); background-repeat:no-repeat; background-position:0 88%; background-size:100% .36em; transition:background-size 1.1s cubic-bezier(.2,.7,.2,1) var(--hd, .6s); }
+  :global(.wl-motion) .mission-band:not(.ms-on) .ms-hl { background-size:0% .36em; }
+  .mission-steps { position:relative; list-style:none; margin:48px 0 0; padding:0; display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:28px; }
+  .mission-steps::before, .mission-steps::after { content:""; position:absolute; top:0; left:0; right:0; height:1px; }
+  .mission-steps::before { background:rgba(255,255,255,.14); }
+  .mission-steps::after { background:linear-gradient(90deg, #e9c27a, rgba(233,194,122,.15)); transform-origin:left; transition:transform 1.8s cubic-bezier(.2,.7,.2,1) .9s; }
+  :global(.wl-motion) .mission-band:not(.ms-on) .mission-steps::after { transform:scaleX(0); }
+  .mission-steps li { padding-top:22px; transition:opacity 1s ease var(--sd, 0s), transform 1s cubic-bezier(.2,.7,.2,1) var(--sd, 0s); }
+  :global(.wl-motion) .mission-band:not(.ms-on) .mission-steps li { opacity:0; transform:translateY(16px); }
+  .ms-step-num { display:block; font-family:var(--ff-serif); font-size:13px; font-weight:700; letter-spacing:.16em; color:#e9c27a; }
+  .ms-step-body { display:block; }
+  .ms-step-name { display:block; margin-top:10px; font-family:var(--ff-serif); font-size:21px; font-weight:700; letter-spacing:-.01em; color:#fff; }
+  .ms-step-desc { display:block; margin-top:6px; font-size:14.5px; line-height:1.6; color:rgba(255,255,255,.6); }
 
   /* ── COMMITMENTS: 2×2 — 테두리만 있는 큰 번호, 굵은 윗선 ── */
   .commit-inner { max-width:1240px; margin:56px auto 0; }
@@ -271,6 +289,12 @@ const ministries = [
     .mission-band { padding-top:64px; padding-bottom:64px; }
     .mission-title { font-size:26px; }
     .mission-text { font-size:17px; }
+    /* 폰: 세 단계를 세로로 — 번호 왼쪽, 이름 · 설명 오른쪽 */
+    .mission-steps { grid-template-columns:1fr; gap:0; margin-top:36px; }
+    .mission-steps li { display:grid; grid-template-columns:44px minmax(0,1fr); padding:18px 0; border-bottom:1px solid rgba(255,255,255,.1); }
+    .ms-step-num { padding-top:4px; }
+    .ms-step-name { margin-top:0; font-size:18px; }
+    .mission-glow { width:420px; height:420px; top:-180px; right:-200px; }
     .commit-card { grid-template-columns:64px minmax(0,1fr); padding:28px 0 30px; }
     .commit-num { font-size:44px; }
     .commit-card h4 { font-size:18px; }
@@ -453,12 +477,20 @@ const ministries = [
   </div>
 </section>
 <section class="section mission-band">
+  <div class="mission-glow" aria-hidden="true"></div>
   <div class="page-wrap mission-inner">
     <div>
       <span class="section-badge">MISSION STATEMENT</span>
       <h3 class="mission-title"><span class="wl-ko">우리의 사명</span><span class="wl-en">Our Mission</span></h3>
     </div>
-    <p class="mission-text"><span class="wl-ko">월코는 성경의 원리에 따라 청소년을 전도하고 제자로 훈련하여, 예수 그리스도의 교회가 건강하게 성장하도록 섬깁니다.</span><span class="wl-en">The mission of Word of Life Fellowship is the evangelization and discipleship of youth through various means consistent with the Holy Scriptures to strengthen and build up the church of Jesus Christ.</span></p>
+    <div>
+      <p class="mission-text"><span class="wl-ko">월코는 성경의 원리에 따라 청소년을 <em class="ms-hl" style="--hd:.7s">전도하고</em> <em class="ms-hl" style="--hd:1s">제자로 훈련하여</em>, 예수 그리스도의 교회가 <em class="ms-hl" style="--hd:1.3s">건강하게 성장하도록</em> 섬깁니다.</span><span class="wl-en">The mission of Word of Life Fellowship is the <em class="ms-hl" style="--hd:.7s">evangelization</em> and <em class="ms-hl" style="--hd:1s">discipleship</em> of youth through various means consistent with the Holy Scriptures to <em class="ms-hl" style="--hd:1.3s">strengthen and build up the church</em> of Jesus Christ.</span></p>
+      <ol class="mission-steps">
+        <li style="--sd:1.1s"><span class="ms-step-num">01</span><span class="ms-step-body"><span class="ms-step-name"><span class="wl-ko">전도</span><span class="wl-en">Evangelize</span></span><span class="ms-step-desc"><span class="wl-ko">청소년에게 복음을 전합니다</span><span class="wl-en">Sharing the Gospel with youth</span></span></span></li>
+        <li style="--sd:1.35s"><span class="ms-step-num">02</span><span class="ms-step-body"><span class="ms-step-name"><span class="wl-ko">제자훈련</span><span class="wl-en">Disciple</span></span><span class="ms-step-desc"><span class="wl-ko">말씀 위에 제자를 세웁니다</span><span class="wl-en">Grounding disciples in the Word</span></span></span></li>
+        <li style="--sd:1.6s"><span class="ms-step-num">03</span><span class="ms-step-body"><span class="ms-step-name"><span class="wl-ko">교회</span><span class="wl-en">The Church</span></span><span class="ms-step-desc"><span class="wl-ko">그리스도의 교회가 건강하게 자라도록 섬깁니다</span><span class="wl-en">Building up the church of Jesus Christ</span></span></span></li>
+      </ol>
+    </div>
   </div>
 </section>
 
@@ -565,6 +597,15 @@ const ministries = [
     if (!('IntersectionObserver' in window)) return;
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     document.documentElement.classList.add('wl-motion');
+
+    // 사명 띠: 화면에 들어오면 금빛 밑줄과 세 단계가 차례로 나타난다(.ms-on — 떠오르기 표시와 달리 떼지 않는다)
+    var msBand = document.querySelector('.mission-band');
+    if (msBand) {
+      var mio = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('ms-on'); mio.unobserve(en.target); } });
+      }, { threshold: 0.3 });
+      mio.observe(msBand);
+    }
 
     // 숫자 올라가기 — 처음엔 시작 숫자를 보여 주고, 보이면 2.4초 동안 끝 숫자까지
     // 맨 위 배너 숫자는 배너(PageHero)가 직접 올린다
