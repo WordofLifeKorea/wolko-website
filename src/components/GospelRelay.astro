@@ -3,7 +3,7 @@
  * 비전 그림 — 가운데 먼저 믿은 한 친구에게서 복음이 원을 그리며 친구에서 친구로 퍼진다.
  * 사람마다: 흐린 모양(아직 못 들음) → 하늘색 고리(들음) → 금색(믿음) → 바깥 친구들에게 선(전함).
  * 흐린 바탕 그물 위로 빛이 선을 타고 다음 친구에게 가고, 받은 친구는 금빛 배지로 밝아진다. 화면에 보이는 동안 계속 되풀이한다.
- * 1·2·3 표시는 원이 한 겹 넓어질 때마다 그 원의 친구 곁으로 옮겨 가며, 그림 옆 '듣고 → 구원받고 → 전하고'와 짝을 이룬다.
+ * 1·2·3 표시는 가운데 친구 · 첫 원 · 둘째 원 친구 곁에 하나씩, 퍼지는 차례대로 켜지며 그림 옆 '듣고 → 구원받고 → 전하고'와 짝을 이룬다.
  * 재생 중에는 감싼 section 에도 is-armed / is-on / is-fading 과 data-rl-step(1·2·3)을 붙여, 페이지가 세 걸음을 같은 때에 밝힐 수 있게 한다.
  * 자바스크립트가 없거나 움직임 줄이기 설정이면 처음부터 다 퍼진 그림을 보여 준다.
  */
@@ -40,18 +40,14 @@ const cycle = f(Math.max(...arcs.map(a => a.delay)) + 0.9);
 const names = [['내 친구', 'My friends'], ['친구의 친구', 'Their friends'], ['그다음 친구', 'And theirs']]
   .map(([ko, en], i) => ({ ko, en, ...at(R[i + 1], -30), delay: f(T[i + 1]) }));
 
-// 세 걸음 표시: 원이 한 겹 넓어질 때마다 그 원의 친구 곁으로 옮겨 가며 1 듣고(고리) → 2 구원받고(금빛 배지) → 3 전하고(떠나는 빛)
-// 위쪽으로 한 줄로 이어지는 세 친구(첫 원 → 둘째 원 → 셋째 원)를 따라간다
-const chain = [ring1[0], ring2[1], ring3[2]];
-const stepTimes = chain.map(p => [f(p.t - 0.12), f(p.t + 0.3), f(p.t + LINE + 0.35)]);
-const marks = chain.flatMap((p, g) => {
-  const ux = Math.cos(p.a * Math.PI / 180), uy = Math.sin(p.a * Math.PI / 180); // 바깥쪽
-  const vx = -uy, vy = ux;                                                       // 옆쪽
-  const side = g ? 20 : 0; // 첫 친구는 두 갈래 사이, 그다음은 한 갈래라 선 옆으로 비켜 둔다
-  const spots = [[vx * 34, vy * 34], [-vx * 34, -vy * 34], [ux * 40 + vx * side, uy * 40 + vy * side]];
-  const out = g < chain.length - 1 ? stepTimes[g + 1][0] : null; // 다음 원 친구가 들을 때 자리를 비운다
-  return spots.map(([dx, dy], i) => ({ n: i + 1, x: f(p.x + dx), y: f(p.y + dy), delay: stepTimes[g][i], out }));
-});
+// 세 걸음 표시: 퍼지는 차례대로 가운데 친구 곁에 1, 첫 원 친구 곁에 2, 둘째 원 친구 곁에 3 — 그 친구가 밝아질 때 켜진다
+// 위쪽으로 이어지는 세 친구를 따라가고, 표시는 선을 피해 비어 있는 쪽(각도)에 둔다
+const marks = [
+  { n: 1, p: center, deg: -140, dist: 40 },
+  { n: 2, p: ring1[0], deg: 180, dist: 36 },
+  { n: 3, p: ring2[1], deg: 0, dist: 36 },
+].map(({ n, p, deg, dist }) => ({ n, x: f(p.x + dist * Math.cos(deg * Math.PI / 180)), y: f(p.y + dist * Math.sin(deg * Math.PI / 180)), delay: p.t }));
+const stepTimes = marks.map(m => m.delay);
 ---
 <p class="sr-only"><span class="wl-ko">{labelKo}</span><span class="wl-en">{labelEn}</span></p>
 <svg class="rl" viewBox="0 0 600 600" aria-hidden="true" data-cycle={cycle} data-steps={JSON.stringify(stepTimes)}>
@@ -110,7 +106,7 @@ const marks = chain.flatMap((p, g) => {
     </>)}
     {marks.map(m => (
       <g transform={`translate(${m.x} ${m.y})`}>
-        <g class:list={['rl-mark', { 'rl-mark-moves': m.out !== null }]} style={`--d:${m.delay}s;${m.out !== null ? `--o:${m.out}s` : ''}`}><circle r="13" /><text y="5" text-anchor="middle">{m.n}</text></g>
+        <g class="rl-mark" style={`--d:${m.delay}s`}><circle r="13" /><text y="5" text-anchor="middle">{m.n}</text></g>
       </g>
     ))}
   </g>
@@ -161,9 +157,7 @@ const marks = chain.flatMap((p, g) => {
   .rl.is-armed.is-on .rl-halo { animation:rl-bloom 1s cubic-bezier(.2,.7,.2,1) var(--d) both, rl-breathe 3.4s ease-in-out calc(var(--d) + 1s) infinite alternate; }
   .rl.is-armed.is-on .rl-node-first .rl-halo { animation:rl-bloom 1s cubic-bezier(.2,.7,.2,1) var(--d) both, rl-breathe 2.6s ease-in-out calc(var(--d) + 1s) infinite alternate; }
   .rl.is-armed.is-on .rl-guide-lit, .rl.is-armed.is-on .rl-name { animation:rl-show .8s ease-out var(--d) both; }
-  .rl.is-armed.is-on .rl-mark { animation:rl-believe .5s cubic-bezier(.34,1.56,.64,1) var(--d) both; }
-  .rl.is-armed.is-on .rl-mark-moves { animation:rl-believe .5s cubic-bezier(.34,1.56,.64,1) var(--d) both, rl-leave .35s ease-in var(--o) forwards; }
-  .rl.is-fading .rl-live { opacity:0; }
+  .rl.is-armed.is-on .rl-mark { animation:rl-believe .5s cubic-bezier(.34,1.56,.64,1) var(--d) both; }  .rl.is-fading .rl-live { opacity:0; }
 
   @keyframes rl-draw { from { stroke-dashoffset:1; } to { stroke-dashoffset:0; } }
   @keyframes rl-spark {
@@ -176,9 +170,7 @@ const marks = chain.flatMap((p, g) => {
   @keyframes rl-believe { 0% { opacity:0; transform:scale(.55); } 40% { opacity:1; } 100% { opacity:1; transform:scale(1); } }
   @keyframes rl-bloom { 0% { opacity:0; transform:scale(.4); } 45% { opacity:1; transform:scale(1.15); } 100% { opacity:.8; transform:scale(1); } }
   @keyframes rl-breathe { from { opacity:.8; transform:scale(1); } to { opacity:.45; transform:scale(.86); } }
-  @keyframes rl-show { from { opacity:0; } to { opacity:1; } }
-  @keyframes rl-leave { from { opacity:1; transform:scale(1); } to { opacity:0; transform:scale(.6); } }
-</style>
+  @keyframes rl-show { from { opacity:0; } to { opacity:1; } }</style>
 
 <script>
   // 화면에 보이는 동안 계속 되풀이한다: 한 친구에서 시작해 다 퍼지면 → 잠시 머문 뒤 → 금빛 층이 부드럽게 사라지고 → 다시 처음부터.
@@ -192,7 +184,7 @@ const marks = chain.flatMap((p, g) => {
     const set = (add: string[], remove: string[] = []) => els.forEach(el => { el.classList.remove(...remove); el.classList.add(...add); });
     set(['is-armed']);
     const playMs = (parseFloat(svg.dataset.cycle || '7') + 2.6) * 1000;   // 다 퍼진 뒤 2.6초 머문다
-    const steps: number[][] = JSON.parse(svg.dataset.steps || '[]');
+    const steps: number[] = JSON.parse(svg.dataset.steps || '[]');
     let timers: number[] = [];
     const clear = () => { timers.forEach(t => clearTimeout(t)); timers = []; };
     const run = () => {
@@ -200,10 +192,10 @@ const marks = chain.flatMap((p, g) => {
       els.forEach(el => el.classList.remove('is-on', 'is-fading'));
       void svg.getBoundingClientRect();
       set(['is-on']);
-      // 원마다 세 걸음을 다시 밟는다: section 의 data-rl-step 이 1 → 2 → 3, 다음 원에서 다시 1부터
+      // 퍼지는 차례대로 세 걸음을 밟는다: section 의 data-rl-step 이 1 → 2 → 3
       if (scope) {
         delete scope.dataset.rlStep;
-        steps.forEach(ring => ring.forEach((t, i) => timers.push(window.setTimeout(() => { scope.dataset.rlStep = String(i + 1); }, t * 1000))));
+        steps.forEach((t, i) => timers.push(window.setTimeout(() => { scope.dataset.rlStep = String(i + 1); }, t * 1000)));
       }
       timers.push(window.setTimeout(() => {
         if (scope) delete scope.dataset.rlStep;
