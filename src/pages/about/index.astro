@@ -149,6 +149,7 @@ const missionWorks = [
   .vm-flow-text { display:flex; flex-direction:column; align-items:flex-start; gap:20px; }
   .vm-steps { display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; margin:0; font-family:var(--ff-serif); font-size:clamp(26px, 2.4vw, 34px); font-weight:700; letter-spacing:-0.03em; color:#fff; }
   .vm-flow .vm-steps { gap:10px 12px; font-size:clamp(24px, 2.1vw, 30px); }
+  :global(.lang-en) .vm-flow .vm-steps { font-size:clamp(18px, 1.45vw, 21px); } /* 영어 낱말이 길어 한 줄에 들도록 */
   .vm-step { display:inline-flex; align-items:center; gap:8px; white-space:nowrap; }
   .vm-step-num { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; border:1.5px solid #f3dca6; box-sizing:border-box; color:#f3dca6; font:700 12px/1 var(--ff-sans); letter-spacing:0; }
   /* 세 걸음은 그림 속 1·2·3 표시와 같은 때에 밝아진다 — 원마다 1 → 2 → 3 을 다시 밟는다 (GospelRelay 가 section 에 is-armed 와 data-rl-step 을 붙임) */
@@ -232,6 +233,7 @@ const missionWorks = [
     .vm-flow-text { display:contents; }
     /* 세 걸음은 휴대폰에서도 한 줄 */
     .vm-flow .vm-steps { flex-wrap:nowrap; font-size:clamp(17px, 5.6vw, 22px); gap:0 7px; }
+    :global(.lang-en) .vm-flow .vm-steps { font-size:clamp(13px, 3.8vw, 17px); }
     .vm-step { gap:5px; }
     .vm-step-num { width:20px; height:20px; font-size:11px; border-width:1.3px; }
     .vm-step-arrow { width:14px; height:10px; flex:none; }
@@ -425,12 +427,12 @@ const missionWorks = [
   </div>
   <div class="page-wrap vm-wrap vm-flow">
     <div class="vm-flow-text">
-      <p class="vm-steps" aria-label="듣고, 구원받고, 전하고">
-        <span class="vm-step" data-n="1"><span class="vm-step-num" aria-hidden="true">1</span><span class="wl-ko">듣고</span><span class="wl-en">Hear</span></span>
+      <p class="vm-steps" aria-label="믿고, 전하고, 또 전하고">
+        <span class="vm-step" data-n="1"><span class="vm-step-num" aria-hidden="true">1</span><span class="wl-ko">믿고</span><span class="wl-en">Believe</span></span>
         <svg class="vm-step-arrow" viewBox="0 0 20 12" aria-hidden="true"><path d="M1 6h16M12 1.5 17 6l-5 4.5" /></svg>
-        <span class="vm-step" data-n="2"><span class="vm-step-num" aria-hidden="true">2</span><span class="wl-ko">구원받고</span><span class="wl-en">Believe</span></span>
+        <span class="vm-step" data-n="2"><span class="vm-step-num" aria-hidden="true">2</span><span class="wl-ko">전하고</span><span class="wl-en">Share</span></span>
         <svg class="vm-step-arrow" viewBox="0 0 20 12" aria-hidden="true"><path d="M1 6h16M12 1.5 17 6l-5 4.5" /></svg>
-        <span class="vm-step" data-n="3"><span class="vm-step-num" aria-hidden="true">3</span><span class="wl-ko">전하고</span><span class="wl-en">Pass it on</span></span>
+        <span class="vm-step" data-n="3"><span class="vm-step-num" aria-hidden="true">3</span><span class="wl-ko">또 전하고</span><span class="wl-en">Share again</span></span>
       </p>
       <p class="vm-flow-desc">
         <span class="wl-ko">친구로부터 복음을 듣고 예수님을 믿어 구원받은 청소년이, 그 복음을 또 다른 친구에게 전합니다. 그렇게 복음이 친구에서 친구로 이어집니다.</span>
@@ -439,8 +441,8 @@ const missionWorks = [
     </div>
     <div class="vm-relay">
       <GospelRelay
-        labelKo="가운데 먼저 믿은 한 친구에게서 세 친구, 여섯 친구, 열 친구로 원을 그리며 복음이 퍼져 나가는 그림. 위쪽 친구 곁에 듣고, 구원받고, 전하는 세 걸음이 1, 2, 3으로 표시되어 있습니다."
-        labelEn="A picture of the Gospel spreading in circles from one friend who believed first, to three, six, then ten friends. Beside the top friend, the three steps of hearing, believing and passing it on are marked 1, 2 and 3."
+        labelKo="가운데 먼저 믿은 한 친구에게서 세 친구, 여섯 친구, 열 친구로 원을 그리며 복음이 퍼져 나가는 그림. 가운데 친구 곁에 1 믿고, 첫 원에 2 전하고, 둘째 원에 3 또 전하고가 표시되어 있습니다."
+        labelEn="A picture of the Gospel spreading in circles from one friend who believed first, to three, six, then ten friends. The center friend is marked 1 Believe, the first circle 2 Share, and the second circle 3 Share again."
       />
     </div>
   </div>
