@@ -1,7 +1,7 @@
 ---
 /**
  * 사명 그림 — 한 친구에게서 시작된 복음이 친구에서 친구로 이어진다.
- * 사람마다: 흐린 모양(아직 못 들음) → 하늘색 고리(들음) → 금색(믿음) → 다음 친구들에게 곡선(전함).
+ * 사람마다: 흐린 모양(아직 못 들음 — 그림 밖에 따로 남겨 두지 않는다, 아무도 놓치지 않게) → 하늘색 고리(들음) → 금색(믿음) → 다음 친구들에게 곡선(전함).
  * 화면에 들어오면 한 번 재생하고, [data-rl-replay] 단추로 다시 볼 수 있다.
  * 자바스크립트가 없거나 움직임 줄이기 설정이면 처음부터 다 이어진 그림을 보여 준다.
  */
@@ -48,12 +48,6 @@ const arcs = people.filter(n => n.parent).map(n => ({ d: curve(n.parent!, n), de
 const last = people.filter(n => n.g === genX.length - 1);
 [last[1], last[4], last[8]].forEach(n => arcs.push({ d: curve(n, { x: W + 40, y: n.y + (rnd() - 0.5) * 60 }), delay: f(n.at + 0.25), out: true }));
 
-// 아직 복음을 듣지 못한 친구들 — 빈자리에 흐리게
-const waiting: { x: number; y: number }[] = [];
-for (let tries = 0; waiting.length < 13 && tries < 4000; tries++) {
-  const x = 150 + rnd() * (W - 210), y = 24 + rnd() * (H - 48);
-  if (![...people, ...waiting].some(n => Math.hypot(n.x - x, n.y - y) < 46)) waiting.push({ x, y });
-}
 ---
 <p class="sr-only"><span class="wl-ko">{labelKo}</span><span class="wl-en">{labelEn}</span></p>
 <svg class="rl" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
@@ -61,7 +55,6 @@ for (let tries = 0; waiting.length < 13 && tries < 4000; tries++) {
     <g id="rl-person"><circle cx="0" cy="-5" r="5" /><path d="M-9 11C-9 3-5 1 0 1s9 2 9 10z" /></g>
   </defs>
   {arcs.map(a => <path class:list={['rl-arc', { 'rl-arc-out': a.out }]} pathLength="1" d={a.d} style={`--d:${a.delay}s`} />)}
-  {waiting.map(w => <use href="#rl-person" class="rl-waiting" x={f(w.x)} y={f(w.y)} />)}
   {people.map(n => <circle class="rl-ring" cx={f(n.x)} cy={f(n.y)} r={n.g ? 15 : 20} style={`--d:${f(n.at - 0.15)}s`} />)}
   {people.map(n => <use href="#rl-person" class="rl-person" x={f(n.x)} y={f(n.y)} style={`--d:${f(n.at)}s`} />)}
 </svg>
@@ -73,7 +66,6 @@ for (let tries = 0; waiting.length < 13 && tries < 4000; tries++) {
   .rl-arc { fill:none; stroke:#f3dca6; stroke-width:1.6; stroke-linecap:round; stroke-dasharray:1; stroke-dashoffset:0; opacity:.7; }
   .rl-arc-out { opacity:.35; }
   .rl-person { fill:#f3dca6; filter:drop-shadow(0 0 7px rgba(243,220,166,.6)); }
-  .rl-waiting { fill:rgba(255,255,255,.14); }
   .rl-ring { fill:none; stroke:#73d1f5; stroke-width:1.5; opacity:0; transform-box:fill-box; transform-origin:center; }
   /* 재생 준비(.is-armed): 아무도 아직 못 들은 모습 → 화면에 들어오면(.is-on) 차례대로 */
   .rl.is-armed .rl-arc { stroke-dashoffset:1; }
