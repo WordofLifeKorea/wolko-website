@@ -37,7 +37,7 @@ ring3.forEach(p => {
 // 마지막 장면: 그림 전체가 확 줄어들고, 바깥 친구들에게서 복음이 규칙대로 퍼져 소용돌이 꽃처럼 피어난다
 // 규칙: 한 사람이 꼭 두 친구에게 전한다(10 → 20 → 40 → 80). 두 친구는 전해 준 친구가 맡은 방향을 절반씩 나눠 맡고,
 // 원이 한 겹 넓어질 때마다 모두 같은 쪽으로 TWIST 만큼 돌며 같은 쪽으로 휜 선으로 이어져 소용돌이가 된다.
-// 한 겹 안에서는 시계 방향으로 훑듯 차례로 켜지고, 겹이 바뀔수록 빨라진다.
+// 한 겹 안에서는 시계 방향으로 훑듯 차례로 켜지고, 바깥 겹으로 갈수록 천천히 퍼진다.
 const ZOOM = 0.47;                // 줄어든 크기 — 가장 멀리 뻗은 친구(반지름 630 안쪽)까지 그림 안에 든다
 const zoomAt = f(Math.max(...ring3.map(p => p.t)) + 0.9);
 const burstAt = zoomAt + 1.1;     // 다 줄어들 즈음부터 퍼지기 시작
@@ -46,8 +46,10 @@ const LEVELS = 3;                       // 겹 수
 const STEP = 100;                       // 한 번 전할 때 뻗는 평균 길이 — 친구마다 0.7~1.3배로 달라 끝이 둥근 원이 되지 않는다
 let seed = 11;                          // 같은 그림이 늘 나오도록 고정된 난수
 const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
-const GAPS = [0.55, 0.45];              // 다음 겹이 시작하기까지(초) — 점점 빨라진다
-const SWEEP = 0.32;                     // 한 겹을 한 바퀴 훑는 시간(초)
+// 뒤로 갈수록 천천히: 겹마다 다음 겹까지의 간격, 한 바퀴 훑는 시간, 선이 그려지는 시간이 길어진다(초)
+const GAPS = [0.8, 1.15];
+const SWEEP = [0.35, 0.55, 0.8];
+const DRAW = [0.5, 0.75, 1.05];
 const TWIST = 7, SWIRL = -6;            // 겹마다 도는 각도, 선이 휘는 각도
 // 겹마다 사람 배지 반지름(r), 선 굵기(w), 선 진하기(o) — 바깥일수록 작고 흐리게
 const LOOK = [{ r: 12, w: 2.4, o: .8 }, { r: 11, w: 2, o: .68 }, { r: 10, w: 1.6, o: .56 }];
@@ -71,7 +73,7 @@ Array.from({ length: LEVELS }, (_, level) => level).forEach(level => {
       const child = { lo: lo + TWIST, hi: hi + TWIST, a: (lo + hi) / 2 + TWIST, r: tip.r + STEP * (0.7 + 0.6 * rnd()) };
       const r = child.r;
       const end = at(r, child.a), ctrl = at((tip.r + r) / 2, (tip.a + child.a) / 2 + SWIRL);
-      burst.push({ d: `M${f(tip.x)} ${f(tip.y)} Q${ctrl.x} ${ctrl.y} ${end.x} ${end.y}`, ...end, delay: f(start + norm(child.a) / 360 * SWEEP), level });
+      burst.push({ d: `M${f(tip.x)} ${f(tip.y)} Q${ctrl.x} ${ctrl.y} ${end.x} ${end.y}`, ...end, delay: f(start + norm(child.a) / 360 * SWEEP[level]), level });
       next.push({ ...child, ...end });
     });
   });
@@ -80,7 +82,7 @@ Array.from({ length: LEVELS }, (_, level) => level).forEach(level => {
 });
 const shockAt = f(lastStart); // 가장 바깥 겹이 켜질 때 한 번 퍼지는 빛 물결
 // 한 바퀴 길이(초) — 가장 바깥 겹이 다 밝아지는 시각
-const cycle = f(Math.max(...burst.map(b => b.delay)) + 1);
+const cycle = f(Math.max(...burst.map(b => b.delay + DRAW[b.level])) + 1);
 
 // 원 이름표 — 오른쪽 위(-30°) 빈 길목을 따라
 const names = [['내 친구', 'My friends'], ['친구의 친구', 'Their friends'], ['그다음 친구', 'And theirs']]
@@ -161,10 +163,10 @@ const stepTimes = marks.map(m => m.delay);
   <!-- 마지막 장면: 줄어든 그림 바깥으로 규칙대로 피어나는 복음 (재생할 때만) -->
   <g class="rl-burst">
     <circle class="rl-shock" cx={C} cy={C} r="600" style={`--d:${shockAt}s`} />
-    {burst.map(b => <path pathLength="1" d={b.d} stroke-width={LOOK[b.level].w} style={`--d:${b.delay}s;--o:${LOOK[b.level].o}`} />)}
+    {burst.map(b => <path pathLength="1" d={b.d} stroke-width={LOOK[b.level].w} style={`--d:${b.delay}s;--dur:${DRAW[b.level]}s;--o:${LOOK[b.level].o}`} />)}
     {burst.map(b => (
       <g transform={`translate(${b.x} ${b.y})`}>
-        <g class="rl-bud" style={`--d:${f(b.delay + 0.35)}s`}>
+        <g class="rl-bud" style={`--d:${f(b.delay + DRAW[b.level] * 0.8)}s;--dur:${f(DRAW[b.level] + 0.1)}s`}>
           <circle r={LOOK[b.level].r} />
           <use href="#rl-person" transform={`scale(${f(LOOK[b.level].r / 17.6 * 100) / 100})`} />
         </g>
@@ -233,9 +235,9 @@ const stepTimes = marks.map(m => m.delay);
   .rl-bud use { fill:#0b3442; }
   .rl-shock { fill:none; stroke:#f3dca6; stroke-width:6; opacity:0; transform-box:view-box; transform-origin:300px 300px; }
   .rl.is-armed.is-on .rl-world { animation:rl-zoom 1.3s cubic-bezier(.7,0,.2,1) var(--z) both; }
-  .rl.is-armed.is-on .rl-burst path { animation:rl-draw .45s cubic-bezier(.3,0,.2,1) var(--d) both; }
-  .rl.is-armed.is-on .rl-bud { animation:rl-bud .5s cubic-bezier(.34,1.56,.64,1) var(--d) both; }
-  .rl.is-armed.is-on .rl-shock { animation:rl-shock 1.6s cubic-bezier(.2,.7,.2,1) var(--d) both; }
+  .rl.is-armed.is-on .rl-burst path { animation:rl-draw var(--dur) cubic-bezier(.3,0,.2,1) var(--d) both; }
+  .rl.is-armed.is-on .rl-bud { animation:rl-bud var(--dur) cubic-bezier(.34,1.56,.64,1) var(--d) both; }
+  .rl.is-armed.is-on .rl-shock { animation:rl-shock 2.4s cubic-bezier(.2,.7,.2,1) var(--d) both; }
   @keyframes rl-bud { 0% { opacity:0; transform:scale(.2); } 50% { opacity:1; transform:scale(1.5); } 100% { opacity:.9; transform:scale(1); } }
   @keyframes rl-shock { 0% { opacity:0; transform:scale(.5); } 20% { opacity:.45; } 100% { opacity:0; transform:scale(1.02); } }
   .rl.is-fading .rl-world, .rl.is-fading .rl-note { opacity:0; }
