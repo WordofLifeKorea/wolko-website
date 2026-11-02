@@ -168,9 +168,17 @@ body > header .wl-lang-btn, body > header .adm-lang-option, body > header .adm-l
   :root:root:root body > header .adm-header-badge { width: var(--wl-head-ctl); padding: 0 !important; }
   :root:root:root body > header .adm-account-button { display: none !important; }
 }
-/* 아주 좁은 화면(폰): 이름은 페이지 제목 블록이 이미 보여주므로 로고만 남긴다 */
+/* 아주 좁은 화면(폰): 로고 옆 페이지 이름은 남기고(길면 …), 자리를 내주려고 로그아웃은 글자 대신 문 아이콘 단추로 */
 @media (max-width: 480px) {
-  :root:root:root body > header > :first-child :is(span, h1, b, div), .app-header .app-brand h1 { display: none !important; }
+  :root:root:root body > header > :first-child { flex: 1 1 auto !important; gap: 8px !important; }
+  :root:root:root body > header :is(.btn-logout, .logout-btn, #logoutBtn) {
+    display: inline-grid !important; place-items: center; width: var(--wl-head-ctl) !important; padding: 0 !important; font-size: 0 !important;
+  }
+  :root:root:root body > header :is(.btn-logout, .logout-btn, #logoutBtn)::before {
+    content: ''; width: 18px; height: 18px; background: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
 }
 @media (max-width: 360px) {
   :root { --wl-head-pad: 10px; --wl-head-gap: 6px; }
