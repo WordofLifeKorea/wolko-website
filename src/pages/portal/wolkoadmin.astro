@@ -27,6 +27,8 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
   <link rel="stylesheet" href="/wolko-layout.css?v=17">
   <link rel="stylesheet" href="/wolko-site.css?v=11">
+  <link rel="stylesheet" href="/wolko-customize.css?v=1">
+  <script src="/wolko-customize.js?v=1" defer></script>
   <script src="/wolko-rail.js?v=49" defer></script>
   <meta name="theme-color" content="#004f68">
   <script is:inline src="/wolko-session.js?v=2"></script>
@@ -72,12 +74,12 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
     </div>
   </header>
 
-  <div class="adm-wrap">
+  <div class="adm-wrap" data-wl-cards>
     <!-- CAMP CARDS -->
-    <div class="camp-cards" id="campCards"></div>
+    <div class="camp-cards" id="campCards" data-wl-card></div>
 
     <!-- STATS TABLE -->
-    <div class="stats-wrap">
+    <div class="stats-wrap" data-wl-card="stats">
       <table class="stats-tbl">
         <thead>
           <tr>
@@ -111,7 +113,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
     </div>
 
     <!-- PROGRESS -->
-    <div class="progress-wrap">
+    <div class="progress-wrap" data-wl-card="progress">
       <div class="progress-header">
         <span class="progress-title" id="progressLabel">전체 정원 현황</span>
         <span class="progress-pct" id="progressPct">0%</span>
@@ -127,7 +129,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
     </div>
 
     <!-- 캠프 신청 TABLE -->
-    <div class="table-section">
+    <div class="table-section" data-wl-card="registrations">
       <div class="table-toolbar">
         <div>
           <span class="table-title" data-t="campRegTitle">캠프 신청 목록</span>
@@ -239,7 +241,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
     </div>
 
     <!-- 스태프 지원 TABLE -->
-    <div class="table-section staff-section" style="margin-top:28px;">
+    <div class="table-section staff-section" style="margin-top:28px;" data-wl-card="staff">
       <div class="table-toolbar">
         <div>
           <span class="table-title" style="color:#0d9488;" data-t="staffRegTitle">스태프 · 봉사자 지원 목록</span>

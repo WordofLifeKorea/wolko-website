@@ -1,0 +1,62 @@
+/* 화면 꾸미기(wolko-customize.js) — 꾸민 화면에서만 아래 규칙이 붙는다. 꾸미지 않은 페이지 모양은 그대로다. */
+
+/* 보통 묶음: 꾸미면 6칸 격자로 바꿔 순서 · 너비를 준다(숨겨진 묶음은 그대로 숨김) */
+.wl-cz-on.wl-cz-flow:not([hidden]) { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); column-gap: 16px; align-items: start; }
+.wl-cz-on.wl-cz-flow > * { grid-column: 1 / -1; min-width: 0; }
+.wl-cz-on > .wl-cz-off { display: none !important; }
+
+/* 반 · 1/3 카드: 카드 폭에 맞춰 안의 내용이 다시 정렬되게 한다 */
+.wl-cz-narrow { container: wlcz / inline-size; min-width: 0; }
+.wl-cz-narrow:is([class*="grid"], [class*="kpis"], [class*="stats"], [class*="cards"]):not([class*="cal"]) { grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)) !important; }
+@container wlcz (max-width: 640px) {
+  .wl-cz-narrow table { display: block; max-width: 100%; overflow-x: auto; }
+  .wl-cz-narrow :is(img, video, canvas, iframe) { max-width: 100%; }
+  .wl-cz-narrow :is([class*="grid"], [class*="kpis"], [class*="stats"], [class*="cards"], [class*="layout"]):not([class*="cal"]) { grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)) !important; }
+  .wl-cz-narrow :is([class*="toolbar"], [class*="actions"], [class*="head"], [class*="row"], [class*="bar"], [class*="filters"], [class*="tools"]) { flex-wrap: wrap; }
+}
+
+/* 꾸미는 중: 카드 테두리를 보여 주고, 패널에서 가리킨 카드는 진하게 */
+.wl-cz-editing [data-wl-cards] > .wl-cz-focus { outline: 3px solid #008e92 !important; outline-offset: 4px; }
+
+/* 꾸미기 단추 */
+.wl-cz-fab { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 800; display: grid; place-items: center; width: 46px; height: 46px; padding: 0; border: 1px solid #cfe0e6; border-radius: 50%; background: #fff; color: #004f68; box-shadow: 0 8px 22px -8px rgba(0, 40, 55, .35); cursor: pointer; }
+.wl-cz-fab:hover { background: #eef7f8; }
+.wl-cz-fab:focus-visible { outline: 3px solid #9bd4d0; outline-offset: 2px; }
+.wl-cz-fab[aria-expanded="true"] { background: #004f68; color: #fff; border-color: #004f68; }
+.wl-cz-fab[hidden] { display: none; }
+
+/* 패널: 컴퓨터는 오른쪽 아래에 떠 있고, 휴대폰은 아래에서 올라온다 — 페이지를 보면서 바로 바꿀 수 있게 가리지 않는다 */
+.wl-cz-panel { position: fixed; right: 16px; bottom: calc(74px + env(safe-area-inset-bottom, 0px)); z-index: 801; display: flex; flex-direction: column; width: min(380px, calc(100vw - 32px)); max-height: min(70vh, 620px); border: 1px solid #d8e6eb; border-radius: 12px; background: #fff; color: #173542; box-shadow: 0 24px 48px -16px rgba(0, 40, 55, .4); font: 500 13px/1.5 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; }
+.wl-cz-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px 6px; }
+.wl-cz-head strong { color: #004f68; font-size: 15px; font-weight: 800; }
+.wl-cz-x { width: 32px; height: 32px; padding: 0; border: 0; border-radius: 8px; background: none; color: #617b86; font-size: 20px; line-height: 1; cursor: pointer; }
+.wl-cz-x:hover { background: #eef5f7; }
+.wl-cz-where { margin: 0; padding: 0 16px 10px; color: #617b86; font-size: 12px; word-break: keep-all; }
+.wl-cz-list { flex: 1 1 auto; margin: 0; padding: 0 10px; overflow-y: auto; list-style: none; }
+.wl-cz-group { height: 1px; margin: 6px 6px; background: #d8e6eb; }
+.wl-cz-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 8px; padding: 8px 6px; border-top: 1px solid #eef3f5; }
+.wl-cz-row:first-child { border-top: 0; }
+.wl-cz-row.is-off .wl-cz-name { color: #8aa0a9; }
+.wl-cz-name { min-width: 0; padding: 4px 0; border: 0; background: none; color: #173542; font: inherit; font-weight: 700; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.wl-cz-name small { margin-left: 4px; color: #8aa0a9; font-size: 11px; font-weight: 700; }
+.wl-cz-btns { display: inline-flex; gap: 4px; }
+.wl-cz-btns button, .wl-cz-width button { min-width: 32px; height: 30px; padding: 0 8px; border: 1px solid #cfe0e6; border-radius: 8px; background: #fff; color: #004f68; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.wl-cz-btns button:hover:not(:disabled), .wl-cz-width button:hover { background: #eef7f8; }
+.wl-cz-btns button:disabled { opacity: .4; cursor: default; }
+.wl-cz-eye { min-width: 56px !important; }
+.wl-cz-width { grid-column: 1 / -1; display: flex; gap: 4px; }
+.wl-cz-width button { flex: 1 1 0; }
+.wl-cz-width button.on { border-color: #008e92; background: #eaf7f6; color: #004f68; }
+.wl-cz-note { margin: 0; padding: 8px 16px 0; color: #00747a; font-size: 12px; font-weight: 700; }
+.wl-cz-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; padding: 12px 16px 14px; border-top: 1px solid #eef3f5; }
+.wl-cz-ghost, .wl-cz-done { height: 34px; padding: 0 12px; border-radius: 8px; font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+.wl-cz-ghost { border: 1px solid #cfe0e6; background: #fff; color: #004f68; }
+.wl-cz-ghost:disabled { opacity: .45; cursor: default; }
+.wl-cz-done { border: 0; background: #004f68; color: #fff; }
+.wl-cz-done:hover { background: #006582; }
+@media (max-width: 639px) {
+  .wl-cz-panel { right: 0; left: 0; bottom: 0; width: auto; max-height: 62vh; border-radius: 14px 14px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .wl-cz-fab[aria-expanded="true"] { display: none; }
+  .wl-cz-btns button { min-width: 38px; height: 36px; }
+}
+@media print { .wl-cz-fab, .wl-cz-panel { display: none !important; } }

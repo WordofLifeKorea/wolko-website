@@ -24,6 +24,8 @@
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
   <link rel="stylesheet" href="/wolko-layout.css?v=17">
   <link rel="stylesheet" href="/wolko-site.css?v=11">
+  <link rel="stylesheet" href="/wolko-customize.css?v=1">
+  <script src="/wolko-customize.js?v=1" defer></script>
   <script src="/wolko-rail.js?v=49" defer></script>
   <script src="/wolko-datepicker.js?v=4" defer></script>
   <script src="/gospel-charts.js?v=13" defer></script>
@@ -60,7 +62,7 @@
       <p class="log-error" id="loginError" role="alert"></p>
     </section>
 
-    <div id="app" hidden>
+    <div id="app" hidden data-wl-cards>
       <div class="gs-bar">
         <div class="gs-bar-top">
           <div class="gs-actions">
@@ -80,20 +82,20 @@
       <p class="gs-kpicap" id="kpiCaption"></p>
       <div class="gs-kpis" id="kpis"></div>
       <p class="gs-count" id="countLine"></p>
-      <div class="gc-root" id="charts"></div>
-      <section class="log-panel" id="subWrap" hidden>
+      <div class="gc-root" id="charts" data-wl-card data-wl-card-title="통계 차트" data-wl-card-title-en="Charts"></div>
+      <section class="log-panel" id="subWrap" hidden data-wl-card>
         <div class="log-panel-head"><h2><span data-t="subTitle">제출 현황</span> <button type="button" class="gs-info" data-tip-key="subTip" aria-label="info">i</button></h2></div>
         <div id="subBox"></div>
       </section>
 
-      <section class="log-panel gs-fold">
+      <section class="log-panel gs-fold" data-wl-card="camp-auto">
         <details open>
           <summary class="log-panel-head"><h2><span data-t="campAutoTitle">캠프 자동 집계</span> <button type="button" class="gs-info" data-tip-key="campAutoTip" aria-label="info">i</button></h2><span class="gs-fold-chev" aria-hidden="true"></span></summary>
           <div id="campAuto"></div>
         </details>
       </section>
 
-      <section class="log-panel gs-fold">
+      <section class="log-panel gs-fold" data-wl-card="church-stats">
         <details open>
           <summary class="log-panel-head"><h2 data-t="churchStatTitle">교회별 행사</h2><span class="gs-fold-chev" aria-hidden="true"></span></summary>
           <div id="churchStats"></div>
@@ -108,24 +110,24 @@
         <form id="reportForm" class="gs-form" novalidate></form>
       </section>
 
-      <section class="log-panel gs-fold" id="teamWrap" hidden>
+      <section class="log-panel gs-fold" id="teamWrap" hidden data-wl-card>
         <details open>
           <summary class="log-panel-head"><h2 data-t="teamRepTitle">팀 · 사역 현황 보고 내역</h2><span class="gs-fold-chev" aria-hidden="true"></span></summary>
           <div id="teamBox"></div>
         </details>
       </section>
 
-      <section class="log-panel">
+      <section class="log-panel" data-wl-card="stats-table">
         <div class="log-panel-head"><span class="log-step">▤</span><h2 data-t="tableTitle">항목별 통계</h2></div>
         <div class="gs-tablewrap"><table class="gs-table" id="statsTable"></table></div>
       </section>
 
-      <section class="log-panel">
+      <section class="log-panel" data-wl-card="trend">
         <div class="log-panel-head"><span class="log-step">↗</span><h2 id="trendTitleEl" data-t="trendTitle">최근 6개월 추이</h2></div>
         <div class="gs-tablewrap"><table class="gs-table" id="trendTable"></table></div>
       </section>
 
-      <section class="log-panel" id="repWrap" hidden>
+      <section class="log-panel" id="repWrap" hidden data-wl-card>
         <div class="log-panel-head"><h2 data-t="repTitle">보고 담당자</h2></div>
         <div id="repBox"></div>
       </section>

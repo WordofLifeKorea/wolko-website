@@ -248,7 +248,7 @@ test('camp auto-count, church events and team report history open unfolded, and 
     const fold = new RegExp(`<section class="log-panel gs-fold"[^>]*>\\s*<details open>[\\s\\S]*?id="${id}"`);
     assert.match(page, fold, `${id} sits inside a <details> fold that starts open`);
   }
-  assert.match(page, /<section class="log-panel gs-fold" id="teamWrap" hidden>/, 'team report fold keeps its hidden-for-non-reporters switch');
+  assert.match(page, /<section class="log-panel gs-fold" id="teamWrap" hidden[ >]/, 'team report fold keeps its hidden-for-non-reporters switch');
 });
 
 test('열린 달(보고하는 달·이번 달)의 사역 현황은 CRS 지금 값으로 세고, 지난 달은 저장값을 쓰며, CRS 를 못 읽으면 저장값을 쓴다', async () => {
