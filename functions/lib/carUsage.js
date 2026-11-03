@@ -35,9 +35,9 @@ export async function usageSession(request, env) {
 export const CHARGE_ACCOUNTS = [
   { id: 'personal', ko: '본인 개인 계좌', en: 'My personal account' },
   { id: 'camp-team', ko: '캠프팀', en: 'Camp Team' },
-  { id: 'student-ministry', ko: 'Student Ministry', en: 'Student Ministry' },
+  { id: 'student-ministry', ko: '학생 사역', en: 'Student Ministry' },
   { id: 'wolko', ko: '월코', en: 'WOLKO' },
-  { id: 'resources-media', ko: 'Resources & Media', en: 'Resources & Media' },
+  { id: 'resources-media', ko: '자료·미디어', en: 'Resources & Media' },
 ];
 export const isChargeAccount = id => CHARGE_ACCOUNTS.some(a => a.id === id);
 
