@@ -85,7 +85,7 @@ export async function costRates(env, date) {
   return rates;
 }
 
-export const round100 = krw => Math.round(krw / 100) * 100;
+export const floor100 = krw => Math.floor(krw / 100) * 100;
 
 /** 운행 한 건의 개인 사용 비용. rates 는 costRates() 결과 또는 저장된 기록의 cost(같은 이름의 값을 담고 있다). */
 export function personalCost(rates, vehicleId, tripKm, splitCount = 1) {
@@ -94,11 +94,11 @@ export function personalCost(rates, vehicleId, tripKm, splitCount = 1) {
   const maintenancePerKm = rates.maintenancePerKm ?? MAINTENANCE_PER_KM;
   const fuelKrw = Math.round(km / kmPerLiter * rates.dieselKrw);
   const maintKrw = Math.round(km * maintenancePerKm);
-  // 합계와 1인당 금액은 10원 자리에서 반올림해 100원 단위로 낸다(1인당은 반올림 전 합계를 나눠서)
+  // 합계와 1인당 금액은 10원 단위를 버려 100원 단위로 낸다(1인당은 버리기 전 합계를 나눠서)
   const exactKrw = fuelKrw + maintKrw;
-  const totalKrw = round100(exactKrw);
+  const totalKrw = floor100(exactKrw);
   const people = Math.min(MAX_SPLIT, Math.max(1, Math.floor(Number(splitCount) || 1)));
-  const perPersonKrw = round100(exactKrw / people);
+  const perPersonKrw = floor100(exactKrw / people);
   const usd = krw => (rates.usdKrw > 0 ? Math.round(krw / rates.usdKrw * 100) / 100 : null);
   return {
     dieselKrw: rates.dieselKrw, dieselDate: rates.dieselDate, dieselSource: rates.dieselSource,
