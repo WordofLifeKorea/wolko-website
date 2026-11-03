@@ -15,14 +15,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/car-log.css?v=24">
+  <link rel="stylesheet" href="/car-log.css?v=25">
   <link rel="stylesheet" href="/wolko-rail.css?v=24">
   <link rel="stylesheet" href="/wolko-header.css?v=17">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
   <link rel="stylesheet" href="/wolko-layout.css?v=17">
   <link rel="stylesheet" href="/wolko-site.css?v=11">
   <script src="/wolko-rail.js?v=49" defer></script>
-  <script src="/car-log.js?v=29" defer></script>
+  <script src="/car-log.js?v=30" defer></script>
   <meta name="theme-color" content="#004f68">
 </head>
 <body>
@@ -92,6 +92,10 @@
           <label id="purposeNoteWrap" class="log-purpose-note" hidden><span data-t="purposeNoteLabel">어떤 운행인가요? (간단히)</span>
             <input id="purposeNote" name="purpose" type="text" maxlength="60" autocomplete="off">
           </label>
+          <fieldset id="chargeWrap" class="log-purpose log-charge" hidden>
+            <legend data-t="chargeLegend">비용 처리 계좌</legend>
+            <div class="log-purpose-options log-charge-options" id="chargeOptions"></div>
+          </fieldset>
           <label id="tripDateWrap" class="log-purpose-note" hidden><span data-t="tripDateLabel">운행 날짜</span>
             <input id="tripDate" name="tripDate" type="date">
           </label>
@@ -181,6 +185,7 @@
       <label><span data-t="editUse">사용 목적</span>
         <select id="editUse"><option value="" data-t="keepAsIs">변경 안 함</option><option value="ministry" data-t="useMinistry">사역용</option><option value="personal" data-t="usePersonal">개인용</option></select>
       </label>
+      <label><span data-t="chargeLegend">비용 처리 계좌</span><select id="editCharge"></select></label>
       <p class="log-error" id="editError" role="alert"></p>
       <div class="log-edit-actions">
         <button id="editCancel" type="button" class="log-secondary" data-t="cancelBtn">취소</button>

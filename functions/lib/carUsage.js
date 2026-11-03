@@ -28,6 +28,19 @@ export async function usageSession(request, env) {
   return { email, name: pickName(email, account?.name), role: signed.role };
 }
 
+/**
+ * 사역용 운행 비용을 처리할 계좌 — 사역용을 고르면 이 중 하나를 꼭 고른다.
+ * id 는 기록에 저장되는 값이라 바꾸지 않는다(이름은 고쳐도 됨). personal = 기록한 본인의 개인 계좌.
+ */
+export const CHARGE_ACCOUNTS = [
+  { id: 'personal', ko: '본인 개인 계좌', en: 'My personal account' },
+  { id: 'camp-team', ko: '캠프팀', en: 'Camp Team' },
+  { id: 'student-ministry', ko: 'Student Ministry', en: 'Student Ministry' },
+  { id: 'wolko', ko: '월코', en: 'WOLKO' },
+  { id: 'resources-media', ko: 'Resources & Media', en: 'Resources & Media' },
+];
+export const isChargeAccount = id => CHARGE_ACCOUNTS.some(a => a.id === id);
+
 /** 사용 일지에서 고를 수 있는 차량: 고정 차량(Silver Carnival · Santa Fe)만. 선교사 개인 차량은 예약 캘린더에서만 쓴다. */
 export const selectableVehicles = () => new Map(Object.entries(BUILTIN_VEHICLES));
 

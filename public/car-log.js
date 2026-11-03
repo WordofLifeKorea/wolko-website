@@ -31,7 +31,7 @@
       photoTaken: t => `사진 촬영: ${t} (사진 정보 기준)`, photoNoTime: '사진에 촬영 시각 정보가 없어 저장 시각으로 기록됩니다.',
       saved: '사용 일지가 저장됐습니다.', saveFail: '저장하지 못했습니다.',
       draftSaved: d => `작성 중인 내용이 임시 저장됐어요 · ${d}까지 보관돼요`, draftClear: '임시 저장 지우기', draftClearAsk: '임시 저장한 내용과 사진을 지울까요?',
-      tripDateLabel: '운행 날짜', tripKmLabelOpt: '총 운행 거리 (km)', costBlankKm: '비워 두면 앞뒤 기록의 계기판 숫자로 빠진 거리를 계산해 청구해요.',
+      chargeLegend: '비용 처리 계좌', chargeNeeded: '비용을 처리할 계좌를 골라 주세요.', chargeRow: '처리 계좌', tripDateLabel: '운행 날짜', tripKmLabelOpt: '총 운행 거리 (km)', costBlankKm: '비워 두면 앞뒤 기록의 계기판 숫자로 빠진 거리를 계산해 청구해요.',
       autoKmLine: a => `계기판 ${a.from} → ${a.to} km 사이 빠진 거리로 자동 계산${a.shared > 1 ? ` (빈 기록 ${a.shared}건이 나눠 냄)` : ''}`, autoKmPending: '운행 거리가 비어 있어요 · 다음 기록이 올라오면 앞뒤 계기판 숫자로 자동 계산돼요.', autoKmTag: '자동', splitNoteLabel: '함께 나눠 낼 사람 (선택)', splitNotePh: '예: 김철수, 이영희', splitMinus: '한 명 빼기', splitPlus: '한 명 더하기',
       costTitle: '개인 사용 비용', costNeedKm: '총 운행 거리를 넣으면 계산돼요.', costNeedVehicle: '차량을 고르면 계산돼요.', costLoading: '경유 가격과 환율을 불러오는 중…', costFail: '경유 가격을 불러오지 못했어요. 저장하면 서버에서 계산해요.',
       costCalc: c => `기름값 ${c.km} km ÷ ${c.kmPerLiter} km/L × ₩${c.diesel} = ₩${c.fuel}\n정비비 ${c.km} km × ₩${c.maint1} = ₩${c.maint}`,
@@ -66,7 +66,7 @@
       photoTaken: t => `Photo taken: ${t} (from photo data)`, photoNoTime: 'The photo has no capture time, so the save time will be recorded.',
       saved: 'Usage log saved.', saveFail: 'Could not save.',
       draftSaved: d => `Draft saved to your account · kept until ${d}`, draftClear: 'Delete draft', draftClearAsk: 'Delete the saved draft and photos?',
-      tripDateLabel: 'Date of the trip', tripKmLabelOpt: 'Total distance driven (km)', costBlankKm: 'If left blank, the missing distance is worked out from the odometer readings of the records before and after, and charged.',
+      chargeLegend: 'Charged to', chargeNeeded: 'Please choose the account the cost is charged to.', chargeRow: 'Charged to', tripDateLabel: 'Date of the trip', tripKmLabelOpt: 'Total distance driven (km)', costBlankKm: 'If left blank, the missing distance is worked out from the odometer readings of the records before and after, and charged.',
       autoKmLine: a => `Worked out from the odometer gap ${a.from} → ${a.to} km${a.shared > 1 ? ` (shared by ${a.shared} blank records)` : ''}`, autoKmPending: 'Distance left blank · it will be worked out from the odometer readings once the next record is in.', autoKmTag: 'auto', splitNoteLabel: 'Splitting the cost with (optional)', splitNotePh: 'e.g. John, Sarah', splitMinus: 'One person fewer', splitPlus: 'One more person',
       costTitle: 'Personal use cost', costNeedKm: 'Enter the total distance to calculate it.', costNeedVehicle: 'Select a vehicle to calculate it.', costLoading: 'Loading the diesel price and exchange rate…', costFail: 'Could not load the diesel price. The server will calculate it when you save.',
       costCalc: c => `Fuel ${c.km} km ÷ ${c.kmPerLiter} km/L × ₩${c.diesel} = ₩${c.fuel}\nMaintenance ${c.km} km × ₩${c.maint1} = ₩${c.maint}`,
@@ -87,7 +87,7 @@
     $('langEnBtn').classList.toggle('is-active', lang === 'en');
     const select = $('vehicleSelect');
     if (select.options.length) select.options[0].text = t('pickVehicle');
-    if (!$('logApp').hidden) { renderEntries(); renderCost(); }
+    if (!$('logApp').hidden) { renderChargeOptions(); renderEntries(); renderCost(); }
   }
   function setLang(next) {
     if (next === lang) return;
@@ -116,7 +116,7 @@
     if (draft) $('draftText').textContent = t('draftSaved', draftDate(draft.expiresAt));
   }
   function draftFields() {
-    return { vehicleId: $('vehicleSelect').value, useType: document.querySelector('input[name="useType"]:checked')?.value || '', purpose: $('purposeNote').value, splitNote: $('splitNote').value, tripDate: $('tripDate').value, tripKm: $('tripKm').value };
+    return { vehicleId: $('vehicleSelect').value, useType: document.querySelector('input[name="useType"]:checked')?.value || '', purpose: $('purposeNote').value, chargeAccount: chargeValue(), splitNote: $('splitNote').value, tripDate: $('tripDate').value, tripKm: $('tripKm').value };
   }
   async function saveDraftNow() {
     const f = draftFields();
@@ -152,6 +152,7 @@
     $('vehicleSelect').value = requestedVehicle && [...$('vehicleSelect').options].some(o => o.value === requestedVehicle) ? requestedVehicle : '';
     document.querySelectorAll('input[name="useType"]').forEach(r => { r.checked = false; });
     $('purposeNote').value = '';
+    setCharge('');
     $('splitNote').value = ''; splitManual = null; $('tripDate').value = '';
     $('tripKm').value = '';
     ['odoBefore', 'odoAfter'].forEach(id => { $(id).value = ''; }); ['odoBeforeHint', 'odoAfterHint', 'tripAutoHint'].forEach(id => { $(id).textContent = ''; });
@@ -179,6 +180,7 @@
       const radio = document.querySelector(`input[name="useType"][value="${draft.useType}"]`);
       if (radio) { radio.checked = true; updateReady(); }
       $('purposeNote').value = draft.purpose || '';
+      setCharge(draft.chargeAccount || '');
       $('splitNote').value = draft.splitNote || '';
       if (draft.tripDate) $('tripDate').value = draft.tripDate;
       $('tripKm').value = draft.tripKm || '';
@@ -213,6 +215,8 @@
     $('purposeNote').required = !!ministry;
     $('purposeNote').placeholder = t('purposeNotePh');
     if (!ministry) $('purposeNote').value = '';
+    $('chargeWrap').hidden = !ministry;
+    if (!ministry) setCharge('');
     const personal = purpose && purpose.value === 'personal';
     $('splitNoteWrap').hidden = !personal;
     $('tripDateWrap').hidden = !personal;
@@ -227,7 +231,7 @@
     const tripOk = (personal && tripBlank) || (!tripBlank && Number.isFinite(tripKm) && tripKm >= 0 && tripKm <= 5000);
     $('tripKm').required = !personal;
     // 사진은 선택이고, 차량 · 사용 목적 · 총 운행 거리(km, 개인용은 비워 둘 수 있음)가 있어야 저장할 수 있다.
-    $('saveButton').disabled = !purpose || !$('vehicleSelect').value || !tripOk || (ministry && !$('purposeNote').value.trim());
+    $('saveButton').disabled = !purpose || !$('vehicleSelect').value || !tripOk || (ministry && (!$('purposeNote').value.trim() || !chargeValue()));
   }
 
   /* ── 개인용 비용: 기름값(거리 ÷ 연비 × 전국 평균 경유 가격) + 정비비(km당 20원), 달러 환산, 나눠 내기 ──
@@ -312,6 +316,23 @@
     return box;
   }
 
+  /* ── 사역용 비용 처리 계좌 (목록은 서버 functions/lib/carUsage.js 의 CHARGE_ACCOUNTS) ── */
+  let chargeAccounts = [];
+  const chargeName = id => { const a = chargeAccounts.find(x => x.id === id); return a ? (lang === 'en' ? a.en : a.ko) : id; };
+  const chargeValue = () => document.querySelector('input[name="chargeAccount"]:checked')?.value || '';
+  const setCharge = id => document.querySelectorAll('input[name="chargeAccount"]').forEach(r => { r.checked = r.value === id; });
+  function renderChargeOptions() {
+    const keep = chargeValue();
+    $('chargeOptions').replaceChildren(...chargeAccounts.map(a => {
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = 'radio'; input.name = 'chargeAccount'; input.value = a.id; input.checked = a.id === keep;
+      const span = document.createElement('span'); span.textContent = chargeName(a.id);
+      label.append(input, span);
+      return label;
+    }));
+  }
+
   // 목록만 다시 받아 그린다 (빈 기록의 자동 계산은 서버가 목록을 줄 때 한다)
   async function refreshEntries() {
     try {
@@ -338,6 +359,8 @@
     select.replaceChildren(new Option(t('pickVehicle'), ''));
     data.vehicles.forEach(vehicle => select.add(new Option(vehicle.name, vehicle.id)));
     if (data.vehicles.some(vehicle => vehicle.id === requestedVehicle)) select.value = requestedVehicle;
+    chargeAccounts = Array.isArray(data.chargeAccounts) ? data.chargeAccounts : [];
+    renderChargeOptions();
     entries = data.entries || [];
     renderEntries();
     updateReady();
@@ -417,9 +440,10 @@
           const whoName = document.createElement('span');
           whoName.className = 'log-line-name'; whoName.textContent = shownName(entry.userName);
           who.append(whoName);
-          if (entry.purpose) {
+          const noteText = [entry.purpose, entry.chargeAccount && chargeName(entry.chargeAccount)].filter(Boolean).join(' · ');
+          if (noteText) {
             const note = document.createElement('span');
-            note.className = 'log-line-note'; note.textContent = entry.purpose; note.title = entry.purpose;
+            note.className = 'log-line-note'; note.textContent = noteText; note.title = noteText;
             who.append(note);
           }
           const use = toggle.querySelector('.log-line-use');
@@ -455,6 +479,12 @@
               purpose.className = 'log-line-purpose';
               purpose.textContent = `${t('purposeLabel')}: ${entry.purpose}`;
               detail.append(purpose);
+            }
+            if (entry.chargeAccount) {
+              const charge = document.createElement('span');
+              charge.className = 'log-line-purpose';
+              charge.textContent = `${t('chargeRow')}: ${chargeName(entry.chargeAccount)}`;
+              detail.append(charge);
             }
             if (entry.cost || (entry.autoKm && entry.autoKm.pending)) detail.append(costLine(entry));
             detail.append(info, ...photoButtons, mileageBlock(entry));
@@ -687,6 +717,7 @@
     if (input.checked && input.value === 'ministry') $('purposeNote').focus({ preventScroll: false });
   }));
   $('purposeNote').addEventListener('input', () => { updateReady(); scheduleDraftSave(); });
+  $('chargeOptions').addEventListener('change', () => { updateReady(); scheduleDraftSave(); });
   $('vehicleSelect').addEventListener('change', () => { updateReady(); scheduleDraftSave(); });
   $('splitNote').addEventListener('input', () => { splitManual = null; renderCost(); scheduleDraftSave(); });
   $('tripDate').addEventListener('change', () => { loadCostRates(tripDay()); renderCost(); scheduleDraftSave(); });
@@ -808,7 +839,7 @@
 
   $('usageForm').addEventListener('submit', async event => {
     event.preventDefault();
-    if ($('saveButton').disabled) { $('formError').textContent = t('tripKmNeeded'); return; }
+    if ($('saveButton').disabled) { $('formError').textContent = document.querySelector('input[name="useType"]:checked')?.value === 'ministry' && !chargeValue() ? t('chargeNeeded') : t('tripKmNeeded'); return; }
     $('formError').textContent = '';
     $('saveButton').disabled = true;
     $('saveButton').textContent = t('saving');
@@ -817,6 +848,7 @@
       form.append('vehicleId', $('vehicleSelect').value);
       form.append('useType', document.querySelector('input[name="useType"]:checked').value);
       form.append('purpose', $('purposeNote').value.trim());
+      if (chargeValue()) form.append('chargeAccount', chargeValue());
       form.append('tripKm', $('tripKm').value.trim());
       if (document.querySelector('input[name="useType"]:checked').value === 'personal') form.append('tripDate', tripDay());
       if ($('splitNote').value.trim()) { form.append('splitNote', $('splitNote').value.trim()); form.append('splitCount', String(splitPeople())); }
@@ -883,6 +915,8 @@
     if (!selected.size) return;
     const v = $('editVehicle'); v.replaceChildren(new Option(t('keepAsIs'), ''));
     [...$('vehicleSelect').options].filter(o => o.value).forEach(o => v.add(new Option(o.text, o.value)));
+    const c = $('editCharge'); c.replaceChildren(new Option(t('keepAsIs'), ''));
+    chargeAccounts.forEach(a => c.add(new Option(chargeName(a.id), a.id)));
     $('editUse').value = ''; $('editError').textContent = '';
     $('editHelp').textContent = t('editHelp', selected.size);
     $('editDialog').hidden = false;
@@ -890,12 +924,13 @@
   $('editCancel').addEventListener('click', () => { $('editDialog').hidden = true; });
   $('editDialog').addEventListener('click', event => { if (event.target === $('editDialog')) $('editDialog').hidden = true; });
   $('editSave').addEventListener('click', async () => {
-    const vehicleId = $('editVehicle').value, useType = $('editUse').value;
-    if (!vehicleId && !useType) { $('editError').textContent = t('editNothing'); return; }
+    const vehicleId = $('editVehicle').value, useType = $('editUse').value, chargeAccount = $('editCharge').value;
+    if (!vehicleId && !useType && !chargeAccount) { $('editError').textContent = t('editNothing'); return; }
     $('editSave').disabled = true;
     try {
-      const data = await bulk('PATCH', { ids: [...selected], ...(vehicleId ? { vehicleId } : {}), ...(useType ? { useType } : {}) });
-      data.entries.forEach(updated => { const i = entries.findIndex(e => e.id === updated.id); if (i >= 0) entries[i] = { ...entries[i], ...updated }; });
+      const data = await bulk('PATCH', { ids: [...selected], ...(vehicleId ? { vehicleId } : {}), ...(useType ? { useType } : {}), ...(chargeAccount ? { chargeAccount } : {}) });
+      data.entries.forEach(updated => { const i = entries.findIndex(e => e.id === updated.id); if (i >= 0) entries[i] = updated; });
+      refreshEntries();   // 개인용으로 바뀐 기록의 자동 계산 금액도 다시 받는다
       $('editDialog').hidden = true;
       renderEntries();
       $('photoTime').textContent = t('edited', data.count);

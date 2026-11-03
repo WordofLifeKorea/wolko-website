@@ -95,7 +95,7 @@ test('a personal log saves the split memo and the cost; editing the distance rec
 
   // 사역용 기록에는 비용 · 메모를 남기지 않는다
   const m = new FormData();
-  m.set('vehicleId', 'silver-van'); m.set('useType', 'ministry'); m.set('purpose', '장보기'); m.set('tripKm', '10'); m.set('splitNote', 'x');
+  m.set('vehicleId', 'silver-van'); m.set('useType', 'ministry'); m.set('purpose', '장보기'); m.set('chargeAccount', 'wolko'); m.set('tripKm', '10'); m.set('splitNote', 'x');
   const ministry = (await (await saveUsage({ env, request: new Request('https://example.com/api/car/usage', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: m }) })).json()).entry;
   assert.equal(ministry.cost, undefined);
   assert.equal(ministry.splitNote, undefined);
@@ -131,7 +131,7 @@ test('personal logs may leave the distance blank; the list then shows the gap ch
   await env.CAMP_KV.put(`hub:account:${email}`, JSON.stringify({ email, name: '운전자', status: 'approved' }));
   const token = await createHubSessionToken(env.ADMIN_PASSWORD, email, 'admin');
   const post = fields => { const f = new FormData(); Object.entries(fields).forEach(([k, v]) => f.set(k, v)); return saveUsage({ env, request: new Request('https://example.com/api/car/usage', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: f }) }); };
-  assert.equal((await post({ vehicleId: 'silver-van', useType: 'ministry', purpose: 'x', tripKm: '' })).status, 400);   // 사역용은 여전히 필수
+  assert.equal((await post({ vehicleId: 'silver-van', useType: 'ministry', purpose: 'x', chargeAccount: 'wolko', tripKm: '' })).status, 400);   // 사역용은 여전히 필수
   const blank = await post({ vehicleId: 'silver-van', useType: 'personal', tripKm: '', tripDate: daysAgo(1), splitNote: '김철수', splitCount: '2' });
   assert.equal(blank.status, 201);
   const b = (await blank.json()).entry;

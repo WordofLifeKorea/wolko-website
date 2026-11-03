@@ -41,6 +41,8 @@ function postRequest(token, fields = {}) {
   const form = new FormData();
   form.set('vehicleId', fields.vehicleId || 'silver-van');
   form.set('useType', fields.useType || 'ministry');
+  // 사역용은 비용 처리 계좌가 꼭 있어야 한다 — 기본으로 WOLKO, null 이면 빼고 보낸다
+  if (fields.chargeAccount !== null && (fields.useType || 'ministry') === 'ministry') form.set('chargeAccount', fields.chargeAccount || 'wolko');
   if (fields.purpose !== undefined) form.set('purpose', fields.purpose);
   if (fields.photo !== null) form.set('photo', fields.photo || jpeg());
   if (fields.photoAfter) form.set('photoAfter', fields.photoAfter);
@@ -179,6 +181,12 @@ test('selected records: master can edit vehicle/purpose of chosen entries only, 
   assert.deepEqual([byId[ids[0]].useType, byId[ids[0]].vehicleId, byId[ids[0]].vehicleName, byId[ids[0]].editedBy], ['personal', 'santa-fe', 'Santa Fe', 'admin@wolko.org']);
   assert.notEqual(byId[ids[2]].useType, 'x');
   assert.equal(byId[ids[2]].editedBy, undefined, '고르지 않은 기록은 그대로');
+  // 비용 처리 계좌: 사역용 기록만 바뀌고, 개인용으로 바꾼 기록에서는 지워진다
+  assert.equal(byId[ids[0]].chargeAccount, undefined);
+  assert.equal((await call(patchUsage, 'PATCH', master, { ids, chargeAccount: 'nope' })).status, 400);
+  await call(patchUsage, 'PATCH', master, { ids, chargeAccount: 'camp-team' });
+  const charged = Object.fromEntries((await list()).map(e => [e.id, e]));
+  assert.deepEqual(ids.map(id => charged[id].chargeAccount), [undefined, undefined, 'camp-team', 'camp-team']);
   // 삭제: 마스터만, 고른 것만, 백업이 남는다
   assert.equal((await call(clearUsage, 'DELETE', user, { ids: [ids[2]] })).status, 403);
   assert.equal((await call(clearUsage, 'DELETE', master, { ids: [] })).status, 400);
@@ -223,6 +231,25 @@ test('ministry trips store a short trimmed purpose; personal trips never keep on
   assert.equal(long.entry.purpose.length, 60);
   const personal = await (await saveUsage({ env, request: postRequest(token, { useType: 'personal', purpose: '개인 일정' }) })).json();
   assert.equal(personal.entry.purpose, undefined);
+});
+
+test('ministry trips must name the account the cost is charged to; personal trips never keep one', async () => {
+  const env = memoryEnv();
+  const email = 'driver@wol.org';
+  await env.CAMP_KV.put(`hub:account:${email}`, JSON.stringify({ email, name: '운전자', status: 'approved' }));
+  const token = await createHubSessionToken(env.ADMIN_PASSWORD, email, 'admin');
+  const missing = await saveUsage({ env, request: postRequest(token, { purpose: '장보기', chargeAccount: null }) });
+  assert.equal(missing.status, 400);
+  assert.match((await missing.json()).error, /비용 처리 계좌/);
+  assert.equal((await saveUsage({ env, request: postRequest(token, { purpose: '장보기', chargeAccount: 'bank-of-me' }) })).status, 400);
+  for (const id of ['personal', 'camp-team', 'student-ministry', 'wolko', 'resources-media']) {
+    const saved = await (await saveUsage({ env, request: postRequest(token, { purpose: '장보기', chargeAccount: id }) })).json();
+    assert.equal(saved.entry.chargeAccount, id);
+  }
+  const personal = await (await saveUsage({ env, request: postRequest(token, { useType: 'personal' }) })).json();
+  assert.equal(personal.entry.chargeAccount, undefined);
+  const listed = await (await listUsage({ env, request: new Request('https://example.com/api/car/usage', { headers: { Authorization: `Bearer ${token}` } }) })).json();
+  assert.deepEqual(listed.chargeAccounts.map(a => a.id), ['personal', 'camp-team', 'student-ministry', 'wolko', 'resources-media']);
 });
 
 test('trip distance is required, photos are optional, and the after photo is stored and served separately', async () => {

@@ -7,7 +7,7 @@
  *  DELETE /api/car/usage-draft[?photo=before|after] → 전체 또는 사진 한 장 삭제
  * 본인 것만 읽고 쓴다. 정식 저장(POST /api/car/usage)이 성공하면 usage.js 가 임시본을 지운다.
  */
-import { fail, selectableVehicles, usageSession } from '../../lib/carUsage.js';
+import { fail, isChargeAccount, selectableVehicles, usageSession } from '../../lib/carUsage.js';
 
 export const DRAFT_TTL_SECONDS = 30 * 24 * 60 * 60;
 export const DRAFT_PREFIX = 'car:usage:draft:';
@@ -35,6 +35,7 @@ const cleanFields = body => ({
   vehicleId: selectableVehicles().has(String(body?.vehicleId || '')) ? String(body.vehicleId) : '',
   useType: ['ministry', 'personal'].includes(body?.useType) ? body.useType : '',
   purpose: String(body?.purpose || '').replace(/\s+/g, ' ').trim().slice(0, 60),
+  chargeAccount: isChargeAccount(String(body?.chargeAccount || '')) ? String(body.chargeAccount) : '',
   splitNote: String(body?.splitNote || '').replace(/\s+/g, ' ').trim().slice(0, 120),
   tripDate: /^\d{4}-\d{2}-\d{2}$/.test(String(body?.tripDate || '')) ? String(body.tripDate) : '',
   tripKm: String(body?.tripKm ?? '').trim().slice(0, 12),

@@ -1,7 +1,7 @@
 import { fileKV } from '../../lib/nasFileKV.js';
 import { clearDraft } from './usage-draft.js';
 import { costRates, personalCost, recalcCost, cleanSplitNote, cleanSplitCount, cleanTripDate, todayKst, tripDateOf, withGapCharges } from '../../lib/carCost.js';
-import { AFTER_SUFFIX, ENTRY_PREFIX, PHOTO_PREFIX, TRASH_ENTRY_PREFIX, TRASH_PHOTO_PREFIX, fail, listEntries, usageSession, selectableVehicles } from '../../lib/carUsage.js';
+import { AFTER_SUFFIX, CHARGE_ACCOUNTS, ENTRY_PREFIX, PHOTO_PREFIX, TRASH_ENTRY_PREFIX, TRASH_PHOTO_PREFIX, fail, isChargeAccount, listEntries, usageSession, selectableVehicles } from '../../lib/carUsage.js';
 
 const MAX_PHOTO_BYTES = 4 * 1024 * 1024;
 
@@ -11,7 +11,7 @@ export async function onRequestGet({ env, request }) {
   const [entries, vehicles] = await Promise.all([listEntries(env), Promise.resolve(selectableVehicles())]);
   // 운행 거리를 비운 개인용 기록은 앞뒤 기록의 계기판 숫자로 빠진 거리와 금액을 계산해 붙인다
   const shown = await withGapCharges(env, entries, entries.slice(0, 100));
-  return Response.json({ user: session, vehicles: [...vehicles].map(([id, name]) => ({ id, name })), entries: shown }, {
+  return Response.json({ user: session, vehicles: [...vehicles].map(([id, name]) => ({ id, name })), chargeAccounts: CHARGE_ACCOUNTS, entries: shown }, {
     headers: { 'Cache-Control': 'no-store' },
   });
 }
@@ -74,9 +74,11 @@ export async function onRequestPatch({ env, request }) {
     const labels = selectableVehicles();
     const vehicleId = body.vehicleId ? String(body.vehicleId) : '';
     const useType = body.useType ? String(body.useType) : '';
+    const chargeAccount = body.chargeAccount ? String(body.chargeAccount) : '';
     if (vehicleId && !labels.has(vehicleId)) return fail('차량을 확인해 주세요.');
     if (useType && !['ministry', 'personal'].includes(useType)) return fail('사역용 또는 개인용을 선택해 주세요.');
-    if (!vehicleId && !useType) return fail('바꿀 내용을 골라 주세요.');
+    if (chargeAccount && !isChargeAccount(chargeAccount)) return fail('비용 처리 계좌를 확인해 주세요.');
+    if (!vehicleId && !useType && !chargeAccount) return fail('바꿀 내용을 골라 주세요.');
     const updated = [];
     for (const id of ids) {
       const entry = await fileKV(env).get(`${ENTRY_PREFIX}${id}`, 'json');
@@ -84,6 +86,9 @@ export async function onRequestPatch({ env, request }) {
       if (vehicleId) { entry.vehicleId = vehicleId; entry.vehicleName = labels.get(vehicleId); }
       if (useType) entry.useType = useType;
       // 개인용으로 바꾸면 그 운행 날짜 기준값으로 비용을 새로 계산하고, 사역용으로 바꾸면 비용을 지운다
+      // 비용 처리 계좌는 사역용 기록에만 둔다
+      if (entry.useType === 'ministry' && chargeAccount) entry.chargeAccount = chargeAccount;
+      if (entry.useType === 'personal') delete entry.chargeAccount;
       if (entry.useType !== 'personal') { delete entry.cost; delete entry.splitNote; delete entry.tripDate; }
       else if (entry.cost) entry.cost = recalcCost(entry);
       else if (entry.tripKm != null) {
@@ -134,6 +139,9 @@ export async function onRequestPost({ env, request }) {
   if (!labels.has(vehicleId)) return fail('차량을 선택해 주세요.');
   if (!['ministry', 'personal'].includes(useType)) return fail('사역용 또는 개인용을 선택해 주세요.');
   const purpose = useType === 'ministry' ? String(form.get('purpose') || '').replace(/\s+/g, ' ').trim().slice(0, 60) : '';
+  // 사역용: 비용을 어느 계좌로 처리할지 꼭 고른다
+  const chargeAccount = useType === 'ministry' ? String(form.get('chargeAccount') || '') : '';
+  if (useType === 'ministry' && !isChargeAccount(chargeAccount)) return fail('비용 처리 계좌를 골라 주세요.');
   // 개인용: 함께 나눠 낼 사람 메모와 나눌 인원(본인 포함 — 화면이 메모에서 짐작하고 사용자가 고칠 수 있다)
   const splitNote = useType === 'personal' ? cleanSplitNote(form.get('splitNote')) : '';
   const splitCount = splitNote ? cleanSplitCount(form.get('splitCount')) : 1;
@@ -170,7 +178,7 @@ export async function onRequestPost({ env, request }) {
   const cost = rates && tripKm !== null ? personalCost(rates, vehicleId, tripKm, splitCount) : null;
   const id = crypto.randomUUID();
   const entry = {
-    id, vehicleId, vehicleName: labels.get(vehicleId), useType, ...(purpose ? { purpose } : {}), ...(tripDate ? { tripDate } : {}), ...(splitNote ? { splitNote, splitCount } : {}), ...(tripKm !== null ? { tripKm } : {}), ...(cost ? { cost } : {}),
+    id, vehicleId, vehicleName: labels.get(vehicleId), useType, ...(purpose ? { purpose } : {}), ...(chargeAccount ? { chargeAccount } : {}), ...(tripDate ? { tripDate } : {}), ...(splitNote ? { splitNote, splitCount } : {}), ...(tripKm !== null ? { tripKm } : {}), ...(cost ? { cost } : {}),
     ...(odometerBefore !== null ? { odometerBefore } : {}), ...(odometerAfter !== null ? { odometerAfter, mileageAfter: odometerAfter } : {}),
     hasPhoto: !before.none, hasPhotoAfter: !afterPhoto.none,
     photoTakenAt: isRecentExif ? candidate.toISOString() : recordedAt,
