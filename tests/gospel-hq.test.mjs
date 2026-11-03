@@ -241,14 +241,13 @@ test('MRIC 창: 연·월을 누르면 연·월 선택기(일 없음)가 열리�
   assert.match(css, /\.gs-mricmonth \.gs-mricmonthbtn \{[^}]*width: auto !important/);
 });
 
-test('camp auto-count, church events and team report history are folded closed by default', async () => {
+test('camp auto-count, church events and team report history open unfolded, and can still be folded', async () => {
   const { readFileSync } = await import('node:fs');
   const page = readFileSync(new URL('../src/pages/portal/gospel-stats/index.astro', import.meta.url), 'utf8');
   for (const id of ['campAuto', 'churchStats', 'teamBox']) {
-    const fold = new RegExp(`<section class="log-panel gs-fold"[^>]*>\\s*<details>[\\s\\S]*?id="${id}"`);
-    assert.match(page, fold, `${id} sits inside a closed <details> fold`);
+    const fold = new RegExp(`<section class="log-panel gs-fold"[^>]*>\\s*<details open>[\\s\\S]*?id="${id}"`);
+    assert.match(page, fold, `${id} sits inside a <details> fold that starts open`);
   }
-  assert.doesNotMatch(page, /<details[^>]*\sopen[\s>]/, 'no fold starts open');
   assert.match(page, /<section class="log-panel gs-fold" id="teamWrap" hidden>/, 'team report fold keeps its hidden-for-non-reporters switch');
 });
 
