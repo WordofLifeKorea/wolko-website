@@ -35,7 +35,7 @@
       costTitle: '개인 사용 비용', costNeedKm: '총 운행 거리를 넣으면 계산돼요.', costNeedVehicle: '차량을 고르면 계산돼요.', costLoading: '경유 가격과 환율을 불러오는 중…', costFail: '경유 가격을 불러오지 못했어요. 저장하면 서버에서 계산해요.',
       costCalc: c => `기름값 ${c.km} km ÷ ${c.kmPerLiter} km/L × ₩${c.diesel} = ₩${c.fuel}\n정비비 ${c.km} km × ₩${c.maint1} = ₩${c.maint}`,
       costSplit: c => `${c.n}명이 나눠 내면 (본인 포함) 1인당 <strong>₩${c.krw}</strong>${c.usd ? ` · ${c.usd}` : ''}`,
-      costBasis: c => `기준: 전국 평균 경유 ₩${c.diesel}/L (${c.dieselDate}${c.fallback ? ' 기본값' : c.near ? ' — 그날 값이 없어 가장 가까운 날 값' : ''})${c.fx ? `\n환율 $1 = ₩${c.fx} (${c.fxDate})` : ''}`,
+      costBasis: c => `기준: 전국 평균 경유 ₩${c.diesel}/L (${c.dieselDate}${c.fallback ? ' 기본값' : c.near ? ' — 그날 값이 없어 가장 가까운 날 값' : ''})${c.fx ? `\n환율 $1 = ₩${c.fx} (${c.fxDate})` : ''}\n금액은 10원 자리에서 반올림해요.`,
       costLine: c => `개인 사용 비용 ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''}${c.day ? ` (${c.day} 기준)` : ''}`, costLineSplit: c => `${c.n}명 나눠 1인당 ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''}`, splitWith: '함께',
     },
     en: {
@@ -69,7 +69,7 @@
       costTitle: 'Personal use cost', costNeedKm: 'Enter the total distance to calculate it.', costNeedVehicle: 'Select a vehicle to calculate it.', costLoading: 'Loading the diesel price and exchange rate…', costFail: 'Could not load the diesel price. The server will calculate it when you save.',
       costCalc: c => `Fuel ${c.km} km ÷ ${c.kmPerLiter} km/L × ₩${c.diesel} = ₩${c.fuel}\nMaintenance ${c.km} km × ₩${c.maint1} = ₩${c.maint}`,
       costSplit: c => `Split ${c.n} ways (including you): <strong>₩${c.krw}</strong>${c.usd ? ` · ${c.usd}` : ''} each`,
-      costBasis: c => `Based on the national average diesel price ₩${c.diesel}/L (${c.dieselDate}${c.fallback ? ', default' : c.near ? ' — nearest day with data' : ''})${c.fx ? `\nExchange rate $1 = ₩${c.fx} (${c.fxDate})` : ''}`,
+      costBasis: c => `Based on the national average diesel price ₩${c.diesel}/L (${c.dieselDate}${c.fallback ? ', default' : c.near ? ' — nearest day with data' : ''})${c.fx ? `\nExchange rate $1 = ₩${c.fx} (${c.fxDate})` : ''}\nAmounts are rounded to the nearest ₩100.`,
       costLine: c => `Personal use cost ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''}${c.day ? ` (as of ${c.day})` : ''}`, costLineSplit: c => `Split ${c.n} ways: ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''} each`, splitWith: 'With',
     },
   };
@@ -274,12 +274,15 @@
     const kmPerLiter = costRates.kmPerLiter?.[vehicleId] ?? costRates.defaultKmPerLiter ?? 11;
     const fuel = Math.round(km / kmPerLiter * costRates.dieselKrw);
     const maint = Math.round(km * costRates.maintenancePerKm);
-    const total = fuel + maint;
+    // 합계 · 1인당은 10원 자리에서 반올림(100원 단위) — 서버(carCost.js)와 같은 식
+    const round100 = v => Math.round(v / 100) * 100;
+    const exact = fuel + maint;
+    const total = round100(exact);
     const kmText = km.toLocaleString(lang === 'en' ? 'en-US' : 'ko-KR', { maximumFractionDigits: 1 });
     set('₩' + won(total), usdText(total, costRates.usdKrw), t('costCalc', { km: kmText, kmPerLiter, diesel: won(costRates.dieselKrw), fuel: won(fuel), maint1: won(costRates.maintenancePerKm), maint: won(maint) }));
     if ($('splitNote').value.trim()) {
       const n = splitPeople();
-      const each = Math.round(total / n);
+      const each = round100(exact / n);
       $('costSplitText').innerHTML = t('costSplit', { n, krw: won(each), usd: usdText(each, costRates.usdKrw) });
       $('costSplit').hidden = false;
       $('splitMinus').disabled = n <= 2; $('splitPlus').disabled = n >= 30;

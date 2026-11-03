@@ -39,8 +39,11 @@ test('personal cost = fuel (km ÷ km/L × diesel) + 20 won per km, split evenly'
   assert.equal(c.kmPerLiter, 11);
   assert.equal(c.fuelKrw, Math.round(42 / 11 * 1842));
   assert.equal(c.maintKrw, 840);
-  assert.equal(c.totalKrw, c.fuelKrw + 840);
-  assert.equal(c.perPersonKrw, Math.round(c.totalKrw / 3));
+  // 42 km: 기름값 7,033 + 정비비 840 = 7,873 → 10원 자리 반올림 7,900, 3명이면 2,624.3 → 2,600
+  assert.equal(c.fuelKrw, 7033);
+  assert.equal(c.totalKrw, 7900);
+  assert.equal(c.perPersonKrw, 2600);
+  assert.equal(personalCost({ dieselKrw: 1842 }, 'silver-van', 10).totalKrw, 1900);   // 1,675 + 200 = 1,875 → 1,900
   assert.equal(c.totalUsd, Math.round(c.totalKrw / 1400 * 100) / 100);
   assert.equal(personalCost({ dieselKrw: 1842, usdKrw: null }, 'santa-fe', 10).totalUsd, null);
 });
@@ -83,11 +86,11 @@ test('a personal log saves the split memo and the cost; editing the distance rec
   assert.equal(entry.tripDate, daysAgo(1));
   assert.equal(entry.cost.splitCount, 3);
   assert.equal(entry.cost.dieselKrw, 1850.5);
-  assert.equal(entry.cost.totalKrw, Math.round(42 / 11 * 1850.5) + 840);
+  assert.equal(entry.cost.totalKrw, Math.round((Math.round(42 / 11 * 1850.5) + 840) / 100) * 100);
 
   const patched = await patchUsage({ env, request: new Request('https://example.com/api/car/usage', { method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ id: entry.id, tripKm: 84 }) }) });
   const after = (await patched.json()).entry;
-  assert.equal(after.cost.totalKrw, Math.round(84 / 11 * 1850.5) + 1680);
+  assert.equal(after.cost.totalKrw, Math.round((Math.round(84 / 11 * 1850.5) + 1680) / 100) * 100);
   assert.equal(after.cost.splitCount, 3);
 
   // 사역용 기록에는 비용 · 메모를 남기지 않는다
