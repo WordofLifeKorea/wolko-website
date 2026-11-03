@@ -22,6 +22,8 @@
   <link rel="stylesheet" href="/wolko-layout.css?v=17">
   <link rel="stylesheet" href="/wolko-site.css?v=11">
   <script src="/wolko-rail.js?v=49" defer></script>
+  <link rel="stylesheet" href="/wolko-customize.css?v=1">
+  <script src="/wolko-customize.js?v=1" defer></script>
   <script src="/car-log.js?v=32" defer></script>
   <meta name="theme-color" content="#004f68">
 </head>
@@ -73,8 +75,8 @@
       <p class="log-error" id="loginError" role="alert"></p>
     </section>
 
-    <div id="logApp" hidden>
-      <section class="log-panel">
+    <div id="logApp" hidden data-wl-cards>
+      <section class="log-panel" data-wl-card="record">
         <div class="log-panel-head"><span class="log-step">01</span><h2 data-t="recordTitle">운행 전 기록</h2></div>
         <p class="log-user"><span data-t="recorder">기록자</span> <strong id="currentUser"></strong></p>
         <p class="log-draft" id="draftNote" hidden><span id="draftText"></span><button id="draftClear" type="button" data-t="draftClear">임시 저장 지우기</button></p>
@@ -160,7 +162,7 @@
         <p class="log-error" id="formError" role="alert"></p>
       </section>
 
-      <section class="log-panel log-history">
+      <section class="log-panel log-history" data-wl-card="history">
         <div class="log-panel-head"><span class="log-step">02</span><h2 data-t="historyTitle">최근 사용 내역</h2><button id="manageBtn" class="log-manage" type="button" hidden data-t="manage">관리</button></div>
         <p class="log-help" data-t="historyHelp">기록은 로그인 계정과 함께 저장됩니다. 사진은 포탈 사용자만 볼 수 있습니다.</p>
         <div id="manageBar" class="log-manage-bar" hidden>
