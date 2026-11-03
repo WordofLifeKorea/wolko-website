@@ -18,6 +18,26 @@
 /* 꾸미는 중: 카드 테두리를 보여 주고, 패널에서 가리킨 카드는 진하게 */
 .wl-cz-editing [data-wl-cards] > .wl-cz-focus { outline: 3px solid #008e92 !important; outline-offset: 4px; }
 
+/* 페이지에서 끌기: 꾸미는 중에는 카드에 점선 테두리, 끄는 카드는 떠오르고, 손잡이는 화면 위 층(wl-cz-layer)에 그린다 */
+.wl-cz-editing [data-wl-cards] > .wl-cz-card { outline: 2px dashed #9cc7d4; outline-offset: 3px; }
+@media (pointer: fine) { .wl-cz-editing [data-wl-cards] > .wl-cz-card { cursor: grab; } }
+.wl-cz-dragging, .wl-cz-dragging * { cursor: grabbing !important; user-select: none !important; -webkit-user-select: none !important; }
+.wl-cz-dragging [data-wl-cards] > .wl-cz-moving { position: relative; z-index: 790; opacity: .94; box-shadow: 0 18px 44px -12px rgba(0, 40, 55, .45); outline: 3px solid #008e92 !important; transition: none !important; }
+.wl-cz-dragging [data-wl-cards] > .wl-cz-sizing { outline: 3px solid #008e92 !important; }
+.wl-cz-dragging .wl-cz-panel { opacity: .25; pointer-events: none; transition: opacity .15s; }
+.wl-cz-layer { position: fixed; inset: 0; z-index: 795; pointer-events: none; }
+.wl-cz-grip, .wl-cz-rs { position: absolute; left: 0; top: 0; pointer-events: auto; touch-action: none; -webkit-user-select: none; user-select: none; }
+.wl-cz-grip { display: grid; place-items: center; width: 48px; height: 28px; border: 1px solid #b9d6df; border-radius: 8px; background: #fff; color: #00747a; box-shadow: 0 4px 12px -6px rgba(0, 40, 55, .4); cursor: grab; }
+.wl-cz-grip svg { transform: rotate(90deg); }
+.wl-cz-grip:hover, .wl-cz-grip.is-drag { background: #008e92; border-color: #008e92; color: #fff; }
+.wl-cz-rs { width: 14px; height: 48px; border: 1px solid #b9d6df; border-radius: 7px; background: #fff; box-shadow: 0 4px 12px -6px rgba(0, 40, 55, .4); cursor: ew-resize; }
+.wl-cz-rs::before { content: ''; position: absolute; left: 4px; top: 14px; width: 4px; height: 18px; border-left: 2px solid #7fb5c2; border-right: 2px solid #7fb5c2; box-sizing: border-box; }
+.wl-cz-rs:hover, .wl-cz-rs.is-drag { background: #008e92; border-color: #008e92; }
+.wl-cz-rs:hover::before, .wl-cz-rs.is-drag::before { border-color: #fff; }
+.wl-cz-rs.is-drag[data-label]:not([data-label=""])::after { content: attr(data-label); position: absolute; right: 20px; top: 11px; padding: 3px 9px; border-radius: 6px; background: #004f68; color: #fff; font: 800 12px/1.4 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; white-space: nowrap; }
+@media (pointer: coarse) { .wl-cz-grip { width: 56px; height: 34px; } }
+@media (prefers-reduced-motion: reduce) { .wl-cz-editing [data-wl-cards] > * { transition: none !important; } }
+
 /* 꾸미기 단추 */
 .wl-cz-fab { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 800; display: grid; place-items: center; width: 46px; height: 46px; padding: 0; border: 1px solid #cfe0e6; border-radius: 50%; background: #fff; color: #004f68; box-shadow: 0 8px 22px -8px rgba(0, 40, 55, .35); cursor: pointer; }
 .wl-cz-fab:hover { background: #eef7f8; }
@@ -31,7 +51,8 @@
 .wl-cz-head strong { color: #004f68; font-size: 15px; font-weight: 800; }
 .wl-cz-x { width: 32px; height: 32px; padding: 0; border: 0; border-radius: 8px; background: none; color: #617b86; font-size: 20px; line-height: 1; cursor: pointer; }
 .wl-cz-x:hover { background: #eef5f7; }
-.wl-cz-where { margin: 0; padding: 0 16px 10px; color: #617b86; font-size: 12px; word-break: keep-all; }
+.wl-cz-hint { margin: 0; padding: 0 16px 10px; color: #00747a; font-size: 12px; font-weight: 700; word-break: keep-all; }
+.wl-cz-where { margin: 0; padding: 0 16px 6px; color: #617b86; font-size: 12px; word-break: keep-all; }
 .wl-cz-list { flex: 1 1 auto; margin: 0; padding: 0 10px; overflow-y: auto; list-style: none; }
 .wl-cz-group { height: 1px; margin: 6px 6px; background: #d8e6eb; }
 .wl-cz-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 8px; padding: 8px 6px; border-top: 1px solid #eef3f5; }
@@ -55,8 +76,8 @@
 .wl-cz-done { border: 0; background: #004f68; color: #fff; }
 .wl-cz-done:hover { background: #006582; }
 @media (max-width: 639px) {
-  .wl-cz-panel { right: 0; left: 0; bottom: 0; width: auto; max-height: 62vh; border-radius: 14px 14px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .wl-cz-panel { right: 0; left: 0; bottom: 0; width: auto; max-height: 48vh; border-radius: 14px 14px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
   .wl-cz-fab[aria-expanded="true"] { display: none; }
   .wl-cz-btns button { min-width: 38px; height: 36px; }
 }
-@media print { .wl-cz-fab, .wl-cz-panel { display: none !important; } }
+@media print { .wl-cz-fab, .wl-cz-panel, .wl-cz-layer { display: none !important; } }

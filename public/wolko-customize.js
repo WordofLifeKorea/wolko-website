@@ -21,12 +21,16 @@
       where: function (s, w) { return '지금 화면: ' + s + ' (' + w + 'px) · 이 기기에만 저장돼요. 다른 화면 크기는 그 크기로 열어서 따로 꾸며요.'; },
       phone: '휴대폰', tablet: '태블릿', desktop: '컴퓨터', up: '앞으로', down: '뒤로', show: '보이기', hide: '숨기기', hiddenTag: '숨김',
       wAuto: '기본', wFull: '전체', wHalf: '반', wThird: '1/3', width: '너비', card: '카드', needOne: '보이는 카드가 하나는 있어야 해요.', noSave: '이 브라우저에서는 저장할 수 없어서, 페이지를 다시 열면 원래 모양으로 돌아가요.',
-      saved: '저장했어요.', resetDone: '처음 모양으로 돌렸어요.', copied: '가져왔어요.', phoneWidth: '휴대폰 화면에서는 카드가 한 줄에 하나씩 나와요. 순서와 보이기만 정할 수 있어요.' },
+      saved: '저장했어요.', resetDone: '처음 모양으로 돌렸어요.', copied: '가져왔어요.', phoneWidth: '휴대폰 화면에서는 카드가 한 줄에 하나씩 나와요. 순서와 보이기만 정할 수 있어요.',
+      dragHint: '페이지에서 카드를 끌어 자리를 바꾸고, 카드 오른쪽 가장자리의 손잡이를 끌어 너비를 바꿀 수 있어요.', dragHintPhone: '카드 위쪽 손잡이를 끌어 자리를 바꿀 수 있어요.',
+      dragMove: '끌어서 자리 옮기기', dragWidth: '끌어서 너비 바꾸기' },
     en: { open: 'Customize this page', title: 'Customize this page', close: 'Close', done: 'Done', reset: 'Reset this screen', copyFrom: function (s) { return 'Use the ' + s + ' layout'; },
       where: function (s, w) { return 'This screen: ' + s + ' (' + w + 'px) · saved on this device only. Open the page at another size to set that layout separately.'; },
       phone: 'phone', tablet: 'tablet', desktop: 'computer', up: 'Move earlier', down: 'Move later', show: 'Show', hide: 'Hide', hiddenTag: 'Hidden',
       wAuto: 'Default', wFull: 'Full', wHalf: 'Half', wThird: '1/3', width: 'Width', card: 'Card', needOne: 'At least one card must stay visible.', noSave: 'This browser cannot save, so the page will go back to its original layout when reopened.',
-      saved: 'Saved.', resetDone: 'Back to the original layout.', copied: 'Copied.', phoneWidth: 'On a phone, cards are shown one per row. You can set the order and which cards show.' },
+      saved: 'Saved.', resetDone: 'Back to the original layout.', copied: 'Copied.', phoneWidth: 'On a phone, cards are shown one per row. You can set the order and which cards show.',
+      dragHint: 'Drag a card on the page to move it, and drag the handle on its right edge to change its width.', dragHintPhone: 'Drag the handle at the top of a card to move it.',
+      dragMove: 'Drag to move', dragWidth: 'Drag to change width' },
   };
   var lang = function () { return /^en/i.test(document.documentElement.lang || '') ? 'en' : 'ko'; };
   var t = function (k, a, b) { var v = T[lang()][k]; return typeof v === 'function' ? v(a, b) : v; };
@@ -85,33 +89,37 @@
     [].forEach.call(box.children, function (el) { el.style.order = ''; });
     list.forEach(function (c) { c.el.style.gridColumn = ''; c.el.style.gridRow = ''; c.el.classList.remove('wl-cz-off', 'wl-cz-narrow'); });
   }
+  /** 묶음 하나에 설정(st)을 입힌다 — 저장된 설정이든, 끄는 동안의 임시 설정이든 같은 길로 그린다 */
+  function layout(box, bi, st, screen) {
+    var list = cardsOf(box);
+    // 원래 격자인 묶음인지: 내가 바꾼 격자(wl-cz-flow)가 아니면서 지금 격자로 그려지는지 본다
+    var native = !box.classList.contains('wl-cz-flow') && /grid/.test(getComputedStyle(box).display);
+    if (native) measure(box, bi, list);
+    if (!st || !list.length) { clear(box, list); return; }
+    box.classList.add('wl-cz-on'); box.classList.toggle('wl-cz-flow', !native);
+    var kids = [].slice.call(box.children), byKey = {}, slots = [];
+    kids.forEach(function (el, i) { el.style.order = String(i * 10); });
+    list.forEach(function (c) { byKey[c.key] = c; slots.push(kids.indexOf(c.el)); });
+    var order = (st.order || []).filter(function (k) { return byKey[k]; });
+    list.forEach(function (c) { if (order.indexOf(c.key) < 0) order.push(c.key); });
+    var hidden = st.hidden || [], width = st.width || {}, n = native ? cols(box) : 6;
+    order.forEach(function (k, i) {
+      var c = byKey[k], w = screen === 'phone' ? 'auto' : (width[k] || 'auto');
+      c.el.style.order = String(slots[i] * 10);
+      c.el.classList.toggle('wl-cz-off', hidden.indexOf(k) >= 0);
+      var span = w === 'full' ? n : w === 'half' ? Math.max(1, Math.round(n / 2)) : w === 'third' ? Math.max(1, Math.round(n / 3)) : (native ? (natural[boxId(box, bi) + '|' + k] || n) : n);
+      c.el.style.gridColumn = span >= n ? '1 / -1' : 'span ' + span;
+      if (native) c.el.style.gridRow = 'auto';
+      c.el.classList.toggle('wl-cz-narrow', span < n && (w === 'half' || w === 'third'));
+    });
+  }
   function apply() {
-    if (applying) return; applying = true;
+    if (applying || drag) return; applying = true;
     var screen = screenOf(), saved = load(screen) || {};
     boxes().forEach(function (box, bi) {
-      var list = cardsOf(box), st = (saved.boxes || {})[boxId(box, bi)];
       box.__wlCzShown = shown(box);
       if (!box.__wlCzShown) return;   // 아직 안 보이는 묶음(로그인 전 · 카드를 그리기 전)은 보일 때 입힌다
-      // 원래 격자인 묶음인지: 내가 바꾼 격자(wl-cz-flow)가 아니면서 지금 격자로 그려지는지 본다
-      var native = !box.classList.contains('wl-cz-flow') && /grid/.test(getComputedStyle(box).display);
-      if (native) measure(box, bi, list);
-      if (!st || !list.length) { clear(box, list); return; }
-      box.classList.add('wl-cz-on'); box.classList.toggle('wl-cz-flow', !native);
-      var kids = [].slice.call(box.children), byKey = {}, slots = [];
-      kids.forEach(function (el, i) { el.style.order = String(i * 10); });
-      list.forEach(function (c) { byKey[c.key] = c; slots.push(kids.indexOf(c.el)); });
-      var order = (st.order || []).filter(function (k) { return byKey[k]; });
-      list.forEach(function (c) { if (order.indexOf(c.key) < 0) order.push(c.key); });
-      var hidden = st.hidden || [], width = st.width || {}, n = native ? cols(box) : 6;
-      order.forEach(function (k, i) {
-        var c = byKey[k], w = screen === 'phone' ? 'auto' : (width[k] || 'auto');
-        c.el.style.order = String(slots[i] * 10);
-        c.el.classList.toggle('wl-cz-off', hidden.indexOf(k) >= 0);
-        var span = w === 'full' ? n : w === 'half' ? Math.max(1, Math.round(n / 2)) : w === 'third' ? Math.max(1, Math.round(n / 3)) : (native ? (natural[boxId(box, bi) + '|' + k] || n) : n);
-        c.el.style.gridColumn = span >= n ? '1 / -1' : 'span ' + span;
-        if (native) c.el.style.gridRow = 'auto';
-        c.el.classList.toggle('wl-cz-narrow', span < n && (w === 'half' || w === 'third'));
-      });
+      layout(box, bi, (saved.boxes || {})[boxId(box, bi)], screen);
     });
     applying = false;
     syncFab();
@@ -143,13 +151,19 @@
     fab.title = t('open'); fab.setAttribute('aria-label', t('open'));
   }
   function state(screen) { var v = load(screen) || {}; v.boxes = v.boxes || {}; return v; }
-  function edit(bi, fn) {
-    var screen = screenOf(), v = state(screen), box = boxes()[bi], id = boxId(box, bi), list = cardsOf(box);
-    var st = v.boxes[id] || { order: list.map(function (c) { return c.key; }), hidden: [], width: {} };
+  /** 묶음 하나의 설정 — 저장된 것이 없으면 지금 모양 그대로(원래 순서 · 모두 보이기 · 기본 너비) */
+  function boxState(v, bi) {
+    var box = boxes()[bi], list = cardsOf(box), st = v.boxes[boxId(box, bi)];
+    st = st ? JSON.parse(JSON.stringify(st)) : { order: list.map(function (c) { return c.key; }), hidden: [], width: {} };
+    st.order = st.order || []; st.hidden = st.hidden || []; st.width = st.width || {};
     list.forEach(function (c) { if (st.order.indexOf(c.key) < 0) st.order.push(c.key); });
     st.order = st.order.filter(function (k) { return list.some(function (c) { return c.key === k; }); });
+    return st;
+  }
+  function edit(bi, fn) {
+    var screen = screenOf(), v = state(screen), box = boxes()[bi], list = cardsOf(box), st = boxState(v, bi);
     if (fn(st, list) === false) return;
-    v.boxes[id] = st; save(screen, v); note = canSave ? t('saved') : t('noSave'); apply(); paint();
+    v.boxes[boxId(box, bi)] = st; save(screen, v); note = canSave ? t('saved') : t('noSave'); apply(); paint();
   }
   function paint() {
     if (!panel) return;
@@ -179,6 +193,7 @@
     var others = SCREENS.filter(function (s) { return s.id !== screen && load(s.id); }).map(function (s) { return '<button type="button" class="wl-cz-ghost" data-copy="' + s.id + '">' + esc(t('copyFrom', t(s.id))) + '</button>'; }).join('');
     panel.innerHTML = '<div class="wl-cz-head"><strong>' + esc(t('title')) + '</strong><button type="button" class="wl-cz-x" data-close aria-label="' + esc(t('close')) + '">×</button></div>' +
       '<p class="wl-cz-where">' + esc(t('where', t(screen), window.innerWidth)) + (screen === 'phone' ? '<br>' + esc(t('phoneWidth')) : '') + '</p>' +
+      '<p class="wl-cz-hint">' + esc(t(screen === 'phone' ? 'dragHintPhone' : 'dragHint')) + '</p>' +
       '<ol class="wl-cz-list">' + rows + '</ol>' +
       (note ? '<p class="wl-cz-note" role="status">' + esc(note) + '</p>' : '') +
       '<div class="wl-cz-foot">' + others + '<button type="button" class="wl-cz-ghost" data-reset' + (v ? '' : ' disabled') + '>' + esc(t('reset')) + '</button><button type="button" class="wl-cz-done" data-close>' + esc(t('done')) + '</button></div>';
@@ -197,7 +212,7 @@
     panel.className = 'wl-cz-panel'; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', t('title'));
     document.body.appendChild(panel);
     document.documentElement.classList.add('wl-cz-editing');
-    note = ''; paint();
+    note = ''; paint(); handlesOn();
     fab.setAttribute('aria-expanded', 'true');
     panel.addEventListener('click', onPanelClick);
     panel.addEventListener('mouseover', function (e) { var r = e.target.closest('.wl-cz-row'); focusCard(r ? +r.dataset.b : 0, r ? r.dataset.k : null, false); });
@@ -205,7 +220,7 @@
   }
   function closePanel() {
     if (!panel) return;
-    panel.remove(); panel = null; focusCard(0, null);
+    panel.remove(); panel = null; focusCard(0, null); handlesOff();
     document.documentElement.classList.remove('wl-cz-editing');
     fab.setAttribute('aria-expanded', 'false'); fab.focus(); syncFab();
   }
@@ -235,6 +250,165 @@
     });
     if (b.dataset.w) return edit(bi, function (st) { st.width = st.width || {}; if (b.dataset.w === 'auto') delete st.width[k]; else st.width[k] = b.dataset.w; });
   }
+
+  /* ── 페이지에서 바로 끌어서 옮기기 · 너비 바꾸기 (꾸미기 패널이 열려 있을 때만) ──
+     카드 안의 내용은 건드리지 않도록, 손잡이는 화면 위에 따로 띄운 층에 그리고 카드 자리를 따라다니게 한다.
+     컴퓨터: 카드 아무 데나(링크 · 단추 · 입력칸 빼고) 끌거나 위쪽 손잡이를 끈다. 휴대폰 · 태블릿 손가락: 위쪽 손잡이를 끈다(그래야 화면 스크롤과 안 섞인다).
+     끄는 동안 다른 카드가 스르륵 비켜서 놓일 자리를 미리 보여 주고, 손을 떼면 저장한다. */
+  var drag = null, layer = null, handleRaf = 0;
+  var SKIP = 'a, button, input, select, textarea, label, summary, [contenteditable], [role="button"], .wl-cz-panel, .wl-cz-fab';
+  var GRIP = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
+  var WIDTHS = [['third', 1 / 3], ['half', 1 / 2], ['full', 1]];
+  function cardAt(el) {
+    var all = boxes();
+    for (var bi = 0; bi < all.length; bi++) {
+      var hit = cardsOf(all[bi]).filter(function (c) { return c.el === el || c.el.contains(el); })[0];
+      if (hit) return { box: all[bi], bi: bi, card: hit };
+    }
+    return null;
+  }
+  var onPage = function (c) { return shown(c.el) && !c.el.classList.contains('wl-cz-off'); };
+  function handlesOn() {
+    if (!layer) { layer = document.createElement('div'); layer.className = 'wl-cz-layer'; document.body.appendChild(layer); }
+    var tick = function () { placeHandles(); handleRaf = requestAnimationFrame(tick); };
+    cancelAnimationFrame(handleRaf); tick();
+  }
+  function handlesOff() {
+    cancelAnimationFrame(handleRaf); handleRaf = 0;
+    if (layer) { layer.remove(); layer = null; }
+    document.querySelectorAll('.wl-cz-card').forEach(function (el) { el.classList.remove('wl-cz-card'); });
+  }
+  /** 보이는 카드마다 위쪽 가운데에 옮기기 손잡이, 오른쪽 가장자리에 너비 손잡이를 둔다(화면 좌표라 어떤 스크롤에서도 맞는다) */
+  function placeHandles() {
+    if (!layer) return;
+    var phone = screenOf() === 'phone', vh = window.innerHeight, seen = {};
+    boxes().forEach(function (box, bi) {
+      cardsOf(box).forEach(function (c) {
+        var id = bi + '|' + c.key, vis = onPage(c);
+        c.el.classList.toggle('wl-cz-card', vis);
+        if (!vis) return;
+        var r = c.el.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > vh || r.width < 40) return;
+        seen[id] = 1;
+        var g = layer.querySelector('[data-grip="' + CSS.escape(id) + '"]');
+        if (!g) {
+          g = document.createElement('span'); g.className = 'wl-cz-grip'; g.setAttribute('data-grip', id); g.setAttribute('aria-hidden', 'true'); g.innerHTML = GRIP; layer.appendChild(g);
+        }
+        g.title = t('dragMove');
+        g.style.transform = 'translate(' + Math.round(r.left + r.width / 2 - 24) + 'px,' + Math.round(Math.max(r.top + 6, Math.min(r.bottom - 34, 6))) + 'px)';
+        g.classList.toggle('is-drag', !!(drag && drag.el === c.el));
+        var rs = layer.querySelector('[data-rs="' + CSS.escape(id) + '"]');
+        if (phone) { if (rs) rs.remove(); return; }
+        if (!rs) { rs = document.createElement('span'); rs.className = 'wl-cz-rs'; rs.setAttribute('data-rs', id); rs.setAttribute('aria-hidden', 'true'); layer.appendChild(rs); }
+        rs.title = t('dragWidth');
+        var top = Math.max(r.top, 8), bottom = Math.min(r.bottom, vh - 8);
+        rs.style.transform = 'translate(' + Math.round(r.right - 7) + 'px,' + Math.round((top + bottom) / 2 - 24) + 'px)';
+        rs.classList.toggle('is-drag', !!(drag && drag.el === c.el && drag.mode === 'width'));
+        rs.setAttribute('data-label', drag && drag.el === c.el && drag.mode === 'width' ? drag.label : '');
+      });
+    });
+    [].forEach.call(layer.children, function (h) { if (!seen[h.getAttribute('data-grip') || h.getAttribute('data-rs')]) h.remove(); });
+  }
+  /** 다른 카드가 새 자리로 스르륵 움직이게(FLIP) 하면서 설정을 다시 입힌다 */
+  function relayout(box, bi, st, skip) {
+    var els = cardsOf(box).map(function (c) { return c.el; }).filter(function (el) { return el !== skip && shown(el); });
+    var before = els.map(function (el) { return el.getBoundingClientRect(); });
+    layout(box, bi, st, screenOf());
+    els.forEach(function (el, i) {
+      var a = before[i], b = el.getBoundingClientRect(), dx = a.left - b.left, dy = a.top - b.top;
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+      el.style.transition = 'none'; el.style.transform = 'translate(' + dx + 'px,' + dy + 'px)'; el.getBoundingClientRect();
+      el.style.transition = 'transform .2s ease'; el.style.transform = '';
+      setTimeout(function () { el.style.transition = ''; }, 220);
+    });
+  }
+  /** 보이는 카드들의 순서를 새로 정한다 — 숨긴 카드는 원래 자리를 지킨다 */
+  function setVisible(st, list, keys) {
+    var vis = {}; list.forEach(function (c) { if (onPage(c)) vis[c.key] = 1; });
+    var i = 0; st.order = st.order.map(function (k) { return vis[k] ? keys[i++] : k; });
+  }
+  function startDrag(e, hit, mode) {
+    var box = hit.box, bi = hit.bi, el = hit.card.el, key = hit.card.key, v = state(screenOf()), st = boxState(v, bi), list = cardsOf(box);
+    var before = JSON.stringify(st), r0 = el.getBoundingClientRect(), gx = e.clientX - r0.left, gy = e.clientY - r0.top;
+    var last = { x: e.clientX, y: e.clientY }, timer = 0;
+    drag = { el: el, mode: mode, label: '' };
+    document.documentElement.classList.add('wl-cz-dragging');
+    el.classList.add(mode === 'move' ? 'wl-cz-moving' : 'wl-cz-sizing');
+    layout(box, bi, st, screenOf());   // 아직 꾸민 적 없는 화면이면 여기서 꾸미기 모양으로 바뀐다
+    var visKeys = function () { return st.order.filter(function (k) { return list.some(function (c) { return c.key === k && onPage(c); }); }); };
+    var follow = function () {
+      el.style.transform = ''; var b = el.getBoundingClientRect();
+      el.style.transform = 'translate(' + (last.x - gx - b.left) + 'px,' + (last.y - gy - b.top) + 'px)';
+    };
+    var moveStep = function () {
+      var others = list.filter(function (c) { return c.el !== el && onPage(c); }).map(function (c) { return { key: c.key, r: c.el.getBoundingClientRect() }; });
+      if (!others.length) return follow();
+      var x = last.x, y = last.y, tgt = null;
+      others.forEach(function (o) { if (x >= o.r.left && x <= o.r.right && y >= o.r.top && y <= o.r.bottom) tgt = o; });
+      var ord = visKeys().filter(function (k) { return k !== key; }), at = -1;
+      if (tgt) {
+        var wide = tgt.r.width >= box.clientWidth * 0.9, first = wide ? y < tgt.r.top + tgt.r.height / 2 : x < tgt.r.left + tgt.r.width / 2;
+        at = ord.indexOf(tgt.key) + (first ? 0 : 1);
+      } else {
+        var top = Math.min.apply(null, others.map(function (o) { return o.r.top; })), bottom = Math.max.apply(null, others.map(function (o) { return o.r.bottom; }));
+        if (y > bottom) at = ord.length; else if (y < top) at = 0;
+      }
+      if (at >= 0) {
+        ord.splice(at, 0, key);
+        if (ord.join('\n') !== visKeys().join('\n')) { el.style.transform = ''; setVisible(st, list, ord); relayout(box, bi, st, el); }
+      }
+      follow();
+    };
+    var widthStep = function () {
+      var b = el.getBoundingClientRect(), frac = (last.x - b.left) / Math.max(1, box.clientWidth), best = WIDTHS[0];
+      WIDTHS.forEach(function (w) { if (Math.abs(w[1] - frac) < Math.abs(best[1] - frac)) best = w; });
+      drag.label = t(best[0] === 'third' ? 'wThird' : best[0] === 'half' ? 'wHalf' : 'wFull');
+      if ((st.width[key] || 'auto') !== best[0]) { st.width[key] = best[0]; relayout(box, bi, st, null); }
+    };
+    var step = function () { if (mode === 'move') moveStep(); else widthStep(); };
+    var onMove = function (ev) { last = { x: ev.clientX, y: ev.clientY }; ev.preventDefault(); step(); };
+    var loop = function () {   // 화면 위 · 아래 가장자리 근처면 저절로 스크롤 (가까울수록 빠르게)
+      var vh = window.innerHeight, edge = Math.min(100, vh * 0.18), sp = 0;
+      if (last.y < edge) sp = -Math.ceil((edge - Math.max(0, last.y)) / edge * 14) - 2; else if (last.y > vh - edge) sp = Math.ceil((Math.min(vh, last.y) - (vh - edge)) / edge * 14) + 2;
+      if (sp && mode === 'move') { window.scrollBy(0, sp); step(); }
+    };
+    var end = function (commit) {
+      clearInterval(timer);
+      document.removeEventListener('pointermove', onMove); document.removeEventListener('pointerup', up); document.removeEventListener('pointercancel', cancel);
+      el.style.transform = ''; el.classList.remove('wl-cz-moving', 'wl-cz-sizing');
+      document.documentElement.classList.remove('wl-cz-dragging');
+      drag = null;
+      eatClick = true; setTimeout(function () { eatClick = false; }, 80);   // 손을 뗄 때 생기는 누르기는 무시한다
+      if (commit && JSON.stringify(st) !== before) {
+        v.boxes[boxId(box, bi)] = st; save(screenOf(), v); note = canSave ? t('saved') : t('noSave');
+      }
+      apply(); paint();
+    };
+    var up = function () { end(true); }, cancel = function () { end(false); };
+    document.addEventListener('pointermove', onMove, { passive: false }); document.addEventListener('pointerup', up); document.addEventListener('pointercancel', cancel);
+    timer = setInterval(loop, 16);
+    step();
+  }
+  function gripHit(target) {
+    var h = target.closest && target.closest('.wl-cz-grip, .wl-cz-rs'); if (!h) return null;
+    var id = h.getAttribute('data-grip') || h.getAttribute('data-rs'), cut = id.indexOf('|'), bi = +id.slice(0, cut), k = id.slice(cut + 1), box = boxes()[bi];
+    var card = box && cardsOf(box).filter(function (c) { return c.key === k; })[0];
+    return card ? { box: box, bi: bi, card: card, mode: h.classList.contains('wl-cz-rs') ? 'width' : 'move' } : null;
+  }
+  var eatClick = false;
+  document.addEventListener('click', function (e) { if (eatClick) { eatClick = false; e.preventDefault(); e.stopPropagation(); } }, true);
+  document.addEventListener('pointerdown', function (e) {
+    if (!panel || drag || e.button > 0) return;
+    var g = gripHit(e.target);
+    if (g) { e.preventDefault(); e.stopPropagation(); return startDrag(e, g, g.mode); }
+    if (e.pointerType !== 'mouse' || e.target.closest(SKIP)) return;
+    var hit = cardAt(e.target); if (!hit || !onPage(hit.card)) return;
+    // 마우스: 조금 움직였을 때만 끌기로 본다 — 그냥 누르면 원래 하던 일(펼치기 등)을 그대로 한다
+    var x0 = e.clientX, y0 = e.clientY;
+    var mv = function (ev) { if (Math.abs(ev.clientX - x0) + Math.abs(ev.clientY - y0) < 6) return; stop(); startDrag({ clientX: x0, clientY: y0 }, hit, 'move'); };
+    var stop = function () { document.removeEventListener('pointermove', mv); document.removeEventListener('pointerup', stop); };
+    document.addEventListener('pointermove', mv); document.addEventListener('pointerup', stop);
+  }, true);
 
   function start() {
     if (!boxes().length) return;
