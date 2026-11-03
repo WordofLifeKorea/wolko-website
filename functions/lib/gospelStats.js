@@ -178,13 +178,33 @@ async function migrateAnonymous(env, key, report) {
   return clean;
 }
 
+/** 보고 한 건의 교회 행사 기록 합계 */
+export function churchTotals(entries) {
+  const sum = { students: 0, salvations: 0, dedications: 0 };
+  for (const e of entries || []) for (const key of Object.keys(sum)) sum[key] += Number(e?.[key]) || 0;
+  return sum;
+}
+
+/** 교회 행사 기록(참석·구원·헌신)은 전도 행사 칸(eeAttendance · eeSalvations · eeDedications)에 더해 센다.
+ *  전도 행사 정의에 "지역 교회 사역"이 들어 있어 본부(MRIC) 보고의 Evangelistic Events 에도 같이 잡힌다.
+ *  예전 화면의 "월코 행사 칸에 합계 넣기" 버튼은 교회 합계를 이 세 칸에 그대로 덮어썼다 —
+ *  세 칸이 교회 합계와 정확히 같으면 이미 넣은 것으로 보고 한 번 더 더하지 않는다. */
+function eventValuesWithChurch(report) {
+  const v = report.values || {}, c = churchTotals(report.churchEntries);
+  if (!c.students && !c.salvations && !c.dedications) return {};
+  const ee = { eeAttendance: Number(v.eeAttendance) || 0, eeSalvations: Number(v.eeSalvations) || 0, eeDedications: Number(v.eeDedications) || 0 };
+  if (ee.eeAttendance === c.students && ee.eeSalvations === c.salvations && ee.eeDedications === c.dedications) return {};
+  return { eeAttendance: ee.eeAttendance + c.students, eeSalvations: ee.eeSalvations + c.salvations, eeDedications: ee.eeDedications + c.dedications };
+}
+
 /** 보고 목록 → { all, mainland, jeju } 합계 + 건수 */
 export function summarize(reports) {
   const out = { all: emptyTotals(), mainland: emptyTotals(), jeju: emptyTotals(), counts: { all: 0, mainland: 0, jeju: 0, individual: 0, team: 0, ministry: 0 } };
   for (const report of reports) {
     const place = report.location === 'jeju' ? 'jeju' : 'mainland';
+    const withChurch = eventValuesWithChurch(report);
     for (const id of GOSPEL_FIELD_IDS) {
-      const n = Number(report.values?.[id]) || 0;
+      const n = id in withChurch ? withChurch[id] : Number(report.values?.[id]) || 0;
       out.all[id] += n; out[place][id] += n;
     }
     if (report.scope === 'ministry') { out.counts.ministry++; continue; }   // 사역 현황은 '낸 보고 수'에 세지 않는다
@@ -279,7 +299,7 @@ export function mergeSummaries(list) {
 
 /** 달별 집계(합계·끝난 캠프·교회 행사)를 담아 두는 KV 키 — 개인정보 없이 숫자만. 보고가 바뀌면 지운다 */
 export const AGG_KEY = month => `gospel:agg:${month}`;
-export const AGG_VERSION = 2;
+export const AGG_VERSION = 3;   // 3: 교회 행사 기록을 전도 행사 합계에 더한다 — 예전 캐시는 다시 계산
 /** 지난달들은 거의 안 바뀌니 길게, 이번 달·지난달은 짧게(캠프 구원·헌신 체크가 늦게 들어올 수 있다) */
 export function aggTtlSeconds(month, current) {
   const diff = (Number(current.slice(0, 4)) - Number(month.slice(0, 4))) * 12 + Number(current.slice(5)) - Number(month.slice(5));

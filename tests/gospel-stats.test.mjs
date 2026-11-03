@@ -64,6 +64,19 @@ test('집계: 월코(본토) · 제주 · 통합을 따로 더하고 건수를 �
   assert.deepEqual(s.counts, { all: 3, mainland: 1, jeju: 2, individual: 2, team: 1, ministry: 0 });
 });
 
+test('집계: 교회 행사 기록의 참석·구원·헌신은 전도 행사 합계에 더한다(예전 "합계 넣기"로 이미 넣은 보고는 한 번만)', () => {
+  const church = [{ churchName: '평택중앙교회', students: 40, salvations: 6, dedications: 2 }, { churchName: '송탄교회', students: 10, salvations: 1, dedications: 0 }];
+  const s = summarize([
+    { scope: 'individual', location: 'mainland', values: { eeAttendance: 30, eeSalvations: 3 }, churchEntries: church },
+    { scope: 'individual', location: 'jeju', values: { eeAttendance: 50, eeSalvations: 7, eeDedications: 2 }, churchEntries: church },   // 버튼으로 교회 합계를 이미 넣은 보고
+    { scope: 'team', location: 'jeju', values: { evangelism: 4 }, churchEntries: [] },
+  ]);
+  assert.equal(s.mainland.eeAttendance, 80); assert.equal(s.mainland.eeSalvations, 10); assert.equal(s.mainland.eeDedications, 2);
+  assert.equal(s.jeju.eeAttendance, 50, '이미 넣은 교회 합계는 다시 더하지 않는다');
+  assert.equal(s.all.eeAttendance, 130); assert.equal(s.all.eeSalvations, 17); assert.equal(s.all.eeDedications, 4);
+  assert.equal(s.jeju.evangelism, 4);
+});
+
 test('보고 저장: 같은 달·같은 단위는 고쳐 쓰고, 팀은 이름이 필요하며, 개인과 팀은 따로 센다', async () => {
   const t = setup(); await t.acc(anna[0], 'counselor', 'Anna Lee'); t.designate(anna[0]);
   let r = await t.call('POST', anna, { body: report() });
