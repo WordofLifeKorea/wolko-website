@@ -17,7 +17,7 @@
   // 링크라도 파일 내려받기 · 서버 주소는 페이지가 바뀌지 않으므로 이동으로 보지 않는다
   var FILE_LINK = /^\/api\/|\.(pdf|csv|xlsx?|docx?|pptx?|zip|ics|jpe?g|png|gif|webp|heic|mp3|mp4|mov|txt|json)$/i;
   // 자체 진행 표시가 있거나 쓰는 중에 계속 도는 요청
-  var QUIET = [/\/api\/car\/usage-draft/, /\/api\/car\/cost-rates/, /\/api\/car\/odometer/, /\/api\/expense\/draft/, /\/api\/expense\/rate/,
+  var QUIET = [/\/api\/car\/usage-draft/, /\/api\/car\/cost-rates/, /\/api\/car\/odometer/, /\/api\/expense\/draft/, /\/api\/expense\/rate/, /\/api\/expense\/receipt/,
     /\/api\/campteam\/ai-/, /translate/];
   var T = { ko: { load: '불러오는 중…', save: '처리 중…' }, en: { load: 'Loading…', save: 'Processing…' } };
   var label = function (k) { return (/^en/i.test(document.documentElement.lang || '') ? T.en : T.ko)[k]; };
