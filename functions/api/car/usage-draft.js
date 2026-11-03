@@ -35,6 +35,8 @@ const cleanFields = body => ({
   vehicleId: selectableVehicles().has(String(body?.vehicleId || '')) ? String(body.vehicleId) : '',
   useType: ['ministry', 'personal'].includes(body?.useType) ? body.useType : '',
   purpose: String(body?.purpose || '').replace(/\s+/g, ' ').trim().slice(0, 60),
+  splitNote: String(body?.splitNote || '').replace(/\s+/g, ' ').trim().slice(0, 120),
+  tripDate: /^\d{4}-\d{2}-\d{2}$/.test(String(body?.tripDate || '')) ? String(body.tripDate) : '',
   tripKm: String(body?.tripKm ?? '').trim().slice(0, 12),
 });
 

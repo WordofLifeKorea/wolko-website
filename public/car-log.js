@@ -31,6 +31,12 @@
       photoTaken: t => `사진 촬영: ${t} (사진 정보 기준)`, photoNoTime: '사진에 촬영 시각 정보가 없어 저장 시각으로 기록됩니다.',
       saved: '사용 일지가 저장됐습니다.', saveFail: '저장하지 못했습니다.',
       draftSaved: d => `작성 중인 내용이 임시 저장됐어요 · ${d}까지 보관돼요`, draftClear: '임시 저장 지우기', draftClearAsk: '임시 저장한 내용과 사진을 지울까요?',
+      tripDateLabel: '운행 날짜', splitNoteLabel: '함께 나눠 낼 사람 (선택)', splitNotePh: '예: 김철수, 이영희', splitMinus: '한 명 빼기', splitPlus: '한 명 더하기',
+      costTitle: '개인 사용 비용', costNeedKm: '총 운행 거리를 넣으면 계산돼요.', costNeedVehicle: '차량을 고르면 계산돼요.', costLoading: '경유 가격과 환율을 불러오는 중…', costFail: '경유 가격을 불러오지 못했어요. 저장하면 서버에서 계산해요.',
+      costCalc: c => `기름값 ${c.km} km ÷ ${c.kmPerLiter} km/L × ₩${c.diesel} = ₩${c.fuel}\n정비비 ${c.km} km × ₩${c.maint1} = ₩${c.maint}`,
+      costSplit: c => `${c.n}명이 나눠 내면 (본인 포함) 1인당 <strong>₩${c.krw}</strong>${c.usd ? ` · ${c.usd}` : ''}`,
+      costBasis: c => `기준: 전국 평균 경유 ₩${c.diesel}/L (${c.dieselDate}${c.fallback ? ' 기본값' : c.near ? ' — 그날 값이 없어 가장 가까운 날 값' : ''})${c.fx ? `\n환율 $1 = ₩${c.fx} (${c.fxDate})` : ''}`,
+      costLine: c => `개인 사용 비용 ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''}${c.day ? ` (${c.day} 기준)` : ''}`, costLineSplit: c => `${c.n}명 나눠 1인당 ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''}`, splitWith: '함께',
     },
     en: {
       pageTitle: 'Vehicle Schedule', docTitle: 'Vehicle Usage Log — WOLKO', menuLabel: 'Vehicle menu',
@@ -59,6 +65,12 @@
       photoTaken: t => `Photo taken: ${t} (from photo data)`, photoNoTime: 'The photo has no capture time, so the save time will be recorded.',
       saved: 'Usage log saved.', saveFail: 'Could not save.',
       draftSaved: d => `Draft saved to your account · kept until ${d}`, draftClear: 'Delete draft', draftClearAsk: 'Delete the saved draft and photos?',
+      tripDateLabel: 'Date of the trip', splitNoteLabel: 'Splitting the cost with (optional)', splitNotePh: 'e.g. John, Sarah', splitMinus: 'One person fewer', splitPlus: 'One more person',
+      costTitle: 'Personal use cost', costNeedKm: 'Enter the total distance to calculate it.', costNeedVehicle: 'Select a vehicle to calculate it.', costLoading: 'Loading the diesel price and exchange rate…', costFail: 'Could not load the diesel price. The server will calculate it when you save.',
+      costCalc: c => `Fuel ${c.km} km ÷ ${c.kmPerLiter} km/L × ₩${c.diesel} = ₩${c.fuel}\nMaintenance ${c.km} km × ₩${c.maint1} = ₩${c.maint}`,
+      costSplit: c => `Split ${c.n} ways (including you): <strong>₩${c.krw}</strong>${c.usd ? ` · ${c.usd}` : ''} each`,
+      costBasis: c => `Based on the national average diesel price ₩${c.diesel}/L (${c.dieselDate}${c.fallback ? ', default' : c.near ? ' — nearest day with data' : ''})${c.fx ? `\nExchange rate $1 = ₩${c.fx} (${c.fxDate})` : ''}`,
+      costLine: c => `Personal use cost ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''}${c.day ? ` (as of ${c.day})` : ''}`, costLineSplit: c => `Split ${c.n} ways: ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''} each`, splitWith: 'With',
     },
   };
   let lang = (() => { try { return localStorage.getItem('wolkoCarLang') === 'en' ? 'en' : 'ko'; } catch { return 'ko'; } })();
@@ -73,7 +85,7 @@
     $('langEnBtn').classList.toggle('is-active', lang === 'en');
     const select = $('vehicleSelect');
     if (select.options.length) select.options[0].text = t('pickVehicle');
-    if (!$('logApp').hidden) renderEntries();
+    if (!$('logApp').hidden) { renderEntries(); renderCost(); }
   }
   function setLang(next) {
     if (next === lang) return;
@@ -102,11 +114,11 @@
     if (draft) $('draftText').textContent = t('draftSaved', draftDate(draft.expiresAt));
   }
   function draftFields() {
-    return { vehicleId: $('vehicleSelect').value, useType: document.querySelector('input[name="useType"]:checked')?.value || '', purpose: $('purposeNote').value, tripKm: $('tripKm').value };
+    return { vehicleId: $('vehicleSelect').value, useType: document.querySelector('input[name="useType"]:checked')?.value || '', purpose: $('purposeNote').value, splitNote: $('splitNote').value, tripDate: $('tripDate').value, tripKm: $('tripKm').value };
   }
   async function saveDraftNow() {
     const f = draftFields();
-    const empty = !f.useType && !f.purpose.trim() && !f.tripKm.trim() && !photoBlob && !photoAfterBlob;
+    const empty = !f.useType && !f.purpose.trim() && !f.splitNote.trim() && !f.tripKm.trim() && !photoBlob && !photoAfterBlob;
     try {
       if (empty) { await fetch('/api/car/usage-draft', { method: 'DELETE', headers: headers() }); showDraftNote(null); return; }
       const response = await fetch('/api/car/usage-draft', { method: 'PUT', headers: { ...headers(), 'Content-Type': 'application/json' }, body: JSON.stringify(f) });
@@ -138,6 +150,7 @@
     $('vehicleSelect').value = requestedVehicle && [...$('vehicleSelect').options].some(o => o.value === requestedVehicle) ? requestedVehicle : '';
     document.querySelectorAll('input[name="useType"]').forEach(r => { r.checked = false; });
     $('purposeNote').value = '';
+    $('splitNote').value = ''; splitManual = null; $('tripDate').value = '';
     $('tripKm').value = '';
     ['odoBefore', 'odoAfter'].forEach(id => { $(id).value = ''; }); ['odoBeforeHint', 'odoAfterHint', 'tripAutoHint'].forEach(id => { $(id).textContent = ''; });
     photoTakenAt = null;
@@ -164,6 +177,8 @@
       const radio = document.querySelector(`input[name="useType"][value="${draft.useType}"]`);
       if (radio) { radio.checked = true; updateReady(); }
       $('purposeNote').value = draft.purpose || '';
+      $('splitNote').value = draft.splitNote || '';
+      if (draft.tripDate) $('tripDate').value = draft.tripDate;
       $('tripKm').value = draft.tripKm || '';
       if (draft.hasPhoto) {
         const photo = await fetch('/api/car/usage-draft?photo=before', { headers: headers() });
@@ -196,10 +211,90 @@
     $('purposeNote').required = !!ministry;
     $('purposeNote').placeholder = t('purposeNotePh');
     if (!ministry) $('purposeNote').value = '';
+    const personal = purpose && purpose.value === 'personal';
+    $('splitNoteWrap').hidden = !personal;
+    $('tripDateWrap').hidden = !personal;
+    $('splitNote').placeholder = t('splitNotePh');
+    $('tripDate').max = kstDay(Date.now() + 86400000);
+    if (!personal) { $('splitNote').value = ''; splitManual = null; $('tripDate').value = ''; }
+    else { if (!$('tripDate').value) $('tripDate').value = kstDay(); loadCostRates(tripDay()); }
+    renderCost();
     const tripKm = Number($('tripKm').value);
     const tripOk = $('tripKm').value.trim() !== '' && Number.isFinite(tripKm) && tripKm >= 0 && tripKm <= 5000;
     // 사진은 선택이고, 차량 · 사용 목적 · 총 운행 거리(km)는 꼭 있어야 저장할 수 있다.
     $('saveButton').disabled = !purpose || !$('vehicleSelect').value || !tripOk || (ministry && !$('purposeNote').value.trim());
+  }
+
+  /* ── 개인용 비용: 기름값(거리 ÷ 연비 × 전국 평균 경유 가격) + 정비비(km당 20원), 달러 환산, 나눠 내기 ──
+     서버(functions/lib/carCost.js)와 같은 식으로 미리 보여 주고, 저장할 때는 서버가 다시 계산해 기록에 남긴다. */
+  // 운행 날짜마다 그날의 경유 가격 · 환율을 서버에서 받아 둔다 (값: 기준값 객체 · 'loading' · 'fail')
+  const ratesByDay = new Map();
+  let splitManual = null;
+  const kstDay = (ms = Date.now()) => new Date(ms + 9 * 3600000).toISOString().slice(0, 10);
+  const tripDay = () => /^\d{4}-\d{2}-\d{2}$/.test($('tripDate').value) ? $('tripDate').value : kstDay();
+  async function loadCostRates(day) {
+    if (ratesByDay.has(day)) return;
+    ratesByDay.set(day, 'loading');
+    try {
+      const response = await fetch(`/api/car/cost-rates?date=${day}`, { headers: headers() });
+      const data = await response.json();
+      if (!response.ok || !(data.dieselKrw > 0)) throw new Error();
+      ratesByDay.set(day, data);
+    } catch { ratesByDay.set(day, 'fail'); setTimeout(() => ratesByDay.delete(day), 30000); }
+    renderCost();
+  }
+  // 메모에서 함께 낼 사람 수를 짐작한다(본인 제외): "3명" · "총 4명" 같은 숫자, 아니면 쉼표 · 슬래시 · and 등으로 나눈 이름 수.
+  // 띄어 쓴 한글 이름(예: "김철수 이영희")은 한 사람씩 센다. "나" · "본인" · "me" 는 빼고 센다.
+  function guessOthers(text) {
+    const s = String(text || '').trim();
+    if (!s) return 0;
+    const num = s.match(/(\d+)\s*(?:명|분|people|persons?|ppl|pax)/i);
+    if (num) { const n = Number(num[1]); return /(총|모두|전체|다 ?해서|\btotal\b|\ball\b)/i.test(s) ? Math.max(1, n - 1) : n; }
+    const self = /^(나|저|본인|me|myself|i)$/i;
+    return s.split(/[,，、\/&+;·\n]|\s+(?:and|및)\s+/i).map(x => x.trim()).filter(x => x && !self.test(x))
+      .reduce((n, part) => { const words = part.split(/\s+/); return n + (words.length > 1 && words.every(w => /^[가-힣]{2,4}$/.test(w)) ? words.length : 1); }, 0);
+  }
+  // 나눌 인원(본인 포함). −/+ 로 고친 값이 있으면 그 값.
+  const splitPeople = () => splitManual ?? Math.min(30, guessOthers($('splitNote').value) + 1);
+  const won = n => Math.round(n).toLocaleString('ko-KR');
+  const usdText = (krw, rate) => rate > 0 ? '$' + (krw / rate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+  const shortDay = iso => iso ? new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'ko-KR', { month: 'short', day: 'numeric' }).format(new Date(iso + 'T12:00:00+09:00')) : '';
+  function renderCost() {
+    const personal = document.querySelector('input[name="useType"]:checked')?.value === 'personal';
+    $('costBox').hidden = !personal;
+    if (!personal) return;
+    const set = (total, usd, calc) => { $('costTotal').textContent = total; $('costTotalUsd').textContent = usd; $('costCalc').textContent = calc; };
+    $('costSplit').hidden = true; $('costBasis').textContent = '';
+    const costRates = ratesByDay.get(tripDay());
+    if (!costRates || typeof costRates !== 'object') { set('—', '', costRates === 'fail' ? t('costFail') : t('costLoading')); return; }
+    const vehicleId = $('vehicleSelect').value;
+    const km = Number($('tripKm').value);
+    if (!vehicleId) { set('—', '', t('costNeedVehicle')); return; }
+    if ($('tripKm').value.trim() === '' || !Number.isFinite(km) || km < 0) { set('—', '', t('costNeedKm')); return; }
+    const kmPerLiter = costRates.kmPerLiter?.[vehicleId] ?? costRates.defaultKmPerLiter ?? 11;
+    const fuel = Math.round(km / kmPerLiter * costRates.dieselKrw);
+    const maint = Math.round(km * costRates.maintenancePerKm);
+    const total = fuel + maint;
+    const kmText = km.toLocaleString(lang === 'en' ? 'en-US' : 'ko-KR', { maximumFractionDigits: 1 });
+    set('₩' + won(total), usdText(total, costRates.usdKrw), t('costCalc', { km: kmText, kmPerLiter, diesel: won(costRates.dieselKrw), fuel: won(fuel), maint1: won(costRates.maintenancePerKm), maint: won(maint) }));
+    if ($('splitNote').value.trim()) {
+      const n = splitPeople();
+      const each = Math.round(total / n);
+      $('costSplitText').innerHTML = t('costSplit', { n, krw: won(each), usd: usdText(each, costRates.usdKrw) });
+      $('costSplit').hidden = false;
+      $('splitMinus').disabled = n <= 2; $('splitPlus').disabled = n >= 30;
+    }
+    $('costBasis').textContent = t('costBasis', { diesel: won(costRates.dieselKrw), dieselDate: shortDay(costRates.dieselDate), fallback: costRates.dieselSource === 'default', near: costRates.dieselSource === 'nearest', fx: costRates.usdKrw > 0 ? costRates.usdKrw.toLocaleString('en-US', { maximumFractionDigits: 2 }) : '', fxDate: shortDay(costRates.fxDate) });
+  }
+  // 기록 펼침: 저장 당시 계산한 비용과 나눠 낼 사람
+  function costLine(entry) {
+    const c = entry.cost;
+    const box = document.createElement('span');
+    box.className = 'log-line-cost';
+    box.textContent = t('costLine', { krw: won(c.totalKrw), usd: usdText(c.totalKrw, c.usdKrw), day: shortDay(entry.tripDate) });
+    if (c.splitCount > 1) box.textContent += ' · ' + t('costLineSplit', { n: c.splitCount, krw: won(c.perPersonKrw), usd: usdText(c.perPersonKrw, c.usdKrw) });
+    if (entry.splitNote) { const who = document.createElement('span'); who.textContent = `${t('splitWith')}: ${entry.splitNote}`; box.append(who); }
+    return box;
   }
 
   async function loadData() {
@@ -337,6 +432,7 @@
               purpose.textContent = `${t('purposeLabel')}: ${entry.purpose}`;
               detail.append(purpose);
             }
+            if (entry.cost) detail.append(costLine(entry));
             detail.append(info, ...photoButtons, mileageBlock(entry));
             row.append(detail);
           }
@@ -567,6 +663,10 @@
   }));
   $('purposeNote').addEventListener('input', () => { updateReady(); scheduleDraftSave(); });
   $('vehicleSelect').addEventListener('change', () => { updateReady(); scheduleDraftSave(); });
+  $('splitNote').addEventListener('input', () => { splitManual = null; renderCost(); scheduleDraftSave(); });
+  $('tripDate').addEventListener('change', () => { loadCostRates(tripDay()); renderCost(); scheduleDraftSave(); });
+  $('splitMinus').addEventListener('click', () => { splitManual = Math.max(2, splitPeople() - 1); renderCost(); });
+  $('splitPlus').addEventListener('click', () => { splitManual = Math.min(30, splitPeople() + 1); renderCost(); });
   document.querySelectorAll('input[name="useType"]').forEach(input => input.addEventListener('change', scheduleDraftSave));
   /* ── 계기판 숫자 자동 인식: 사진을 고르면 서버(Claude 이미지 인식)가 주행거리를 읽어 칸에 제안한다. 항상 수정 가능하고, 읽지 못하면 직접 입력한다. ── */
   let tripAuto = null; // 자동 계산으로 채운 총 거리 — 사용자가 직접 고쳤으면 덮어쓰지 않는다
@@ -693,6 +793,8 @@
       form.append('useType', document.querySelector('input[name="useType"]:checked').value);
       form.append('purpose', $('purposeNote').value.trim());
       form.append('tripKm', $('tripKm').value.trim());
+      if (document.querySelector('input[name="useType"]:checked').value === 'personal') form.append('tripDate', tripDay());
+      if ($('splitNote').value.trim()) { form.append('splitNote', $('splitNote').value.trim()); form.append('splitCount', String(splitPeople())); }
       if (odoValue('before') !== null) form.append('odometerBefore', String(odoValue('before')));
       if (odoValue('after') !== null) form.append('odometerAfter', String(odoValue('after')));
       if (photoBlob) {
@@ -719,6 +821,7 @@
       $('photoAfterTime').textContent = '';
       $('photoTime').textContent = t('saved');
       $('tripKm').value = '';
+      $('splitNote').value = ''; splitManual = null;
       ['odoBefore', 'odoAfter'].forEach(id => { $(id).value = ''; }); ['odoBeforeHint', 'odoAfterHint', 'tripAutoHint'].forEach(id => { $(id).textContent = ''; });
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       if (previewAfterUrl) URL.revokeObjectURL(previewAfterUrl);

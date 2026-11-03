@@ -207,6 +207,25 @@ button:disabled { opacity:.48; cursor:not-allowed; }
 .log-line-body .log-mileage input, .log-line-body .log-mileage button { box-sizing:border-box; max-width:100%; }
 .log-line-body .log-mileage input { width:100%; }
 
+/* 개인용 비용: 기름값 + 정비비, 나눠 내기 */
+.log-cost { display:grid; gap:8px; padding:14px 16px; border:1px solid var(--line); border-radius: var(--ws-radius-sm, 8px); background:#f6fafb; }
+.log-cost-head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; font-size:13px; font-weight:750; }
+.log-cost-total { display:inline-flex; align-items:baseline; gap:8px; text-align:right; }
+.log-cost-total strong { color:var(--blue); font-size:20px; font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.log-cost-total small { color:var(--muted); font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; }
+.log-cost-calc, .log-cost-basis { margin:0; color:var(--muted); font-size:12px; line-height:1.6; white-space:pre-line; word-break:keep-all; overflow-wrap:anywhere; }
+/* 총 운행 거리 아래 안내 줄: 글이 없을 때는 자리도 차지하지 않게 */
+.log-form > .log-time:empty { display:none; }
+.log-cost-basis { font-size:11.5px; }
+.log-cost-split { display:flex; align-items:center; justify-content:space-between; gap:10px; padding-top:9px; border-top:1px dashed var(--line); color:var(--ink); font-size:13px; font-weight:700; line-height:1.5; word-break:keep-all; }
+.log-cost-split strong { color:var(--blue); font-variant-numeric:tabular-nums; }
+.log-cost-step { display:inline-flex; flex:none; gap:6px; }
+.log-cost-step button { width:34px; height:34px; padding:0; border:1px solid #bfd5de; border-radius: var(--ws-radius-sm, 8px); background:#fff; color:var(--blue); font-size:17px; font-weight:800; line-height:1; cursor:pointer; }
+.log-cost-step button:hover:not(:disabled) { background:#eaf6f7; }
+.log-line-cost { flex:1 1 100%; color:var(--ink); font-size:13px; font-weight:700; line-height:1.6; }
+.log-line-cost span { display:block; color:var(--muted); font-size:12px; font-weight:600; }
+@media (max-width: 640px) { .log-cost-step button { width:40px; height:40px; } }
+
 /* 총 운행 거리(필수)와 선택 사진 */
 .log-trip-km { display:grid; gap:7px; font-size:13px; font-weight:750; }
 .log-photos { display:grid; gap:10px; }

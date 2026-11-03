@@ -1,5 +1,6 @@
 import { fileKV } from '../../lib/nasFileKV.js';
 import { clearDraft } from './usage-draft.js';
+import { costRates, personalCost, recalcCost, cleanSplitNote, cleanSplitCount, cleanTripDate, todayKst } from '../../lib/carCost.js';
 import { AFTER_SUFFIX, ENTRY_PREFIX, PHOTO_PREFIX, TRASH_ENTRY_PREFIX, TRASH_PHOTO_PREFIX, fail, listEntries, usageSession, selectableVehicles } from '../../lib/carUsage.js';
 
 const MAX_PHOTO_BYTES = 4 * 1024 * 1024;
@@ -80,6 +81,14 @@ export async function onRequestPatch({ env, request }) {
       if (!entry) continue;
       if (vehicleId) { entry.vehicleId = vehicleId; entry.vehicleName = labels.get(vehicleId); }
       if (useType) entry.useType = useType;
+      // 개인용으로 바꾸면 그 운행 날짜 기준값으로 비용을 새로 계산하고, 사역용으로 바꾸면 비용을 지운다
+      if (entry.useType !== 'personal') { delete entry.cost; delete entry.splitNote; delete entry.tripDate; }
+      else if (entry.cost) entry.cost = recalcCost(entry);
+      else if (entry.tripKm != null) {
+        entry.tripDate = entry.tripDate || todayKst(Date.parse(entry.photoTakenAt) || Date.now());
+        const rates = await costRates(env, entry.tripDate).catch(() => null);
+        if (rates) entry.cost = personalCost(rates, entry.vehicleId, entry.tripKm);
+      }
       entry.editedBy = session.email; entry.editedAt = new Date().toISOString();
       await fileKV(env).put(`${ENTRY_PREFIX}${id}`, JSON.stringify(entry));
       updated.push(entry);
@@ -94,6 +103,7 @@ export async function onRequestPatch({ env, request }) {
     const trip = Math.round(Number(body.tripKm) * 10) / 10;
     if (!Number.isFinite(trip) || trip < 0 || trip > 5000) return fail('총 운행 거리(km)를 0 이상의 숫자로 입력해 주세요.');
     entry.tripKm = trip;
+    if (entry.cost) entry.cost = recalcCost(entry);
     entry.editedBy = session.email; entry.editedAt = new Date().toISOString();
     await fileKV(env).put(`${ENTRY_PREFIX}${id}`, JSON.stringify(entry));
     return Response.json({ entry }, { headers: { 'Cache-Control': 'no-store' } });
@@ -118,6 +128,10 @@ export async function onRequestPost({ env, request }) {
   if (!labels.has(vehicleId)) return fail('차량을 선택해 주세요.');
   if (!['ministry', 'personal'].includes(useType)) return fail('사역용 또는 개인용을 선택해 주세요.');
   const purpose = useType === 'ministry' ? String(form.get('purpose') || '').replace(/\s+/g, ' ').trim().slice(0, 60) : '';
+  // 개인용: 함께 나눠 낼 사람 메모와 나눌 인원(본인 포함 — 화면이 메모에서 짐작하고 사용자가 고칠 수 있다)
+  const splitNote = useType === 'personal' ? cleanSplitNote(form.get('splitNote')) : '';
+  const splitCount = splitNote ? cleanSplitCount(form.get('splitCount')) : 1;
+  const tripDate = useType === 'personal' ? cleanTripDate(form.get('tripDate')) : '';
   // 총 운행 거리(km)는 꼭 받는다. 사진(운행 전·후)은 있으면 받는 선택 항목이다.
   const tripKmRaw = String(form.get('tripKm') ?? '').trim();
   const tripKm = Math.round(Number(tripKmRaw) * 10) / 10;
@@ -144,9 +158,12 @@ export async function onRequestPost({ env, request }) {
   const isRecentExif = !before.none && form.get('timeSource') === 'exif' && Number.isFinite(candidate.getTime())
     && candidate.getTime() <= Date.now() + 5 * 60_000
     && candidate.getTime() >= Date.now() - 72 * 60 * 60_000;
+  // 개인용 비용(기름값 + 정비비)을 저장 시점 기준값으로 계산해 함께 남긴다. 기준값을 못 받아도 일지는 저장한다.
+  const rates = useType === 'personal' ? await costRates(env, tripDate).catch(() => null) : null;
+  const cost = rates ? personalCost(rates, vehicleId, tripKm, splitCount) : null;
   const id = crypto.randomUUID();
   const entry = {
-    id, vehicleId, vehicleName: labels.get(vehicleId), useType, ...(purpose ? { purpose } : {}), tripKm,
+    id, vehicleId, vehicleName: labels.get(vehicleId), useType, ...(purpose ? { purpose } : {}), ...(tripDate ? { tripDate } : {}), ...(splitNote ? { splitNote } : {}), tripKm, ...(cost ? { cost } : {}),
     ...(odometerBefore !== null ? { odometerBefore } : {}), ...(odometerAfter !== null ? { odometerAfter, mileageAfter: odometerAfter } : {}),
     hasPhoto: !before.none, hasPhotoAfter: !afterPhoto.none,
     photoTakenAt: isRecentExif ? candidate.toISOString() : recordedAt,

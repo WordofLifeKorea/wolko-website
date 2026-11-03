@@ -15,14 +15,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/car-log.css?v=21">
+  <link rel="stylesheet" href="/car-log.css?v=22">
   <link rel="stylesheet" href="/wolko-rail.css?v=24">
   <link rel="stylesheet" href="/wolko-header.css?v=17">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
   <link rel="stylesheet" href="/wolko-layout.css?v=17">
   <link rel="stylesheet" href="/wolko-site.css?v=11">
   <script src="/wolko-rail.js?v=49" defer></script>
-  <script src="/car-log.js?v=25" defer></script>
+  <script src="/car-log.js?v=26" defer></script>
   <meta name="theme-color" content="#004f68">
 </head>
 <body>
@@ -92,10 +92,31 @@
           <label id="purposeNoteWrap" class="log-purpose-note" hidden><span data-t="purposeNoteLabel">어떤 운행인가요? (간단히)</span>
             <input id="purposeNote" name="purpose" type="text" maxlength="60" autocomplete="off">
           </label>
+          <label id="tripDateWrap" class="log-purpose-note" hidden><span data-t="tripDateLabel">운행 날짜</span>
+            <input id="tripDate" name="tripDate" type="date">
+          </label>
+          <label id="splitNoteWrap" class="log-purpose-note" hidden><span data-t="splitNoteLabel">함께 나눠 낼 사람 (선택)</span>
+            <input id="splitNote" name="splitNote" type="text" maxlength="120" autocomplete="off">
+          </label>
           <label class="log-trip-km"><span data-t="tripKmLabel">총 운행 거리 (km) *</span>
             <input id="tripKm" name="tripKm" type="number" inputmode="decimal" min="0" max="5000" step="0.1" required autocomplete="off">
           </label>
           <p class="log-time" id="tripAutoHint" aria-live="polite"></p>
+          <div id="costBox" class="log-cost" hidden>
+            <div class="log-cost-head">
+              <span data-t="costTitle">개인 사용 비용</span>
+              <span class="log-cost-total" aria-live="polite"><strong id="costTotal"></strong><small id="costTotalUsd"></small></span>
+            </div>
+            <p class="log-cost-calc" id="costCalc"></p>
+            <div class="log-cost-split" id="costSplit" hidden>
+              <span id="costSplitText" aria-live="polite"></span>
+              <span class="log-cost-step">
+                <button type="button" id="splitMinus" aria-label="한 명 빼기" data-t-aria="splitMinus">−</button>
+                <button type="button" id="splitPlus" aria-label="한 명 더하기" data-t-aria="splitPlus">+</button>
+              </span>
+            </div>
+            <p class="log-cost-basis" id="costBasis"></p>
+          </div>
           <div class="log-photos">
             <strong class="log-photos-title" data-t="photosTitle">사진 (선택)</strong>
             <p data-t="photosHelp">계기판이나 차량 상태가 보이도록 찍어 두면 나중에 확인하기 좋아요. 없어도 저장할 수 있습니다.</p>
