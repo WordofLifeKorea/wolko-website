@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=134">
+  <link rel="stylesheet" href="/expense.css?v=135">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=24">
   <link rel="stylesheet" href="/wolko-header.css?v=17">
@@ -119,6 +119,9 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         catNeed: '모든 항목의 출금 계좌를 확인해야 승인할 수 있어요.', catDelegate: '카테고리 | 코드 회계 담당자에게 위임하기', catAuto: '✓ 위임됨', catDelegated: '✓ 카테고리 | 코드 회계 담당자에게 위임됨 (취소)', catDelegateNote: '“확인”하지 않은 항목은 자동으로 확인 처리되고, 그 항목의 카테고리 | 코드만 회계 담당자에게 위임돼요.', delegatedWait: '모든 항목의 코드를 선택하고 저장해야 송금 처리할 수 있어요.', catNeedAll: '모든 항목의 카테고리를 선택해 주세요.',
         catHint: '항목마다 출금 계좌를 고르고 “확인”을 눌러야 승인할 수 있어요. 메모가 있는 항목은 꼭 확인해 주세요. 코드(계정과목)는 회계 담당자가 마지막에 확인해요.',
         catSubmitted: a => '제출 시: ' + a,
+        ccTitle: '차량 운행비', ccMonth: m => m.slice(0, 4) + '년 ' + Number(m.slice(5)) + '월', ccClosed: d => Number(d.slice(5, 7)) + '월 ' + Number(d.slice(8)) + '일 마감', ccOpen: d => Number(d.slice(5, 7)) + '월 ' + Number(d.slice(8)) + '일 마감 · 진행 중',
+        ccPersonal: '청구된 금액', ccPersonalSub: '개인용 운행 · 기록한 사람이 내요', ccMinistry: '처리해야 할 금액', ccMinistrySub: '사역용 운행 · 처리 계좌로 정산해요', ccN: (n, km) => n + '건 · ' + km.toLocaleString('ko-KR') + ' km',
+        ccNone: '없어요', ccPending: n => '운행 거리가 없어 아직 계산하지 못한 기록 ' + n + '건', ccLink: '차량 사용 일지 보기', ccPrev: '이전 달', ccNext: '다음 달', ccLoading: '불러오는 중…', ccFail: '차량 운행비를 불러오지 못했어요.', ccHolder: n => n + ' 님',
         gN: n => n + '건', gPeople: n => n + '명', gEmpty: '표시할 리포트가 없습니다.', gItems: n => '항목 ' + n + '개',
         errLogin: '로그인이 필요합니다.', errReq: '요청에 실패했습니다.',
       },
@@ -176,6 +179,9 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         catNeed: 'Confirm the withdrawal account of every item before approving.', catDelegate: 'Delegate categories to accounting', catAuto: '✓ Delegated', catDelegated: '✓ Delegated to accounting (cancel)', catDelegateNote: 'Items you have not confirmed are confirmed automatically, and only their category | code is delegated to accounting.', delegatedWait: 'Pick and save the code for every item before marking payment done.', catNeedAll: 'Pick a category for every item.',
         catHint: 'Pick the withdrawal account for every item and press Confirm before approving. Items with a memo must be confirmed. Accounting confirms the code (category) at the end.',
         catSubmitted: a => 'Submitted as: ' + a,
+        ccTitle: 'Vehicle running costs', ccMonth: m => ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Number(m.slice(5)) - 1] + ' ' + m.slice(0, 4), ccClosed: d => 'Closed on ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Number(d.slice(5, 7)) - 1] + ' ' + Number(d.slice(8)), ccOpen: d => 'Closes on ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Number(d.slice(5, 7)) - 1] + ' ' + Number(d.slice(8)) + ' · in progress',
+        ccPersonal: 'Charged', ccPersonalSub: 'Personal trips · paid by the person who logged them', ccMinistry: 'To process', ccMinistrySub: 'Ministry trips · settled to the chosen account', ccN: (n, km) => n + (n === 1 ? ' trip · ' : ' trips · ') + km.toLocaleString('en-US') + ' km',
+        ccNone: 'None', ccPending: n => n + (n === 1 ? ' record has' : ' records have') + ' no distance yet, so not counted', ccLink: 'Open the vehicle usage log', ccPrev: 'Previous month', ccNext: 'Next month', ccLoading: 'Loading…', ccFail: 'Could not load vehicle running costs.', ccHolder: n => n,
         gN: n => n + (n === 1 ? ' report' : ' reports'), gPeople: n => n + (n === 1 ? ' person' : ' people'), gEmpty: 'No reports to show.', gItems: n => n + (n === 1 ? ' item' : ' items'),
         errLogin: 'Please sign in.', errReq: 'Request failed.',
       },
@@ -827,7 +833,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         </section>`;
       }).join('');
 
-      $('exView').innerHTML = `
+      $('exView').innerHTML = (mode === 'all' ? `<div id="exCarCost">${carCostHtml()}</div>` : '') + `
         <div class="ex-card ex-gbar">
           <div class="ex-seg" role="group">${[...CAMPUSES].sort((a, b) => (b === myCampus()) - (a === myCampus())).map(c => `<button type="button" class="ex-seg-btn ${G.campus === c ? 'active' : ''}" data-gcampus="${c}">${t('campus_' + c)}<span class="ex-seg-n">${gFiltered(mode, c).length}</span></button>`).join('')}</div>
           <div class="ex-filter" style="margin:12px 0 0">
@@ -843,6 +849,45 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         ${people.length ? `<div class="ex-gcards">${cards}</div>` : `<div class="ex-empty">${t('gEmpty')}</div>`}`;
     }
     const renderAll = () => renderGrouped('all');
+
+    /* ─────────── 차량 운행비 (전체 리포트 맨 위 고정 카드) ───────────
+       차량 사용 일지의 운행 비용을 운행 날짜의 달로 모아, 그 달 마지막 날 기준으로
+       청구된 금액(개인용 · 사람별)과 처리해야 할 금액(사역용 · 처리 계좌별)을 보여 준다. 서버: /api/expense/car-costs */
+    const CC = { month: '', data: null, state: 'idle' };
+    const shiftMonth = (m, d) => { const [y, mo] = m.split('-').map(Number); const x = new Date(Date.UTC(y, mo - 1 + d, 1)); return x.toISOString().slice(0, 7); };
+    async function loadCarCosts(month) {
+      CC.state = 'loading'; paintCarCost();
+      try { CC.data = await api('/api/expense/car-costs' + (month ? '?month=' + encodeURIComponent(month) : '')); CC.month = CC.data.month; CC.state = 'ok'; }
+      catch (e) { CC.state = 'fail'; }
+      paintCarCost();
+    }
+    function paintCarCost() { const box = $('exCarCost'); if (box) box.innerHTML = carCostHtml(); }
+    function carCostHtml() {
+      const d = CC.data;
+      const head = (sub, nav) => `<div class="ex-cc-head"><div><h2>${esc(t('ccTitle'))}</h2><div class="ex-meta">${sub}</div></div>${nav || ''}</div>`;
+      if (!d) return `<section class="ex-card ex-carcost">${head(esc(t(CC.state === 'fail' ? 'ccFail' : 'ccLoading')))}</section>`;
+      const now = d.today.slice(0, 7), oldest = d.months[d.months.length - 1] || now;
+      const nav = `<div class="ex-cc-nav">
+          <button type="button" class="ex-btn sm" data-act="carmonth" data-m="${esc(shiftMonth(d.month, -1))}" aria-label="${esc(t('ccPrev'))}" ${d.month <= oldest ? 'disabled' : ''}>‹</button>
+          <b>${esc(t('ccMonth', d.month))}</b>
+          <button type="button" class="ex-btn sm" data-act="carmonth" data-m="${esc(shiftMonth(d.month, 1))}" aria-label="${esc(t('ccNext'))}" ${d.month >= now ? 'disabled' : ''}>›</button>
+        </div>`;
+      const box = (label, sub, part, rowName) => `
+        <div class="ex-cc-box">
+          <div class="ex-cc-label">${esc(label)}</div>
+          <div class="ex-cc-amt">${krw(part.total)}</div>
+          <div class="ex-meta">${esc(sub)}</div>
+          ${part.rows.length ? `<ul class="ex-cc-list">${part.rows.map(r => `<li><span class="ex-cc-name">${esc(rowName(r))}<span class="ex-meta">${esc(t('ccN', r.count, r.km))}</span></span><b>${krw(r.amount)}</b></li>`).join('')}</ul>` : `<p class="ex-cc-none">${esc(t('ccNone'))}</p>`}
+        </div>`;
+      return `<section class="ex-card ex-carcost"${CC.state === 'loading' ? ' aria-busy="true"' : ''}>
+        ${head(esc(t(d.closed ? 'ccClosed' : 'ccOpen', d.closeDate)), nav)}
+        <div class="ex-cc-grid">
+          ${box(t('ccPersonal'), t('ccPersonalSub'), d.personal, r => r.name)}
+          ${box(t('ccMinistry'), t('ccMinistrySub'), d.ministry, r => (lang === 'en' ? r.en : r.ko) + (r.holder ? ' · ' + t('ccHolder', r.holder) : ''))}
+        </div>
+        <div class="ex-cc-foot">${d.pending ? `<span class="ex-meta">${esc(t('ccPending', d.pending))}</span>` : '<span></span>'}<a class="ex-cc-link" href="/portal/car-log/">${esc(t('ccLink'))}</a></div>
+      </section>`;
+    }
 
     /* ─────────── 데이터 로딩 / 화면 전환 ─────────── */
     let countsAt = 0;
@@ -873,7 +918,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       renderTabs();
       if (tab === 'new') renderNew();
       else if (tab === 'fixed') renderFixed();
-      else if (tab === 'all') renderAll();
+      else if (tab === 'all') { renderAll(); loadCarCosts(CC.month); }
       else renderList(tab);
       window.scrollTo({ top: 0 });
     }
@@ -1415,6 +1460,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
           if (await saveRecat(box, box.dataset.recat, false)) renderGrouped(tab);
         }
         else if (act === 'csv-g') exportCsv(gFiltered(tab, G.campus));
+        else if (act === 'carmonth') loadCarCosts(el.dataset.m);
         else if (act === 'confirm-cat') {
           const st = catState[id]; if (!st) return;
           if (!st.accounts[i]) { toast(t('wdPick'), true); return; }
