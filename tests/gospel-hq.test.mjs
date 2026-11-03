@@ -212,15 +212,18 @@ test('복음 통계 카드 그래프: 가로 막대 대신 도넛(원형) — �
   assert.ok(Math.abs(lens.reduce((a, b) => a + b, 0) - (100 - 3 * gap)) < 1e-9);
 });
 
-test('복음 통계 숫자 카드 세 장은 같은 구조(라벨 · 숫자 · 도넛)라 높이가 같다 — 헌신도 캠프/월코 행사 도넛을 가진다, 참석 인원 카드는 없다', async () => {
+test('복음 통계 맨 위 요약은 한 패널 — 큰 숫자 셋(들은 인원 · 구원 · 헌신)과 갈래별 표 하나, 참석 인원 칸은 없다', async () => {
   const { readFileSync } = await import('node:fs');
   const stats = readFileSync(new URL('../public/gospel-stats.js', import.meta.url), 'utf8');
-  const charts = readFileSync(new URL('../public/gospel-charts.js', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../public/gospel-stats.css', import.meta.url), 'utf8');
-  assert.match(stats, /'kDedTip', 'ded'\]\];/); assert.doesNotMatch(stats, /'kReachTip', 'reach'\]/);
-  assert.match(charts, /ded: two\(\['campDedications', 'eeDedications'\]\)/);
-  assert.match(charts, /reach: two\(\['campAttendance', 'eeAttendance'\]\)/);
-  assert.match(css, /\.gs-kpi > span \{ min-height: 2\.9em/, '라벨 두 줄 자리를 늘 잡아 숫자 높이가 같다');
+  assert.match(stats, /box\.className = 'gs-ov'/);
+  assert.match(stats, /tip: 'kGospelTip'[\s\S]*tip: 'kSalvTip'[\s\S]*tip: 'kDedTip'/); assert.doesNotMatch(stats, /kReachTip', n:/);
+  // 표: 개인 전도(헌신 없음 → —) · 캠프 · 월코·교회 행사, 칸은 들은 인원 · 구원 · 헌신
+  assert.match(stats, /heard: 'evangelism', saved: 'salvation', ded: null/);
+  assert.match(stats, /heard: 'campAttendance', saved: 'campSalvations', ded: 'campDedications'/);
+  assert.match(stats, /heard: 'eeAttendance', saved: 'eeSalvations', ded: 'eeDedications'/);
+  assert.match(css, /\.gs-ov-top \{ display: grid; grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
+  assert.match(css, /\.gs-ov-sub \{ min-height: 1\.4em/, '구원 아래 비율 줄 자리를 늘 잡아 세 막대가 같은 높이에 놓인다');
 });
 
 test('MRIC 창: 연·월을 누르면 연·월 선택기(일 없음)가 열리고, 좁은 화면에서도 글자가 겹치거나 접히지 않도록 CSS 가 막아 둔다', async () => {

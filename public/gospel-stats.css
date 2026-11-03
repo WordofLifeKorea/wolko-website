@@ -584,3 +584,37 @@ body.gs-writing { overflow: hidden; }
   #statsTable td.is-col { border-radius: 8px; }
   #statsTable .gs-itemdesc { max-width: none; }
 }
+
+/* ── 맨 위 요약: 세 카드를 한 패널로 — 큰 숫자 셋 + 갈래별 표 하나 ── */
+.gs-ov { display: block; margin: 0 0 12px; padding: 22px 24px 8px; border: 1px solid var(--line); border-radius: var(--ws-radius-sm, 8px); background: #fff; }
+.gs-ov-top { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.gs-ov-k { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 0 22px; }
+.gs-ov-k:first-child { padding-left: 0; }
+.gs-ov-k + .gs-ov-k { border-left: 1px solid var(--line); }
+.gs-ov-heard { --kc: #0a6a8f; }
+.gs-ov-saved { --kc: #14805a; }
+.gs-ov-ded { --kc: #b4630f; }
+.gs-ov-label { color: #3f5966; font-size: 13.5px; font-weight: 800; letter-spacing: -.01em; }
+.gs-ov-label .gs-info { margin-left: 4px; vertical-align: middle; position: relative; top: -1px; }
+.gs-ov-num { color: var(--kc); font: 800 44px/1.05 'Montserrat', var(--sans); letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+.gs-ov-sub { min-height: 1.4em; color: #557080; font-size: 12.5px; font-weight: 700; }
+.gs-ov-bar { display: flex; gap: 2px; height: 6px; margin-top: 2px; overflow: hidden; border-radius: 3px; background: #eef3f5; }
+.gs-ov-bar i { min-width: 3px; }
+.gs-ov-table { width: 100%; margin-top: 20px; border-collapse: collapse; font-size: 14px; }
+.gs-ov-table th, .gs-ov-table td { padding: 11px 0; border-top: 1px solid var(--line); text-align: right; font-variant-numeric: tabular-nums; }
+.gs-ov-table thead th { padding-top: 0; border-top: 0; color: #557080; font-size: 12.5px; font-weight: 800; }
+.gs-ov-table tbody th { text-align: left; color: var(--ink); font-weight: 700; white-space: nowrap; }
+.gs-ov-table tbody th i { display: inline-block; width: 10px; height: 10px; margin-right: 9px; border-radius: 50%; vertical-align: 0; }
+.gs-ov-table td { width: 22%; color: var(--ink); font-weight: 800; }
+.gs-ov-na { color: #9aaeb8; font-weight: 600; }
+.gs-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 640px) {
+  .gs-ov { padding: 18px 16px 4px; }
+  .gs-ov-k { padding: 0 10px; }
+  .gs-ov-label { min-height: 2.8em; font-size: 12.5px; line-height: 1.4; }
+  .gs-ov-all { display: none; }
+  .gs-ov-num { font-size: 28px; }
+  .gs-ov-sub { font-size: 11.5px; }
+  .gs-ov-table { font-size: 13px; }
+  .gs-ov-table td { width: 21%; }
+}
