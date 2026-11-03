@@ -1,15 +1,19 @@
 /* 화면 꾸미기(wolko-customize.js) — 꾸민 화면에서만 아래 규칙이 붙는다. 꾸미지 않은 페이지 모양은 그대로다. */
 
-/* 보통 묶음: 꾸미면 6칸 격자로 바꿔 순서 · 너비를 준다(숨겨진 묶음은 그대로 숨김) */
+/* 보통 묶음: 꾸미면 6칸 격자로 바꿔 순서를 준다(숨겨진 묶음은 그대로 숨김) */
 .wl-cz-on.wl-cz-flow:not([hidden]) { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); column-gap: 16px; align-items: start; }
 .wl-cz-on.wl-cz-flow > * { grid-column: 1 / -1; min-width: 0; }
 .wl-cz-on > .wl-cz-off { display: none !important; }
 
-/* 블럭 배치: 12칸 눈금 · 아주 얇은 줄 격자. 카드는 제 높이만큼 줄을 차지해 블럭 안에서 위에서부터 쌓인다(줄 번호는 JS가 정한다) */
-.wl-cz-on.wl-cz-blocks:not([hidden]) { display: grid !important; grid-template-columns: repeat(12, minmax(0, 1fr)) !important; grid-template-rows: repeat(var(--wl-cz-rows, 1), var(--wl-cz-unit, 1px)) !important; grid-auto-rows: var(--wl-cz-unit, 1px) !important; grid-auto-flow: row !important; row-gap: 0 !important; column-gap: var(--wl-cz-gap, 16px) !important; align-items: start !important; }
-.wl-cz-on.wl-cz-blocks > * { min-width: 0; align-self: start !important; }
+/* 블럭 배치(캠프 & 아웃리치 팀 홈과 같은 방식): 12칸 × 40px 줄 칸. 카드는 정한 칸을 꽉 채우고, 내용이 더 길면 카드 안에서 스크롤된다 */
+.wl-cz-on.wl-cz-grid:not([hidden]) { display: grid !important; grid-template-columns: repeat(12, minmax(0, 1fr)) !important; grid-template-rows: var(--wl-cz-tracks, auto) !important; grid-auto-rows: auto !important; gap: var(--wl-cz-gap, 16px) !important; align-items: stretch !important; }
+.wl-cz-on.wl-cz-grid > * { min-width: 0; }
+.wl-cz-on.wl-cz-grid > .wl-cz-cell { box-sizing: border-box; margin: 0 !important; height: auto !important; min-height: 0 !important; max-height: none !important; align-self: stretch !important; overflow: auto; scrollbar-width: thin; }
+/* 꾸미는 중: 묶음 바탕에 점선 칸(카드 뒤에 깔린다) */
+.wl-cz-editing .wl-cz-on.wl-cz-grid { position: relative; isolation: isolate; }
+.wl-cz-editing .wl-cz-on.wl-cz-grid::before { content: ''; position: absolute; z-index: -1; left: var(--wl-cz-cx, 0); top: var(--wl-cz-cy, 0); width: var(--wl-cz-cw, 100%); height: var(--wl-cz-ch, 0); background: var(--wl-cz-cells) 0 0 / var(--wl-cz-sx) var(--wl-cz-sy) repeat; pointer-events: none; }
 
-/* 반 · 1/3 카드: 카드 폭에 맞춰 안의 내용이 다시 정렬되게 한다 */
+/* 좁은 카드: 카드 폭에 맞춰 안의 내용이 다시 정렬되게 한다 */
 .wl-cz-narrow { container: wlcz / inline-size; min-width: 0; }
 .wl-cz-narrow:is([class*="grid"], [class*="kpis"], [class*="stats"], [class*="cards"]):not([class*="cal"]) { grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)) !important; }
 @container wlcz (max-width: 640px) {
@@ -22,31 +26,28 @@
 /* 꾸미는 중: 카드 테두리를 보여 주고, 패널에서 가리킨 카드는 진하게 */
 .wl-cz-editing [data-wl-cards] > .wl-cz-focus { outline: 3px solid #008e92 !important; outline-offset: 4px; }
 
-/* 페이지에서 끌기: 꾸미는 중에는 카드에 점선 테두리, 끄는 카드는 떠오르고, 손잡이는 화면 위 층(wl-cz-layer)에 그린다 */
+/* 페이지에서 끌기: 꾸미는 중에는 카드에 점선 테두리, 끄는 카드는 떠오르고, 손잡이 · 놓일 자리는 화면 위 층(wl-cz-layer)에 그린다 */
 .wl-cz-editing [data-wl-cards] > .wl-cz-card { outline: 2px dashed #9cc7d4; outline-offset: 3px; }
 @media (pointer: fine) { .wl-cz-editing [data-wl-cards] > .wl-cz-card { cursor: grab; } }
 .wl-cz-dragging, .wl-cz-dragging * { cursor: grabbing !important; user-select: none !important; -webkit-user-select: none !important; }
 .wl-cz-dragging [data-wl-cards] > .wl-cz-moving { position: relative; z-index: 790; opacity: .94; box-shadow: 0 18px 44px -12px rgba(0, 40, 55, .45); outline: 3px solid #008e92 !important; transition: none !important; }
-.wl-cz-dragging:not(.wl-cz-mapdrag) .wl-cz-panel { opacity: .25; pointer-events: none; transition: opacity .15s; }
-.wl-cz-mapdrag, .wl-cz-mapdrag * { cursor: col-resize !important; }
+.wl-cz-dragging [data-wl-cards] > .wl-cz-sizing { outline: 3px solid #008e92 !important; }
+.wl-cz-dragging:has(.wl-cz-sizing), .wl-cz-dragging:has(.wl-cz-sizing) * { cursor: nwse-resize !important; }
+.wl-cz-dragging .wl-cz-panel { opacity: .25; pointer-events: none; transition: opacity .15s; }
 .wl-cz-layer { position: fixed; inset: 0; z-index: 795; pointer-events: none; }
-.wl-cz-grip, .wl-cz-div { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: auto; touch-action: none; -webkit-user-select: none; user-select: none; }
-/* 블럭 테두리와 번호 — 빈 블럭은 점선과 옅은 바탕으로 놓을 자리를 보여 준다 */
-.wl-cz-frame { position: absolute; left: 0; top: 0; box-sizing: border-box; border: 1.5px solid rgba(0, 142, 146, .4); border-radius: 12px; pointer-events: none; }
-.wl-cz-frame > span { position: absolute; left: 10px; top: -11px; padding: 0 8px; border: 1px solid #b9d6df; border-radius: 6px; background: #fff; color: #00747a; font: 800 11.5px/1.6 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; white-space: nowrap; }
-.wl-cz-frame > em { position: absolute; inset: 0; display: grid; place-items: center; padding: 12px; color: #3f6f7c; font: 700 13px/1.5 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; font-style: normal; text-align: center; word-break: keep-all; }
-.wl-cz-frame > em:empty { display: none; }
-.wl-cz-frame.is-empty { border-style: dashed; background: rgba(0, 142, 146, .05); }
-.wl-cz-frame.is-target { border: 2.5px solid #008e92; background: rgba(0, 142, 146, .06); }
-.wl-cz-div { width: 14px; height: 48px; border: 1px solid #b9d6df; border-radius: 7px; background: #fff; box-shadow: 0 4px 12px -6px rgba(0, 40, 55, .4); cursor: col-resize; }
-.wl-cz-div::before { content: ''; position: absolute; left: 4px; top: 14px; width: 4px; height: 18px; border-left: 2px solid #7fb5c2; border-right: 2px solid #7fb5c2; box-sizing: border-box; }
-.wl-cz-div:hover, .wl-cz-div.is-drag { background: #008e92; border-color: #008e92; }
-.wl-cz-div:hover::before, .wl-cz-div.is-drag::before { border-color: #fff; }
-.wl-cz-div.is-drag[data-label]:not([data-label=""])::after { content: attr(data-label); position: absolute; left: 50%; top: -30px; transform: translateX(-50%); padding: 3px 9px; border-radius: 6px; background: #004f68; color: #fff; font: 800 12px/1.4 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; white-space: nowrap; }
+.wl-cz-grip, .wl-cz-rz, .wl-cz-drop { position: absolute; left: 0; top: 0; }
+.wl-cz-grip, .wl-cz-rz { z-index: 1; pointer-events: auto; touch-action: none; -webkit-user-select: none; user-select: none; }
 .wl-cz-grip { display: grid; place-items: center; width: 48px; height: 28px; border: 1px solid #b9d6df; border-radius: 8px; background: #fff; color: #00747a; box-shadow: 0 4px 12px -6px rgba(0, 40, 55, .4); cursor: grab; }
 .wl-cz-grip svg { transform: rotate(90deg); }
 .wl-cz-grip:hover, .wl-cz-grip.is-drag { background: #008e92; border-color: #008e92; color: #fff; }
-@media (pointer: coarse) { .wl-cz-grip { width: 56px; height: 34px; } .wl-cz-div { width: 20px; height: 56px; } .wl-cz-div::before { left: 7px; top: 18px; } }
+/* 크기 손잡이: 카드 오른쪽 아래 모서리의 꺾쇠 */
+.wl-cz-rz { width: 20px; height: 20px; box-sizing: border-box; border-right: 3px solid #008e92; border-bottom: 3px solid #008e92; border-radius: 0 0 8px 0; cursor: nwse-resize; opacity: .85; }
+.wl-cz-rz::before { content: ''; position: absolute; inset: -8px; }
+.wl-cz-rz:hover, .wl-cz-rz.is-drag { opacity: 1; border-color: #004f68; }
+/* 놓일 자리 미리 보기 — 자리가 모자라면 붉게 */
+.wl-cz-drop { box-sizing: border-box; border: 2px dashed #008e92; border-radius: 8px; background: rgba(0, 142, 146, .12); pointer-events: none; }
+.wl-cz-drop.bad { border-color: #c42a36; background: rgba(196, 42, 54, .12); }
+@media (pointer: coarse) { .wl-cz-grip { width: 56px; height: 34px; } .wl-cz-rz { width: 28px; height: 28px; } }
 @media (prefers-reduced-motion: reduce) { .wl-cz-editing [data-wl-cards] > * { transition: none !important; } }
 
 /* 꾸미기 단추 */
@@ -66,52 +67,28 @@
 .wl-cz-where { margin: 0; padding: 0 16px 6px; color: #617b86; font-size: 12px; word-break: keep-all; }
 .wl-cz-list { flex: 1 1 auto; margin: 0; padding: 0 10px; overflow-y: auto; list-style: none; }
 .wl-cz-group { height: 1px; margin: 6px 6px; background: #d8e6eb; }
+/* 배치 방식: 페이지 배치 ↔ 블럭 배치, 빈틈 정리 */
+.wl-cz-mode { padding: 8px 6px 12px; border-bottom: 1px solid #eef3f5; }
+.wl-cz-mode p { margin: 0 0 8px; color: #46646f; font-size: 12px; word-break: keep-all; }
+.wl-cz-modebtns { display: flex; flex-wrap: wrap; gap: 6px; }
+.wl-cz-mode + .wl-cz-row { border-top: 0; }
 .wl-cz-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 8px; padding: 8px 6px; border-top: 1px solid #eef3f5; }
 .wl-cz-row:first-child { border-top: 0; }
 .wl-cz-row.is-off .wl-cz-name { color: #8aa0a9; }
 .wl-cz-name { min-width: 0; padding: 4px 0; border: 0; background: none; color: #173542; font: inherit; font-weight: 700; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
 .wl-cz-name small { margin-left: 4px; color: #8aa0a9; font-size: 11px; font-weight: 700; }
 .wl-cz-btns { display: inline-flex; gap: 4px; }
-.wl-cz-btns button, .wl-cz-to button { min-width: 32px; height: 30px; padding: 0 8px; border: 1px solid #cfe0e6; border-radius: 8px; background: #fff; color: #004f68; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
-.wl-cz-btns button:hover:not(:disabled), .wl-cz-to button:hover { background: #eef7f8; }
+.wl-cz-btns button { min-width: 32px; height: 30px; padding: 0 8px; border: 1px solid #cfe0e6; border-radius: 8px; background: #fff; color: #004f68; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.wl-cz-btns button:hover:not(:disabled) { background: #eef7f8; }
 .wl-cz-btns button:disabled { opacity: .4; cursor: default; }
 .wl-cz-eye { min-width: 56px !important; }
-/* 카드마다 넣을 블럭 번호 */
-.wl-cz-to { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
-.wl-cz-to > span { margin-right: 4px; color: #617b86; font-size: 12px; font-weight: 700; }
-.wl-cz-to button.on { border-color: #008e92; background: #eaf7f6; color: #004f68; }
-/* 블럭 지도: 줄마다 블럭을 폭 비율대로, 사이 손잡이를 끌어 폭을 바꾼다 */
-.wl-cz-mode { padding: 10px 6px 12px; border-bottom: 1px solid #eef3f5; }
-.wl-cz-mode p { margin: 0 0 8px; color: #46646f; font-size: 12px; word-break: keep-all; }
-.wl-cz-map { padding: 6px 6px 12px; border-bottom: 1px solid #eef3f5; }
-.wl-cz-maphead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-.wl-cz-maphead strong { color: #004f68; font-size: 13px; font-weight: 800; }
-.wl-cz-link { padding: 4px 2px; border: 0; background: none; color: #617b86; font: inherit; font-size: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
-.wl-cz-link:hover { color: #004f68; }
-.wl-cz-band { display: flex; gap: 6px; margin-bottom: 6px; }
-.wl-cz-cells { flex: 1 1 auto; display: flex; min-width: 0; }
-.wl-cz-mblk { position: relative; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 48px; border: 1px solid #b9d6df; border-radius: 8px; background: #f3f9fa; color: #004f68; }
-.wl-cz-mblk b { font-size: 14px; font-weight: 800; line-height: 1.2; }
-.wl-cz-mblk small { color: #617b86; font-size: 11px; font-weight: 700; }
-.wl-cz-mblk button { position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 5px; background: none; color: #617b86; font-size: 14px; line-height: 1; cursor: pointer; }
-.wl-cz-mblk button:hover { background: #dcecef; color: #004f68; }
-.wl-cz-mdiv { position: relative; flex: 0 0 8px; cursor: col-resize; touch-action: none; }
-.wl-cz-mdiv::before { content: ''; position: absolute; left: 3px; top: 12px; bottom: 12px; width: 2px; border-radius: 1px; background: #9cc7d4; }
-.wl-cz-mdiv::after { content: ''; position: absolute; inset: 0 -5px; }
-.wl-cz-mdiv:hover::before { background: #008e92; }
-.wl-cz-add { flex: 0 0 32px; height: 48px; padding: 0; border: 1px dashed #9cc7d4; border-radius: 8px; background: #fff; color: #00747a; font: inherit; font-size: 17px; font-weight: 800; cursor: pointer; }
-.wl-cz-add:hover:not(:disabled) { background: #eef7f8; }
-.wl-cz-add:disabled { opacity: .35; cursor: default; }
-.wl-cz-addrow { width: 100%; height: 32px; border-style: dashed !important; }
-.wl-cz-bhead { padding: 12px 6px 2px; color: #00747a; font-size: 12px; font-weight: 800; }
-.wl-cz-bhead small { margin-left: 2px; color: #8aa0a9; font-size: 11px; font-weight: 700; }
-.wl-cz-bhead + .wl-cz-row { border-top: 0; }
-.wl-cz-empty { padding: 4px 6px 8px; color: #8aa0a9; font-size: 12px; word-break: keep-all; }
 .wl-cz-note { margin: 0; padding: 8px 16px 0; color: #00747a; font-size: 12px; font-weight: 700; }
 .wl-cz-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; padding: 12px 16px 14px; border-top: 1px solid #eef3f5; }
 .wl-cz-ghost, .wl-cz-done { height: 34px; padding: 0 12px; border-radius: 8px; font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; }
 .wl-cz-ghost { border: 1px solid #cfe0e6; background: #fff; color: #004f68; }
+.wl-cz-ghost:hover:not(:disabled) { background: #eef7f8; }
 .wl-cz-ghost:disabled { opacity: .45; cursor: default; }
+.wl-cz-ghost.wl-cz-pri { border-color: #008e92; background: #eaf7f6; }
 .wl-cz-done { border: 0; background: #004f68; color: #fff; }
 .wl-cz-done:hover { background: #006582; }
 @media (max-width: 639px) {
