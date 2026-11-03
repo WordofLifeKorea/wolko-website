@@ -116,15 +116,12 @@ const stepTimes = marks.map(m => m.delay);
       <stop offset=".45" stop-color="#f3dca6" stop-opacity=".18" />
       <stop offset="1" stop-color="#f3dca6" stop-opacity="0" />
     </radialGradient>
-    <radialGradient id="rl-badge-fill" cx=".38" cy=".32" r=".8">
+    <!-- 배지 색: 위가 밝고 아래가 짙은 금빛. 동그란 그러데이션·흐림 필터는 Safari 에서 매 장면 다시 그리느라 끊겨서 쓰지 않는다 -->
+    <linearGradient id="rl-badge-fill" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#fff6dc" />
-      <stop offset=".55" stop-color="#f3dca6" />
+      <stop offset=".5" stop-color="#f3dca6" />
       <stop offset="1" stop-color="#d9b56a" />
-    </radialGradient>
-    <filter id="rl-glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="2.4" result="b" />
-      <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-    </filter>
+    </linearGradient>
     <g id="rl-person"><circle cx="0" cy="-5" r="5" /><path d="M-9 11C-9 3-5 1 0 1s9 2 9 10z" /></g>
   </defs>
 
@@ -145,7 +142,9 @@ const stepTimes = marks.map(m => m.delay);
   <g class="rl-live">
     {R.slice(1).map((r, i) => <circle class="rl-guide-lit" cx={C} cy={C} r={r} style={`--d:${T[i + 1]}s`} />)}
     {arcs.map(a => <path class:list={['rl-arc', { 'rl-arc-out': a.out }]} pathLength="1" d={a.d} style={`--d:${a.delay}s`} />)}
-    {arcs.map(a => <path class:list={['rl-spark', { 'rl-spark-out': a.out }]} pathLength="1" d={a.d} filter="url(#rl-glow)" style={`--d:${a.delay}s`} />)}
+    {arcs.map(a => <path class="rl-spark-glow rl-spark-glow-wide" pathLength="1" d={a.d} style={`--d:${a.delay}s`} />)}
+    {arcs.map(a => <path class="rl-spark-glow" pathLength="1" d={a.d} style={`--d:${a.delay}s`} />)}
+    {arcs.map(a => <path class="rl-spark" pathLength="1" d={a.d} style={`--d:${a.delay}s`} />)}
     {people.map(n => (
       <g class:list={['rl-node', { 'rl-node-first': !n.g }]} transform={`translate(${n.x} ${n.y})`} style={`--d:${n.t}s`}>
         <circle class="rl-halo" r={n.g ? 26 : 38} />
@@ -199,6 +198,9 @@ const stepTimes = marks.map(m => m.delay);
   .rl-guide-lit { fill:none; stroke:rgba(243,220,166,.3); stroke-width:1.2; stroke-dasharray:3 6; }
   .rl-arc { fill:none; stroke:#f3dca6; stroke-width:1.5; stroke-linecap:round; stroke-dasharray:1; stroke-dashoffset:0; opacity:.62; }
   .rl-arc-out { stroke:url(#rl-fade); opacity:1; }
+  /* 빛 점의 번짐: 흐림 필터 대신 옅은 금빛 선을 굵기를 달리해 두 겹 깔아, 가운데가 밝고 바깥으로 갈수록 흐려 보이게 한다 */
+  .rl-spark-glow { --g:.3; fill:none; stroke:#fff1c9; stroke-width:5.5; stroke-linecap:round; stroke-dasharray:.14 2; stroke-dashoffset:-1.2; opacity:0; }
+  .rl-spark-glow-wide { --g:.12; stroke-width:11; }
   .rl-spark { fill:none; stroke:#fffaf0; stroke-width:2.6; stroke-linecap:round; stroke-dasharray:.14 2; stroke-dashoffset:-1.2; opacity:0; }
   .rl-node .rl-halo { fill:url(#rl-halo-fill); opacity:.8; }
   .rl-node .rl-ring { fill:none; stroke:#8fdcf7; stroke-width:1.4; opacity:0; }
@@ -223,6 +225,7 @@ const stepTimes = marks.map(m => m.delay);
   .rl.is-armed .rl-mark { opacity:0; transform:scale(.4); }
   .rl.is-armed.is-on .rl-arc { animation:rl-draw 1.2s cubic-bezier(.65,0,.35,1) var(--d) both; }
   .rl.is-armed.is-on .rl-spark { animation:rl-spark 1.2s cubic-bezier(.65,0,.35,1) var(--d) both; }
+  .rl.is-armed.is-on .rl-spark-glow { animation:rl-spark-glow 1.2s cubic-bezier(.65,0,.35,1) var(--d) both; }
   .rl.is-armed.is-on .rl-ring { animation:rl-hear 1.1s cubic-bezier(.2,.7,.2,1) calc(var(--d) - .12s) both; }
   .rl.is-armed.is-on .rl-badge { animation:rl-believe .7s cubic-bezier(.34,1.56,.64,1) var(--d) both; }
   .rl.is-armed.is-on .rl-halo { animation:rl-bloom 1s cubic-bezier(.2,.7,.2,1) var(--d) both, rl-breathe 3.4s ease-in-out calc(var(--d) + 1s) infinite alternate; }
@@ -256,6 +259,12 @@ const stepTimes = marks.map(m => m.delay);
     0% { stroke-dashoffset:.14; opacity:0; }
     12% { opacity:1; }
     82% { opacity:1; }
+    100% { stroke-dashoffset:-1; opacity:0; }
+  }
+  @keyframes rl-spark-glow {
+    0% { stroke-dashoffset:.14; opacity:0; }
+    12% { opacity:var(--g); }
+    82% { opacity:var(--g); }
     100% { stroke-dashoffset:-1; opacity:0; }
   }
   @keyframes rl-hear { 0% { opacity:0; transform:scale(.5); } 20% { opacity:.9; } 100% { opacity:0; transform:scale(2.1); } }
