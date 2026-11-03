@@ -33,11 +33,11 @@
       draftSaved: d => `작성 중인 내용이 임시 저장됐어요 · ${d}까지 보관돼요`, draftClear: '임시 저장 지우기', draftClearAsk: '임시 저장한 내용과 사진을 지울까요?',
       chargeLegend: '비용 처리 계좌', chargeNeeded: '비용을 처리할 계좌를 골라 주세요.', chargeRow: '처리 계좌', tripDateLabel: '운행 날짜', tripKmLabelOpt: '총 운행 거리 (km)', costBlankKm: '비워 두면 앞뒤 기록의 계기판 숫자로 빠진 거리를 계산해 청구해요.',
       autoKmLine: a => `계기판 ${a.from} → ${a.to} km 사이 빠진 거리로 자동 계산${a.shared > 1 ? ` (빈 기록 ${a.shared}건이 나눠 냄)` : ''}`, autoKmPending: '운행 거리가 비어 있어요 · 다음 기록이 올라오면 앞뒤 계기판 숫자로 자동 계산돼요.', autoKmTag: '자동', splitNoteLabel: '함께 나눠 낼 사람 (선택)', splitNotePh: '예: 김철수, 이영희', splitMinus: '한 명 빼기', splitPlus: '한 명 더하기',
-      costTitle: '개인 사용 비용', costNeedKm: '총 운행 거리를 넣으면 계산돼요.', costNeedVehicle: '차량을 고르면 계산돼요.', costLoading: '경유 가격과 환율을 불러오는 중…', costFail: '경유 가격을 불러오지 못했어요. 저장하면 서버에서 계산해요.',
+      costTitle: '개인 사용 비용', costTitleMinistry: '사역 사용 비용', costNeedKm: '총 운행 거리를 넣으면 계산돼요.', costNeedVehicle: '차량을 고르면 계산돼요.', costLoading: '경유 가격과 환율을 불러오는 중…', costFail: '경유 가격을 불러오지 못했어요. 저장하면 서버에서 계산해요.',
       costCalc: c => `기름값 ${c.km} km ÷ ${c.kmPerLiter} km/L × ₩${c.diesel} = ₩${c.fuel}\n정비비 ${c.km} km × ₩${c.maint1} = ₩${c.maint}`,
       costSplit: c => `${c.n}명이 나눠 내면 (본인 포함) 1인당 <strong>₩${c.krw}</strong>${c.usd ? ` · ${c.usd}` : ''}`,
       costBasis: c => `기준: 전국 평균 경유 ₩${c.diesel}/L (${c.dieselDate}${c.fallback ? ' 기본값' : c.near ? ' — 그날 값이 없어 가장 가까운 날 값' : ''})${c.fx ? `\n환율 $1 = ₩${c.fx} (${c.fxDate})` : ''}\n금액은 10원 단위를 버려요.`,
-      costLine: c => `개인 사용 비용 ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''}${c.day ? ` (${c.day} 기준)` : ''}`, costLineSplit: c => `${c.n}명 나눠 1인당 ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''}`, splitWith: '함께',
+      costLine: c => `${c.ministry ? '사역' : '개인'} 사용 비용 ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''}${c.day ? ` (${c.day} 기준)` : ''}`, costLineSplit: c => `${c.n}명 나눠 1인당 ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''}`, splitWith: '함께',
     },
     en: {
       pageTitle: 'Vehicle Schedule', docTitle: 'Vehicle Usage Log — WOLKO', menuLabel: 'Vehicle menu',
@@ -68,11 +68,11 @@
       draftSaved: d => `Draft saved to your account · kept until ${d}`, draftClear: 'Delete draft', draftClearAsk: 'Delete the saved draft and photos?',
       chargeLegend: 'Charged to', chargeNeeded: 'Please choose the account the cost is charged to.', chargeRow: 'Charged to', tripDateLabel: 'Date of the trip', tripKmLabelOpt: 'Total distance driven (km)', costBlankKm: 'If left blank, the missing distance is worked out from the odometer readings of the records before and after, and charged.',
       autoKmLine: a => `Worked out from the odometer gap ${a.from} → ${a.to} km${a.shared > 1 ? ` (shared by ${a.shared} blank records)` : ''}`, autoKmPending: 'Distance left blank · it will be worked out from the odometer readings once the next record is in.', autoKmTag: 'auto', splitNoteLabel: 'Splitting the cost with (optional)', splitNotePh: 'e.g. John, Sarah', splitMinus: 'One person fewer', splitPlus: 'One more person',
-      costTitle: 'Personal use cost', costNeedKm: 'Enter the total distance to calculate it.', costNeedVehicle: 'Select a vehicle to calculate it.', costLoading: 'Loading the diesel price and exchange rate…', costFail: 'Could not load the diesel price. The server will calculate it when you save.',
+      costTitle: 'Personal use cost', costTitleMinistry: 'Ministry use cost', costNeedKm: 'Enter the total distance to calculate it.', costNeedVehicle: 'Select a vehicle to calculate it.', costLoading: 'Loading the diesel price and exchange rate…', costFail: 'Could not load the diesel price. The server will calculate it when you save.',
       costCalc: c => `Fuel ${c.km} km ÷ ${c.kmPerLiter} km/L × ₩${c.diesel} = ₩${c.fuel}\nMaintenance ${c.km} km × ₩${c.maint1} = ₩${c.maint}`,
       costSplit: c => `Split ${c.n} ways (including you): <strong>₩${c.krw}</strong>${c.usd ? ` · ${c.usd}` : ''} each`,
       costBasis: c => `Based on the national average diesel price ₩${c.diesel}/L (${c.dieselDate}${c.fallback ? ', default' : c.near ? ' — nearest day with data' : ''})${c.fx ? `\nExchange rate $1 = ₩${c.fx} (${c.fxDate})` : ''}\nAmounts are rounded down to the nearest ₩100.`,
-      costLine: c => `Personal use cost ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''}${c.day ? ` (as of ${c.day})` : ''}`, costLineSplit: c => `Split ${c.n} ways: ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''} each`, splitWith: 'With',
+      costLine: c => `${c.ministry ? 'Ministry' : 'Personal'} use cost ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''}${c.day ? ` (as of ${c.day})` : ''}`, costLineSplit: c => `Split ${c.n} ways: ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''} each`, splitWith: 'With',
     },
   };
   let lang = (() => { try { return localStorage.getItem('wolkoCarLang') === 'en' ? 'en' : 'ko'; } catch { return 'ko'; } })();
@@ -219,10 +219,12 @@
     if (!ministry) setCharge('');
     const personal = purpose && purpose.value === 'personal';
     $('splitNoteWrap').hidden = !personal;
-    $('tripDateWrap').hidden = !personal;
+    // 운행 날짜 · 비용은 사역용 · 개인용 모두, 나눠 내기는 개인용만
+    $('tripDateWrap').hidden = !purpose;
     $('splitNote').placeholder = t('splitNotePh');
     $('tripDate').max = kstDay(Date.now() + 86400000);
-    if (!personal) { $('splitNote').value = ''; splitManual = null; $('tripDate').value = ''; }
+    if (!personal) { $('splitNote').value = ''; splitManual = null; }
+    if (!purpose) $('tripDate').value = '';
     else { if (!$('tripDate').value) $('tripDate').value = kstDay(); loadCostRates(tripDay()); }
     renderCost();
     const tripKm = Number($('tripKm').value);
@@ -234,7 +236,7 @@
     $('saveButton').disabled = !purpose || !$('vehicleSelect').value || !tripOk || (ministry && (!$('purposeNote').value.trim() || !chargeValue()));
   }
 
-  /* ── 개인용 비용: 기름값(거리 ÷ 연비 × 전국 평균 경유 가격) + 정비비(km당 20원), 달러 환산, 나눠 내기 ──
+  /* ── 운행 비용(사역용 · 개인용): 기름값(거리 ÷ 연비 × 전국 평균 경유 가격) + 정비비(km당 35원), 달러 환산, 나눠 내기(개인용) ──
      서버(functions/lib/carCost.js)와 같은 식으로 미리 보여 주고, 저장할 때는 서버가 다시 계산해 기록에 남긴다. */
   // 운행 날짜마다 그날의 경유 가격 · 환율을 서버에서 받아 둔다 (값: 기준값 객체 · 'loading' · 'fail')
   const ratesByDay = new Map();
@@ -269,10 +271,12 @@
   const usdText = (krw, rate) => rate > 0 ? '$' + (krw / rate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
   const shortDay = iso => iso ? new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'ko-KR', { month: 'short', day: 'numeric' }).format(new Date(iso + 'T12:00:00+09:00')) : '';
   function renderCost() {
-    const personal = document.querySelector('input[name="useType"]:checked')?.value === 'personal';
+    const use = document.querySelector('input[name="useType"]:checked')?.value || '';
+    const personal = use === 'personal';
     document.querySelector('.log-trip-km > span').textContent = personal ? t('tripKmLabelOpt') : t('tripKmLabel');
-    $('costBox').hidden = !personal;
-    if (!personal) return;
+    $('costBox').hidden = !use;
+    if (!use) return;
+    $('costTitle').textContent = personal ? t('costTitle') : t('costTitleMinistry');
     const set = (total, usd, calc) => { $('costTotal').textContent = total; $('costTotalUsd').textContent = usd; $('costCalc').textContent = calc; };
     $('costSplit').hidden = true; $('costBasis').textContent = '';
     const costRates = ratesByDay.get(tripDay());
@@ -280,7 +284,7 @@
     const vehicleId = $('vehicleSelect').value;
     const km = Number($('tripKm').value);
     if (!vehicleId) { set('—', '', t('costNeedVehicle')); return; }
-    if ($('tripKm').value.trim() === '') { set('—', '', t('costBlankKm')); return; }
+    if ($('tripKm').value.trim() === '') { set('—', '', personal ? t('costBlankKm') : t('costNeedKm')); return; }
     if (!Number.isFinite(km) || km < 0) { set('—', '', t('costNeedKm')); return; }
     const kmPerLiter = costRates.kmPerLiter?.[vehicleId] ?? costRates.defaultKmPerLiter ?? 11;
     const fuel = Math.round(km / kmPerLiter * costRates.dieselKrw);
@@ -291,7 +295,7 @@
     const total = floor100(exact);
     const kmText = km.toLocaleString(lang === 'en' ? 'en-US' : 'ko-KR', { maximumFractionDigits: 1 });
     set('₩' + won(total), usdText(total, costRates.usdKrw), t('costCalc', { km: kmText, kmPerLiter, diesel: won(costRates.dieselKrw), fuel: won(fuel), maint1: won(costRates.maintenancePerKm), maint: won(maint) }));
-    if ($('splitNote').value.trim()) {
+    if (personal && $('splitNote').value.trim()) {
       const n = splitPeople();
       const each = floor100(exact / n);
       $('costSplitText').innerHTML = t('costSplit', { n, krw: won(each), usd: usdText(each, costRates.usdKrw) });
@@ -306,7 +310,7 @@
     const box = document.createElement('span');
     box.className = 'log-line-cost';
     if (!c) { box.classList.add('is-pending'); box.textContent = t('autoKmPending'); return box; }
-    box.textContent = t('costLine', { krw: won(c.totalKrw), usd: usdText(c.totalKrw, c.usdKrw), day: shortDay(entry.tripDate) });
+    box.textContent = t('costLine', { ministry: entry.useType === 'ministry', krw: won(c.totalKrw), usd: usdText(c.totalKrw, c.usdKrw), day: shortDay(entry.tripDate) });
     if (c.splitCount > 1) box.textContent += ' · ' + t('costLineSplit', { n: c.splitCount, krw: won(c.perPersonKrw), usd: usdText(c.perPersonKrw, c.usdKrw) });
     if (entry.autoKm && !entry.autoKm.pending) {
       const n = v => Number(v).toLocaleString(lang === 'en' ? 'en-US' : 'ko-KR', { maximumFractionDigits: 1 });
@@ -850,8 +854,8 @@
       form.append('purpose', $('purposeNote').value.trim());
       if (chargeValue()) form.append('chargeAccount', chargeValue());
       form.append('tripKm', $('tripKm').value.trim());
-      if (document.querySelector('input[name="useType"]:checked').value === 'personal') form.append('tripDate', tripDay());
-      if ($('splitNote').value.trim()) { form.append('splitNote', $('splitNote').value.trim()); form.append('splitCount', String(splitPeople())); }
+      form.append('tripDate', tripDay());
+      if (document.querySelector('input[name="useType"]:checked').value === 'personal' && $('splitNote').value.trim()) { form.append('splitNote', $('splitNote').value.trim()); form.append('splitCount', String(splitPeople())); }
       if (odoValue('before') !== null) form.append('odometerBefore', String(odoValue('before')));
       if (odoValue('after') !== null) form.append('odometerAfter', String(odoValue('after')));
       if (photoBlob) {

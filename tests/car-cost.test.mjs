@@ -34,16 +34,16 @@ function stubFetch({ diesel = '1850.5', krw = 1400 } = {}) {
   return calls;
 }
 
-test('personal cost = fuel (km ÷ km/L × diesel) + 20 won per km, split evenly', () => {
+test('trip cost = fuel (km ÷ km/L × diesel) + 35 won per km, split evenly', () => {
   const c = personalCost({ dieselKrw: 1842, usdKrw: 1400 }, 'silver-van', 42, 3);
   assert.equal(c.kmPerLiter, 11);
   assert.equal(c.fuelKrw, Math.round(42 / 11 * 1842));
-  assert.equal(c.maintKrw, 840);
-  // 42 km: 기름값 7,033 + 정비비 840 = 7,873 → 10원 단위 버림 7,800, 3명이면 2,624.3 → 2,600
+  assert.equal(c.maintKrw, 1470);
+  // 42 km: 기름값 7,033 + 정비비 1,470 = 8,503 → 10원 단위 버림 8,500, 3명이면 2,834.3 → 2,800
   assert.equal(c.fuelKrw, 7033);
-  assert.equal(c.totalKrw, 7800);
-  assert.equal(c.perPersonKrw, 2600);
-  assert.equal(personalCost({ dieselKrw: 1842 }, 'silver-van', 10).totalKrw, 1800);   // 1,675 + 200 = 1,875 → 1,800
+  assert.equal(c.totalKrw, 8500);
+  assert.equal(c.perPersonKrw, 2800);
+  assert.equal(personalCost({ dieselKrw: 1842 }, 'silver-van', 10).totalKrw, 2000);   // 1,675 + 350 = 2,025 → 2,000
   assert.equal(c.totalUsd, Math.round(c.totalKrw / 1400 * 100) / 100);
   assert.equal(personalCost({ dieselKrw: 1842, usdKrw: null }, 'santa-fe', 10).totalUsd, null);
 });
@@ -59,6 +59,11 @@ test('rates use that day\'s Opinet diesel and exchange rate, the nearest day whe
   assert.equal(withKey.fxDate, daysAgo(1));
   assert.ok(sent.some(u => u.includes(`/v1/${daysAgo(1)}?`)));
   assert.equal((await costRates(env, daysAgo(2))).dieselKrw, 1840);
+  // 예전에 캐시해 둔 기준값(정비비 20원)이 있어도 정비비는 지금 값(35원)을 쓴다
+  await env.CAMP_KV.put(`car:cost:rates:${daysAgo(3)}`, JSON.stringify({ date: daysAgo(3), dieselKrw: 1800, dieselSource: 'opinet', maintenancePerKm: 20 }));
+  const cachedOld = await costRates(env, daysAgo(3));
+  assert.equal(cachedOld.dieselKrw, 1800);
+  assert.equal(cachedOld.maintenancePerKm, 35);
   const old = await costRates(env, '2026-01-05');
   assert.equal(old.dieselSource, 'nearest');
   assert.equal(old.dieselDate, daysAgo(2));
@@ -86,18 +91,20 @@ test('a personal log saves the split memo and the cost; editing the distance rec
   assert.equal(entry.tripDate, daysAgo(1));
   assert.equal(entry.cost.splitCount, 3);
   assert.equal(entry.cost.dieselKrw, 1850.5);
-  assert.equal(entry.cost.totalKrw, Math.floor((Math.round(42 / 11 * 1850.5) + 840) / 100) * 100);
+  assert.equal(entry.cost.totalKrw, Math.floor((Math.round(42 / 11 * 1850.5) + 1470) / 100) * 100);
 
   const patched = await patchUsage({ env, request: new Request('https://example.com/api/car/usage', { method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ id: entry.id, tripKm: 84 }) }) });
   const after = (await patched.json()).entry;
-  assert.equal(after.cost.totalKrw, Math.floor((Math.round(84 / 11 * 1850.5) + 1680) / 100) * 100);
+  assert.equal(after.cost.totalKrw, Math.floor((Math.round(84 / 11 * 1850.5) + 2940) / 100) * 100);
   assert.equal(after.cost.splitCount, 3);
 
-  // 사역용 기록에는 비용 · 메모를 남기지 않는다
+  // 사역용 기록도 비용을 남기고(나눠 내지 않음), 나눠 낼 사람 메모는 남기지 않는다
   const m = new FormData();
   m.set('vehicleId', 'silver-van'); m.set('useType', 'ministry'); m.set('purpose', '장보기'); m.set('chargeAccount', 'wolko'); m.set('tripKm', '10'); m.set('splitNote', 'x');
   const ministry = (await (await saveUsage({ env, request: new Request('https://example.com/api/car/usage', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: m }) })).json()).entry;
-  assert.equal(ministry.cost, undefined);
+  assert.equal(ministry.cost.totalKrw, Math.floor((Math.round(10 / 11 * 1850.5) + 350) / 100) * 100);
+  assert.equal(ministry.cost.splitCount, 1);
+  assert.equal(ministry.cost.maintenancePerKm, 35);
   assert.equal(ministry.splitNote, undefined);
 });
 
@@ -148,6 +155,6 @@ test('personal logs may leave the distance blank; the list then shows the gap ch
   await put('after', 30, { useType: 'ministry', tripKm: 5, odometerBefore: 1064 });
   const shown = (await list()).find(e => e.id === b.id);
   assert.equal(shown.autoKm.km, 44);
-  assert.equal(shown.cost.totalKrw, Math.floor((Math.round(44 / 11 * 1850.5) + 880) / 100) * 100);
+  assert.equal(shown.cost.totalKrw, Math.floor((Math.round(44 / 11 * 1850.5) + 1540) / 100) * 100);
   assert.equal(shown.cost.splitCount, 2);
 });

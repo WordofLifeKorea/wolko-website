@@ -1,11 +1,11 @@
 /**
- * 개인용 운행 비용 = 기름값(운행 km ÷ 연비 × 그날 전국 평균 경유 가격) + 정비비(km당 20원). 그날 원·달러 환율로 달러 금액도 함께 계산한다.
+ * 운행 비용(사역용 · 개인용 모두) = 기름값(운행 km ÷ 연비 × 그날 전국 평균 경유 가격) + 정비비(km당 35원). 나눠 내기는 개인용만. 그날 원·달러 환율로 달러 금액도 함께 계산한다.
  * 경유 가격: 오피넷 무료 API 인증키(환경변수 OPINET_API_KEY)로 최근 7일 전국 평균을 받아 날짜별로 KV에 쌓아 둔다.
  *   고른 날짜 값이 있으면 그 값, 없으면 쌓인 값 중 가장 가까운 날(앞날 우선) 값, 그것도 없으면 아래 기본값을 쓴다.
  * 환율: ECB 기준 일별 환율(frankfurter.dev — 키 불필요, 경비 화면과 같은 곳). 주말 · 휴일은 직전 영업일, 미래 날짜는 최신 값.
  * 화면(public/car-log.js)도 미리 보기를 위해 같은 식으로 계산한다 — 식을 바꾸면 두 곳을 함께 고친다.
  */
-export const MAINTENANCE_PER_KM = 20;
+export const MAINTENANCE_PER_KM = 35;
 // 차량별 연비(km/L, 경유) — 실제 연비를 알면 여기만 고치면 된다
 export const KM_PER_LITER = { 'silver-van': 11, 'santa-fe': 12 };
 const DEFAULT_KM_PER_LITER = 11;
@@ -69,7 +69,8 @@ export async function costRates(env, date) {
   const day = cleanTripDate(date);
   const cacheKey = RATES_DAY + day;
   const cached = await env.CAMP_KV.get(cacheKey, 'json');
-  if (cached) return cached;
+  // 캐시에는 그날 경유 가격 · 환율만 믿고, 정비비 · 연비는 늘 지금 코드 값을 쓴다(값을 바꾸면 바로 반영)
+  if (cached) return { ...cached, maintenancePerKm: MAINTENANCE_PER_KM, kmPerLiter: KM_PER_LITER, defaultKmPerLiter: DEFAULT_KM_PER_LITER };
   // 최근 7일 안의 날짜는 오피넷에 그날 값이 있다 — 아직 쌓이지 않았으면 먼저 받아 둔다
   const recent = day >= todayKst(Date.now() - 8 * 86400_000);
   if (recent && !(Number(await env.CAMP_KV.get(DIESEL_DAY + day)) > 0)) await refreshDiesel(env).catch(() => {});
@@ -87,7 +88,7 @@ export async function costRates(env, date) {
 
 export const floor100 = krw => Math.floor(krw / 100) * 100;
 
-/** 운행 한 건의 개인 사용 비용. rates 는 costRates() 결과 또는 저장된 기록의 cost(같은 이름의 값을 담고 있다). */
+/** 운행 한 건의 비용(이름은 예전 그대로 — 사역용도 같은 식, splitCount 1). rates 는 costRates() 결과 또는 저장된 기록의 cost(같은 이름의 값을 담고 있다). */
 export function personalCost(rates, vehicleId, tripKm, splitCount = 1) {
   const km = Math.max(0, Number(tripKm) || 0);
   const kmPerLiter = rates.kmPerLiter?.[vehicleId] ?? (KM_PER_LITER[vehicleId] || DEFAULT_KM_PER_LITER);
@@ -109,7 +110,7 @@ export function personalCost(rates, vehicleId, tripKm, splitCount = 1) {
 }
 
 /** 거리 · 차량을 고쳤을 때 다시 계산 — 경유 가격 · 환율은 기록 당시 값을 그대로 쓰고, 연비는 (바뀐) 차량 것을 쓴다 */
-export const recalcCost = (entry) => personalCost({ ...entry.cost, kmPerLiter: undefined }, entry.vehicleId, entry.tripKm, entry.cost.splitCount);
+export const recalcCost = (entry) => personalCost({ ...entry.cost, kmPerLiter: undefined }, entry.vehicleId, entry.tripKm, entry.useType === 'personal' ? entry.cost.splitCount : 1);
 
 export const cleanSplitNote = v => String(v || '').replace(/\s+/g, ' ').trim().slice(0, 120);
 export const cleanSplitCount = v => Math.min(MAX_SPLIT, Math.max(1, Math.floor(Number(v) || 1)));
