@@ -382,19 +382,92 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
     items.forEach(function (el) {
       var sib = el.parentNode.children, i = [].indexOf.call(sib, el);
       el.style.setProperty('--d', Math.min(i, 6) * 0.08 + 's');
+      // 캠프 흐름 세 단계는 한꺼번에 떠오르고, 위의 선만 01 → 02 → 03 차례로 그어진다
+      if (el.classList.contains('flow-step')) { el.style.setProperty('--d', '0s'); el.style.setProperty('--seq', i * 0.45 + 's'); }
       el.classList.add('cp-rv');
     });
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); } });
     }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
     items.forEach(function (el) { io.observe(el); });
+
+    // 스크롤에 따라 움직이는 두 가지
+    //  · '특별한 이유' 네 줄: 화면 가운데쯤 온 줄만 진하게, 나머지는 살짝 흐리게
+    //  · '특별한 경험' 큰 사진: 컴퓨터에서만 스크롤보다 조금 느리게 움직여 깊이감을 준다
+    var featList = document.querySelector('.wcp-wrap .feat-list');
+    var feats = featList ? [].slice.call(featList.children) : [];
+    var media = document.querySelector('.wcp-wrap .cp-split-media');
+    var mediaImg = media && media.querySelector('img');
+    var wide = window.matchMedia('(min-width: 981px) and (hover: hover)');
+    var ticking = false;
+    function frame() {
+      ticking = false;
+      var vh = window.innerHeight;
+      if (featList) {
+        var r = featList.getBoundingClientRect(), on = r.top < vh * 0.5 && r.bottom > vh * 0.5;
+        featList.classList.toggle('is-spot', on);
+        if (on) {
+          var best = null, bd = Infinity;
+          feats.forEach(function (f) {
+            var fr = f.getBoundingClientRect(), d = Math.abs(fr.top + fr.height / 2 - vh * 0.45);
+            if (d < bd) { bd = d; best = f; }
+          });
+          feats.forEach(function (f) { f.classList.toggle('is-on', f === best); });
+        }
+      }
+      if (mediaImg) {
+        if (wide.matches) {
+          media.classList.add('cp-px');
+          var mr = media.getBoundingClientRect();
+          if (mr.bottom > 0 && mr.top < vh) {
+            var p = (mr.top + mr.height / 2 - vh / 2) / (vh / 2 + mr.height / 2);
+            p = Math.max(-1, Math.min(1, p));
+            mediaImg.style.translate = '0 ' + (-p * 48).toFixed(1) + 'px';
+          }
+        } else if (media.classList.contains('cp-px')) {
+          media.classList.remove('cp-px');
+          mediaImg.style.translate = '';
+        }
+      }
+    }
+    function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    frame();
   })();
+
+  // 바로가기로 프로그램 카드에 도착하면 그 카드를 한 번 반짝여서 어디로 왔는지 알려 준다
+  function landOn(card) {
+    if (!card || !card.classList.contains('prog-card')) return;
+    card.classList.remove('is-landed');
+    void card.offsetWidth;
+    card.classList.add('is-landed');
+    clearTimeout(card._landT);
+    card._landT = setTimeout(function () { card.classList.remove('is-landed'); }, 1900);
+  }
+  function landAfterScroll(card) {
+    var done = false;
+    function go() { if (done) return; done = true; window.removeEventListener('scrollend', go); landOn(card); }
+    if ('onscrollend' in window) { window.addEventListener('scrollend', go); setTimeout(go, 1400); }
+    else setTimeout(go, 750);
+  }
+  if (location.hash) {
+    var hashCard = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (hashCard && hashCard.classList.contains('prog-card')) setTimeout(function () { landOn(hashCard); }, 900);
+  }
 
   // 같은 페이지 안 바로가기 링크는 부드럽게 이동
   document.querySelectorAll('.wcp-wrap a[href^="#"]').forEach(function (a) {
     a.addEventListener('click', function (e) {
       var target = document.querySelector(a.getAttribute('href'));
-      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      if (!target) return;
+      e.preventDefault();
+      var before = window.scrollY;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (target.classList.contains('prog-card')) {
+        // 이미 그 자리라 스크롤이 일어나지 않으면 바로 반짝인다
+        requestAnimationFrame(function () { if (Math.abs(window.scrollY - before) < 2) landOn(target); else landAfterScroll(target); });
+      }
     });
   });
 </script>
@@ -552,6 +625,47 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .cp-split-media.cp-rv img { transform: scale(1.08); }
 .cp-split-media.cp-rv.is-in img { transform: none; }
 
+/* 작은 제목 앞 짧은 선 — 덩어리가 떠오를 때 0에서 쭉 그어진다 (맨 위 큰 사진 부분과 같은 움직임) */
+.cp-eyebrow::before { transition: width 1s cubic-bezier(.2,.7,.2,1) calc(var(--d, 0s) + .35s); }
+.cp-rv:not(.is-in) .cp-eyebrow::before,
+.cp-eyebrow.cp-rv:not(.is-in)::before { width: 0; }
+
+/* 캠프 흐름 — 컴퓨터: 단계 위 굵은 선이 왼쪽에서 오른쪽으로 차례로 그어지고 숫자가 따라 나타난다 */
+@media (min-width: 981px) {
+  .wcp-wrap .flow-step.cp-rv { position: relative; border-top-color: transparent; }
+  .wcp-wrap .flow-step.cp-rv::before {
+    content: ''; position: absolute; left: 0; right: 0; top: -2px; height: 2px; background: var(--cp-navy);
+    transform: scaleX(0); transform-origin: left center;
+    transition: transform 1s cubic-bezier(.6,0,.2,1) calc(var(--seq, 0s) + .2s);
+  }
+  .wcp-wrap .flow-step.cp-rv.is-in::before { transform: none; }
+  .wcp-wrap .flow-step.cp-rv .flow-step-num {
+    opacity: 0; transform: translateY(12px);
+    transition: opacity .7s ease calc(var(--seq, 0s) + .7s), transform .8s cubic-bezier(.2,.7,.2,1) calc(var(--seq, 0s) + .7s);
+  }
+  .wcp-wrap .flow-step.cp-rv.is-in .flow-step-num { opacity: 1; transform: none; }
+}
+
+/* '특별한 이유' — 지금 읽는 줄 말고는 살짝 흐리게 */
+.wcp-wrap .feat-item.cp-rv > * { transition: opacity .45s ease; }
+.wcp-wrap .feat-list.is-spot .feat-item:not(.is-on) > * { opacity: .4; }
+
+/* '특별한 경험' 큰 사진 — 컴퓨터에서 스크롤보다 느리게 움직일 여유 */
+@media (min-width: 981px) {
+  .cp-split-media.cp-px img { height: calc(100% + 96px); margin-top: -48px; will-change: translate; }
+}
+
+/* 바로가기로 도착한 프로그램 카드 — 테두리가 한 번 퍼지며 반짝이고 사진이 잠깐 밝아진다 */
+@keyframes cpLandRing {
+  0% { box-shadow: 0 0 0 0 rgba(0,79,104,0); }
+  22% { box-shadow: 0 0 0 4px rgba(0,79,104,.95); }
+  100% { box-shadow: 0 0 0 16px rgba(0,79,104,0); }
+}
+@keyframes cpLandImg { 30% { filter: brightness(1.14); } }
+.wcp-wrap .prog-card.is-landed .prog-media { animation: cpLandRing 1.6s cubic-bezier(.2,.7,.2,1) both; }
+.wcp-wrap .prog-card.is-landed .prog-img { animation: cpLandImg 1.6s ease both; }
+.wcp-wrap .prog-card.is-landed .prog-hint { opacity: 1; transform: none; }
+
 /* ══ 반응형 ══ */
 @media (max-width: 980px) {
   .cp-intro-grid, .cp-aside-grid, .cp-flow-head { grid-template-columns: 1fr; gap: 28px; align-items: start; }
@@ -565,6 +679,13 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   .wcp-wrap .flow-step:first-child { border-top: 2px solid var(--cp-navy); }
   .wcp-wrap .flow-step-num { grid-row: 1 / span 2; font-size: 32px; }
   .wcp-wrap .flow-step-title { margin-top: 0; }
+  /* 휴대폰 · 태블릿: 숫자 아래로 다음 단계까지 이어지는 세로선 */
+  .wcp-wrap .flow-step { position: relative; }
+  .wcp-wrap .flow-step:not(:last-child)::after {
+    content: ''; position: absolute; left: 17px; top: 74px; bottom: 14px; width: 2px; background: rgba(0,79,104,.28);
+  }
+  .wcp-wrap .flow-step.cp-rv:not(:last-child)::after { transform: scaleY(0); transform-origin: top center; transition: transform 1.1s cubic-bezier(.6,0,.2,1) .45s; }
+  .wcp-wrap .flow-step.cp-rv.is-in:not(:last-child)::after { transform: none; }
   .wcp-wrap .cta-inner { grid-template-columns: 1fr; gap: 40px; align-items: start; }
   .wcp-wrap .contact-bar-inner { flex-direction: column; align-items: flex-start; }
 }
@@ -590,6 +711,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   .wcp-wrap .flow-steps { margin-top: 40px; }
   .wcp-wrap .flow-step { grid-template-columns: 52px minmax(0, 1fr); column-gap: 14px; }
   .wcp-wrap .flow-step-num { font-size: 26px; }
+  .wcp-wrap .flow-step:not(:last-child)::after { left: 13px; top: 66px; }
   .wcp-wrap .flow-step-title { font-size: 18px; }
   .wcp-wrap .cta-section { padding: 64px 0 48px; }
   .wcp-wrap .contact-bar { margin-top: 48px; padding-top: 32px; }
@@ -602,6 +724,11 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 @media (hover: none) {
   .wcp-wrap .prog-hint { opacity: 1; transform: none; }
   .wcp-wrap .prog-card:hover .prog-img { transform: none; filter: none; }
+  /* 휴대폰: 카드가 화면에 들어오면 '참여 대상' 띠가 사진 아래에서 스르륵 올라온다 */
+  .wcp-wrap .prog-card.cp-rv .prog-hint {
+    transition: opacity .5s ease calc(var(--d, 0s) + .6s), transform .8s cubic-bezier(.2,.7,.2,1) calc(var(--d, 0s) + .6s);
+  }
+  .wcp-wrap .prog-card.cp-rv:not(.is-in) .prog-hint { opacity: 0; transform: translateY(100%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -610,6 +737,8 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   .wcp-wrap .cta-card svg,
   .wcp-wrap .btn-contact,
   .cp-split-media img { transition: none; }
+  .wcp-wrap .prog-card.is-landed .prog-media { animation: none; box-shadow: 0 0 0 3px var(--cp-deep); }
+  .wcp-wrap .prog-card.is-landed .prog-img { animation: none; }
 }
 </style>
 
