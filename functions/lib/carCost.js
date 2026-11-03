@@ -113,3 +113,50 @@ export const recalcCost = (entry) => personalCost({ ...entry.cost, kmPerLiter: u
 
 export const cleanSplitNote = v => String(v || '').replace(/\s+/g, ' ').trim().slice(0, 120);
 export const cleanSplitCount = v => Math.min(MAX_SPLIT, Math.max(1, Math.floor(Number(v) || 1)));
+
+/* ───────── 운행 거리를 비운 개인용 기록: 앞뒤 기록의 계기판 숫자로 빠진 거리를 계산해 청구 ─────────
+ * 같은 차량의 기록을 운행 시각 순으로 늘어놓고, 빈 기록 앞에서 가장 가까운 '끝 계기판' 숫자(시작점)와
+ * 뒤에서 가장 가까운 '시작 계기판' 숫자(끝점)를 찾는다. 빈 기록 자신의 운행 전 · 후 계기판이 있으면 그 값을 먼저 쓴다.
+ * 빠진 거리 = 끝점 − 시작점 − 그 사이 다른 기록에 적힌 운행 거리. 그 사이 빈 기록이 여럿이면 똑같이 나눈다.
+ * 저장하지 않고 목록을 읽을 때마다 계산하므로, 다음 기록이 올라오거나 계기판 숫자를 고치면 바로 반영된다. */
+const num = v => (v === null || v === undefined || v === '' || !Number.isFinite(Number(v)) ? null : Number(v));
+const hasKm = e => num(e.tripKm) !== null;
+const endOf = e => num(e.odometerAfter) ?? num(e.mileageAfter) ?? (num(e.odometerBefore) !== null && hasKm(e) ? num(e.odometerBefore) + num(e.tripKm) : null);
+const startOf = e => num(e.odometerBefore) ?? (hasKm(e) && (num(e.odometerAfter) ?? num(e.mileageAfter)) !== null ? (num(e.odometerAfter) ?? num(e.mileageAfter)) - num(e.tripKm) : null);
+const timeOf = e => Date.parse(e.photoTakenAt || e.recordedAt) || 0;
+export const tripDateOf = e => e.tripDate || todayKst(Date.parse(e.photoTakenAt || e.recordedAt) || Date.now());
+
+/** 차량 한 대의 기록(아무 순서)에서 빈 기록마다 { km, from, to, shared } 또는 { pending: true } 를 돌려준다 (id → 결과) */
+export function gapKmByEntry(entries) {
+  const list = [...entries].sort((a, b) => timeOf(a) - timeOf(b) || Date.parse(a.recordedAt) - Date.parse(b.recordedAt));
+  const out = new Map();
+  list.forEach((e, i) => {
+    if (hasKm(e)) return;
+    let from = num(e.odometerBefore), lo = i;
+    if (from === null) for (let j = i - 1; j >= 0; j--) { const v = endOf(list[j]); if (v !== null) { from = v; lo = j + 1; break; } }
+    let to = endOf(e), hi = i;
+    if (to === null) for (let k = i + 1; k < list.length; k++) { const v = startOf(list[k]); if (v !== null) { to = v; hi = k - 1; break; } }
+    if (from === null || to === null) { out.set(e.id, { pending: true }); return; }
+    const span = list.slice(lo, hi + 1);
+    const accounted = span.filter(hasKm).reduce((s, x) => s + num(x.tripKm), 0);
+    const blanks = span.filter(x => !hasKm(x)).length || 1;
+    const gap = to - from - accounted;
+    out.set(e.id, gap >= 0 ? { km: Math.round(gap / blanks * 10) / 10, from, to, shared: blanks } : { pending: true });
+  });
+  return out;
+}
+
+/** 목록에 실어 보낼 기록에 빈 개인용 기록의 자동 거리(autoKm)와 그 비용(cost)을 붙인다 — 계산은 같은 차량의 전체 기록으로 */
+export async function withGapCharges(env, entries, shown = entries) {
+  const byVehicle = new Map();
+  entries.forEach(e => { if (!byVehicle.has(e.vehicleId)) byVehicle.set(e.vehicleId, []); byVehicle.get(e.vehicleId).push(e); });
+  const gaps = new Map();
+  byVehicle.forEach(list => gapKmByEntry(list).forEach((v, id) => gaps.set(id, v)));
+  return Promise.all(shown.map(async e => {
+    if (e.useType !== 'personal' || hasKm(e) || !gaps.has(e.id)) return e;
+    const autoKm = gaps.get(e.id);
+    if (autoKm.pending) return { ...e, autoKm };
+    const rates = await costRates(env, tripDateOf(e)).catch(() => null);
+    return { ...e, autoKm, ...(rates ? { cost: personalCost(rates, e.vehicleId, autoKm.km, e.splitCount || 1) } : {}) };
+  }));
+}

@@ -1,6 +1,6 @@
 import { fileKV } from '../../lib/nasFileKV.js';
 import { clearDraft } from './usage-draft.js';
-import { costRates, personalCost, recalcCost, cleanSplitNote, cleanSplitCount, cleanTripDate, todayKst } from '../../lib/carCost.js';
+import { costRates, personalCost, recalcCost, cleanSplitNote, cleanSplitCount, cleanTripDate, todayKst, tripDateOf, withGapCharges } from '../../lib/carCost.js';
 import { AFTER_SUFFIX, ENTRY_PREFIX, PHOTO_PREFIX, TRASH_ENTRY_PREFIX, TRASH_PHOTO_PREFIX, fail, listEntries, usageSession, selectableVehicles } from '../../lib/carUsage.js';
 
 const MAX_PHOTO_BYTES = 4 * 1024 * 1024;
@@ -9,7 +9,9 @@ export async function onRequestGet({ env, request }) {
   const session = await usageSession(request, env);
   if (!session) return fail('포탈 로그인이 필요합니다.', 401);
   const [entries, vehicles] = await Promise.all([listEntries(env), Promise.resolve(selectableVehicles())]);
-  return Response.json({ user: session, vehicles: [...vehicles].map(([id, name]) => ({ id, name })), entries: entries.slice(0, 100) }, {
+  // 운행 거리를 비운 개인용 기록은 앞뒤 기록의 계기판 숫자로 빠진 거리와 금액을 계산해 붙인다
+  const shown = await withGapCharges(env, entries, entries.slice(0, 100));
+  return Response.json({ user: session, vehicles: [...vehicles].map(([id, name]) => ({ id, name })), entries: shown }, {
     headers: { 'Cache-Control': 'no-store' },
   });
 }
@@ -104,6 +106,10 @@ export async function onRequestPatch({ env, request }) {
     if (!Number.isFinite(trip) || trip < 0 || trip > 5000) return fail('총 운행 거리(km)를 0 이상의 숫자로 입력해 주세요.');
     entry.tripKm = trip;
     if (entry.cost) entry.cost = recalcCost(entry);
+    else if (entry.useType === 'personal') {   // 비워 두었던 거리를 나중에 적으면 그 운행 날짜 기준으로 계산한다
+      const rates = await costRates(env, tripDateOf(entry)).catch(() => null);
+      if (rates) entry.cost = personalCost(rates, entry.vehicleId, trip, entry.splitCount || 1);
+    }
     entry.editedBy = session.email; entry.editedAt = new Date().toISOString();
     await fileKV(env).put(`${ENTRY_PREFIX}${id}`, JSON.stringify(entry));
     return Response.json({ entry }, { headers: { 'Cache-Control': 'no-store' } });
@@ -132,10 +138,11 @@ export async function onRequestPost({ env, request }) {
   const splitNote = useType === 'personal' ? cleanSplitNote(form.get('splitNote')) : '';
   const splitCount = splitNote ? cleanSplitCount(form.get('splitCount')) : 1;
   const tripDate = useType === 'personal' ? cleanTripDate(form.get('tripDate')) : '';
-  // 총 운행 거리(km)는 꼭 받는다. 사진(운행 전·후)은 있으면 받는 선택 항목이다.
+  // 총 운행 거리(km)는 사역용이면 꼭 받는다. 개인용은 비워 둘 수 있고, 그러면 앞뒤 기록의 계기판 숫자로 빠진 거리를 계산해 청구한다.
+  // 사진(운행 전·후)은 있으면 받는 선택 항목이다.
   const tripKmRaw = String(form.get('tripKm') ?? '').trim();
-  const tripKm = Math.round(Number(tripKmRaw) * 10) / 10;
-  if (!tripKmRaw || !Number.isFinite(tripKm) || tripKm < 0 || tripKm > 5000) return fail('총 운행 거리(km)를 0 이상의 숫자로 입력해 주세요.');
+  const tripKm = tripKmRaw === '' && useType === 'personal' ? null : Math.round(Number(tripKmRaw) * 10) / 10;
+  if (tripKm !== null && (!tripKmRaw || !Number.isFinite(tripKm) || tripKm < 0 || tripKm > 5000)) return fail('총 운행 거리(km)를 0 이상의 숫자로 입력해 주세요.');
 
   // 계기판 숫자(자동 인식 후 사용자가 확인한 값, 선택): 정수 0~2,000,000 만 받는다. 운행 후 값은 '사용 후 마일리지'로도 쓴다.
   const odo = name => { const raw = String(form.get(name) ?? '').trim(); const n = Number(raw); return raw !== '' && Number.isInteger(n) && n >= 0 && n <= 2_000_000 ? n : null; };
@@ -159,11 +166,11 @@ export async function onRequestPost({ env, request }) {
     && candidate.getTime() <= Date.now() + 5 * 60_000
     && candidate.getTime() >= Date.now() - 72 * 60 * 60_000;
   // 개인용 비용(기름값 + 정비비)을 저장 시점 기준값으로 계산해 함께 남긴다. 기준값을 못 받아도 일지는 저장한다.
-  const rates = useType === 'personal' ? await costRates(env, tripDate).catch(() => null) : null;
-  const cost = rates ? personalCost(rates, vehicleId, tripKm, splitCount) : null;
+  const rates = useType === 'personal' && tripKm !== null ? await costRates(env, tripDate).catch(() => null) : null;
+  const cost = rates && tripKm !== null ? personalCost(rates, vehicleId, tripKm, splitCount) : null;
   const id = crypto.randomUUID();
   const entry = {
-    id, vehicleId, vehicleName: labels.get(vehicleId), useType, ...(purpose ? { purpose } : {}), ...(tripDate ? { tripDate } : {}), ...(splitNote ? { splitNote } : {}), tripKm, ...(cost ? { cost } : {}),
+    id, vehicleId, vehicleName: labels.get(vehicleId), useType, ...(purpose ? { purpose } : {}), ...(tripDate ? { tripDate } : {}), ...(splitNote ? { splitNote, splitCount } : {}), ...(tripKm !== null ? { tripKm } : {}), ...(cost ? { cost } : {}),
     ...(odometerBefore !== null ? { odometerBefore } : {}), ...(odometerAfter !== null ? { odometerAfter, mileageAfter: odometerAfter } : {}),
     hasPhoto: !before.none, hasPhotoAfter: !afterPhoto.none,
     photoTakenAt: isRecentExif ? candidate.toISOString() : recordedAt,
