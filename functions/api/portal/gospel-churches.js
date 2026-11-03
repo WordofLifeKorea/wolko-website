@@ -6,10 +6,10 @@
 import { portalSession } from '../../lib/hubAccounts.js';
 import { firebaseDatabaseToken } from '../../lib/firebaseCrsDatabase.js';
 import { parseCrsChurches } from '../../lib/gospelStats.js';
+import { CRS_DATABASE as DATABASE, CHURCH_CACHE_KEY } from '../../lib/crsChurchRegister.js';
 
-const DATABASE = 'https://wolko-crs-default-rtdb.asia-southeast1.firebasedatabase.app';
 const H = { 'Cache-Control': 'no-store' };
-export const CHURCH_CACHE_KEY = 'gospel:crs-churches';
+export { CHURCH_CACHE_KEY };
 const CACHE_SECONDS = 600;
 
 export async function onRequestGet({ env, request }) {

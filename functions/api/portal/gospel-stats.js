@@ -16,6 +16,7 @@ import { isDesignated, loadReporters } from '../../lib/gospelReporters.js';
 import { campusOf } from '../../lib/campus.js';
 import { ministryFromCrs } from '../../lib/crsMinistry.js';
 import { loadSlimChurches } from './gospel-ministry.js';
+import { registerNewChurches } from '../../lib/crsChurchRegister.js';
 import { CAMPUS_OVERRIDES } from '../../../src/lib/expense-config.js';
 import {
   GOSPEL_SECTIONS, LOCATIONS, SCOPES, MONTH_RE, MONTHS_BACK, currentMonthKst, reportMonth, shiftMonth, reportableMonth,
@@ -191,6 +192,10 @@ export async function onRequestPost({ env, request }) {
   let churchEntries;
   try { churchEntries = scope === 'ministry' || !extended ? [] : cleanChurchEntries(body?.churchEntries); } catch (error) { return fail(String(error.message).includes('churchName') ? '교회 행사 기록에는 교회 이름이 필요합니다.' : '교회 행사 기록의 숫자는 0 이상의 정수로 입력해 주세요.'); }
 
+  // CRS 목록에 없는 교회(직접 적은 이름)는 CRS 에 새 교회로 등록하고 그 번호로 잇는다 — 실패해도 보고는 저장한다
+  let createdChurches = [];
+  if (churchEntries.length) ({ entries: churchEntries, created: createdChurches } = await registerNewChurches(env, churchEntries, { location, month }));
+
   const id = scope === 'ministry' ? await ministryId(env, location) : await unitId(env, session.email, scope, teamName);
   const key = reportKey(month, id);
   const previous = await env.CAMP_KV.get(key, 'json');
@@ -204,7 +209,7 @@ export async function onRequestPost({ env, request }) {
   await env.CAMP_KV.put(key, JSON.stringify(report));
   await env.CAMP_KV.delete(AGG_KEY(month));          // 이 달 집계 저장값은 낡았으니 지운다
   const { owner: _owner, ...shown } = report;
-  return Response.json({ report: shown, updated: !!previous }, { headers: H });
+  return Response.json({ report: shown, updated: !!previous, createdChurches }, { headers: H });
 }
 
 export async function onRequestDelete({ env, request }) {

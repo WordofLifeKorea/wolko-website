@@ -330,3 +330,39 @@ test('마감: 지난달 보고만 쓰고 고칠 수 있다 — 그 전 달은 �
   assert.equal((await t.call('POST', anna, { body: report({ values: { evangelism: 2 } }) })).status, 200, '지난달은 된다');
   assert.equal((await t.call('POST', master, { body: report({ month: old, values: { evangelism: 3 } }) })).status, 200, '마스터는 예전 달도');
 });
+
+test('CRS 에 없는 교회는 새로 등록하고, 이름이 같은 교회(띄어쓰기·대소문자 무시)는 그 교회로 잇는다', async () => {
+  const { registerNewChurches, CHURCH_CACHE_KEY, CRS_DATABASE } = await import('../functions/lib/crsChurchRegister.js');
+  const deleted = [], posts = [];
+  const env = { FIREBASE_CRS_SERVICE_ACCOUNT: '{}', CAMP_KV: { async delete(k) { deleted.push(k); } } };
+  const crs = { a: { churchName: '평택 중앙 교회', number: 4 }, b: { churchName: '제주영락교회', region: '제주특별자치도', number: 9 }, c: { churchName: '송탄교회', number: 7 } };
+  const fetchImpl = async (url, init = {}) => {
+    assert.equal(url, `${CRS_DATABASE}/churches.json`);
+    if (init.method === 'POST') { posts.push(JSON.parse(init.body)); return new Response(JSON.stringify({ name: 'new' + posts.length })); }
+    return new Response(JSON.stringify(crs));
+  };
+  const entries = [
+    { id: 'e1', churchId: 'zzz', churchName: '목록에서 고른 교회', students: 5 },
+    { id: 'e2', churchId: '', churchName: '평택중앙교회', students: 10 },                 // 띄어쓰기만 다르다 → a
+    { id: 'e3', churchId: '', churchName: '새소망교회', event: '겨울 집회', students: 20 },
+    { id: 'e4', churchId: '', churchName: '새 소망교회', students: 3 },                    // 같은 보고 안에서 두 번 → 한 번만 만든다
+  ];
+  const { entries: out, created } = await registerNewChurches(env, entries, { location: 'mainland', month: '2026-10', fetchImpl, getToken: async () => 't', now: 1 });
+  assert.deepEqual(out.map(e => e.churchId), ['zzz', 'a', 'new1', 'new1']);
+  assert.deepEqual(created, [{ id: 'new1', churchName: '새소망교회' }]);
+  assert.equal(posts.length, 1);
+  assert.equal(posts[0].churchName, '새소망교회'); assert.equal(posts[0].number, 8, '평택 교회 번호 다음 번호(제주 번호는 따로)');
+  assert.equal(posts[0].region, ''); assert.equal(posts[0].stepsVersion, 3); assert.deepEqual(posts[0].steps, {});
+  assert.match(posts[0].notes, /복음 통계 보고\(2026-10\).*겨울 집회/);
+  assert.deepEqual(deleted, [CHURCH_CACHE_KEY], '교회 목록 캐시를 지워 바로 보이게');
+  assert.equal(entries[2].churchId, '', '받은 목록은 고치지 않는다');
+
+  const jeju = await registerNewChurches(env, [{ churchName: '애월교회' }], { location: 'jeju', month: '2026-10', fetchImpl, getToken: async () => 't' });
+  assert.equal(posts[1].region, '제주특별자치도'); assert.equal(posts[1].number, 10, '제주는 제주 번호를 이어서');
+  assert.equal(jeju.entries[0].churchId, 'new2');
+
+  const none = await registerNewChurches({ CAMP_KV: env.CAMP_KV }, [{ churchName: 'X' }], { location: 'mainland', month: '2026-10', fetchImpl });
+  assert.deepEqual(none.created, [], 'CRS 연결이 없으면 등록하지 않는다');
+  const broken = await registerNewChurches(env, [{ churchName: 'X' }], { location: 'mainland', month: '2026-10', fetchImpl: async () => new Response('no', { status: 500 }), getToken: async () => 't' });
+  assert.deepEqual(broken.created, []); assert.equal(broken.entries[0].churchName, 'X', 'CRS 가 실패해도 이름은 그대로 남는다');
+});
