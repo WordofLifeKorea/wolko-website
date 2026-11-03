@@ -131,30 +131,29 @@ test('a blank-distance record is charged the odometer gap between the records ar
   assert.deepEqual(gapKmByEntry([rec('a', 10, { tripKm: 5, odometerAfter: 500 }), rec('x', 20, { mileageAfter: 523 })]).get('x'), { km: 23, from: 500, to: 523, shared: 1 });
 });
 
-test('personal logs may leave the distance blank; the list then shows the gap charge for that person', async () => {
+test('both ministry and personal logs need a distance; old records without one get the odometer-gap charge', async () => {
   stubFetch();
   const env = memoryEnv({ OPINET_API_KEY: 'k' });
   const email = 'driver@wol.org';
   await env.CAMP_KV.put(`hub:account:${email}`, JSON.stringify({ email, name: '운전자', status: 'approved' }));
   const token = await createHubSessionToken(env.ADMIN_PASSWORD, email, 'admin');
   const post = fields => { const f = new FormData(); Object.entries(fields).forEach(([k, v]) => f.set(k, v)); return saveUsage({ env, request: new Request('https://example.com/api/car/usage', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: f }) }); };
-  assert.equal((await post({ vehicleId: 'silver-van', useType: 'ministry', purpose: 'x', chargeAccount: 'wolko', tripKm: '' })).status, 400);   // 사역용은 여전히 필수
-  const blank = await post({ vehicleId: 'silver-van', useType: 'personal', tripKm: '', tripDate: daysAgo(1), splitNote: '김철수', splitCount: '2' });
-  assert.equal(blank.status, 201);
-  const b = (await blank.json()).entry;
-  assert.equal(b.tripKm, undefined);
-  assert.equal(b.cost, undefined);
-  assert.equal(b.splitCount, 2);
-  // 앞뒤 기록을 시간 순서가 분명하게 넣는다
-  const put = (id, m, fields) => env.CAMP_KV.put(`car:usage:entry:${id}`, JSON.stringify(rec(id, m, { vehicleName: 'Silver Carnival', ...fields })));
-  b.photoTakenAt = b.recordedAt = new Date(Date.parse(at(20))).toISOString();
-  await env.CAMP_KV.put(`car:usage:entry:${b.id}`, JSON.stringify(b));
+  assert.equal((await post({ vehicleId: 'silver-van', useType: 'ministry', purpose: 'x', chargeAccount: 'wolko', tripKm: '' })).status, 400);
+  assert.equal((await post({ vehicleId: 'silver-van', useType: 'personal', tripKm: '' })).status, 400);
+  // 거리 없이 남은 예전 기록(개인용 · 사역용)을 시간 순서가 분명하게 넣는다
+  const put = (id, m, fields) => env.CAMP_KV.put(`car:usage:entry:${id}`, JSON.stringify(rec(id, m, { vehicleName: 'Silver Carnival', userEmail: email, ...fields })));
   await put('before', 10, { useType: 'ministry', tripKm: 20, odometerBefore: 1000, odometerAfter: 1020 });
+  await put('old-personal', 20, { useType: 'personal', tripDate: daysAgo(1), splitNote: '김철수', splitCount: 2 });
+  await put('mid', 30, { useType: 'ministry', tripKm: 5, odometerBefore: 1064, odometerAfter: 1069 });
+  await put('old-ministry', 40, { useType: 'ministry', chargeAccount: 'wolko', tripDate: daysAgo(1) });
   const list = async () => (await (await listUsage({ env, request: new Request('https://example.com/api/car/usage', { headers: { Authorization: `Bearer ${token}` } }) })).json()).entries;
-  assert.deepEqual((await list()).find(e => e.id === b.id).autoKm, { pending: true });
-  await put('after', 30, { useType: 'ministry', tripKm: 5, odometerBefore: 1064 });
-  const shown = (await list()).find(e => e.id === b.id);
-  assert.equal(shown.autoKm.km, 44);
-  assert.equal(shown.cost.totalKrw, Math.floor((Math.round(44 / 11 * 1850.5) + 1540) / 100) * 100);
-  assert.equal(shown.cost.splitCount, 2);
+  const byId = Object.fromEntries((await list()).map(e => [e.id, e]));
+  assert.equal(byId['old-personal'].autoKm.km, 44);
+  assert.equal(byId['old-personal'].cost.totalKrw, Math.floor((Math.round(44 / 11 * 1850.5) + 1540) / 100) * 100);
+  assert.equal(byId['old-personal'].cost.splitCount, 2);
+  assert.deepEqual(byId['old-ministry'].autoKm, { pending: true });   // 다음 기록이 아직 없다
+  await put('after', 50, { useType: 'ministry', tripKm: 3, odometerBefore: 1090 });
+  const later = Object.fromEntries((await list()).map(e => [e.id, e]));
+  assert.equal(later['old-ministry'].autoKm.km, 21);
+  assert.equal(later['old-ministry'].cost.splitCount, 1);
 });

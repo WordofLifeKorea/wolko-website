@@ -31,9 +31,9 @@
       photoTaken: t => `사진 촬영: ${t} (사진 정보 기준)`, photoNoTime: '사진에 촬영 시각 정보가 없어 저장 시각으로 기록됩니다.',
       saved: '사용 일지가 저장됐습니다.', saveFail: '저장하지 못했습니다.',
       draftSaved: d => `작성 중인 내용이 임시 저장됐어요 · ${d}까지 보관돼요`, draftClear: '임시 저장 지우기', draftClearAsk: '임시 저장한 내용과 사진을 지울까요?',
-      chargeLegend: '비용 처리 계좌', chargeNeeded: '비용을 처리할 계좌를 골라 주세요.', chargeRow: '처리 계좌', tripDateLabel: '운행 날짜', tripKmLabelOpt: '총 운행 거리 (km)', costBlankKm: '비워 두면 앞뒤 기록의 계기판 숫자로 빠진 거리를 계산해 청구해요.',
+      chargeLegend: '비용 처리 계좌', chargeNeeded: '비용을 처리할 계좌를 골라 주세요.', chargeRow: '처리 계좌', tripDateLabel: '운행 날짜',
       autoKmLine: a => `계기판 ${a.from} → ${a.to} km 사이 빠진 거리로 자동 계산${a.shared > 1 ? ` (빈 기록 ${a.shared}건이 나눠 냄)` : ''}`, autoKmPending: '운행 거리가 비어 있어요 · 다음 기록이 올라오면 앞뒤 계기판 숫자로 자동 계산돼요.', autoKmTag: '자동', splitNoteLabel: '함께 나눠 낼 사람 (선택)', splitNotePh: '예: 김철수, 이영희', splitMinus: '한 명 빼기', splitPlus: '한 명 더하기',
-      costTitle: '개인 사용 비용', costTitleMinistry: '사역 사용 비용', costNeedKm: '총 운행 거리를 넣으면 계산돼요.', costNeedVehicle: '차량을 고르면 계산돼요.', costLoading: '경유 가격과 환율을 불러오는 중…', costFail: '경유 가격을 불러오지 못했어요. 저장하면 서버에서 계산해요.',
+      costTitle: '개인 사용 비용', costTitleMinistry: '사역 사용 비용', costNeedKm: '총 운행 거리를 적거나, 아래에 운행 전 · 후 계기판 사진을 올리면 거리가 채워지고 계산돼요.', costNeedVehicle: '차량을 고르면 계산돼요.', costLoading: '경유 가격과 환율을 불러오는 중…', costFail: '경유 가격을 불러오지 못했어요. 저장하면 서버에서 계산해요.',
       costCalc: c => `기름값 ${c.km} km ÷ ${c.kmPerLiter} km/L × ₩${c.diesel} = ₩${c.fuel}\n정비비 ${c.km} km × ₩${c.maint1} = ₩${c.maint}`,
       costSplit: c => `${c.n}명이 나눠 내면 (본인 포함) 1인당 <strong>₩${c.krw}</strong>${c.usd ? ` · ${c.usd}` : ''}`,
       costBasis: c => `기준: 전국 평균 경유 ₩${c.diesel}/L (${c.dieselDate}${c.fallback ? ' 기본값' : c.near ? ' — 그날 값이 없어 가장 가까운 날 값' : ''})${c.fx ? `\n환율 $1 = ₩${c.fx} (${c.fxDate})` : ''}\n금액은 10원 단위를 버려요.`,
@@ -66,9 +66,9 @@
       photoTaken: t => `Photo taken: ${t} (from photo data)`, photoNoTime: 'The photo has no capture time, so the save time will be recorded.',
       saved: 'Usage log saved.', saveFail: 'Could not save.',
       draftSaved: d => `Draft saved to your account · kept until ${d}`, draftClear: 'Delete draft', draftClearAsk: 'Delete the saved draft and photos?',
-      chargeLegend: 'Charged to', chargeNeeded: 'Please choose the account the cost is charged to.', chargeRow: 'Charged to', tripDateLabel: 'Date of the trip', tripKmLabelOpt: 'Total distance driven (km)', costBlankKm: 'If left blank, the missing distance is worked out from the odometer readings of the records before and after, and charged.',
+      chargeLegend: 'Charged to', chargeNeeded: 'Please choose the account the cost is charged to.', chargeRow: 'Charged to', tripDateLabel: 'Date of the trip',
       autoKmLine: a => `Worked out from the odometer gap ${a.from} → ${a.to} km${a.shared > 1 ? ` (shared by ${a.shared} blank records)` : ''}`, autoKmPending: 'Distance left blank · it will be worked out from the odometer readings once the next record is in.', autoKmTag: 'auto', splitNoteLabel: 'Splitting the cost with (optional)', splitNotePh: 'e.g. John, Sarah', splitMinus: 'One person fewer', splitPlus: 'One more person',
-      costTitle: 'Personal use cost', costTitleMinistry: 'Ministry use cost', costNeedKm: 'Enter the total distance to calculate it.', costNeedVehicle: 'Select a vehicle to calculate it.', costLoading: 'Loading the diesel price and exchange rate…', costFail: 'Could not load the diesel price. The server will calculate it when you save.',
+      costTitle: 'Personal use cost', costTitleMinistry: 'Ministry use cost', costNeedKm: 'Enter the total distance, or add before and after odometer photos below to fill it in and calculate.', costNeedVehicle: 'Select a vehicle to calculate it.', costLoading: 'Loading the diesel price and exchange rate…', costFail: 'Could not load the diesel price. The server will calculate it when you save.',
       costCalc: c => `Fuel ${c.km} km ÷ ${c.kmPerLiter} km/L × ₩${c.diesel} = ₩${c.fuel}\nMaintenance ${c.km} km × ₩${c.maint1} = ₩${c.maint}`,
       costSplit: c => `Split ${c.n} ways (including you): <strong>₩${c.krw}</strong>${c.usd ? ` · ${c.usd}` : ''} each`,
       costBasis: c => `Based on the national average diesel price ₩${c.diesel}/L (${c.dieselDate}${c.fallback ? ', default' : c.near ? ' — nearest day with data' : ''})${c.fx ? `\nExchange rate $1 = ₩${c.fx} (${c.fxDate})` : ''}\nAmounts are rounded down to the nearest ₩100.`,
@@ -228,11 +228,9 @@
     else { if (!$('tripDate').value) $('tripDate').value = kstDay(); loadCostRates(tripDay()); }
     renderCost();
     const tripKm = Number($('tripKm').value);
-    const tripBlank = $('tripKm').value.trim() === '';
-    // 개인용은 거리를 비워 둘 수 있다(앞뒤 기록의 계기판 숫자로 계산해 청구)
-    const tripOk = (personal && tripBlank) || (!tripBlank && Number.isFinite(tripKm) && tripKm >= 0 && tripKm <= 5000);
-    $('tripKm').required = !personal;
-    // 사진은 선택이고, 차량 · 사용 목적 · 총 운행 거리(km, 개인용은 비워 둘 수 있음)가 있어야 저장할 수 있다.
+    // 총 운행 거리는 사역용 · 개인용 모두 꼭 적는다(운행 전 · 후 계기판 사진을 올리면 자동으로 채워진다)
+    const tripOk = $('tripKm').value.trim() !== '' && Number.isFinite(tripKm) && tripKm >= 0 && tripKm <= 5000;
+    // 사진은 선택이고, 차량 · 사용 목적 · 총 운행 거리(km)는 꼭 있어야 저장할 수 있다.
     $('saveButton').disabled = !purpose || !$('vehicleSelect').value || !tripOk || (ministry && (!$('purposeNote').value.trim() || !chargeValue()));
   }
 
@@ -273,7 +271,6 @@
   function renderCost() {
     const use = document.querySelector('input[name="useType"]:checked')?.value || '';
     const personal = use === 'personal';
-    document.querySelector('.log-trip-km > span').textContent = personal ? t('tripKmLabelOpt') : t('tripKmLabel');
     $('costBox').hidden = !use;
     if (!use) return;
     $('costTitle').textContent = personal ? t('costTitle') : t('costTitleMinistry');
@@ -284,8 +281,7 @@
     const vehicleId = $('vehicleSelect').value;
     const km = Number($('tripKm').value);
     if (!vehicleId) { set('—', '', t('costNeedVehicle')); return; }
-    if ($('tripKm').value.trim() === '') { set('—', '', personal ? t('costBlankKm') : t('costNeedKm')); return; }
-    if (!Number.isFinite(km) || km < 0) { set('—', '', t('costNeedKm')); return; }
+    if ($('tripKm').value.trim() === '' || !Number.isFinite(km) || km < 0) { set('—', '', t('costNeedKm')); return; }
     const kmPerLiter = costRates.kmPerLiter?.[vehicleId] ?? costRates.defaultKmPerLiter ?? 11;
     const fuel = Math.round(km / kmPerLiter * costRates.dieselKrw);
     const maint = Math.round(km * costRates.maintenancePerKm);

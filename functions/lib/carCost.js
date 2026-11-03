@@ -115,7 +115,7 @@ export const recalcCost = (entry) => personalCost({ ...entry.cost, kmPerLiter: u
 export const cleanSplitNote = v => String(v || '').replace(/\s+/g, ' ').trim().slice(0, 120);
 export const cleanSplitCount = v => Math.min(MAX_SPLIT, Math.max(1, Math.floor(Number(v) || 1)));
 
-/* ───────── 운행 거리를 비운 개인용 기록: 앞뒤 기록의 계기판 숫자로 빠진 거리를 계산해 청구 ─────────
+/* ───────── 운행 거리가 없는 예전 기록(사역용 · 개인용): 앞뒤 기록의 계기판 숫자로 빠진 거리를 계산해 청구 — 지금은 거리를 꼭 적으므로 예전 기록에만 해당 ─────────
  * 같은 차량의 기록을 운행 시각 순으로 늘어놓고, 빈 기록 앞에서 가장 가까운 '끝 계기판' 숫자(시작점)와
  * 뒤에서 가장 가까운 '시작 계기판' 숫자(끝점)를 찾는다. 빈 기록 자신의 운행 전 · 후 계기판이 있으면 그 값을 먼저 쓴다.
  * 빠진 거리 = 끝점 − 시작점 − 그 사이 다른 기록에 적힌 운행 거리. 그 사이 빈 기록이 여럿이면 똑같이 나눈다.
@@ -147,17 +147,17 @@ export function gapKmByEntry(entries) {
   return out;
 }
 
-/** 목록에 실어 보낼 기록에 빈 개인용 기록의 자동 거리(autoKm)와 그 비용(cost)을 붙인다 — 계산은 같은 차량의 전체 기록으로 */
+/** 목록에 실어 보낼 기록에 거리가 없는 기록의 자동 거리(autoKm)와 그 비용(cost)을 붙인다 — 계산은 같은 차량의 전체 기록으로 */
 export async function withGapCharges(env, entries, shown = entries) {
   const byVehicle = new Map();
   entries.forEach(e => { if (!byVehicle.has(e.vehicleId)) byVehicle.set(e.vehicleId, []); byVehicle.get(e.vehicleId).push(e); });
   const gaps = new Map();
   byVehicle.forEach(list => gapKmByEntry(list).forEach((v, id) => gaps.set(id, v)));
   return Promise.all(shown.map(async e => {
-    if (e.useType !== 'personal' || hasKm(e) || !gaps.has(e.id)) return e;
+    if (hasKm(e) || !gaps.has(e.id)) return e;
     const autoKm = gaps.get(e.id);
     if (autoKm.pending) return { ...e, autoKm };
     const rates = await costRates(env, tripDateOf(e)).catch(() => null);
-    return { ...e, autoKm, ...(rates ? { cost: personalCost(rates, e.vehicleId, autoKm.km, e.splitCount || 1) } : {}) };
+    return { ...e, autoKm, ...(rates ? { cost: personalCost(rates, e.vehicleId, autoKm.km, e.useType === 'personal' ? e.splitCount || 1 : 1) } : {}) };
   }));
 }
