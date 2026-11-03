@@ -10,7 +10,7 @@ const bi = (ko, en) => `${ko} / ${en}`;
 const monthTitle = month => { const [y, m] = month.split('-'); return `${y}년 ${Number(m)}월`; };
 
 const sumSalv = x => (x.salvation || 0) + (x.campSalvations || 0) + (x.eeSalvations || 0);
-const sumDed = x => (x.campDedications || 0) + (x.eeDedications || 0);
+const sumDed = x => (x.dedication || 0) + (x.campDedications || 0) + (x.eeDedications || 0);   // dedication: 개인 전도 헌신(월코 내부 항목)
 const sumReach = x => (x.campAttendance || 0) + (x.eeAttendance || 0);
 const METRICS = [
   { ko: '복음을 들은 인원 (전체)', en: 'People who heard the Gospel (total)', get: x => (x.evangelism || 0) + (x.campAttendance || 0) + (x.eeAttendance || 0) },

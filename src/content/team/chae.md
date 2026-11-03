@@ -2,6 +2,7 @@
 
 name_ko: 채병국 & 김미영
 name_en: Byungkook Chae & Miyoung Kim
+other_names: Peter Chae, Miriam Kim
 title_ko: 사역 진흥원 · 월코
 title_en: Ministry Advancement Director · WOLKO
 role_badge: Missionaries

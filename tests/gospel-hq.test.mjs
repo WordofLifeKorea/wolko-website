@@ -44,8 +44,8 @@ test('본부 양식 항목: 캠프 4 · 전도 행사 3 · 개인 전도(본부 
 });
 
 test('쓸 수 있는 항목: 개인 전도는 누구나, 전도 행사는 담당자·제주 멤버, 캠프는 담당자, 제자훈련·지역교회는 담당자의 사역 현황 보고', () => {
-  assert.deepEqual(allowedFieldIds('individual', false), ['preEvangelism', 'evangelism', 'salvation', 'literature', 'social'], '평택 일반 멤버는 개인 전도만');
-  assert.deepEqual(allowedFieldIds('individual', false, true), ['preEvangelism', 'evangelism', 'salvation', 'literature', 'social', 'eeAttendance', 'eeSalvations', 'eeDedications'], '제주 멤버는 전도 행사까지');
+  assert.deepEqual(allowedFieldIds('individual', false), ['preEvangelism', 'evangelism', 'salvation', 'dedication', 'literature', 'social'], '평택 일반 멤버는 개인 전도만');
+  assert.deepEqual(allowedFieldIds('individual', false, true), ['preEvangelism', 'evangelism', 'salvation', 'dedication', 'literature', 'social', 'eeAttendance', 'eeSalvations', 'eeDedications'], '제주 멤버는 전도 행사까지');
   assert.ok(allowedFieldIds('team', true).includes('campCount') && !allowedFieldIds('team', true).includes('dtc'));
   assert.ok(allowedFieldIds('ministry', true).includes('dtc') && !allowedFieldIds('ministry', true).includes('evangelism'));
   assert.deepEqual(allowedFieldIds('ministry', false), []);
@@ -218,8 +218,8 @@ test('복음 통계 맨 위 요약은 한 패널 — 큰 숫자 셋(들은 인�
   const css = readFileSync(new URL('../public/gospel-stats.css', import.meta.url), 'utf8');
   assert.match(stats, /box\.className = 'gs-ov'/);
   assert.match(stats, /tip: 'kGospelTip'[\s\S]*tip: 'kSalvTip'[\s\S]*tip: 'kDedTip'/); assert.doesNotMatch(stats, /kReachTip', n:/);
-  // 표: 개인 전도(헌신 없음 → —) · 캠프 · 월코·교회 행사, 칸은 들은 인원 · 구원 · 헌신
-  assert.match(stats, /heard: 'evangelism', saved: 'salvation', ded: null/);
+  // 표: 개인 전도 · 캠프 · 월코·교회 행사, 칸은 들은 인원 · 구원 · 헌신
+  assert.match(stats, /heard: 'evangelism', saved: 'salvation', ded: 'dedication'/);
   assert.match(stats, /heard: 'campAttendance', saved: 'campSalvations', ded: 'campDedications'/);
   assert.match(stats, /heard: 'eeAttendance', saved: 'eeSalvations', ded: 'eeDedications'/);
   assert.match(css, /\.gs-ov-top \{ display: grid; grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
@@ -291,7 +291,7 @@ test('항목별 통계 표: 설명은 이름 아래에 그대로 보이고, ⓘ 
   assert.doesNotMatch(src, /infoBtn\(tx\(f\.label\)\.split/, '설명을 다시 ⓘ 안에 넣지 않는다');
   assert.doesNotMatch(src, /tipCrs|tipSnap|tipNotHq|tipCamp/, '정의서에 없는 문구는 넣지 않는다');
   const withNote = GOSPEL_SECTIONS.flatMap(sec => sec.fields).filter(f => f.note).map(f => f.id).sort();
-  assert.deepEqual(withNote, ['campDedications', 'eeAttendance', 'eeDedications', 'evangelism', 'preEvangelism'], '각주가 달린 항목만 ⓘ');
+  assert.deepEqual(withNote, ['campDedications', 'dedication', 'eeAttendance', 'eeDedications', 'evangelism', 'preEvangelism'], '각주가 달린 항목만 ⓘ');
   const note = id => GOSPEL_SECTIONS.flatMap(sec => sec.fields).find(f => f.id === id).note;
   assert.match(note('evangelism').en, /‘Gospel conversation’ must clearly communicate #1 and #2/);
   assert.match(note('eeAttendance').en, /C\. Exception – Assisting Others/);

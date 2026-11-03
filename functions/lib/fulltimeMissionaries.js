@@ -4,6 +4,7 @@
  *   - 이름: 영어·한글 모두. 순서와 띄어쓰기는 무시한다("Jacob Morse" = "Morse Jacob" = "JacobMorse").
  *   - 이메일 앞부분: jacobmorse@wol.org 처럼 이름을 이어 붙인 주소도 같은 사람으로 본다.
  *   - 부부 이름은 둘로 나눈다: "Jacob & Crystal Morse" → Jacob Morse, Crystal Morse / "Namkyu Baek & Joanna" → Namkyu Baek, Joanna Baek.
+ *   - 계정 이름이 인원 소개 이름과 다르면 인원 소개의 other_names(쉼표로 구분)에 적는다: 채병국 → "Peter Chae".
  * 단기 사역자(stw)는 해당하지 않는다. 명단을 못 읽으면 아무도 풀타임으로 보지 않는다(직접 지정한 담당자만 남는다).
  */
 const norm = s => String(s || '').normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
@@ -29,6 +30,8 @@ export function rosterKeys(roster) {
   const keys = new Set();
   for (const entry of Array.isArray(roster) ? roster : []) {
     for (const name of [entry?.nameEn, entry?.nameKo]) for (const person of personsOf(name)) keysOf(person).forEach(k => keys.add(k));
+    // 포털 계정에서 쓰는 다른 이름(쉼표로 구분) — 한 이름이 한 사람이다(예: 채병국 선교사의 계정 이름 "Peter Chae")
+    for (const other of String(entry?.otherNames || '').split(/\s*[,，]\s*/)) keysOf(norm(other).split(' ')).forEach(k => keys.add(k));
   }
   return keys;
 }

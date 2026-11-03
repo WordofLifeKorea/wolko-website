@@ -15,7 +15,7 @@ function teamRoster() {
   const field = (text, key) => (new RegExp(`^${key}:\\s*"?([^"\\n]*)"?\\s*$`, 'm').exec(text) || [])[1]?.trim() || '';
   return readdirSync(dir).filter(f => f.endsWith('.md')).map(f => readFileSync(new URL(f, dir), 'utf8'))
     .filter(text => field(text, 'category') === 'missionary' && field(text, 'active') !== 'false')
-    .map(text => ({ nameEn: field(text, 'name_en'), nameKo: field(text, 'name_ko') }));
+    .map(text => ({ nameEn: field(text, 'name_en'), nameKo: field(text, 'name_ko'), otherNames: field(text, 'other_names') }));
 }
 
 function setup() {
@@ -59,11 +59,12 @@ test('계정 맞춰 보기: 영어·한글 이름, 순서·띄어쓰기 무시, 
     { name: 'JACOB  MORSE', email: 'x@wol.org' }, { name: '', email: 'jacobmorse@wol.org' }, { name: '', email: 'samuelsong@wol.org' },
     { name: 'Joanna Baek', email: 'x@wol.org' }, { name: '채병국', email: 'x@wol.org' }, { name: '김환규', email: 'x@wol.org' }, { name: '제이슨 앤더슨', email: 'x@wol.org' },
     { name: 'Jeremy Rodgers', email: 'x@wol.org' }, { name: 'HwanKyu Kim', email: 'x@wol.org' }, { name: '송승현', email: 'x@wol.org' },
+    { name: 'Peter Chae', email: 'x@wol.org' }, { name: 'Chae Peter', email: 'x@wol.org' }, { name: '', email: 'peterchae@wol.org' }, { name: 'Miriam Kim', email: 'x@wol.org' },   // 인원 소개 other_names
   ];
   for (const a of yes) assert.equal(matchesMissionary(keys, a), true, JSON.stringify(a));
   const no = [
     { name: 'Joanna Jung', email: 'joanna@wol.org' }, { name: 'Estelle Sooy', email: 'esooy@wol.org' }, { name: 'Hyunji Im', email: 'hlim@wol.org' },
-    { name: 'Jacob', email: 'j@wol.org' }, { name: 'Morse', email: 'm@wol.org' }, { name: '', email: 'a@wol.org' }, { name: '홍길동', email: 'hong@wol.org' },
+    { name: 'Jacob', email: 'j@wol.org' }, { name: 'Morse', email: 'm@wol.org' }, { name: 'Peter', email: 'p@wol.org' }, { name: '', email: 'a@wol.org' }, { name: '홍길동', email: 'hong@wol.org' },
   ];
   for (const a of no) assert.equal(matchesMissionary(keys, a), false, JSON.stringify(a));
   assert.equal(matchesMissionary(new Set(), { name: 'Jacob Morse' }), false, '명단이 없으면 아무도 풀타임이 아니다');
@@ -84,7 +85,7 @@ test('풀타임 선교사는 직접 지정하지 않아도 팀 보고를 쓰고,
 });
 
 test('개인 보고 항목: 평택 일반 멤버는 개인 전도만, 제주 멤버와 풀타임 선교사는 전도 행사·교회 행사 기록까지', async () => {
-  assert.deepEqual(allowedFieldIds('individual', false), ['preEvangelism', 'evangelism', 'salvation', 'literature', 'social']);
+  assert.deepEqual(allowedFieldIds('individual', false), ['preEvangelism', 'evangelism', 'salvation', 'dedication', 'literature', 'social']);
   assert.ok(allowedFieldIds('individual', false, true).includes('eeAttendance'));
   assert.ok(!allowedFieldIds('individual', false, true).includes('campCount'), '캠프는 담당자만');
   const t = setup(); await t.acc('amy@wol.org', 'Amy Short', { campus: 'wolko' }); await t.acc('jj@wol.org', 'Jeju Member', { campus: 'jeju' }); await t.acc('anderson@wol.org', 'Jason Anderson');

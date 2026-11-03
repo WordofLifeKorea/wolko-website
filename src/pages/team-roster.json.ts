@@ -6,6 +6,6 @@ import { getCollection } from 'astro:content';
 export async function GET() {
   const missionaries = (await getCollection('team'))
     .filter(({ data }) => data.category === 'missionary' && data.active !== false)
-    .map(({ data }) => ({ nameEn: data.name_en || '', nameKo: data.name_ko || '' }));
+    .map(({ data }) => ({ nameEn: data.name_en || '', nameKo: data.name_ko || '', otherNames: data.other_names || '' }));   // otherNames: 포털 계정에서 쓰는 다른 이름(예: Peter Chae)
   return new Response(JSON.stringify(missionaries), { headers: { 'Content-Type': 'application/json; charset=utf-8' } });
 }
