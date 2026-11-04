@@ -20,8 +20,8 @@ hero_tagline_ko: 확신으로
 hero_tagline_en: Proclaiming the Gospel
 hero_tagline2_ko: 복음을 전하다
 hero_tagline2_en: with Conviction
-hero_subtitle_ko: 잭은 런치 인턴십을 통해 한국에서 개인 전도, 제자훈련, 지역 교회 사역, 영어 교육을 통해 한국인들에게 복음을 전하는 사역에 헌신하고 있습니다.
-hero_subtitle_en: Through the Launch Internship, Zach is dedicated to sharing the gospel with Koreans through personal evangelism, discipleship, local church ministry, and English education.
+hero_subtitle_ko: "CCI 인턴십을 통해 잭은 개인 전도와 제자훈련, 지역 교회 사역, 영어 교육으로 한국인들에게 복음을 전하는 일에 헌신하고 있습니다."
+hero_subtitle_en: "Through the CCI Internship, Zach is dedicated to sharing the gospel with Koreans through personal evangelism, discipleship, local church ministry, and English education."
 verse_ref: "요한복음 3 : 14 – 18"
 show_spouse: false
 bio_ko: |-
@@ -36,5 +36,6 @@ bio_en_2: "Ever since I was young I remember always having a deep admiration for
 bio_ko_2: 어렸을 때부터 저는 항상 동아시아 문화에 깊은 경외심을 가지고 있었습니다 (적어도 제가 알고 있는 한에서는). 이 경외심이 현재의 길, 즉 한국에서 섬기는 길로 자라나도록 물을 부어준 것은 월비(월드 오브 라이프 성경학교)의 사역이었습니다. 특히 2학년 세계종교와 문화간 이슈 수업들을 통해, 그리고 더욱이 에스노스360의 와유미 수련회 현장 학습을 통해 대위임령에 동참하고자 하는 더 깊은 열정이 내 안에 불붙었습니다. 월드 오브 라이프의 문화 선교 인턴십이 선교지에 나아가는 분명하게 열린 길로 다가왔고, 저는 사명 현장에 내 삶을 헌신하기로 결단했습니다. 다시 말해, 하나님은 그분의 말씀을 통해 나를 세계선교 사역으로 부르셨는데, 이것은 모든 믿는 자들에게 주어진 부르심입니다. 그런데 하나님은 내게 이 부르심을 특별히 한국에서 이루어갈 놀라운 기회를 주셨고, 저는 정말 기쁩니다! 이 모든 가운데 저는 오직 한 가지를 기도합니다. 예수 그리스도께서 그분의 교회를 위해 오셔서 상을 나누어 주실 그날, 내 삶이 구주께 기쁨이 되고 영원한 가치를 지니기를, 그리고 가능한 한 많은 사람들이 오직 예수님 안에 있는 영생의 메시지를 나를 통해 듣고 구원받기를.
 prayer_ko: 앞으로도 선교 사역을 계속 이어 갈 수 있도록 기도해 주세요.
 prayer_en: For my future to involve me being able to remain in missions ministry.
+verse_en: "And just as Moses lifted up the serpent in the wilderness, so must the Son of Man be lifted up, so that everyone who believes in him will have eternal life. For God so loved the world, that he gave his only Son, so that everyone who believes in him will not perish, but have eternal life. For God did not send the Son into the world to judge the world, but so that the world might be saved through him. The one who believes in him is not judged; the one who does not believe has been judged already, because he has not believed in the name of the only Son of God."
 
 ---
