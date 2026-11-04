@@ -23,6 +23,8 @@ const {
   ogDescription = description,
   ogImage = '/images/WOLKO Circle.png',
 } = Astro.props;
+// 불러오는 중 · 처리 중 덮개(wolko-busy.js)는 포탈에서만 — 공개 홈페이지(랜딩 · 하위 페이지)에는 띄우지 않는다
+const isPortal = /^\/portal(\/|$)/.test(Astro.url.pathname);
 ---
 
 <!DOCTYPE html>
@@ -31,7 +33,7 @@ const {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script is:inline src="/wolko-lang-sync.js?v=3"></script>
-  <script is:inline src="/wolko-busy.js?v=2"></script>
+  {isPortal && <script is:inline src="/wolko-busy.js?v=2"></script>}
   <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
   <title>{title}</title>
   <meta name="description" content={description}>
