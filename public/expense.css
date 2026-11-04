@@ -1482,3 +1482,10 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 .ex-cc-none { margin: 12px 0 0; color: var(--light); font-size: 13px; }
 .ex-cc-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .ex-cc-link { color: var(--blue); font-size: 13px; font-weight: 700; }
+
+/* v137 — 승인 대기: 품목 칸이 좁을 때 출금 계좌 상자(360px)가 품목 글자를 한 글자 폭까지 눌러 세로로 쪼개던 문제 —
+   품목에 최소 폭을 주고, 둘이 나란히 들어갈 자리가 없으면 출금 계좌 상자를 품목 아래 줄로 내린다 */
+.ex-item-split { flex-wrap: wrap; row-gap: 8px; }
+.ex-item-split > .ex-itemrow { flex: 1 1 180px; }
+.ex-item-split > .ex-item-account { flex: 1 1 300px; max-width: 420px; }
+@container (max-width: 860px) { .ex-table--approve .ex-item-split > .ex-itemrow, .ex-table--approve .ex-item-split > .ex-item-account { flex: none; max-width: none; } }
