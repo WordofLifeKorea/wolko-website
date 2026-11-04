@@ -38,6 +38,8 @@
       costSplit: c => `${c.n}명이 나눠 내면 (본인 포함) 1인당 <strong>₩${c.krw}</strong>${c.usd ? ` · ${c.usd}` : ''}`,
       costBasis: c => `기준: 전국 평균 경유 ₩${c.diesel}/L (${c.dieselDate}${c.fallback ? ' 기본값' : c.near ? ' — 그날 값이 없어 가장 가까운 날 값' : ''})${c.fx ? `\n환율 $1 = ₩${c.fx} (${c.fxDate})` : ''}\n금액은 10원 단위를 버려요.`,
       costLine: c => `${c.ministry ? '사역' : '개인'} 사용 비용 ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''}${c.day ? ` (${c.day} 기준)` : ''}`, costLineSplit: c => `${c.n}명 나눠 1인당 ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''}`, splitWith: '함께',
+      tollLabel: '하이패스 사용 금액 (원, 선택)', tollPh: '예: 3400', tollHelp: '하이패스로 낸 통행료를 적으면 운행 비용에 더해져요. 모르면 비워 두고 나중에 기록에서 적어도 돼요.', tollNeeded: '하이패스 금액은 0 이상의 숫자(원)로 적어 주세요.',
+      tollCalc: c => `하이패스 ₩${c}`, tollRow: '하이패스', tollEdit: '수정', tollAdd: '하이패스 금액 적기', tollSave: '저장', tollInputPh: '하이패스 금액 (원)',
     },
     en: {
       pageTitle: 'Vehicle Schedule', docTitle: 'Vehicle Usage Log — WOLKO', menuLabel: 'Vehicle menu',
@@ -73,6 +75,8 @@
       costSplit: c => `Split ${c.n} ways (including you): <strong>₩${c.krw}</strong>${c.usd ? ` · ${c.usd}` : ''} each`,
       costBasis: c => `Based on the national average diesel price ₩${c.diesel}/L (${c.dieselDate}${c.fallback ? ', default' : c.near ? ' — nearest day with data' : ''})${c.fx ? `\nExchange rate $1 = ₩${c.fx} (${c.fxDate})` : ''}\nAmounts are rounded down to the nearest ₩100.`,
       costLine: c => `${c.ministry ? 'Ministry' : 'Personal'} use cost ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''}${c.day ? ` (as of ${c.day})` : ''}`, costLineSplit: c => `Split ${c.n} ways: ₩${c.krw}${c.usd ? ` · ${c.usd}` : ''} each`, splitWith: 'With',
+      tollLabel: 'Hi-pass toll amount (KRW, optional)', tollPh: 'e.g. 3400', tollHelp: 'Tolls paid with the Hi-pass card are added to the trip cost. Leave it blank if unsure and add it later from the log.', tollNeeded: 'Enter the Hi-pass amount as a number (KRW) of 0 or more.',
+      tollCalc: c => `Hi-pass toll ₩${c}`, tollRow: 'Hi-pass', tollEdit: 'Edit', tollAdd: 'Add Hi-pass amount', tollSave: 'Save', tollInputPh: 'Hi-pass amount (KRW)',
     },
   };
   let lang = (() => { try { return localStorage.getItem('wolkoCarLang') === 'en' ? 'en' : 'ko'; } catch { return 'ko'; } })();
@@ -83,6 +87,7 @@
     document.title = t('docTitle');
     document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
     document.querySelectorAll('[data-t-aria]').forEach(el => el.setAttribute('aria-label', t(el.dataset.tAria)));
+    document.querySelectorAll('[data-t-ph]').forEach(el => { el.placeholder = t(el.dataset.tPh); });
     $('langKoBtn').classList.toggle('is-active', lang === 'ko');
     $('langEnBtn').classList.toggle('is-active', lang === 'en');
     const select = $('vehicleSelect');
@@ -116,11 +121,11 @@
     if (draft) $('draftText').textContent = t('draftSaved', draftDate(draft.expiresAt));
   }
   function draftFields() {
-    return { vehicleId: $('vehicleSelect').value, useType: document.querySelector('input[name="useType"]:checked')?.value || '', purpose: $('purposeNote').value, chargeAccount: chargeValue(), splitNote: $('splitNote').value, tripDate: $('tripDate').value, tripKm: $('tripKm').value };
+    return { vehicleId: $('vehicleSelect').value, useType: document.querySelector('input[name="useType"]:checked')?.value || '', purpose: $('purposeNote').value, chargeAccount: chargeValue(), splitNote: $('splitNote').value, tripDate: $('tripDate').value, tripKm: $('tripKm').value, tollKrw: $('tollKrw').value };
   }
   async function saveDraftNow() {
     const f = draftFields();
-    const empty = !f.useType && !f.purpose.trim() && !f.splitNote.trim() && !f.tripKm.trim() && !photoBlob && !photoAfterBlob;
+    const empty = !f.useType && !f.purpose.trim() && !f.splitNote.trim() && !f.tripKm.trim() && !f.tollKrw.trim() && !photoBlob && !photoAfterBlob;
     try {
       if (empty) { await fetch('/api/car/usage-draft', { method: 'DELETE', headers: headers() }); showDraftNote(null); return; }
       const response = await fetch('/api/car/usage-draft', { method: 'PUT', headers: { ...headers(), 'Content-Type': 'application/json' }, body: JSON.stringify(f) });
@@ -154,7 +159,7 @@
     $('purposeNote').value = '';
     setCharge('');
     $('splitNote').value = ''; splitManual = null; $('tripDate').value = '';
-    $('tripKm').value = '';
+    $('tripKm').value = ''; $('tollKrw').value = '';
     ['odoBefore', 'odoAfter'].forEach(id => { $(id).value = ''; }); ['odoBeforeHint', 'odoAfterHint', 'tripAutoHint'].forEach(id => { $(id).textContent = ''; });
     photoTakenAt = null;
     Object.values(photoSlots).forEach(slot => {
@@ -184,6 +189,7 @@
       $('splitNote').value = draft.splitNote || '';
       if (draft.tripDate) $('tripDate').value = draft.tripDate;
       $('tripKm').value = draft.tripKm || '';
+      $('tollKrw').value = draft.tollKrw || '';
       if (draft.hasPhoto) {
         const photo = await fetch('/api/car/usage-draft?photo=before', { headers: headers() });
         if (photo.ok) {
@@ -229,7 +235,7 @@
     renderCost();
     const tripKm = Number($('tripKm').value);
     // 총 운행 거리는 사역용 · 개인용 모두 꼭 적는다(운행 전 · 후 계기판 사진을 올리면 자동으로 채워진다)
-    const tripOk = $('tripKm').value.trim() !== '' && Number.isFinite(tripKm) && tripKm >= 0 && tripKm <= 5000;
+    const tripOk = $('tripKm').value.trim() !== '' && Number.isFinite(tripKm) && tripKm >= 0 && tripKm <= 5000 && tollValue() !== null;
     // 사진은 선택이고, 차량 · 사용 목적 · 총 운행 거리(km)는 꼭 있어야 저장할 수 있다.
     $('saveButton').disabled = !purpose || !$('vehicleSelect').value || !tripOk || (ministry && (!$('purposeNote').value.trim() || !chargeValue()));
   }
@@ -266,6 +272,8 @@
   // 나눌 인원(본인 포함). −/+ 로 고친 값이 있으면 그 값.
   const splitPeople = () => splitManual ?? Math.min(30, guessOthers($('splitNote').value) + 1);
   const won = n => Math.round(n).toLocaleString('ko-KR');
+  // 하이패스 사용 금액(원): 비우면 0, 잘못된 값이면 null — 서버(carCost.js cleanToll)와 같은 규칙
+  const tollValue = () => { const raw = $('tollKrw').value.trim().replace(/[,\s₩원]/g, ''); if (raw === '') return 0; const n = Number(raw); return Number.isInteger(n) && n >= 0 && n <= 1000000 ? n : null; };
   const usdText = (krw, rate) => rate > 0 ? '$' + (krw / rate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
   const shortDay = iso => iso ? new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'ko-KR', { month: 'short', day: 'numeric' }).format(new Date(iso + 'T12:00:00+09:00')) : '';
   function renderCost() {
@@ -288,12 +296,13 @@
     // 합계 · 1인당은 10원 단위를 버린다(100원 단위) — 서버(carCost.js)와 같은 식
     const floor100 = v => Math.floor(v / 100) * 100;
     const exact = fuel + maint;
-    const total = floor100(exact);
+    const toll = tollValue() || 0;   // 하이패스는 실제 낸 금액이라 100원 단위로 버리지 않고 그대로 더한다
+    const total = floor100(exact) + toll;
     const kmText = km.toLocaleString(lang === 'en' ? 'en-US' : 'ko-KR', { maximumFractionDigits: 1 });
-    set('₩' + won(total), usdText(total, costRates.usdKrw), t('costCalc', { km: kmText, kmPerLiter, diesel: won(costRates.dieselKrw), fuel: won(fuel), maint1: won(costRates.maintenancePerKm), maint: won(maint) }));
+    set('₩' + won(total), usdText(total, costRates.usdKrw), t('costCalc', { km: kmText, kmPerLiter, diesel: won(costRates.dieselKrw), fuel: won(fuel), maint1: won(costRates.maintenancePerKm), maint: won(maint) }) + (toll ? '\n' + t('tollCalc', won(toll)) : ''));
     if (personal && $('splitNote').value.trim()) {
       const n = splitPeople();
-      const each = floor100(exact / n);
+      const each = floor100(exact / n) + Math.floor(toll / n);
       $('costSplitText').innerHTML = t('costSplit', { n, krw: won(each), usd: usdText(each, costRates.usdKrw) });
       $('costSplit').hidden = false;
       $('splitMinus').disabled = n <= 2; $('splitPlus').disabled = n >= 30;
@@ -487,7 +496,7 @@
               detail.append(charge);
             }
             if (entry.cost || (entry.autoKm && entry.autoKm.pending)) detail.append(costLine(entry));
-            detail.append(info, ...photoButtons, mileageBlock(entry));
+            detail.append(info, ...photoButtons, tollBlock(entry), mileageBlock(entry));
             row.append(detail);
           }
           body.append(row);
@@ -496,6 +505,55 @@
       }
       list.append(card);
     });
+  }
+
+  // 하이패스 사용 금액: 값이 있으면 보여주고, 본인 기록(또는 마스터)이면 나중에 적거나 고칠 수 있다 — 고치면 운행 비용이 다시 계산된다
+  function tollBlock(entry) {
+    const box = document.createElement('div');
+    box.className = 'log-mileage log-toll';
+    const mine = me && (entry.userEmail === me.email || me.role === 'master');
+    const draw = editing => {
+      box.replaceChildren();
+      if (!editing) {
+        if (entry.tollKrw) {
+          const text = document.createElement('span');
+          text.className = 'log-mileage-value';
+          text.textContent = `${t('tollRow')} ₩${won(entry.tollKrw)}`;
+          box.append(text);
+        }
+        if (mine) {
+          const edit = document.createElement('button');
+          edit.type = 'button'; edit.className = 'log-link'; edit.textContent = entry.tollKrw ? t('tollEdit') : t('tollAdd');
+          edit.addEventListener('click', () => draw(true));
+          box.append(edit);
+        }
+        return;
+      }
+      const input = document.createElement('input');
+      input.type = 'number'; input.inputMode = 'numeric'; input.min = '0'; input.step = '1';
+      input.placeholder = t('tollInputPh'); input.setAttribute('aria-label', t('tollRow'));
+      if (entry.tollKrw) input.value = entry.tollKrw;
+      const save = document.createElement('button');
+      save.type = 'button'; save.textContent = t('tollSave');
+      save.addEventListener('click', async () => {
+        const raw = input.value.trim(), n = raw === '' ? 0 : Number(raw);
+        if (!Number.isInteger(n) || n < 0 || n > 1000000) { $('formError').textContent = t('tollNeeded'); return; }
+        $('formError').textContent = '';
+        save.disabled = true;
+        try {
+          const response = await fetch('/api/car/usage', { method: 'PATCH', headers: { ...headers(), 'Content-Type': 'application/json' }, body: JSON.stringify({ id: entry.id, tollKrw: n }) });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || t('saveFail'));
+          if (!data.entry.tollKrw) delete entry.tollKrw;
+          Object.assign(entry, data.entry);
+          refreshEntries();   // 바뀐 비용을 목록에 다시 그린다
+        } catch (error) { $('formError').textContent = error.message; save.disabled = false; }
+      });
+      box.append(input, save);
+      input.focus();
+    };
+    draw(false);
+    return box;
   }
 
   // 사용 후 마일리지: 값이 있으면 보여주고, 본인 기록이면 입력/수정할 수 있다
@@ -829,6 +887,7 @@
     });
   });
   $('tripKm').addEventListener('input', () => { updateReady(); scheduleDraftSave(); });
+  $('tollKrw').addEventListener('input', () => { $('formError').textContent = tollValue() === null ? t('tollNeeded') : ''; updateReady(); scheduleDraftSave(); });
   $('draftClear').addEventListener('click', async () => {
     if (!confirm(t('draftClearAsk'))) return;
     clearTimeout(draftTimer);
@@ -850,6 +909,7 @@
       form.append('purpose', $('purposeNote').value.trim());
       if (chargeValue()) form.append('chargeAccount', chargeValue());
       form.append('tripKm', $('tripKm').value.trim());
+      if (tollValue()) form.append('tollKrw', String(tollValue()));
       form.append('tripDate', tripDay());
       if (document.querySelector('input[name="useType"]:checked').value === 'personal' && $('splitNote').value.trim()) { form.append('splitNote', $('splitNote').value.trim()); form.append('splitCount', String(splitPeople())); }
       if (odoValue('before') !== null) form.append('odometerBefore', String(odoValue('before')));
@@ -878,7 +938,7 @@
       $('photoAfterPreview').hidden = true;
       $('photoAfterTime').textContent = '';
       $('photoTime').textContent = t('saved');
-      $('tripKm').value = '';
+      $('tripKm').value = ''; $('tollKrw').value = '';
       $('splitNote').value = ''; splitManual = null;
       ['odoBefore', 'odoAfter'].forEach(id => { $(id).value = ''; }); ['odoBeforeHint', 'odoAfterHint', 'tripAutoHint'].forEach(id => { $(id).textContent = ''; });
       if (previewUrl) URL.revokeObjectURL(previewUrl);

@@ -39,6 +39,7 @@ const cleanFields = body => ({
   splitNote: String(body?.splitNote || '').replace(/\s+/g, ' ').trim().slice(0, 120),
   tripDate: /^\d{4}-\d{2}-\d{2}$/.test(String(body?.tripDate || '')) ? String(body.tripDate) : '',
   tripKm: String(body?.tripKm ?? '').trim().slice(0, 12),
+  tollKrw: String(body?.tollKrw ?? '').trim().slice(0, 12),
 });
 
 async function loadDraft(env, email) {

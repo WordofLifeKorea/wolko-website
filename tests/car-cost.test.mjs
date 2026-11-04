@@ -157,3 +157,13 @@ test('both ministry and personal logs need a distance; old records without one g
   assert.equal(later['old-ministry'].autoKm.km, 21);
   assert.equal(later['old-ministry'].cost.splitCount, 1);
 });
+
+test('하이패스 금액은 100원 단위로 버리지 않고 운행 비용에 그대로 더한다 (나눠 내면 1인당도 나눔)', () => {
+  // 10 km: 기름값 + 정비비 2,025 → 2,000, 하이패스 3,450 그대로 → 5,450
+  const one = personalCost({ dieselKrw: 1842 }, 'silver-van', 10, 1, 3450);
+  assert.equal(one.tollKrw, 3450);
+  assert.equal(one.totalKrw, 5450);
+  // 3명: 2,025 ÷ 3 = 675 → 600, 하이패스 3,450 ÷ 3 = 1,150 → 1인당 1,750
+  assert.equal(personalCost({ dieselKrw: 1842 }, 'silver-van', 10, 3, 3450).perPersonKrw, 1750);
+  assert.equal(personalCost({ dieselKrw: 1842 }, 'silver-van', 10).tollKrw, undefined, '하이패스가 없으면 값도 남기지 않는다');
+});

@@ -88,8 +88,12 @@ export async function costRates(env, date) {
 
 export const floor100 = krw => Math.floor(krw / 100) * 100;
 
-/** 운행 한 건의 비용(이름은 예전 그대로 — 사역용도 같은 식, splitCount 1). rates 는 costRates() 결과 또는 저장된 기록의 cost(같은 이름의 값을 담고 있다). */
-export function personalCost(rates, vehicleId, tripKm, splitCount = 1) {
+/** 하이패스 사용 금액(원) — 비우면 0. 0 ~ 1,000,000 원 정수만 받고, 그 밖의 값은 null(잘못된 값) */
+export const cleanToll = v => { const raw = String(v ?? '').trim().replace(/[,\s₩원]/g, ''); if (raw === '') return 0; const n = Number(raw); return Number.isInteger(n) && n >= 0 && n <= 1_000_000 ? n : null; };
+
+/** 운행 한 건의 비용(이름은 예전 그대로 — 사역용도 같은 식, splitCount 1). rates 는 costRates() 결과 또는 저장된 기록의 cost(같은 이름의 값을 담고 있다).
+ *  tollKrw: 하이패스로 실제 낸 통행료 — 계산값이 아니라 그대로 더한다(100원 단위로 버리지 않는다). */
+export function personalCost(rates, vehicleId, tripKm, splitCount = 1, tollKrw = 0) {
   const km = Math.max(0, Number(tripKm) || 0);
   const kmPerLiter = rates.kmPerLiter?.[vehicleId] ?? (KM_PER_LITER[vehicleId] || DEFAULT_KM_PER_LITER);
   const maintenancePerKm = rates.maintenancePerKm ?? MAINTENANCE_PER_KM;
@@ -97,20 +101,21 @@ export function personalCost(rates, vehicleId, tripKm, splitCount = 1) {
   const maintKrw = Math.round(km * maintenancePerKm);
   // 합계와 1인당 금액은 10원 단위를 버려 100원 단위로 낸다(1인당은 버리기 전 합계를 나눠서)
   const exactKrw = fuelKrw + maintKrw;
-  const totalKrw = floor100(exactKrw);
+  const toll = Math.max(0, Math.floor(Number(tollKrw) || 0));
+  const totalKrw = floor100(exactKrw) + toll;
   const people = Math.min(MAX_SPLIT, Math.max(1, Math.floor(Number(splitCount) || 1)));
-  const perPersonKrw = floor100(exactKrw / people);
+  const perPersonKrw = floor100(exactKrw / people) + Math.floor(toll / people);
   const usd = krw => (rates.usdKrw > 0 ? Math.round(krw / rates.usdKrw * 100) / 100 : null);
   return {
     dieselKrw: rates.dieselKrw, dieselDate: rates.dieselDate, dieselSource: rates.dieselSource,
     usdKrw: rates.usdKrw, fxDate: rates.fxDate, kmPerLiter, maintenancePerKm,
-    fuelKrw, maintKrw, totalKrw, totalUsd: usd(totalKrw),
+    fuelKrw, maintKrw, ...(toll ? { tollKrw: toll } : {}), totalKrw, totalUsd: usd(totalKrw),
     splitCount: people, perPersonKrw, perPersonUsd: usd(perPersonKrw),
   };
 }
 
 /** 거리 · 차량을 고쳤을 때 다시 계산 — 경유 가격 · 환율은 기록 당시 값을 그대로 쓰고, 연비는 (바뀐) 차량 것을 쓴다 */
-export const recalcCost = (entry) => personalCost({ ...entry.cost, kmPerLiter: undefined }, entry.vehicleId, entry.tripKm, entry.useType === 'personal' ? entry.cost.splitCount : 1);
+export const recalcCost = (entry) => personalCost({ ...entry.cost, kmPerLiter: undefined }, entry.vehicleId, entry.tripKm, entry.useType === 'personal' ? entry.cost.splitCount : 1, entry.tollKrw);
 
 export const cleanSplitNote = v => String(v || '').replace(/\s+/g, ' ').trim().slice(0, 120);
 export const cleanSplitCount = v => Math.min(MAX_SPLIT, Math.max(1, Math.floor(Number(v) || 1)));
@@ -158,6 +163,6 @@ export async function withGapCharges(env, entries, shown = entries) {
     const autoKm = gaps.get(e.id);
     if (autoKm.pending) return { ...e, autoKm };
     const rates = await costRates(env, tripDateOf(e)).catch(() => null);
-    return { ...e, autoKm, ...(rates ? { cost: personalCost(rates, e.vehicleId, autoKm.km, e.useType === 'personal' ? e.splitCount || 1 : 1) } : {}) };
+    return { ...e, autoKm, ...(rates ? { cost: personalCost(rates, e.vehicleId, autoKm.km, e.useType === 'personal' ? e.splitCount || 1 : 1, e.tollKrw) } : {}) };
   }));
 }

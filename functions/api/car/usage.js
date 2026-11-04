@@ -1,6 +1,6 @@
 import { fileKV } from '../../lib/nasFileKV.js';
 import { clearDraft } from './usage-draft.js';
-import { costRates, personalCost, recalcCost, cleanSplitNote, cleanSplitCount, cleanTripDate, todayKst, tripDateOf, withGapCharges } from '../../lib/carCost.js';
+import { costRates, personalCost, recalcCost, cleanToll, cleanSplitNote, cleanSplitCount, cleanTripDate, todayKst, tripDateOf, withGapCharges } from '../../lib/carCost.js';
 import { AFTER_SUFFIX, CHARGE_ACCOUNTS, ENTRY_PREFIX, PHOTO_PREFIX, TRASH_ENTRY_PREFIX, TRASH_PHOTO_PREFIX, fail, isChargeAccount, listEntries, usageSession, selectableVehicles } from '../../lib/carUsage.js';
 
 const MAX_PHOTO_BYTES = 4 * 1024 * 1024;
@@ -94,7 +94,7 @@ export async function onRequestPatch({ env, request }) {
       else if (entry.tripKm != null) {
         entry.tripDate = entry.tripDate || todayKst(Date.parse(entry.photoTakenAt) || Date.now());
         const rates = await costRates(env, entry.tripDate).catch(() => null);
-        if (rates) entry.cost = personalCost(rates, entry.vehicleId, entry.tripKm, entry.useType === 'personal' ? entry.splitCount || 1 : 1);
+        if (rates) entry.cost = personalCost(rates, entry.vehicleId, entry.tripKm, entry.useType === 'personal' ? entry.splitCount || 1 : 1, entry.tollKrw);
       }
       entry.editedBy = session.email; entry.editedAt = new Date().toISOString();
       await fileKV(env).put(`${ENTRY_PREFIX}${id}`, JSON.stringify(entry));
@@ -106,14 +106,22 @@ export async function onRequestPatch({ env, request }) {
   const entry = id ? await fileKV(env).get(`${ENTRY_PREFIX}${id}`, 'json') : null;
   if (!entry) return fail('기록을 찾을 수 없습니다.', 404);
   if (entry.userEmail !== session.email && session.role !== 'master') return fail('본인이 기록한 일지만 수정할 수 있습니다.', 403);
-  if (body?.tripKm !== undefined) {
-    const trip = Math.round(Number(body.tripKm) * 10) / 10;
-    if (!Number.isFinite(trip) || trip < 0 || trip > 5000) return fail('총 운행 거리(km)를 0 이상의 숫자로 입력해 주세요.');
-    entry.tripKm = trip;
-    if (entry.cost) entry.cost = recalcCost(entry);
-    else {   // 비용이 없던 기록(비워 두었던 개인용 · 예전 기록)은 그 운행 날짜 기준으로 새로 계산한다
+  if (body?.tripKm !== undefined || body?.tollKrw !== undefined) {
+    if (body?.tripKm !== undefined) {
+      const trip = Math.round(Number(body.tripKm) * 10) / 10;
+      if (!Number.isFinite(trip) || trip < 0 || trip > 5000) return fail('총 운행 거리(km)를 0 이상의 숫자로 입력해 주세요.');
+      entry.tripKm = trip;
+    }
+    // 하이패스 사용 금액: 나중에 고지서를 보고 적거나 고칠 수 있다. 0 이나 빈칸이면 지운다.
+    if (body?.tollKrw !== undefined) {
+      const toll = cleanToll(body.tollKrw);
+      if (toll === null) return fail('하이패스 사용 금액을 0 이상의 숫자(원)로 입력해 주세요.');
+      if (toll) entry.tollKrw = toll; else delete entry.tollKrw;
+    }
+    if (entry.cost && entry.tripKm != null) entry.cost = recalcCost(entry);
+    else if (entry.tripKm != null) {   // 비용이 없던 기록(비워 두었던 개인용 · 예전 기록)은 그 운행 날짜 기준으로 새로 계산한다
       const rates = await costRates(env, tripDateOf(entry)).catch(() => null);
-      if (rates) entry.cost = personalCost(rates, entry.vehicleId, trip, entry.useType === 'personal' ? entry.splitCount || 1 : 1);
+      if (rates) entry.cost = personalCost(rates, entry.vehicleId, entry.tripKm, entry.useType === 'personal' ? entry.splitCount || 1 : 1, entry.tollKrw);
     }
     entry.editedBy = session.email; entry.editedAt = new Date().toISOString();
     await fileKV(env).put(`${ENTRY_PREFIX}${id}`, JSON.stringify(entry));
@@ -151,6 +159,9 @@ export async function onRequestPost({ env, request }) {
   const tripKmRaw = String(form.get('tripKm') ?? '').trim();
   const tripKm = Math.round(Number(tripKmRaw) * 10) / 10;
   if (!tripKmRaw || !Number.isFinite(tripKm) || tripKm < 0 || tripKm > 5000) return fail('총 운행 거리(km)를 0 이상의 숫자로 입력해 주세요.');
+  // 하이패스 사용 금액(원, 선택) — 운행 비용 합계에 그대로 더한다
+  const tollKrw = cleanToll(form.get('tollKrw'));
+  if (tollKrw === null) return fail('하이패스 사용 금액을 0 이상의 숫자(원)로 입력해 주세요.');
 
   // 계기판 숫자(자동 인식 후 사용자가 확인한 값, 선택): 정수 0~2,000,000 만 받는다. 운행 후 값은 '사용 후 마일리지'로도 쓴다.
   const odo = name => { const raw = String(form.get(name) ?? '').trim(); const n = Number(raw); return raw !== '' && Number.isInteger(n) && n >= 0 && n <= 2_000_000 ? n : null; };
@@ -175,10 +186,10 @@ export async function onRequestPost({ env, request }) {
     && candidate.getTime() >= Date.now() - 72 * 60 * 60_000;
   // 운행 비용(기름값 + 정비비)을 사역용 · 개인용 모두 저장 시점 기준값으로 계산해 함께 남긴다. 기준값을 못 받아도 일지는 저장한다.
   const rates = await costRates(env, tripDate).catch(() => null);
-  const cost = rates ? personalCost(rates, vehicleId, tripKm, splitCount) : null;
+  const cost = rates ? personalCost(rates, vehicleId, tripKm, splitCount, tollKrw) : null;
   const id = crypto.randomUUID();
   const entry = {
-    id, vehicleId, vehicleName: labels.get(vehicleId), useType, ...(purpose ? { purpose } : {}), ...(chargeAccount ? { chargeAccount } : {}), ...(tripDate ? { tripDate } : {}), ...(splitNote ? { splitNote, splitCount } : {}), tripKm, ...(cost ? { cost } : {}),
+    id, vehicleId, vehicleName: labels.get(vehicleId), useType, ...(purpose ? { purpose } : {}), ...(chargeAccount ? { chargeAccount } : {}), ...(tripDate ? { tripDate } : {}), ...(splitNote ? { splitNote, splitCount } : {}), tripKm, ...(tollKrw ? { tollKrw } : {}), ...(cost ? { cost } : {}),
     ...(odometerBefore !== null ? { odometerBefore } : {}), ...(odometerAfter !== null ? { odometerAfter, mileageAfter: odometerAfter } : {}),
     hasPhoto: !before.none, hasPhotoAfter: !afterPhoto.none,
     photoTakenAt: isRecentExif ? candidate.toISOString() : recordedAt,

@@ -47,6 +47,7 @@ function postRequest(token, fields = {}) {
   if (fields.photo !== null) form.set('photo', fields.photo || jpeg());
   if (fields.photoAfter) form.set('photoAfter', fields.photoAfter);
   if (fields.tripKm !== null) form.set('tripKm', fields.tripKm ?? '12.5');
+  if (fields.tollKrw !== undefined) form.set('tollKrw', fields.tollKrw);
   if (fields.odometerBefore !== undefined) form.set('odometerBefore', fields.odometerBefore);
   if (fields.odometerAfter !== undefined) form.set('odometerAfter', fields.odometerAfter);
   if (fields.photoTakenAt) {
@@ -348,4 +349,26 @@ test('계기판 숫자(자동 인식 후 확인한 값)는 정수만 저장하�
   assert.equal(bad.odometerBefore, undefined);
   assert.equal(bad.odometerAfter, undefined);
   assert.equal(bad.mileageAfter, undefined);
+});
+
+test('하이패스 사용 금액: 저장할 때 적거나 나중에 기록에서 적고 고칠 수 있다', async () => {
+  const env = memoryEnv();
+  const email = 'driver@wol.org', other = 'other@wol.org';
+  for (const e of [email, other]) await env.CAMP_KV.put(`hub:account:${e}`, JSON.stringify({ email: e, name: e, status: 'approved' }));
+  const token = await createHubSessionToken(env.ADMIN_PASSWORD, email, 'admin');
+  const otherToken = await createHubSessionToken(env.ADMIN_PASSWORD, other, 'admin');
+  for (const bad of ['-1', 'abc', '3.5', '2000000']) assert.equal((await saveUsage({ env, request: postRequest(token, { photo: null, tollKrw: bad }) })).status, 400, bad);
+  const withToll = (await (await saveUsage({ env, request: postRequest(token, { photo: null, tollKrw: '3,450' }) })).json()).entry;
+  assert.equal(withToll.tollKrw, 3450, '쉼표가 있어도 숫자로 저장');
+  const blank = (await (await saveUsage({ env, request: postRequest(token, { photo: null, tollKrw: '' }) })).json()).entry;
+  assert.equal(blank.tollKrw, undefined, '비우면 남기지 않는다');
+  const patch = (tk, body) => patchUsage({ env, request: new Request('https://example.com/api/car/usage', { method: 'PATCH', headers: { Authorization: `Bearer ${tk}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }) });
+  assert.equal((await patch(otherToken, { id: blank.id, tollKrw: 1000 })).status, 403, '남의 기록은 못 고친다');
+  assert.equal((await patch(token, { id: blank.id, tollKrw: -5 })).status, 400);
+  const added = await patch(token, { id: blank.id, tollKrw: 2800 });
+  assert.equal(added.status, 200);
+  assert.equal((await added.json()).entry.tollKrw, 2800);
+  const cleared = (await (await patch(token, { id: withToll.id, tollKrw: 0 })).json()).entry;
+  assert.equal(cleared.tollKrw, undefined, '0 으로 고치면 지운다');
+  assert.equal(cleared.tripKm, 12.5, '거리는 그대로');
 });
