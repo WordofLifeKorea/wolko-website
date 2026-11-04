@@ -2877,7 +2877,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
       return reg?.notes || '';
     }
 
-    /* 신청서 자동 번역(reg.tr) — 화면 언어 쪽을 크게, 다른 쪽(원문 또는 번역)을 아래에 작게 보여 준다. 번역이 없으면 원문만 */
+    /* 신청서 자동 번역(reg.tr) — 화면 언어 쪽만 보여 준다. 다른 쪽(원문 또는 번역)은 마우스를 올리면 뜨는 설명으로만. 번역이 없으면 원문만 */
     function trInfo(reg, key) {
       const orig = String(reg?.[key] ?? ''), tr = reg?.tr && reg.tr[key];
       if (!orig || !tr || !tr.text) return null;
@@ -2888,12 +2888,12 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
     function trHtml(reg, key, fallback = '—') {
       const info = trInfo(reg, key);
       if (!info) return esc(String(reg?.[key] ?? '') || fallback);
-      return `${esc(info.main)}<small class="tr-alt"><b>${esc(t(info.altKey))}</b> ${esc(info.alt)}</small>`;
+      return `<span title="${esc(t(info.altKey) + ': ' + info.alt)}">${esc(info.main)}</span>`;
     }
     function trMemoFull(reg, key) {
       const info = trInfo(reg, key);
       if (!info) return renderMemoFull(String(reg?.[key] ?? ''));
-      return `<span class="memo-fulltext">${esc(info.main)}</span><small class="tr-alt"><b>${esc(t(info.altKey))}</b> ${esc(info.alt)}</small>`;
+      return `<span class="memo-fulltext" title="${esc(t(info.altKey) + ': ' + info.alt)}">${esc(info.main)}</span>`;
     }
     /** CSV 의 '자동 번역' 칸 — 번역된 칸을 '교회: … / 메모: …' 처럼 한 줄로 */
     function trCsv(reg, keys) {
