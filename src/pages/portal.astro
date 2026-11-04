@@ -1435,7 +1435,24 @@
       loadDashboard();
       $('pendingBtn').hidden = currentSession?.role !== 'master';
       if (currentSession?.role === 'master') refreshPendingCount();
+      syncRole();
       if (window.wolkoCheckPasswordReset) window.wolkoCheckPasswordReset(); // 임시 비밀번호로 들어왔다면 새 비밀번호 설정 창
+    }
+
+    /* 등급은 서버(코드의 등급 목록)가 정한다 — '로그인 유지'로 예전에 저장해 둔 등급이 남아 있으면 서버 값으로 바로잡는다.
+       (예: 관리자였다가 마스터가 된 계정이 다시 로그인하지 않아도 승인 대기 단추가 보이게) */
+    async function syncRole() {
+      try {
+        const res = await fetch('/api/hub/me', { headers: authHeaders(), cache: 'no-store' });
+        if (!res.ok) return;
+        const me = await res.json();
+        if (!me || !me.role || !currentSession || me.role === currentSession.role) return;
+        currentSession.role = me.role;
+        sessionStorage.setItem('wolko-hub-role', me.role);
+        try { if (localStorage.getItem('wolko-hub-role') !== null) localStorage.setItem('wolko-hub-role', me.role); } catch (e) {}
+        $('pendingBtn').hidden = me.role !== 'master';
+        if (me.role === 'master') refreshPendingCount();
+      } catch (e) {}
     }
 
     function isHubTokenValid(token) {
