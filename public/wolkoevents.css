@@ -25,6 +25,10 @@
 .events-invitation[hidden] { display: none !important; }   /* 초대장이 없는 행사(제주 캠퍼스데이)에서는 링크를 숨긴다 — display 규칙이 hidden 을 이기지 않게 */
 .events-invitation:hover, .events-backup:hover { text-decoration: underline; }
 .events-refresh:hover:not(:disabled), .events-wrap .events-export:hover { background: #f5e8dc; }
+.events-manage { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 14px; border: 1px solid #e3ddd7; border-radius: var(--ws-radius-sm, 8px); background: #fff; color: #7c6658; font-family: inherit; font-size: 12px; font-weight: 600; line-height: 1; white-space: nowrap; cursor: pointer; }
+.events-manage:hover { background: #f5e8dc; }
+.events-manage.is-on { background: #f5e8dc; border-color: #d9b5a5; color: #94472e; }
+.events-manage[hidden] { display: none; }
 .events-wrap .table-scroll { overflow: visible; }
 .events-table { width: 100%; table-layout: fixed; border-collapse: collapse; color: #37464c; font-size: 13px; }
 .events-table th { padding: 12px 24px; background: #fbfaf8; color: #8b7c70; text-align: left; font-size: 11px; font-weight: 600; }
@@ -58,9 +62,16 @@
   .events-stat strong { grid-row: auto; font-size: 30px; }
   .events-stat small { font-size: 10px; }
   .events-wrap .events-toolbar { padding: 18px 16px; gap: 14px; }
-  .events-wrap #rsvp .events-toolbar > .events-actions { display: grid; grid-template-columns: minmax(0, 1fr) 40px auto auto; width: 100%; margin: 0; }
-  .events-search { width: 100%; }
-  .events-wrap .events-export, .events-add { padding: 0 10px; font-size: 11px; }
+  /* wolkoadmin.css 가 표 도구 줄을 2칸 격자로 고정(!important)해서, 여기서 6칸 격자로 다시 나눈다:
+     1줄 검색 + 새로고침, 2줄 참석자 추가 · 관리 · CSV (관리 단추가 없으면 둘이 반씩) */
+  .events-wrap #rsvp .events-toolbar > .events-actions { display: grid !important; grid-template-columns: repeat(6, minmax(0, 1fr)) !important; width: 100%; margin: 0; }
+  .events-wrap #rsvp .events-actions > .events-search { grid-column: span 5; width: 100%; }
+  .events-wrap #rsvp .events-actions > .events-refresh { grid-column: span 1; width: 100%; }
+  .events-wrap #rsvp .events-actions > .events-add, .events-wrap #rsvp .events-actions > .events-manage, .events-wrap #rsvp .events-actions > .events-export { grid-column: span 2; width: 100%; }
+  .events-wrap #rsvp .events-actions:has(> .events-manage[hidden]) > :is(.events-add, .events-export),
+  .events-wrap #rsvp .events-actions:has(> .events-add[hidden]) > :is(.events-manage, .events-export) { grid-column: span 3; }
+  .events-wrap #rsvp .events-actions:has(> .events-add[hidden]):has(> .events-manage[hidden]) > .events-export { grid-column: 1 / -1; }
+  .events-wrap .events-export, .events-add, .events-manage { padding: 0 10px; font-size: 11px; }
   .events-table, .events-table tbody { display: block; }
   .events-table thead { display: none; }
   .events-table tbody tr { display: grid; grid-template-columns: 1fr auto; gap: 14px; padding: 18px 16px; border-bottom: 1px solid #ede8e3; }
