@@ -47,8 +47,10 @@ const canOpenGospel = a => canUseTool(allowedTools({ role: effectiveRole(a.email
 /** 보고해야 하는 사람 — 승인된 포탈 계정 중 복음 통계를 쓸 수 있는 사람(보고 제외 표시된 사람도 목록에는 넣고 exempt 로 표시) */
 export async function reporterRoster(env) {
   const [accounts, exempt] = await Promise.all([listAccounts(env), exemptEmails(env)]);
+  const seen = new Set();   // 같은 이메일의 계정 기록이 둘이면(대소문자만 다른 키 등) 한 사람으로 센다
   return accounts
     .filter(a => a && a.status === 'approved' && a.email && canOpenGospel(a))
+    .filter(a => { const e = normalizeEmail(a.email); if (seen.has(e)) return false; seen.add(e); return true; })
     .map(a => ({ email: normalizeEmail(a.email), name: String(a.name || '').trim() || String(a.email).split('@')[0], exempt: exempt.has(normalizeEmail(a.email)) || alwaysExempt(a.email), fixed: alwaysExempt(a.email) }))
     .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 }

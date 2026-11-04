@@ -210,7 +210,7 @@ export async function getAccount(env, email) {
 }
 
 export async function putAccount(env, account) {
-  await env.CAMP_KV.put(`${ACCOUNT_PREFIX}${account.email}`, JSON.stringify(account));
+  await env.CAMP_KV.put(`${ACCOUNT_PREFIX}${normalizeEmail(account.email)}`, JSON.stringify(account));   // 읽을 때(getAccount)와 같은 키 — 대문자가 섞이면 같은 계정이 두 번 저장된다
 }
 
 export async function listAccounts(env) {
