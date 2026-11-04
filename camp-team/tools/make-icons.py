@@ -1,12 +1,12 @@
 # 「홈 화면에 추가」용 아이콘 PNG 만들기 — 포털 아이콘(public/images/portal-icon.svg)과 같은 그림: 파란 둥근 바탕 위에 동그라미 W 로고.
 #   python3 camp-team/tools/make-icons.py   →  public/portal/campteam/icons/ 에 192·512·maskable·apple-touch 아이콘을 쓴다 (이미 만들어 둔 파일이 있어 평소에는 돌릴 일 없음, Pillow 필요)
-# 로고는 원본 파일(public/images/WOLKO Circle.png)을 그대로 넣는다 — 저작권 문제로 로고 모양은 절대 다시 그리거나 다듬지 않는다.
+# 로고는 원본 파일(public/images/wolko-w-circle-1024.png — 공식 AI 벡터 wolko-w-circle.svg 를 그대로 그린 것)을 넣는다 — 저작권 문제로 로고 모양은 절대 다시 그리거나 다듬지 않는다.
 from pathlib import Path
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'public/portal/campteam/icons'
-LOGO = Image.open(ROOT / 'public/images/WOLKO Circle.png').convert('RGBA')
+LOGO = Image.open(ROOT / 'public/images/wolko-w-circle-1024.png').convert('RGBA')  # 공식 원본 AI 벡터에서 그대로 뽑은 큰 그림
 S = 1024  # 512 그림을 두 배로 그린 뒤 줄인다
 
 
