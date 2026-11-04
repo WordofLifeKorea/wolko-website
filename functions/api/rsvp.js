@@ -180,7 +180,7 @@ export async function onRequestGet(context) {
   rsvps.sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
   const totalGuests = rsvps.reduce((sum, r) => sum + (Number(r.partySize) || 0), 0);
 
-  return Response.json({ eventId, rsvps, totalRsvps: rsvps.length, totalGuests, canAdd: canAddRsvp(session) }, { headers: CORS });
+  return Response.json({ eventId, rsvps, totalRsvps: rsvps.length, totalGuests, canAdd: canAddRsvp(session), canDelete: await isAdmin(request, env) }, { headers: CORS });
 }
 
 export async function onRequestDelete(context) {
