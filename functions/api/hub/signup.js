@@ -19,7 +19,7 @@
 import {
   normalizeEmail, isValidEmail, isValidPassword, isValidPhone, isMasterEmail, isMasterEquivalentEmail,
   getAccount, putAccount, hashPassword, sendEmail,
-  pendingRequestEmailHtml, MASTER_EMAILS, isWolDomain,
+  pendingRequestEmailHtml, SIGNUP_NOTIFY_EMAILS, isWolDomain,
 } from '../../lib/hubAccounts.js';
 import { issueVerification } from '../../lib/hubVerify.js';
 import { normalizePhone } from '../../lib/phone.js';
@@ -109,7 +109,7 @@ export async function onRequestPost(context) {
       await putAccount(env, account);
       try {
         await sendEmail(env, {
-          to: MASTER_EMAILS,
+          to: SIGNUP_NOTIFY_EMAILS,
           subject: `[WOLKO 포탈] 새 가입 요청: ${email}`,
           html: pendingRequestEmailHtml({ email, name, phone }),
         });
@@ -127,7 +127,7 @@ export async function onRequestPost(context) {
       account = { ...account, name, phone, campus, requestedRole, status: 'pending', passwordHash: hash, passwordSalt: salt, requestedAt: new Date().toISOString() };
       await putAccount(env, account);
       try {
-        await sendEmail(env, { to: MASTER_EMAILS, subject: `[WOLKO 포탈] 새 가입 요청: ${email}`, html: pendingRequestEmailHtml({ email, name, phone }) });
+        await sendEmail(env, { to: SIGNUP_NOTIFY_EMAILS, subject: `[WOLKO 포탈] 새 가입 요청: ${email}`, html: pendingRequestEmailHtml({ email, name, phone }) });
       } catch (e) {
         console.error('pending notification email failed:', e);
       }

@@ -30,6 +30,8 @@ export const MASTER_EQUIVALENT_EMAILS = [
   // 임시 복구(2026-10-29): 예전(2026-10-20까지) 마스터 계정. 원복은 아래 한 줄만 지우면 된다 — 그러면 계정은 그대로 두고 등급만 일반 멤버로 돌아간다(권한은 요청마다 이 목록으로 계산되어 바로 적용).
   'wolkorea1@gmail.com',
 ];
+/** 새 가입 요청 알림 메일을 받는 사람 — 마스터 + Jacob Morse(마스터와 같은 권한으로 승인도 한다) */
+export const SIGNUP_NOTIFY_EMAILS = [...MASTER_EMAILS, 'jacobmorse@wol.org'];
 /** 포탈 전체를 유지보수하는 관리자 — 이 목록이 기준이다. 목록에 없는 계정은 모두 일반 멤버(counselor). */
 export const ADMIN_EMAILS = ['hkim3@wol.org', 'jacobmorse@wol.org', 'samuelsong@wol.org', 'jeremyrodgers@wol.org'];
 

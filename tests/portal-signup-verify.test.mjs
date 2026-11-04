@@ -101,6 +101,7 @@ test('다른 도메인: 가입은 받되 마스터 승인 전에는 로그인할
     assert.deepEqual([r.status, r.state], [200, 'pending']);
     assert.equal((await t.account('friend@gmail.com')).status, 'pending');
     assert.ok(t.mails.some(m => (m.to || []).includes('admin@wolko.org')), '마스터에게 승인 요청 메일');
+    assert.ok(t.mails.some(m => (m.to || []).includes('jacobmorse@wol.org')), 'Jacob Morse 에게도 승인 요청 메일');
     assert.equal((await t.login('friend@gmail.com', 'Passw0rd!x')).status, 403, '승인 대기');
     assert.ok((await t.pending()).accounts.some(a => a.email === 'friend@gmail.com'));
     assert.equal((await t.approve({ email: 'friend@gmail.com', action: 'approve', role: 'counselor' })).status, 200);
