@@ -24,6 +24,17 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   upcoming: { ko: '준비 중', en: 'Upcoming', cls: 'status-upcoming' },
   full:     { ko: '정원 마감', en: 'Full', cls: 'status-full' },
 };
+
+// 다가오는 캠프 목록 — 상태 글은 캠프 신청 화면과 같은 규칙(src/utils/campPublicStatus.js).
+// 빌드 때 그 시각 기준으로 한 번 그리고, 페이지가 열린 뒤 아래 스크립트가 지금 시각으로 다시 칠한다.
+import { campPublicStatus, campStatusTone } from '../../utils/campPublicStatus.js';
+const buildNow = Date.now();
+const campGroups = [
+  { key: 'inland', href: '/camp-register/#camps-wolko', ko: '월코센터 · 평택', en: 'WOLKO Center · Pyeongtaek', camps: inlandCamps },
+  { key: 'jeju',   href: '/camp-register/#camps-jeju',  ko: '제주 월비캠퍼스', en: 'WOLBI Jeju Campus',         camps: jejuCamps },
+].filter(g => g.camps.length > 0);
+// 일정 글자 — ' · ' 앞(날짜)과 뒤(n박 n일)를 따로 묶어, 좁은 화면에서는 묶음째 다음 줄로 넘어가게 한다
+const ucDateParts = (v) => String(v || '').split(' · ').map(t => t.trim()).filter(Boolean);
 ---
 
 <BaseLayout
@@ -45,7 +56,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
     </p>
     <div class="ph-actions">
       <a href="/camp-register" class="ph-cta"><span class="wl-ko">캠프 신청하기</span><span class="wl-en">Register for Camp</span><svg aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg></a>
-      <a href="#camp-programs" class="ph-cta ph-cta--ghost"><span class="wl-ko">캠프 프로그램 보기</span><span class="wl-en">View Camp Programs</span></a>
+      <a href="#upcoming-camps" class="ph-cta ph-cta--ghost"><span class="wl-ko">캠프 일정 보기</span><span class="wl-en">See Camp Dates</span></a>
     </div>
     <dl class="ph-stats ph-stats--text">
       <div class="ph-stat"><dt><span class="wl-ko">선교사님들의 복음 특화 말씀</span><span class="wl-en">Gospel-focused teaching by missionaries</span></dt><dd><span class="wl-ko">말씀 중심</span><span class="wl-en">Word-Centered</span></dd></div>
@@ -57,6 +68,79 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 </PageHero>
 
 <div class="wcp-wrap">
+
+  <!-- 다가오는 캠프 — 캠프 이름 · 일정 · 신청 상태만 짧게 적은 목록. 대상 · 참가비 같은 자세한 안내와 신청은 캠프 신청 화면(/camp-register) 한 곳에서 한다.
+       캠프 개수 · 순서 · 묶음은 캠프 신청 화면 공개 카드와 같다(같은 거름 · 같은 정렬). -->
+  <section class="uc-section" id="upcoming-camps" aria-labelledby="upcoming-camps-title">
+    <div class="cp-shell">
+      <div class="uc-head">
+        <h2 class="cp-title" id="upcoming-camps-title">
+          <span class="wl-ko">다가오는 캠프</span>
+          <span class="wl-en">Upcoming Camps</span>
+        </h2>
+        <p class="cp-text">
+          <span class="wl-ko">캠프별 일정과 신청 상태예요. 대상 · 참가비 같은 자세한 안내와 신청은 캠프 신청 화면에서 볼 수 있어요.</span>
+          <span class="wl-en">Dates and registration status for each camp. Full details, such as who can join and fees, are on the registration page.</span>
+        </p>
+      </div>
+
+      {campGroups.length > 0 ? (
+        <div class="uc-groups">
+          {campGroups.map((g) => (
+            <div class="uc-group">
+              <h3 class="uc-group-tag" id={`uc-group-${g.key}`}><span class="wl-ko">{g.ko}</span><span class="wl-en">{g.en}</span></h3>
+              <ul class="uc-list" aria-labelledby={`uc-group-${g.key}`}>
+                {g.camps.map((s) => {
+                  const d = s.data;
+                  const st = campPublicStatus(s, buildNow);
+                  return (
+                    <li
+                      class="uc-row"
+                      data-camp-id={s.id}
+                      data-status={d.status}
+                      data-camp-type={d.camp_type}
+                      data-open-date={d.open_date ?? ''}
+                      data-registration-url={d.registration_url ? '1' : ''}
+                      data-external-form={d.use_external_form ? '1' : ''}
+                    >
+                      <p class="uc-name"><span class="wl-ko">{d.title_ko}</span><span class="wl-en">{d.title_en}</span></p>
+                      <p class="uc-date">
+                        <span class="wl-ko">{ucDateParts(d.date_ko).map((t, i) => (<>{i > 0 && ' · '}<span class="uc-date-part">{t}</span></>))}</span>
+                        <span class="wl-en">{ucDateParts(d.date_en).map((t, i) => (<>{i > 0 && ' · '}<span class="uc-date-part">{t}</span></>))}</span>
+                      </p>
+                      <p class={`uc-status uc-status--${campStatusTone(st.key)}`} data-uc-status data-key={st.key}>
+                        <span class="sr-only"><span class="wl-ko">신청 상태: </span><span class="wl-en">Registration: </span></span>
+                        <span class="wl-ko">{st.ko}</span><span class="wl-en">{st.en}</span>
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
+              <a class="uc-more" href={g.href}>
+                <span>
+                  <span class="wl-ko">신청 화면에서 자세히 보기</span><span class="wl-en">Details &amp; registration</span>
+                  <span class="sr-only"> — <span class="wl-ko">{g.ko}</span><span class="wl-en">{g.en}</span></span>
+                </span>
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+              </a>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div class="uc-empty">
+          <p class="uc-empty-text">
+            <span class="wl-ko">지금 신청을 받는 캠프가 없어요. 다음 캠프 소식은 네이버 카페에서 받아 보세요.</span>
+            <span class="wl-en">No camps are open for registration right now. Follow our Naver Cafe for news about upcoming camps.</span>
+          </p>
+          <ul class="uc-empty-links">
+            <li><a href="https://cafe.naver.com/wolkojrcamp" target="_blank" rel="noopener"><span class="wl-ko">내륙캠프 안내</span><span class="wl-en">Inland Camp Info</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a></li>
+            <li><a href="https://cafe.naver.com/wolcamp" target="_blank" rel="noopener"><span class="wl-ko">제주캠프 안내</span><span class="wl-en">Jeju Camp Info</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a></li>
+            <li><a href="#camp-contact"><span class="wl-ko">캠프 문의</span><span class="wl-en">Camp Contact</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a></li>
+          </ul>
+        </div>
+      )}
+    </div>
+  </section>
 
   <!-- 소개 + 프로그램 바로가기 -->
   <section class="cp-intro">
@@ -85,7 +169,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
         </div>
       </div>
 
-      <nav class="cp-jump" aria-label="캠프 프로그램 바로가기">
+      <nav class="cp-jump" aria-label="캠프 프로그램 바로가기" data-wl-label-ko="캠프 프로그램 바로가기" data-wl-label-en="Camp programs">
         <a href="#english-camp">
           <span class="cp-jump-kicker"><span class="wl-ko">프로그램 01</span><span class="wl-en">Program 01</span></span>
           <strong class="cp-jump-name"><span class="wl-ko">영어캠프</span><span class="wl-en">English Camp</span></strong>
@@ -112,7 +196,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   <section class="cp-highlights">
     <div class="cp-shell cp-split">
       <figure class="cp-split-media">
-        <img src="/images/heroes/camp-outdoor-2026.jpg" alt="여름 캠프에서 숲속 잔디밭에 둘러앉은 청소년들" loading="lazy">
+        <img src="/images/heroes/camp-outdoor-2026.jpg" alt="여름 캠프에서 숲속 잔디밭에 둘러앉은 청소년들" data-wl-alt-ko="여름 캠프에서 숲속 잔디밭에 둘러앉은 청소년들" data-wl-alt-en="Teens sitting together on a grassy clearing in the woods at summer camp" loading="lazy">
       </figure>
       <div class="cp-split-body">
         <p class="cp-eyebrow"><span class="wl-ko">캠프의 경험</span><span class="wl-en">The Camp Experience</span></p>
@@ -168,7 +252,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
       <div class="cp-prog-grid">
         <article class="prog-card" id="english-camp" tabindex="0" aria-describedby="english-camp-hint">
           <div class="prog-media">
-            <img class="prog-img" src="/images/heroes/camp-english-2026.jpg" alt="영어캠프" loading="lazy">
+            <img class="prog-img" src="/images/heroes/camp-english-2026.jpg" alt="" loading="lazy">
             <div class="prog-hint" id="english-camp-hint">
               <span class="prog-hint-label"><span class="wl-ko">참여 대상</span><span class="wl-en">Eligibility</span></span>
               <strong><span class="wl-ko">초6–중3</span><span class="wl-en">Grades 6–9</span></strong>
@@ -183,7 +267,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
         </article>
         <article class="prog-card" id="jeju-camp" tabindex="0" aria-describedby="jeju-camp-hint">
           <div class="prog-media">
-            <img class="prog-img" src="/images/heroes/camp-jeju-arrival.jpg" alt="제주캠프" loading="lazy">
+            <img class="prog-img" src="/images/heroes/camp-jeju-arrival.jpg" alt="" loading="lazy">
             <div class="prog-hint" id="jeju-camp-hint">
               <span class="prog-hint-label"><span class="wl-ko">참여 대상</span><span class="wl-en">Eligibility</span></span>
               <strong><span class="wl-ko">고1–고3</span><span class="wl-en">Grades 10–12</span></strong>
@@ -198,7 +282,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
         </article>
         <article class="prog-card" id="union-camp" tabindex="0" aria-describedby="union-camp-hint">
           <div class="prog-media">
-            <img class="prog-img" src="https://wolko.synology.me/Web_Contents/Photos/Camp_Ministry/Union_Camp.jpg" alt="연합캠프" loading="lazy">
+            <img class="prog-img" src="https://wolko.synology.me/Web_Contents/Photos/Camp_Ministry/Union_Camp.jpg" alt="" loading="lazy">
             <div class="prog-hint" id="union-camp-hint">
               <span class="prog-hint-label"><span class="wl-ko">참여 방식</span><span class="wl-en">Participation</span></span>
               <strong><span class="wl-ko">교회 단위 참여</span><span class="wl-en">Church Groups</span></strong>
@@ -319,7 +403,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
           <a href="/contact?type=camp&amp;camp=inland#contact-form" class="cta-card">
             <span class="cta-card-text">
               <span class="cta-card-label"><span class="wl-ko">캠프관련 문의</span><span class="wl-en">General Camp Inquiry</span></span>
-              <span class="cta-card-sub"><span class="wl-ko">문의 페이지로 연결됩니다</span><span class="wl-en">Go to our contact page</span></span>
+              <span class="cta-card-sub"><span class="wl-ko">문의 페이지로 연결돼요</span><span class="wl-en">Go to our contact page</span></span>
             </span>
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
           </a>
@@ -375,7 +459,8 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
     if (!('IntersectionObserver' in window)) return;
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     var items = [].slice.call(document.querySelectorAll(
-      '.wcp-wrap .cp-intro-grid > *, .wcp-wrap .cp-jump > a, .wcp-wrap .cp-split-media, .wcp-wrap .cp-split-body > *, ' +
+      '.wcp-wrap .uc-head > *, .wcp-wrap .uc-group, .wcp-wrap .uc-empty, ' +
+      '.wcp-wrap .cp-intro-grid > *, .wcp-wrap .cp-jump > a,.wcp-wrap .cp-split-media, .wcp-wrap .cp-split-body > *, ' +
       '.wcp-wrap .cp-head > *, .wcp-wrap .prog-card, .wcp-wrap .cp-aside-head, .wcp-wrap .feat-item, ' +
       '.wcp-wrap .cp-flow-head > *, .wcp-wrap .flow-step, .wcp-wrap .cta-inner > *, .wcp-wrap .contact-bar'
     ));
@@ -475,6 +560,45 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   });
 </script>
 
+<script>
+  // 다가오는 캠프 목록의 신청 상태 — 캠프 신청 화면과 같은 규칙으로 지금 시각에 맞춰 다시 칠한다(1분마다).
+  // 빌드한 뒤 신청창이 열리거나(2차 접수) 카운트다운 시각이 지나도 목록 글자가 신청 화면과 같아진다.
+  import { campPublicStatus, campStatusTone } from '../../utils/campPublicStatus.js';
+
+  const UC_TONES = ['open', 'upcoming', 'closed'];
+  function paintCampStatus() {
+    const now = Date.now();
+    // 형 표기는 꺾쇠 대신 'as' 로 쓴다 — scroll-lock 테스트가 꺾쇠 + html 글자로 전체 페이지를 찾기 때문
+    document.querySelectorAll('.uc-row[data-camp-id]').forEach((el) => {
+      const row = el as HTMLElement;
+      const badge = row.querySelector('[data-uc-status]') as HTMLElement | null;
+      if (!badge) return;
+      const ds = row.dataset;
+      const st = campPublicStatus({
+        id: ds.campId,
+        data: {
+          status: ds.status,
+          camp_type: ds.campType,
+          open_date: ds.openDate || undefined,
+          registration_url: ds.registrationUrl || '',
+          use_external_form: ds.externalForm === '1',
+        },
+      }, now);
+      if (badge.dataset.key === st.key) return;
+      // 화면 읽기용 '신청 상태:' 글자(.sr-only 안)는 두고, 바로 아래 상태 글자만 바꾼다
+      const ko = badge.querySelector(':scope > .wl-ko');
+      const en = badge.querySelector(':scope > .wl-en');
+      if (ko) ko.textContent = st.ko;
+      if (en) en.textContent = st.en;
+      UC_TONES.forEach((t) => badge.classList.remove('uc-status--' + t));
+      badge.classList.add('uc-status--' + campStatusTone(st.key));
+      badge.dataset.key = st.key;
+    });
+  }
+  paintCampStatus();
+  setInterval(paintCampStatus, 60000);
+</script>
+
 <style>
 /* ══ 캠프 사역 본문 — 사역 페이지(/ministry)와 같은 디자인 언어 ══ */
 .wcp-wrap {
@@ -509,6 +633,47 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .cp-title { margin-top: 20px; font-family: var(--ff-serif); font-size: clamp(30px, 3.4vw, 46px); font-weight: 700; line-height: 1.22; letter-spacing: -.03em; color: var(--cp-navy); }
 .cp-lead { font-size: 18px; line-height: 1.85; color: var(--cp-body); }
 .cp-text { margin-top: 16px; font-size: 16px; line-height: 1.85; color: var(--cp-text); }
+
+/* 다가오는 캠프 — 카드 대신 표처럼 차분한 목록: 이름 · 일정 / 신청 상태. 자세한 안내는 캠프 신청 화면에서.
+   옅은 바탕 위에 가는 선으로만 줄을 나눈다 → 아래 '소개'(흰 바탕)부터 바탕이 번갈아 이어진다. */
+.uc-section { padding: 112px 0 120px; background: var(--cp-soft); scroll-margin-top: 24px; }
+.uc-head { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 80px; align-items: end; }
+.uc-head .cp-title { margin-top: 0; }
+.uc-head .cp-text { margin-top: 0; max-width: 560px; color: var(--cp-body); }
+.uc-groups { margin-top: 64px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 56px 80px; align-items: start; }
+.uc-group-tag {
+  margin: 0; padding-bottom: 16px; border-bottom: 2px solid var(--cp-navy);
+  font-family: var(--ff-serif); font-size: 22px; font-weight: 700; line-height: 1.3; letter-spacing: -.03em; color: var(--cp-navy);
+}
+.uc-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 24px; row-gap: 4px; align-items: baseline;
+  padding: 18px 0; border-bottom: 1px solid var(--cp-line);
+}
+.uc-name { grid-column: 1; font-size: 17px; font-weight: 700; line-height: 1.45; letter-spacing: -.01em; color: var(--cp-navy); }
+.uc-date { grid-column: 1 / -1; font-size: 15px; line-height: 1.6; color: var(--cp-body); font-variant-numeric: tabular-nums; }
+.uc-date-part { display: inline-block; } /* 날짜 · 'n박 n일' 묶음이 중간에서 끊기지 않게 */
+/* 신청 상태 — 글자만, 색으로 단계를 나눈다(캠프 신청 화면 .crp-status-* 와 같은 나눔). 옅은 바탕 위 대비 4.5:1 이상 */
+.uc-status { grid-column: 2; grid-row: 1; font-size: 14px; font-weight: 700; line-height: 1.45; white-space: nowrap; text-align: right; }
+.uc-status--open     { color: var(--cp-deep); }
+.uc-status--upcoming { color: var(--cp-body); }
+.uc-status--closed   { color: var(--cp-muted); }
+:global(.lang-en) .uc-name, :global(.lang-en) .uc-date { word-break: normal; overflow-wrap: anywhere; }
+/* 묶음마다 신청 화면으로 가는 글 링크 하나 */
+.wcp-wrap .uc-more {
+  min-height: 44px; margin-top: 8px; display: inline-flex; align-items: center; gap: 8px;
+  color: var(--cp-deep); font-size: 15px; font-weight: 700; line-height: 1.4; text-decoration: none;
+}
+.wcp-wrap .uc-more svg { transition: transform .25s; }
+.wcp-wrap .uc-more:hover > span { text-decoration: underline; text-underline-offset: 4px; }
+.wcp-wrap .uc-more:hover svg { transform: translateX(3px); }
+.wcp-wrap .uc-more:focus-visible { outline: 2px solid var(--cp-deep); outline-offset: 3px; }
+/* 신청 받는 캠프가 없을 때 — 한 문장 + 카페 · 문의 연결 */
+.uc-empty { margin-top: 56px; padding: 48px 40px; background: #fff; border: 1px solid var(--cp-line); }
+.uc-empty-text { max-width: 640px; font-family: var(--ff-serif); font-size: 22px; font-weight: 700; line-height: 1.45; letter-spacing: -.03em; color: var(--cp-navy); }
+.uc-empty-links { margin-top: 24px; display: flex; flex-wrap: wrap; gap: 0 32px; }
+.uc-empty-links a { min-height: 44px; display: inline-flex; align-items: center; gap: 8px; color: var(--cp-deep); font-size: 15px; font-weight: 700; text-decoration: none; }
+.uc-empty-links a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.uc-empty-links a:focus-visible { outline: 2px solid var(--cp-deep); outline-offset: 3px; }
 
 /* 소개 */
 .cp-intro { padding: 120px 0 104px; }
@@ -674,6 +839,8 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 /* ══ 반응형 ══ */
 @media (max-width: 980px) {
   .cp-intro-grid, .cp-aside-grid, .cp-flow-head { grid-template-columns: 1fr; gap: 28px; align-items: start; }
+  .uc-head { grid-template-columns: 1fr; gap: 16px; align-items: start; }
+  .uc-groups { grid-template-columns: minmax(0, 1fr); }
   .cp-aside-head { position: static; }
   .cp-split { flex-direction: column; gap: 36px; }
   .cp-split-media { flex: none; min-height: 0; aspect-ratio: 16 / 10; }
@@ -696,6 +863,13 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 }
 @media (max-width: 740px) {
   .cp-shell { width: calc(100% - 40px); }
+  .uc-section { padding: 64px 0 72px; }
+  .uc-groups { margin-top: 40px; gap: 48px; }
+  .uc-group-tag { font-size: 20px; }
+  .uc-row { column-gap: 16px; padding: 16px 0; }
+  .uc-name { font-size: 16px; }
+  .uc-empty { margin-top: 40px; padding: 32px 20px; }
+  .uc-empty-text { font-size: 19px; }
   .cp-intro { padding: 72px 0 64px; }
   .cp-lead { font-size: 16px; }
   .cp-text { font-size: 15.5px; }
@@ -737,6 +911,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .wcp-wrap .uc-more svg,
   .wcp-wrap .prog-img,
   .wcp-wrap .prog-hint,
   .wcp-wrap .cta-card svg,

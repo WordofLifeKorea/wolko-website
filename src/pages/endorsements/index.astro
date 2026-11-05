@@ -98,6 +98,31 @@ import PageHero from '../../components/PageHero.astro';
   color: var(--wr-text); line-height: 1.55;
 }
 
+/* ── 마무리 — 남색 띠: 왼쪽 제목 · 설명, 오른쪽 교회 협력 단추 (/ministry · /churches 마무리와 같은 구조) ── */
+.wr-closing { padding: 104px 0; background: var(--wr-navy); color: #fff; }
+.wr-closing-inner {
+  width: min(1200px, calc(100% - 48px)); margin: 0 auto;
+  display: flex; justify-content: space-between; align-items: flex-end; gap: 60px;
+}
+.wr-closing-copy { min-width: 0; }
+.wr-closing-title {
+  font-family: var(--ff-serif, inherit);
+  font-size: clamp(28px, 3vw, 40px); font-weight: 700; line-height: 1.25; letter-spacing: -.03em;
+  color: #fff;
+}
+.wr-closing-desc { margin-top: 18px; max-width: 560px; font-size: 16px; line-height: 1.85; color: rgba(255,255,255,.74); }
+.wr-closing-actions { display: flex; flex-wrap: wrap; gap: 10px; flex: none; }
+.wr-btn {
+  height: 52px; padding: 0 24px;
+  display: inline-flex; align-items: center; justify-content: space-between; gap: 12px;
+  border-radius: 2px; font-size: 15px; font-weight: 700; text-decoration: none; white-space: nowrap;
+  transition: background-color .2s, gap .25s;
+}
+.wr-btn svg { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: square; }
+.wr-btn--light { background: #fff; color: var(--wr-deep); }
+.wr-btn--light:hover { background: #e8f1f4; color: var(--wr-deep); gap: 16px; }
+.wr-btn:focus-visible { outline: 2px solid rgba(255,255,255,.85); outline-offset: 3px; }
+
 /* 스크롤하면 떠오르기 — 스크립트가 .wr-rv 를 붙일 때만 */
 .wr-rv { opacity: 0; transform: translateY(24px); transition: opacity 1s cubic-bezier(.2,.7,.2,1) var(--d, 0s), transform 1s cubic-bezier(.2,.7,.2,1) var(--d, 0s); }
 .wr-rv.wr-visible { opacity: 1; transform: none; }
@@ -108,6 +133,7 @@ import PageHero from '../../components/PageHero.astro';
   .wr-quote-icon { grid-column: 1; grid-row: 1; }
   .wr-quote-text { grid-column: 1; grid-row: 2; max-width: none; }
   .wr-person { grid-column: 1; grid-row: 3; margin-top: 28px; }
+  .wr-closing-inner { flex-direction: column; align-items: flex-start; gap: 32px; }
 }
 /* ── 모바일 ── */
 @media (max-width: 740px) {
@@ -122,6 +148,14 @@ import PageHero from '../../components/PageHero.astro';
   .wr-avatar { width: 52px; height: 52px; }
   .wr-person-name { font-size: 17px; }
   .wr-person-title { margin-top: 4px; font-size: 13.5px; }
+  .wr-closing { padding: 72px 0; }
+  .wr-closing-inner { width: calc(100% - 40px); }
+  .wr-closing-desc { font-size: 15px; }
+  .wr-closing-actions { width: 100%; }
+  .wr-btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wr-btn { transition: none; }
 }
 </style>
 
@@ -163,7 +197,7 @@ import PageHero from '../../components/PageHero.astro';
         <p class="wr-quote-text wl-ko">월코는 청년들에게 영어와 제자훈련 그리고 청소년 사역을 제공하는 기독교단체입니다. 국제 사회가 요구하는 영어와 우리 주님께서 원하시는 제자 훈련을 동시에 제공하는 훌륭한 단체로서, 말씀으로 양육받고 영어 실력을 향상시키고자 하는 청년들에게 적극 추천합니다.</p>
         <p class="wr-quote-text wl-en">WOLKO is a program designed to help Christian young adults learn English, discipleship, and youth ministry all at once. It is an excellent program that simultaneously provides the English skills international society demands and the discipleship training our Lord desires. I strongly recommend it to young people who wish to be nourished by the Word and grow in their English ability.</p>
         <div class="wr-person">
-          <img class="wr-avatar" src="https://cdn.imweb.me/thumbnail/20250318/be2ccd28ab12b.png" alt="이동원 목사">
+          <img class="wr-avatar" src="https://cdn.imweb.me/thumbnail/20250318/be2ccd28ab12b.png" alt="">
           <div class="wr-person-info">
             <div class="wr-person-name wl-ko">이동원 목사</div>
             <div class="wr-person-name wl-en">Rev. Dong-won Lee</div>
@@ -183,7 +217,7 @@ import PageHero from '../../components/PageHero.astro';
         <p class="wr-quote-text wl-ko">Word of Life Korea (월코)는 지난 30년간 한국의 다음 세대를 위해 힘써온 선교 단체입니다. 이 단체를 통하여 다음 세대의 학생들이 캠프와 영어, 하나님의 말씀으로 그리스도를 만나고 삶의 목적이 바뀌는 은혜를 경험했습니다. 저의 두 아들과 조카도 이곳을 통해 훈련받으며 훌륭하게 자라나 지금은 세계 곳곳에서 하나님의 사람으로 주님의 몸 된 교회를 열심히 섬기고 있습니다.</p>
         <p class="wr-quote-text wl-en">Word of Life Korea is a mission organization that has devoted itself to the next generation in Korea for over 30 years. Through this ministry, young students have encountered Christ through camps, English, and God's Word — and experienced the grace of having their life's purpose transformed. My two sons and nephew were trained here and grew into outstanding men of God, now serving the church faithfully around the world.</p>
         <div class="wr-person">
-          <img class="wr-avatar" src="https://cdn.imweb.me/thumbnail/20250318/df1a60a5f0a4e.png" alt="배국순 목사">
+          <img class="wr-avatar" src="https://cdn.imweb.me/thumbnail/20250318/df1a60a5f0a4e.png" alt="">
           <div class="wr-person-info">
             <div class="wr-person-name wl-ko">배국순 목사</div>
             <div class="wr-person-name wl-en">Rev. Guk-soon Bae</div>
@@ -203,7 +237,7 @@ import PageHero from '../../components/PageHero.astro';
         <p class="wr-quote-text wl-ko">만약 청년의 시기로 돌아갈 수 있다면, 꼭 한 번 훈련받고 싶은 곳이 있다면 바로 월코입니다. 분명한 구원의 확신, 성경적인 비전과 가치관, 좋은 멘토를 만날 수 있는 곳이기 때문입니다. 그리고 무엇보다 영어를 함께 배울 수 있다는 것이 또 하나의 큰 장점입니다. 월코는 인생의 중요한 시기에 접어든 믿음의 청년들에게 권하고 싶은 곳입니다.</p>
         <p class="wr-quote-text wl-en">If I could return to my youth, there is one place I would want to be trained — WOLKO. It is a place where you can gain a sure assurance of salvation, establish a biblical vision and set of values, and find excellent mentors. And beyond all that, being able to grow in English is a tremendous added benefit. WOLKO is a place I wholeheartedly recommend to young believers entering a critical season of life.</p>
         <div class="wr-person">
-          <img class="wr-avatar" src="https://cdn.imweb.me/thumbnail/20250318/e8a27fcca7902.png" alt="이명규 목사">
+          <img class="wr-avatar" src="https://cdn.imweb.me/thumbnail/20250318/e8a27fcca7902.png" alt="">
           <div class="wr-person-info">
             <div class="wr-person-name wl-ko">이명규 목사</div>
             <div class="wr-person-name wl-en">Rev. Myung-gyu Lee</div>
@@ -223,7 +257,7 @@ import PageHero from '../../components/PageHero.astro';
         <p class="wr-quote-text wl-ko">지인의 소개로 두 자녀를 보내 훈련받게 했고, 다섯 명의 청소년들을 소개하여 보냈습니다. 월코는 청소년기의 기독교적 세계관 확립과 인생의 소명을 발견하게 하는 탁월한 훈련의 장입니다. 자비량 선교사님들과 교사들을 통해 사랑과 헌신, 섬김을 배우고, 공동체 생활을 통해 '함께'와 '스스로'를 세워가는 법을 배웁니다. 무엇보다 모든 훈련이 영어로 진행되어 자연스럽게 생활 속에서 체득하게 됩니다.</p>
         <p class="wr-quote-text wl-en">Through a personal referral, I sent two of my own children and five other teenagers to be trained here. WOLKO is an outstanding training ground where young people develop a biblical Christian worldview and discover their God-given calling. Through self-supported missionaries and teachers, they learn love, devotion, and service — and through community life, they grow in both collaboration and personal responsibility. Best of all, training entirely in English means they absorb the language naturally through daily life.</p>
         <div class="wr-person">
-          <img class="wr-avatar" src="https://cdn.imweb.me/thumbnail/20250318/4986c4ec20ce3.png" alt="서종식 목사">
+          <img class="wr-avatar" src="https://cdn.imweb.me/thumbnail/20250318/4986c4ec20ce3.png" alt="">
           <div class="wr-person-info">
             <div class="wr-person-name wl-ko">서종식 목사</div>
             <div class="wr-person-name wl-en">Rev. Jong-sik Seo</div>
@@ -243,7 +277,7 @@ import PageHero from '../../components/PageHero.astro';
         <p class="wr-quote-text wl-ko">월코는 영어로 주님의 제자훈련을 받으면서 신앙과 영어 소통이 놀랄 만큼 변화되는 장소입니다. 여기서 훈련받은 저희 교회 출신 청년들이 글로벌 인재로 여러 방면에서 뛰어나게 활동하고 있습니다.</p>
         <p class="wr-quote-text wl-en">WOLKO is a place where, through discipleship training conducted entirely in English, one's faith and English communication are transformed in remarkable ways. Young adults from our church who trained here are now thriving as global leaders across a wide range of fields.</p>
         <div class="wr-person">
-          <img class="wr-avatar" src="https://cdn.imweb.me/thumbnail/20250318/736b10f7525f3.png" alt="김정서 목사">
+          <img class="wr-avatar" src="https://cdn.imweb.me/thumbnail/20250318/736b10f7525f3.png" alt="">
           <div class="wr-person-info">
             <div class="wr-person-name wl-ko">김정서 원로목사</div>
             <div class="wr-person-name wl-en">Rev. Jeong-seo Kim</div>
@@ -256,6 +290,22 @@ import PageHero from '../../components/PageHero.astro';
     </div><!-- /.wr-grid -->
   </section>
 
+  <!-- 마무리 — 추천사를 읽은 교회 · 목회자를 협력 문의로 (남색 띠, /ministry 마무리와 같은 구조) -->
+  <section class="wr-closing">
+    <div class="wr-closing-inner">
+      <div class="wr-closing-copy">
+        <h2 class="wr-closing-title"><span class="wl-ko">우리 교회도 월코와 함께할 수 있어요</span><span class="wl-en">Your Church Can Partner with WOLKO</span></h2>
+        <p class="wr-closing-desc"><span class="wl-ko">전도 이벤트, 선생님 · 리더 훈련, 캠프 단체 참가처럼 교회와 함께할 협력이 궁금하시면 편하게 문의해 주세요.</span><span class="wl-en">Interested in outreach events, leader training, or group camps for your church? We'd love to hear from you.</span></p>
+      </div>
+      <div class="wr-closing-actions">
+        <a class="wr-btn wr-btn--light" href="/contact?type=ministry#contact-form">
+          <span><span class="wl-ko">협력 문의하기</span><span class="wl-en">Ask About Partnership</span></span>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
 </div><!-- /.wr-wrap -->
 
 <script is:inline>
@@ -264,7 +314,7 @@ import PageHero from '../../components/PageHero.astro';
   // 움직임 줄이기 설정이거나 IntersectionObserver 가 없으면 아무것도 하지 않는다 — 처음부터 그대로 다 보인다.
   if (!('IntersectionObserver' in window)) return;
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  var items = [].slice.call(document.querySelectorAll('.wr-section-label, .wr-card'));
+  var items = [].slice.call(document.querySelectorAll('.wr-section-label, .wr-card, .wr-closing-inner > *'));
   items.forEach(function (el, i) {
     el.style.setProperty('--d', (i < 3 ? i : 0) * 0.08 + 's');
     el.classList.add('wr-rv');

@@ -10,8 +10,15 @@ interface Props {
   variant?: 'side' | 'sheet';
 }
 import { photoFrame } from '../lib/photoFrame.js';
+// 묶음 숫자는 사람 수(부부 항목은 2명) — /give · '전체 n명'과 같은 기준
+import { headcount } from '../lib/teamHeadcount.js';
+import { photoSrcset, photoSizes } from '../utils/photoSrcset.js';
 const { campuses, current, roleKo, variant = 'side' } = Astro.props;
 const initialOf = (p: any) => (p.data.name_ko || p.data.name_en || '?').trim().charAt(0);
+// 영어 화면 머리글자는 영어 이름 첫 글자 — 영어 이름이 없으면 한국어와 같은 글자
+const initialEnOf = (p: any) => (p.data.name_en || p.data.name_ko || '?').trim().charAt(0);
+// 사진 칸 폭: 컴퓨터 옆 목록 40px, 폰 아래 목록 48px
+const AVATAR_SLOT = [variant === 'sheet' ? '48px' : '40px'];
 ---
 <div class:list={['tn-nav', `tn-nav--${variant}`]}>
   {campuses.map((c) => (
@@ -19,14 +26,14 @@ const initialOf = (p: any) => (p.data.name_ko || p.data.name_en || '?').trim().c
       <h3 class="tn-campus-name"><span class="tn-campus-num">{c.num}</span><span class="wl-ko">{c.ko}</span><span class="wl-en">{c.en}</span></h3>
       {c.groups.map((g) => (
         <div class="tn-group">
-          <p class="tn-group-label"><span class="wl-ko">{g.ko}</span><span class="wl-en">{g.en}</span><span class="tn-group-count">{g.people.length}</span></p>
+          <p class="tn-group-label"><span class="wl-ko">{g.ko}</span><span class="wl-en">{g.en}</span><span class="tn-group-count">{headcount(g.people)}</span></p>
           <ul class="tn-list">
             {g.people.map((p) => (
               <li>
                 <a href={`/team/${p.slug}`} class:list={['tn-item', { 'is-active': p.slug === current }]} aria-current={p.slug === current ? 'page' : undefined}>
                   <span class="tn-avatar" aria-hidden="true">
-                    <span class="tn-initial">{initialOf(p)}</span>
-                    {p.data.photo_url && <img src={p.data.photo_url} alt="" loading="lazy" style={photoFrame(p.data.photo_url, 1, 'avatar', p.data.photo_position)} onerror="this.remove()" />}
+                    <span class="tn-initial"><span class="wl-ko">{initialOf(p)}</span><span class="wl-en">{initialEnOf(p)}</span></span>
+                    {p.data.photo_url && <img src={p.data.photo_url} srcset={photoSrcset(p.data.photo_url)} sizes={photoSizes(p.data.photo_url, AVATAR_SLOT, { style: photoFrame(p.data.photo_url, 1, 'avatar', p.data.photo_position), aspect: 1 })} alt="" loading="lazy" style={photoFrame(p.data.photo_url, 1, 'avatar', p.data.photo_position)} onerror="this.remove()" />}
                   </span>
                   <span class="tn-text">
                     <span class="tn-name"><span class="wl-ko">{p.data.name_ko}</span><span class="wl-en">{p.data.name_en}</span></span>

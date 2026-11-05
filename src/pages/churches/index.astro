@@ -34,7 +34,7 @@ const offers = [
     num: '04', ko: '캠프 단체 참가', en: 'Camps for Your Group',
     dKo: '교회 청소년부가 영어캠프 · 제주캠프 · 연합캠프에 함께 참가해, 말씀과 공동체 안에서 삶의 전환점을 경험하도록 돕습니다.',
     dEn: 'Your youth group can join our English, Jeju, and Unity Camps together and encounter life change in the Word and community.',
-    href: '/camp', linkKo: '캠프 사역 보기', linkEn: 'See Camp Ministry',
+    href: '/camp#upcoming-camps', linkKo: '캠프 일정 보기', linkEn: 'See Camp Dates',
   },
   {
     num: '05', ko: '월코 커리큘럼', en: 'WOLKO Curriculum',
@@ -63,6 +63,7 @@ const steps = [
   title="교회와 함께 — Word of Life Korea"
   description="전도 이벤트, 선생님·리더 훈련, 캠프 단체 참가, 월코 커리큘럼까지 — 교회가 월코와 함께 다음 세대를 섬기는 방법을 소개합니다."
   activeNav="ministry"
+  noindex
 >
   <link rel="stylesheet" href="/partner-churches.css?v=25">
   <div class="churches">
@@ -93,7 +94,7 @@ const steps = [
             <h2 class="ch-title"><span class="wl-ko">교회가 월코에<br>요청할 수 있는 것</span><span class="wl-en">What Your Church<br>Can Ask Us For</span></h2>
           </div>
           <p class="ch-lead">
-            <span class="wl-ko">교회의 청소년부와 다음 세대 사역에 필요한 것을 골라 문의해 주세요. 한 가지부터 시작해도 좋습니다.</span>
+            <span class="wl-ko">교회의 청소년부와 다음 세대 사역에 필요한 것을 골라 문의해 주세요. 한 가지부터 시작해도 좋아요.</span>
             <span class="wl-en">Choose what your youth ministry needs and reach out. Starting with just one is perfectly fine.</span>
           </p>
         </div>
@@ -161,7 +162,7 @@ const steps = [
           <h2 class="ch-title ch-title--light"><span class="wl-ko">우리 교회에 맞는 협력을<br>함께 찾아보세요</span><span class="wl-en">Let's find the right partnership<br>for your church</span></h2>
         </div>
         <div class="ch-actions">
-          <a class="ch-btn ch-btn--light" href="/contact">
+          <a class="ch-btn ch-btn--light" href="/contact?type=ministry#contact-form">
             <span><span class="wl-ko">문의하기</span><span class="wl-en">Contact Us</span></span>
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
           </a>
@@ -227,6 +228,9 @@ const steps = [
     .ch-card p { margin-top: 12px; flex: 1; font-size: 15px; line-height: 1.8; color: var(--ch-text); }
     .ch-link { margin-top: 18px; display: inline-flex; align-items: center; gap: 8px; width: fit-content; color: var(--ch-deep); font-size: 14px; font-weight: 700; text-decoration: none; }
     .ch-link:hover span { text-decoration: underline; text-underline-offset: 4px; }
+    /* 보이는 글줄은 그대로, 눌리는 자리만 위아래로 넓혀 높이 44px (위는 설명 글 여백 18px, 아래는 칸 사이 48px 안) */
+    .ch-link { position: relative; }
+    .ch-link::after { content: ''; position: absolute; left: 0; right: 0; top: min(0px, calc(50% - 22px)); bottom: min(0px, calc(50% - 22px)); }
 
     /* 함께하는 순서 — 다섯 걸음 가로 줄 */
     .ch-steps { padding: 104px 0; background: var(--ch-soft); }
@@ -240,11 +244,11 @@ const steps = [
     /* 협력 교회 띠는 /partner-churches.css 를 그대로 쓰고, 이 페이지에서는 바탕만 흰색 */
     .churches .pc-band { background: #fff; }
 
-    /* 문의 — 남색 띠 */
+    /* 문의 — 남색 띠. 단추 높이는 height 로 준다(공용 wolko-ui.css 의 min-height !important 가 min-height 52px 를 36px 로 덮어써서) */
     .ch-closing { padding: 104px 0; background: var(--ch-navy); color: #fff; }
     .ch-closing-inner { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; }
     .ch-actions { display: flex; flex-wrap: wrap; gap: 12px; }
-    .ch-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 26px; border-radius: var(--ws-radius-sm, 8px); font-size: 15px; font-weight: 700; text-decoration: none; transition: background .2s, color .2s; }
+    .ch-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 52px; padding: 0 26px; border-radius: var(--ws-radius-sm, 8px); font-size: 15px; font-weight: 700; text-decoration: none; transition: background .2s, color .2s; }
     .ch-btn--light { background: #fff; color: var(--ch-navy); }
     .ch-btn--light:hover { background: #e7f3f7; }
     .ch-btn--ghost { border: 1px solid rgba(255,255,255,.45); color: #fff; }

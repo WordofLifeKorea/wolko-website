@@ -3,7 +3,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import TeamNavList from '../../components/TeamNavList.astro';
 import { photoFrame } from '../../lib/photoFrame.js';
+// 사진 작은 사본(srcset) — 사본이 없는 사진은 원본만 쓴다
+import { photoSrcset, photoSizes } from '../../utils/photoSrcset.js';
 import { roleKo, campusOf } from '../../lib/teamRoles.js';
+// 사람 수 — 부부 항목은 2명('전체 n명' · 옆 목록 묶음 숫자, /give 와 같은 기준)
+import { headcount } from '../../lib/teamHeadcount.js';
 
 export async function getStaticPaths() {
   const team = await getCollection('team');
@@ -22,7 +26,7 @@ const navCampuses = [
   { num: '01', ko: '평택 월코센터', en: 'Pyeongtaek WOLKO Center', groups: [{ ko: '선교사', en: 'Missionaries', people: wolkoMission }, { ko: '단기 사역자', en: 'Short-term Workers', people: wolkoSTW }] },
   { num: '02', ko: '제주 월비', en: 'Jeju WOLBI', groups: [{ ko: '선교사', en: 'Missionaries', people: jejuMission }, { ko: '단기 사역자', en: 'Short-term Workers', people: jejuSTW }] },
 ].map(c => ({ ...c, groups: c.groups.filter(g => g.people.length) })).filter(c => c.groups.length);
-const teamCount = wolkoMission.length + wolkoSTW.length + jejuMission.length + jejuSTW.length;
+const teamCount = headcount([...wolkoMission, ...wolkoSTW, ...jejuMission, ...jejuSTW]);
 const d = person.data;
 // 사역 거점 · 직책 이름은 섬기는이 목록과 같은 표(src/lib/teamRoles.js)를 쓴다
 const { ko: campusKo, en: campusEn } = campusOf(d.campus);
@@ -50,6 +54,11 @@ const roleOf = roleKo;
 const roleBadgeKo = roleKo(d.role_badge);
 // 사진 칸 비율 — 아래 CSS .mp-hero-photo · .mp-story-photo · .mp-spouse-photo-wrap 의 aspect-ratio 와 같아야 한다
 const PHOTO_ASPECT = 4 / 5;
+// 사진 사본을 고를 때 쓰는 칸 폭 — 아래 CSS(.mp-hero-photo · .mp-story-photo · .mp-spouse-photo-wrap)와 같은 셈.
+// 큰 사진(맨 위 · 이야기 칸)은 사본이 모자라면 원본을 고를 수 있게 원본도 후보로 둔다(전보다 흐려지지 않게)
+const SIZES_HERO = ['(max-width: 740px) calc(100vw - 40px)', '(max-width: 1100px) calc(100vw * 0.36)', '440px'];
+const SIZES_STORY = ['(max-width: 740px) calc(100vw - 40px)', '(max-width: 900px) 520px', '440px'];
+const SIZES_SPOUSE = ['128px'];
 
 // ── 성경 참조 한→영 자동 변환 ──────────────────────────────────
 const BOOK_MAP: Record<string, string> = {
@@ -131,6 +140,9 @@ const verseRefKo = d.verse_ref ? enRefToKo(d.verse_ref) : null;
   font-size: 13px; font-weight: 600; color: var(--c-muted); text-decoration: none; transition: color .2s, gap .25s;
 }
 .mp-back a:hover { color: var(--c-deep); gap: 14px; }
+/* 보이는 글줄은 그대로, 눌리는 자리만 위아래로 넓혀 높이 44px (아래 사진 칸까지 40px · 폰 24px 여백 안) */
+.mp-back a { position: relative; }
+.mp-back a::after { content: ''; position: absolute; left: 0; right: 0; top: min(0px, calc(50% - 22px)); bottom: min(0px, calc(50% - 22px)); }
 .mp-hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 72px; align-items: center; }
 /* 사진 액자 — 섬기는이 목록 · 포탈 카드처럼 모서리를 살짝 둥글게 */
 .mp-hero-photo { position: relative; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 12px; isolation: isolate; background: #e6eef2; }
@@ -341,8 +353,15 @@ const verseRefKo = d.verse_ref ? enRefToKo(d.verse_ref) : null;
 }
 
 /* ── 섬기는이 목록 — 컴퓨터: 오른쪽에 떠 있는 카드(머리글 아래), 폰: 아래에서 올라오는 목록 ── */
+/* 바닥글을 덮지 않게: 화면에 붙어 따라오다가(sticky) 바닥글이 올라오면 바닥글 16px 위에서 멈추고 본문과 함께 올라간다.
+   모양은 예전 고정(fixed) 카드와 같다 — 위 92px · 오른쪽 16px · 아래 16px, 높이 = 화면 높이 - 108px.
+   본문 맨 끝(바닥글 바로 앞)에 놓인 카드라서, 위 여백을 -(카드 높이 + 16px)로 당겨 페이지 높이는 그대로 둔다.
+   아래 여백 16px 이 부모 밖으로 빠져나가지 않게(=멈추는 자리가 바닥글 16px 위가 되게) 부모를 flow-root 로 둔다.
+   접어서 오른쪽 밖으로 밀어 둔 카드가 페이지 폭을 늘리지 않게 가로만 잘라 둔다(clip 은 sticky 를 막지 않는다). */
+:global(#lang-root) { display: flow-root; overflow-x: clip; }
 .tn-sidebar {
-  position: fixed; top: 92px; right: 16px; bottom: 16px; z-index: 200;
+  position: sticky; bottom: 16px; z-index: 200;
+  height: calc(100vh - 108px); margin: calc(92px - 100vh) 16px 16px auto; box-sizing: border-box;
   width: 256px; display: flex; flex-direction: column;
   background: #fff; border: 1px solid #dce5ea; border-radius: 16px;
   box-shadow: 0 18px 44px -20px rgba(11, 36, 48, .28), 0 2px 6px rgba(11, 36, 48, .05);
@@ -361,6 +380,9 @@ const verseRefKo = d.verse_ref ? enRefToKo(d.verse_ref) : null;
 .tn-toggle:focus-visible { outline: 2px solid #004f68; outline-offset: 2px; }
 .tn-toggle svg { transition: transform .3s; }
 .tn-sidebar.is-collapsed .tn-toggle svg { transform: rotate(180deg); }
+/* 보이는 손잡이는 30×60 그대로, 눌리는 자리만 왼쪽(본문 쪽)으로 넓혀 44×60 이상 — 오른쪽은 목록 칸이라 넓히지 않는다
+   (left 는 테두리 안쪽에서 재므로 -16px 이어야 테두리 포함 45px) */
+.tn-toggle::after { content: ''; position: absolute; top: 0; bottom: 0; left: -16px; right: 0; }
 .tn-head {
   flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 16px 18px 12px; border-bottom: 1px solid #e6edf1;
@@ -371,6 +393,10 @@ const verseRefKo = d.verse_ref ? enRefToKo(d.verse_ref) : null;
 .tn-all:hover { color: #004f68; }
 .tn-all svg { width: 12px; height: 12px; transition: transform .2s; }
 .tn-all:hover svg { transform: translateX(2px); }
+/* 보이는 글자는 그대로, 눌리는 자리만 위아래와 왼쪽(제목 쪽 빈칸)으로 넓혀 44×44 이상 — 오른쪽은 폰 닫기 단추라 넓히지 않는다.
+   목록 맨 위에 붙는 거점 이름(z-index 1)이 아래 1~2px 를 덮지 않게 z-index 2 */
+.tn-all { position: relative; }
+.tn-all::after { content: ''; position: absolute; z-index: 2; right: 0; left: min(0px, calc(100% - 44px)); top: min(0px, calc(50% - 22px)); bottom: min(0px, calc(50% - 22px)); }
 .tn-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #c9d6dc transparent; border-radius: 0 0 16px 16px; }
 
 /* 목록 자리만큼 본문을 왼쪽으로 — 접으면 본문이 다시 넓어진다 */
@@ -408,7 +434,10 @@ const verseRefKo = d.verse_ref ? enRefToKo(d.verse_ref) : null;
     flex: none; width: 36px; height: 36px; min-height: 0; padding: 0; margin-left: 4px;
     display: flex; align-items: center; justify-content: center;
     background: #f3f7f9; border: 0; border-radius: 10px; color: #4a5d66; cursor: pointer;
+    position: relative;
   }
+  /* 보이는 네모는 36px 그대로, 눌리는 자리만 사방 4px 넓혀 44×44 (왼쪽 4px 은 '전체 n명' 과의 사이 여백 안) */
+  .tn-sheet-close::after { content: ''; position: absolute; inset: -4px; }
   .tn-sheet .tn-scroll { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; border-radius: 0; }
   .tn-fab {
     display: flex; align-items: center; justify-content: center;
@@ -446,7 +475,7 @@ const verseRefKo = d.verse_ref ? enRefToKo(d.verse_ref) : null;
         <!-- 사진 -->
         <div class="mp-hero-photo">
           {heroPhoto ? (
-            <img src={heroPhoto} alt={d.name_ko} loading="eager" style={photoFrame(heroPhoto, PHOTO_ASPECT, 'hero', heroPhotoPos)} onerror="this.style.display='none'"/>
+            <img src={heroPhoto} srcset={photoSrcset(heroPhoto, { withOriginal: true })} sizes={photoSizes(heroPhoto, SIZES_HERO, { style: photoFrame(heroPhoto, PHOTO_ASPECT, 'hero', heroPhotoPos), aspect: PHOTO_ASPECT })} alt={d.name_ko} data-wl-alt-ko={d.name_ko} data-wl-alt-en={d.name_en || d.name_ko} loading="eager" style={photoFrame(heroPhoto, PHOTO_ASPECT, 'hero', heroPhotoPos)} onerror="this.style.display='none'"/>
           ) : (
             <span class="mp-hero-initial" aria-hidden="true">{initial}</span>
           )}
@@ -570,7 +599,7 @@ const verseRefKo = d.verse_ref ? enRefToKo(d.verse_ref) : null;
         {storyPhoto && (
           <figure class="mp-story-figure">
             <div class="mp-story-photo">
-              <img src={storyPhoto} alt="" loading="lazy" style={photoFrame(storyPhoto, PHOTO_ASPECT, 'hero')} onerror="this.style.display='none'"/>
+              <img src={storyPhoto} srcset={photoSrcset(storyPhoto, { withOriginal: true })} sizes={photoSizes(storyPhoto, SIZES_STORY, { style: photoFrame(storyPhoto, PHOTO_ASPECT, 'hero'), aspect: PHOTO_ASPECT })} alt="" loading="lazy" style={photoFrame(storyPhoto, PHOTO_ASPECT, 'hero')} onerror="this.style.display='none'"/>
             </div>
             {d.role_badge && (
               <figcaption class="mp-story-caption">
@@ -603,7 +632,7 @@ const verseRefKo = d.verse_ref ? enRefToKo(d.verse_ref) : null;
             </>
           ) : (
             <div class="mp-story-empty">
-              <span class="wl-ko">소개 내용이 곧 업데이트됩니다. 이 사역자를 위해 기도해 주세요.</span>
+              <span class="wl-ko">소개 글을 곧 올릴게요. 이 사역자를 위해 기도해 주세요.</span>
               <span class="wl-en">Bio coming soon. Please keep this missionary in your prayers.</span>
             </div>
           )}
@@ -636,7 +665,7 @@ const verseRefKo = d.verse_ref ? enRefToKo(d.verse_ref) : null;
             {d.photo_url_2 && (
               <figure class="mp-story-figure">
                 <div class="mp-story-photo">
-                  <img src={d.photo_url_2} alt="" loading="lazy" style={photoFrame(d.photo_url_2, PHOTO_ASPECT, 'hero')} onerror="this.style.display='none'"/>
+                  <img src={d.photo_url_2} srcset={photoSrcset(d.photo_url_2, { withOriginal: true })} sizes={photoSizes(d.photo_url_2, SIZES_STORY, { style: photoFrame(d.photo_url_2, PHOTO_ASPECT, 'hero'), aspect: PHOTO_ASPECT })} alt="" loading="lazy" style={photoFrame(d.photo_url_2, PHOTO_ASPECT, 'hero')} onerror="this.style.display='none'"/>
                 </div>
                 {d.role_badge && (
                   <figcaption class="mp-story-caption">
@@ -661,7 +690,7 @@ const verseRefKo = d.verse_ref ? enRefToKo(d.verse_ref) : null;
           <div class="mp-spouse-card mp-reveal">
             <div class="mp-spouse-photo-wrap">
               {d.photo_url_2 ? (
-                <img src={d.photo_url_2} alt={d.spouse_ko} loading="lazy" style={photoFrame(d.photo_url_2, PHOTO_ASPECT, 'card', 'center top')} onerror="this.style.display='none'"/>
+                <img src={d.photo_url_2} srcset={photoSrcset(d.photo_url_2)} sizes={photoSizes(d.photo_url_2, SIZES_SPOUSE, { style: photoFrame(d.photo_url_2, PHOTO_ASPECT, 'card', 'center top'), aspect: PHOTO_ASPECT })} alt={d.spouse_ko} data-wl-alt-ko={d.spouse_ko} data-wl-alt-en={d.spouse_en || d.spouse_ko} loading="lazy" style={photoFrame(d.photo_url_2, PHOTO_ASPECT, 'card', 'center top')} onerror="this.style.display='none'"/>
               ) : (
                 <div class="mp-spouse-avatar">
                   <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -704,7 +733,7 @@ const verseRefKo = d.verse_ref ? enRefToKo(d.verse_ref) : null;
       <div>
         {/* 기도제목 — 언어마다 따로 보여 주고, 그 언어가 비어 있으면 그 언어의 기본 문장(다른 말로 채우지 않는다) */}
         {[
-          { cls: 'wl-ko', text: d.prayer_ko, empty: '이 사역자를 위한 중보기도가 사역의 힘이 됩니다. 함께 기도해 주세요.' },
+          { cls: 'wl-ko', text: d.prayer_ko, empty: '이 사역자를 위한 중보기도가 사역의 힘이 돼요. 함께 기도해 주세요.' },
           { cls: 'wl-en', text: d.prayer_en, empty: 'Your prayers are the backbone of this ministry. Thank you for interceding for our team.' },
         ].map(({ cls, text, empty }) => {
           const items = String(text || '').split(/\n|(?<!\w)\s*-\s+/).map(s => s.replace(/^-\s*/, '').trim()).filter(Boolean);
@@ -810,8 +839,8 @@ const verseRefKo = d.verse_ref ? enRefToKo(d.verse_ref) : null;
 </script>
 
 <!-- ── 섬기는이 목록: 컴퓨터는 오른쪽 카드, 폰은 버튼을 누르면 아래에서 올라온다 ── -->
-<aside class="tn-sidebar" id="tnSidebar" aria-label="섬기는이 목록">
-  <button class="tn-toggle" id="tnToggle" type="button" aria-controls="tnSidebar" aria-expanded="true" aria-label="섬기는이 목록 접기 / 펼치기">
+<aside class="tn-sidebar" id="tnSidebar" aria-label="섬기는이 목록" data-wl-label-ko="섬기는이 목록" data-wl-label-en="Team list">
+  <button class="tn-toggle" id="tnToggle" type="button" aria-controls="tnSidebar" aria-expanded="true" aria-label="섬기는이 목록 접기 / 펼치기" data-wl-label-ko="섬기는이 목록 접기 / 펼치기" data-wl-label-en="Collapse or expand the team list">
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M5 2l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
   <div class="tn-head">
@@ -846,7 +875,7 @@ const verseRefKo = d.verse_ref ? enRefToKo(d.verse_ref) : null;
 </script>
 
 <!-- ── 폰: 버튼 + 아래에서 올라오는 목록 ── -->
-<button class="tn-fab" id="tnFab" type="button" aria-controls="tnSheet" aria-expanded="false" aria-label="섬기는이 목록">
+<button class="tn-fab" id="tnFab" type="button" aria-controls="tnSheet" aria-expanded="false" aria-label="섬기는이 목록" data-wl-label-ko="섬기는이 목록" data-wl-label-en="Team list">
   <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
     <circle cx="8" cy="7" r="3" stroke="white" stroke-width="1.8"/>
     <circle cx="15" cy="7" r="2.5" stroke="white" stroke-width="1.6" opacity=".7"/>
@@ -855,13 +884,13 @@ const verseRefKo = d.verse_ref ? enRefToKo(d.verse_ref) : null;
   </svg>
 </button>
 <div class="tn-sheet-backdrop" id="tnBackdrop"></div>
-<div class="tn-sheet" id="tnSheet" role="dialog" aria-label="섬기는이 목록">
+<div class="tn-sheet" id="tnSheet" role="dialog" aria-label="섬기는이 목록" data-wl-label-ko="섬기는이 목록" data-wl-label-en="Team list">
   <div class="tn-sheet-handle"></div>
   <div class="tn-head">
     <p class="tn-eyebrow"><span class="wl-ko">섬기는이</span><span class="wl-en">Our Team</span></p>
     <span style="display:flex;align-items:center;">
       <a class="tn-all" href="/people"><span class="wl-ko">전체 {teamCount}명</span><span class="wl-en">All {teamCount}</span></a>
-      <button class="tn-sheet-close" id="tnSheetClose" type="button" aria-label="닫기">
+      <button class="tn-sheet-close" id="tnSheetClose" type="button" aria-label="닫기" data-wl-label-ko="닫기" data-wl-label-en="Close">
         <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
     </span>

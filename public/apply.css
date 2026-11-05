@@ -31,6 +31,9 @@ a { color: var(--navy); }
 .ap-lang button, .ap-txt { border: 0; padding: 4px 0; background: none; font-size: 13px; color: var(--muted); cursor: pointer; }
 .ap-lang button.on { color: var(--ink); font-weight: 600; }
 .ap-txt { color: var(--ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+/* 언어 단추 · 로그아웃: 글자 모양은 그대로, 눌리는 자리만 44×44 (위아래는 머리 띠 여백 안, 양옆은 단추 사이 14px 의 절반까지) */
+.ap-lang button, .ap-txt { position: relative; }
+.ap-lang button::after, .ap-txt::after { content: ''; position: absolute; top: min(0px, calc(50% - 22px)); bottom: min(0px, calc(50% - 22px)); left: max(-7px, min(0px, calc(50% - 22px))); right: max(-7px, min(0px, calc(50% - 22px))); }
 
 /* 제목: 첫 화면은 크게, 작성 중에는 한 줄 + 진행선 */
 .ap-title { padding-top: 56px; padding-bottom: 26px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 18px 48px; border-bottom: 2px solid var(--rule); }
@@ -139,6 +142,9 @@ body[data-mode="form"] .ap-title, body[data-mode="status"] .ap-title { display: 
 .ap-btn.block { width: 100%; margin: 6px 0 0; }
 .ap-btn:disabled { opacity: .6; cursor: progress; }
 .ap-link { border: 0; background: none; padding: 0; color: var(--navy); font-weight: 600; font-size: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+/* 첫 화면 상자 아래 '로그인' · '다시 받기' 글 단추: 글자 모양은 그대로, 눌리는 자리만 44×44 */
+.ap-box-foot .ap-link { position: relative; display: inline-block; }
+.ap-box-foot .ap-link::after { content: ''; position: absolute; top: min(0px, calc(50% - 22px)); bottom: min(0px, calc(50% - 22px)); left: min(0px, calc(50% - 22px)); right: min(0px, calc(50% - 22px)); }
 
 /* 확인 및 제출 */
 .ap-sum { margin: 0 0 26px; }

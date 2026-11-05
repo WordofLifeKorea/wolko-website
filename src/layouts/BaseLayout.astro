@@ -10,6 +10,7 @@ export interface Props {
   ogTitle?: string;
   ogDescription?: string;
   ogImage?: string;
+  noindex?: boolean;    // 준비 중인 페이지: 검색에 안 나오게 한다
 }
 
 const {
@@ -22,6 +23,7 @@ const {
   ogTitle = title,
   ogDescription = description,
   ogImage = '/images/WOLKO Circle.png',
+  noindex = false,
 } = Astro.props;
 // 불러오는 중 · 처리 중 덮개(wolko-busy.js)는 포탈에서만 — 공개 홈페이지(랜딩 · 하위 페이지)에는 띄우지 않는다
 const isPortal = /^\/portal(\/|$)/.test(Astro.url.pathname);
@@ -39,6 +41,7 @@ const year = new Date().getFullYear();
   <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
   <title>{title}</title>
   <meta name="description" content={description}>
+  {noindex && <meta name="robots" content="noindex, nofollow">}
   <meta name="keywords" content="월코, WOLKO, Word of Life Korea (월코), 워드오브라이프 코리아, 워드오브라이프, Word of Life Korea, 월비, 제주월비, WOLBI, 청소년 사역, 복음, 캠프, 영어캠프, 제주캠프, 다음 세대, 선교, 제자훈련">
   <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
   <!-- Naver Search Advisor 소유권 인증 -->
@@ -255,12 +258,16 @@ const year = new Date().getFullYear();
         <!-- 위 메뉴와 같은 순서: 소개 · 사역 · 소통 · 후원 · 오시는길 -->
         <p class="footer-col-title"><span class="wl-ko">후원</span><span class="wl-en">GIVE</span></p>
         <a href="/give"><span class="wl-ko">월코후원</span><span class="wl-en">Support WOLKO</span></a>
+        <!-- 후원 바로가기 셋: /give 안의 구역으로 바로 간다(#intl-give 는 /give 해외 후원 구역의 id) -->
+        <a href="/give#ministry-give"><span class="wl-ko">사역 후원</span><span class="wl-en">Ministry Fund</span></a>
+        <a href="/give#missionary-give"><span class="wl-ko">선교사 후원</span><span class="wl-en">Support a Missionary</span></a>
+        <a href="/give#intl-give"><span class="wl-ko">해외에서 후원</span><span class="wl-en">Give from Abroad</span></a>
         <p class="footer-col-title footer-col-title--sub"><a href="/location"><span class="wl-ko">오시는길</span><span class="wl-en">LOCATION</span></a></p>
       </div>
     </div>
     <div class="footer-bottom">
       <span><span class="wl-ko">© {year} 사단법인 Word of Life Korea. All rights reserved.</span><span class="wl-en">© {year} Word of Life Korea. All rights reserved.</span></span>
-      <span>경기도 평택시 경기대로 1407, 2층 | 제주시 애월읍 광상로 622</span>
+      <span><span class="wl-ko">경기도 평택시 경기대로 1407, 2층 | 제주시 애월읍 광상로 622</span><span class="wl-en">1407 Gyeonggi-daero, 2F, Pyeongtaek | 622 Gwangsang-ro, Aewol-eup, Jeju-si</span></span>
     </div>
   </footer>
 
@@ -301,6 +308,29 @@ const year = new Date().getFullYear();
       slider.style.left = (toggle.clientWidth - sliderW - 3) + 'px';   // 테두리를 뺀 안쪽 폭 기준 — 양쪽 여백이 3px로 같게
     }
 
+    // 언어별 대체 글 · 이름: 글자로 보이지 않는 alt · aria-label 도 언어를 따라 바꾼다.
+    //   <img alt="한글" data-wl-alt-ko="한글" data-wl-alt-en="English">          → alt
+    //   <button aria-label="한글" data-wl-label-ko="한글" data-wl-label-en="English"> → aria-label
+    // 기본 alt · aria-label 은 한국어로 둔다(스크립트가 안 돌 때). 고른 언어 값이 비어 있으면 다른 언어 값을 쓴다(그림이 이름 없이 숨지 않게).
+    // 나중에 스크립트로 그린 요소는 window.wolkoSyncLangAttrs(감싼 요소) 로 한 번 맞춘다.
+    // (이름을 data-label-ko 로 하지 않는다 — /give 복사 단추가 이미 자기 스크립트로 쓰는 이름)
+    function syncLangAttrs(en, root) {
+      const scope = root || document;
+      [['alt', 'data-wl-alt-'], ['aria-label', 'data-wl-label-']].forEach(function(pair) {
+        const attr = pair[0], pre = pair[1];
+        const sel = '[' + pre + 'ko][' + pre + 'en]';
+        const list = Array.from(scope.querySelectorAll(sel));
+        if (scope.nodeType === 1 && scope.matches(sel)) list.push(scope);
+        list.forEach(function(el) {
+          const want = el.getAttribute(pre + (en ? 'en' : 'ko'));
+          const other = el.getAttribute(pre + (en ? 'ko' : 'en'));
+          const v = want || other;
+          if (v && el.getAttribute(attr) !== v) el.setAttribute(attr, v);
+        });
+      });
+    }
+    window.wolkoSyncLangAttrs = function(root) { syncLangAttrs(isEn, root); };
+
     function applyLang(en) {
       isEn = en;
       // 페이지 콘텐츠 루트에 lang-en 클래스 적용
@@ -322,6 +352,7 @@ const year = new Date().getFullYear();
       // 화면 읽기 프로그램·번역기가 지금 언어를 알도록 문서 언어와 단추 상태도 함께 바꾼다
       document.documentElement.lang = en ? 'en' : 'ko';
       document.getElementById('langToggle')?.setAttribute('aria-pressed', en ? 'true' : 'false');
+      syncLangAttrs(en, document);
       syncLangSliderPosition();
       try { localStorage.setItem('wolko-lang', en ? 'en' : 'ko'); } catch(e) {}
       restoreHashScroll();
@@ -486,6 +517,7 @@ const year = new Date().getFullYear();
     try {
       if (localStorage.getItem('wolko-lang') === 'en') applyLang(true);
     } catch(e) {}
+    if (!isEn) syncLangAttrs(false, document);   // 한국어로 열 때도 한 번 맞춘다(기본 alt 가 한국어가 아닌 요소가 있어도 언어와 같게)
     window.addEventListener('load', restoreHashScroll);
     setTimeout(restoreHashScroll, 350);
   </script>

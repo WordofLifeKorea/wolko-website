@@ -38,10 +38,15 @@
 :root:root .login-screen.portal-auth .ip-cc { height: 48px !important; min-height: 48px !important; min-width: 108px; padding: 0 30px 0 12px; border-width: 1px; border-radius: 8px; color: #0b2430; font-size: 16px;
   -webkit-appearance: none; appearance: none;
   background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5' fill='none' stroke='%23587383' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center; }
-/* 아주 좁은 폰(360px 이하): 국가번호 칸을 phone-input.css 의 같은 폭 규칙(최소 84px)에 맞춰 줄이고 화살표 자리도 좁힌다 —
-   옆 번호 칸의 예시 글자(010-0000-0000)가 잘리지 않게 */
-@media (max-width: 360px) {
+/* 좁은 폰(374px 이하): 국가번호 칸을 phone-input.css 의 같은 폭 규칙(최소 84px)에 맞춰 줄이고 화살표 자리도 좁힌다 —
+   옆 번호 칸의 예시 글자('예: 010-1234-5678' · 'e.g. 010-1234-5678')가 잘리지 않게 (361~374px 도 108px 칸이면 잘렸다) */
+@media (max-width: 374px) {
   :root:root .login-screen.portal-auth .ip-cc { min-width: 84px; padding: 0 24px 0 8px; background-position: right 8px center; }
+}
+/* 아주 좁은 폰(342px 이하, 320px 등): 84px 칸으로도 예시 글자 자리가 모자라서 국가번호 칸을 한 줄, 번호 칸을 다음 줄 전체 폭으로 둔다 */
+@media (max-width: 342px) {
+  :root:root .login-screen.portal-auth .ip-wrap { flex-wrap: wrap; row-gap: 8px; }
+  :root:root .login-screen.portal-auth .ip-cc { flex: 1 1 100%; max-width: none; }
 }
 /* 숨긴 요소는 위의 display 설정과 상관없이 숨긴다 */
 :root:root .login-screen.portal-auth [hidden] { display: none !important; }

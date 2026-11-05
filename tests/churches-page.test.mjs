@@ -18,7 +18,9 @@ test('churches page explains how a church can partner, in both languages', async
   assert.match(page, /@media \(prefers-reduced-motion: reduce\)/);
 });
 
-test('ministry hub links to the churches page', async () => {
-  const ministry = await read('src/pages/ministry/index.astro');
-  assert.match(ministry, /href="\/churches"/);
+// 교회 협력 페이지는 아직 준비 중 — 더 준비될 때까지 공개 페이지(메뉴 · 바닥글 · 홈 · 사역 · 추천사)에서 링크하지 않는다 (2026-11-05 결정)
+test('churches page is not linked from public pages yet', async () => {
+  for (const path of ['src/layouts/BaseLayout.astro', 'src/pages/index.astro', 'src/pages/ministry/index.astro', 'src/pages/endorsements/index.astro']) {
+    assert.doesNotMatch(await read(path), /href="\/churches"/, path);
+  }
 });

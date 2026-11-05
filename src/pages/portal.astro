@@ -31,7 +31,13 @@
   <link rel="stylesheet" href="/wolko-rail.css?v=24">
   <link rel="stylesheet" href="/wolko-site.css?v=11">
   <link rel="stylesheet" href="/wolko-login.css?v=1">
-  <link rel="stylesheet" href="/portal-auth.css?v=3">
+  <link rel="stylesheet" href="/portal-auth.css?v=4">
+  <!-- 로그인 전 화면의 제출 단추가 보내는 동안(aria-disabled): 지금의 :disabled 모양(wolko-auth.css)과 같게 흐리고, 마우스를 올려도 색이 바뀌지 않게 -->
+  <style is:inline>
+    :root:root .login-screen.portal-auth .login-btn[aria-disabled="true"] { opacity: .62; cursor: not-allowed; }
+    :root:root .login-screen.portal-auth .login-btn[aria-disabled="true"]:hover { background: #004f68 !important; border-color: #004f68 !important; }
+    :root:root .login-screen.portal-auth .login-btn[aria-disabled="true"]:active { transform: none !important; }
+  </style>
   <link rel="stylesheet" href="/wolko-customize.css?v=4">
   <script src="/wolko-customize.js?v=4" defer></script>
   <script src="/wolko-rail.js?v=49" defer></script>
@@ -364,7 +370,7 @@
         nameLabel: '이름', campusLegend: '소속', phoneLabel: '휴대폰 번호', phoneWhy: '급한 연락용',
         adminReqOpen: '관리자 권한이 필요하신가요?', adminReqClose: '일반 멤버로 가입할게요',
         sentToLine: function (e) { return '받는 주소 · ' + e; }, pendingToLine: function (e) { return '신청한 주소 · ' + e; },
-        pendingContact: '궁금하거나 급한 일이 있으면 메일 주세요', resendBtn: '메일 다시 보내기', resendWait: function (n) { return n + '초 뒤에 다시 보낼 수 있어요'; }, resendDone: '메일을 다시 보냈어요. 메일함을 확인해 주세요.',
+        pendingContact: '궁금하거나 급한 일이 있으면 메일 주세요', resendBtn: '메일 다시 보내기', resendWait: function (n) { return n + '초 뒤에 다시 보낼 수 있어요.'; }, resendDone: '메일을 다시 보냈어요. 메일함을 확인해 주세요.',
         fixEmailBtn: '이메일 주소 고치기', toLoginBtn: '로그인 화면으로', verifyFinishBtn: '가입 마치기',
         welcomeToast: function (n) { return '환영해요, ' + n + '님! 이제 WOLKO 포탈을 함께 써요.'; }, welcomeClose: '닫기', sendFail: '보내지 못했어요. 잠시 뒤에 다시 해 주세요.',
         authNetFail: '연결하지 못했어요. 인터넷 연결을 확인하고 다시 해 주세요.', authServerFail: '저희 쪽에 문제가 생겨 처리하지 못했어요. 잠시 뒤에 다시 해 주세요.',
@@ -373,7 +379,7 @@
         emailLoginDesc: '가입하신 이메일과 비밀번호로 로그인하세요.',
         goSignupBtn: '계정이 없으신가요? 가입하기',
         signupHint: '계정이 없으신가요?', signupGoLabel: '가입하기',
-        forgotBtn: '비밀번호를 잊으셨나요?', resetReqTitle: '비밀번호 재설정', resetReqDesc: '가입하신 이메일을 입력하면 새 비밀번호를 정하는 링크를 보내드려요.', resetReqBtn: '재설정 링크 받기', resetReqSent: '메일을 보냈어요. 받은편지함(스팸함도)을 확인해 주세요. 링크는 30분 동안 쓸 수 있어요.', backToLoginOnlyBtn: '로그인으로 돌아가기', resetNewTitle: '새 비밀번호 정하기', resetNewDesc: '새 비밀번호를 정해 주세요. 정하면 바로 로그인할 수 있어요.', resetNewBtn: '비밀번호 변경', resetAgainBtn: '링크를 다시 받기', resetMismatch: '두 비밀번호가 서로 달라요.', resetShort: '비밀번호는 띄어쓰기 없이 영문·숫자·기호로 8자 이상 입력해 주세요.', resetDoneLogin: '비밀번호를 바꿨어요. 새 비밀번호로 로그인해 주세요.',
+        forgotBtn: '비밀번호를 잊으셨나요?', resetReqTitle: '비밀번호 재설정', resetReqDesc: '가입하신 이메일을 입력하면 새 비밀번호를 정하는 링크를 보내 드려요.', resetReqBtn: '재설정 링크 받기', resetReqSent: '메일을 보냈어요. 받은편지함(스팸함도)을 확인해 주세요. 링크는 30분 동안 쓸 수 있어요.', backToLoginOnlyBtn: '로그인으로 돌아가기', resetNewTitle: '새 비밀번호 정하기', resetNewDesc: '새 비밀번호를 정해 주세요. 정하면 바로 로그인할 수 있어요.', resetNewBtn: '비밀번호 변경', resetAgainBtn: '링크를 다시 받기', resetMismatch: '두 비밀번호가 서로 달라요.', resetShort: '비밀번호는 띄어쓰기 없이 영문·숫자·기호로 8자 이상 입력해 주세요.', resetDoneLogin: '비밀번호를 바꿨어요. 새 비밀번호로 로그인해 주세요.',
         signupTitle: '포탈 가입',
         domainHintOrg: '확인 메일을 보내 드려요. 메일의 링크에서 비밀번호를 정하면 바로 쓸 수 있어요.',
         domainHintAdmin: '관리자 권한은 포탈 관리자가 확인한 뒤 열어 드려요. 확인되면 메일로 알려 드려요.',
@@ -386,7 +392,7 @@
         namePlaceholder: '예: 홍길동',
         phonePlaceholder: '예: 010-1234-5678',
         campusPyeongtaek: '평택', campusJeju: '제주',
-        roleMemberOpt: '일반 멤버', roleAdminOpt: '관리자', adminNotListed: '관리자 목록에 없음 — 개발자에게 등록 요청', roleHint: '관리자는 포탈 전체를 유지보수하는 역할이에요 (wolko.org·wol.org 이메일 · 마스터 승인 필요). 페이지별 세부 권한은 따로 정해요.', requestedLabel: '신청 등급',
+        roleMemberOpt: '일반 멤버', roleAdminOpt: '관리자', adminNotListed: '관리자 목록에 없음 — 개발자에게 등록 요청', roleHint: '관리자는 포탈 전체를 유지보수하는 역할이에요 (wolko.org·wol.org 이메일 · 마스터 승인 필요). 페이지별 세부 권한은 따로 정해요.', requestedLabel: '신청한 역할',
         signupPwPlaceholder: '',
         signupBtn: '가입 신청하기',
         signupSending: '보내는 중…',
@@ -405,19 +411,19 @@
         pendingStatusDesc: '포탈 관리자가 확인하면 바로 메일로 알려 드려요. 그 전까지는 따로 하실 일이 없어요.',
         loginBtn: '로그인',
         loginVerifying: '확인 중…',
-        loginWrong: '비밀번호가 올바르지 않습니다.',
+        loginWrong: '비밀번호가 맞지 않아요. 다시 입력해 주세요.',
         logout: '로그아웃',
         installApp: '앱 설치',
         installHelpTitle: 'WOLKO 앱 설치',
         installHelpIOS: 'Safari 하단의 공유 버튼을 누른 뒤 홈 화면에 추가를 선택해 주세요.',
         installHelpSafari: 'Safari 메뉴에서 파일 → Dock에 추가를 선택해 주세요.',
         installHelpDefault: '브라우저 메뉴에서 앱 설치 또는 홈 화면에 추가를 선택해 주세요.',
-        installDone: 'WOLKO 앱이 설치되었습니다.',
+        installDone: 'WOLKO 앱을 설치했어요.',
         close: '확인',
         pendingLabel: '승인 대기',
         pendingListTitle: '승인 대기 목록',
-        pendingEmpty: '대기 중인 요청이 없습니다.',
-        deleteTitle: '계정 삭제', deleteHelp: '선택한 포탈 계정을 지워요. 카운슬러 페이지 계정은 따로 관리돼서 그대로예요. 30일 동안은 복구용 사본이 남아요.', deleteBtn: '계정 삭제', deletePrompt: e => `${e} 계정을 삭제합니다. 계속하려면 이 이메일을 그대로 입력해 주세요.`, deleteDone: '계정을 삭제했어요.',
+        pendingEmpty: '기다리는 가입 신청이 없어요.',
+        deleteTitle: '계정 삭제', deleteHelp: '선택한 포탈 계정을 지워요. 카운슬러 페이지 계정은 따로 관리돼서 그대로예요. 30일 동안은 복구용 사본이 남아요.', deleteBtn: '계정 삭제', deletePrompt: e => `${e} 계정을 삭제하려면 이 이메일을 그대로 입력해 주세요.`, deleteDone: '계정을 삭제했어요.',
         rejectedTitle: '거부된 계정', rejectedHelp: '접근이 막힌 계정이에요. 다시 승인하면 바로 로그인할 수 있어요.', reapproveBtn: '다시 활성화',
         resetTitle: '비밀번호 초기화', resetHelp: '비밀번호를 잊은 멤버에게 임시 비밀번호를 걸어요. 그 계정으로 로그인하면 새 비밀번호를 정하는 창이 먼저 떠요.', resetPick: '계정 선택', resetTemp: '임시 비밀번호', resetBtn: '초기화', resetConfirm: (n, e) => `${n} (${e}) 계정의 비밀번호를 임시 비밀번호로 바꿀까요?`, resetDone: '임시 비밀번호로 바꿨어요. 로그인하면 변경 창이 떠요.',
         approveBtn: '승인',
@@ -426,8 +432,8 @@
         roleCounselor: '일반 멤버',
         roleMaster: '마스터',
         rolePlaceholder: '역할 선택',
-        approvedToast: '승인했습니다.',
-        rejectedToast: '거부했습니다.',
+        approvedToast: '승인했어요.',
+        rejectedToast: '거부했어요.',
         roleRequiredToast: '역할을 선택해 주세요.',
       },
       en: {
@@ -452,16 +458,16 @@
         nameLabel: 'Name', campusLegend: 'Campus', phoneLabel: 'Mobile phone', phoneWhy: 'for urgent contact',
         adminReqOpen: 'Need admin access?', adminReqClose: 'Sign up as a member instead',
         sentToLine: function (e) { return 'Sent to ' + e; }, pendingToLine: function (e) { return 'Requested for ' + e; },
-        pendingContact: 'Questions or something urgent? Email', resendBtn: 'Resend email', resendWait: function (n) { return 'You can resend in ' + n + 's'; }, resendDone: 'Sent again. Please check your inbox.',
+        pendingContact: 'Questions or something urgent? Email', resendBtn: 'Resend email', resendWait: function (n) { return 'You can resend in ' + n + (n === 1 ? ' second.' : ' seconds.'); }, resendDone: 'We sent the email again. Please check your inbox.',
         fixEmailBtn: 'Fix email address', toLoginBtn: 'Back to login', verifyFinishBtn: 'Finish sign-up',
-        welcomeToast: function (n) { return 'Welcome, ' + n + "! You're all set in the WOLKO Portal."; }, welcomeClose: 'Close', sendFail: 'Could not send. Please try again in a moment.',
-        authNetFail: 'Could not connect. Please check your internet connection and try again.', authServerFail: 'Something went wrong on our end. Please try again in a moment.',
+        welcomeToast: function (n) { return 'Welcome, ' + n + "! You're all set in the WOLKO Portal."; }, welcomeClose: 'Close', sendFail: "Couldn't send it. Please try again in a moment.",
+        authNetFail: "Couldn't connect. Please check your internet connection and try again.", authServerFail: 'Something went wrong on our end. Please try again in a moment.',
         rememberEmail: 'Remember email',
         keepLogin: 'Keep me signed in (90 days)',
         emailLoginDesc: 'Log in with the email and password you signed up with.',
         goSignupBtn: "Don't have an account? Sign up",
         signupHint: "Don't have an account?", signupGoLabel: 'Sign up',
-        forgotBtn: 'Forgot your password?', resetReqTitle: 'Reset password', resetReqDesc: 'Enter the email you signed up with and we will send you a link to choose a new password.', resetReqBtn: 'Send reset link', resetReqSent: 'We sent an email. Please check your inbox (and spam). The link works for 30 minutes.', backToLoginOnlyBtn: 'Back to log in', resetNewTitle: 'Choose a new password', resetNewDesc: 'Choose a new password. You can log in right after.', resetNewBtn: 'Change password', resetAgainBtn: 'Get a new link', resetMismatch: 'The two passwords do not match.', resetShort: 'Use at least 8 characters: letters, numbers or symbols, no spaces.', resetDoneLogin: 'Password changed. Please log in with the new password.',
+        forgotBtn: 'Forgot your password?', resetReqTitle: 'Reset password', resetReqDesc: 'Enter the email you signed up with and we will send you a link to choose a new password.', resetReqBtn: 'Send reset link', resetReqSent: 'We sent an email. Please check your inbox (and spam). The link works for 30 minutes.', backToLoginOnlyBtn: 'Back to login', resetNewTitle: 'Choose a new password', resetNewDesc: 'Choose a new password. You can log in right after.', resetNewBtn: 'Change password', resetAgainBtn: 'Get a new link', resetMismatch: 'The two passwords do not match.', resetShort: 'Use at least 8 characters: letters, numbers or symbols, no spaces.', resetDoneLogin: 'Password changed. Please log in with the new password.',
         signupTitle: 'Portal Sign Up',
         domainHintOrg: "We'll email you a confirmation link. Choose your password there and you're in.",
         domainHintAdmin: 'A portal admin will review admin access and email you once it is approved.',
@@ -474,9 +480,9 @@
         namePlaceholder: 'e.g. Jane Kim',
         phonePlaceholder: 'e.g. 010-1234-5678',
         campusPyeongtaek: 'Pyeongtaek', campusJeju: 'Jeju',
-        roleMemberOpt: 'Member', roleAdminOpt: 'Admin', adminNotListed: 'not on the admin list — ask the developer', roleHint: 'Admins maintain the whole portal (wol.org email, master approval required). Page-level permissions are set separately.', requestedLabel: 'Requested',
+        roleMemberOpt: 'Member', roleAdminOpt: 'Admin', adminNotListed: 'not on the admin list — ask the developer', roleHint: 'Admins maintain the whole portal (wol.org email, master approval required). Page-level permissions are set separately.', requestedLabel: 'Requested role',
         signupPwPlaceholder: '',
-        signupBtn: 'Send request',
+        signupBtn: 'Send sign-up request',
         signupSending: 'Sending…',
         backToLoginBtn: 'Already have an account? Log in',
         nameRequired: 'Please enter your name.',
@@ -491,21 +497,21 @@
         signupApprovedDesc: 'Log in with the email and password you just registered.',
         pendingStatusTitle: "We've got your request",
         pendingStatusDesc: "A portal admin will review it and email you as soon as it's approved. There's nothing else you need to do until then.",
-        loginBtn: 'Login',
+        loginBtn: 'Log in',
         loginVerifying: 'Verifying…',
-        loginWrong: 'Incorrect password.',
+        loginWrong: 'That password is incorrect. Please try again.',
         logout: 'Log out',
         installApp: 'Install app',
         installHelpTitle: 'Install the WOLKO app',
         installHelpIOS: 'Tap Share in Safari, then choose Add to Home Screen.',
         installHelpSafari: 'In Safari, choose File → Add to Dock.',
         installHelpDefault: 'Open your browser menu and choose Install app or Add to Home Screen.',
-        installDone: 'The WOLKO app has been installed.',
+        installDone: 'The WOLKO app is installed.',
         close: 'OK',
         pendingLabel: 'Pending',
         pendingListTitle: 'Pending Requests',
-        pendingEmpty: 'No pending requests.',
-        deleteTitle: 'Delete account', deleteHelp: 'Deletes the selected portal account. Counselor-page accounts are managed separately and stay as they are. A recovery copy is kept for 30 days.', deleteBtn: 'Delete account', deletePrompt: e => `You are deleting ${e}. Type this email exactly to continue.`, deleteDone: 'Account deleted.',
+        pendingEmpty: 'No sign-up requests waiting.',
+        deleteTitle: 'Delete account', deleteHelp: 'Deletes the selected portal account. Counselor-page accounts are managed separately and stay as they are. A recovery copy is kept for 30 days.', deleteBtn: 'Delete account', deletePrompt: e => `To delete ${e}, type this email exactly as shown.`, deleteDone: 'Account deleted.',
         rejectedTitle: 'Rejected accounts', rejectedHelp: 'These accounts are blocked. Approve again to let them sign in.', reapproveBtn: 'Re-activate',
         resetTitle: 'Reset password', resetHelp: 'Give a member who forgot their password a temporary one. They will be asked to choose a new password right after signing in.', resetPick: 'Account', resetTemp: 'Temporary password', resetBtn: 'Reset', resetConfirm: (n, e) => `Replace the password of ${n} (${e}) with the temporary one?`, resetDone: 'Temporary password set. They will be asked to change it when they sign in.',
         approveBtn: 'Approve',
@@ -1195,6 +1201,7 @@
       $('signupPwInput').placeholder = t('signupPwPlaceholder');
       updateSignupMode(); // 언어를 바꾸면 data-t 가 버튼 글자를 되돌리므로 가입 방식에 맞는 글자로 다시 맞춘다
       document.querySelectorAll('[data-hub-lang]').forEach(b => { b.classList.toggle('is-active', b.dataset.hubLang === hubLang); b.setAttribute('aria-pressed', String(b.dataset.hubLang === hubLang)); });
+      fillSignupStatusText(); // 가입 뒤 안내 화면: 제목 · 설명 · 받는 주소 줄 · 남은 시간 글을 새 언어로(보여 줄 때 한 번만 채우던 것)
       renderNav();
       renderDash();
       loadExpenseBadge();
@@ -1275,6 +1282,21 @@
     }
     function authOk(el, message) { el.textContent = message; el.classList.add('is-ok'); }
 
+    /* ── 보내는 동안의 제출 단추: disabled 대신 aria-disabled 로 막는다 ──
+       disabled 는 누른 단추를 초점에서 빼서, 실패한 뒤 초점이 body 로 떨어진다(화면 읽기가 어디인지 잃음).
+       aria-disabled 는 초점을 그대로 두고, 그동안 다시 누르거나 Enter 를 쳐도 sendLocked 에서 걸러 요청이 한 번만 간다.
+       모양은 아래 <style> 의 [aria-disabled="true"] 규칙이 지금의 :disabled 모양과 같게 그린다. */
+    const sendLocked = btn => btn.getAttribute('aria-disabled') === 'true';
+    function lockSend(btn, on) {
+      if (on) { btn.setAttribute('aria-disabled', 'true'); btn.setAttribute('aria-busy', 'true'); }
+      else { btn.removeAttribute('aria-disabled'); btn.removeAttribute('aria-busy'); }
+    }
+    // 실패한 뒤: 오류 칸으로 옮긴 초점이 없으면 누른 단추에 둔다(사파리는 마우스로 누른 단추에 초점을 주지 않아서 body 에 남을 수 있음)
+    function keepFocusOn(btn) {
+      const active = document.activeElement;
+      if (!active || active === document.body || active === document.documentElement) btn.focus({ preventScroll: true });
+    }
+
     /* ── 로그인 전 화면이 서버를 부를 때의 공통 처리: 'Load failed' · 'did not match' 같은 기술 오류 문장을 화면에 내지 않는다 ──
        · 연결 자체가 안 됨(오프라인 등)        → '연결 실패' 문구(authNetFail)
        · 답이 JSON이 아님(서버 오류 페이지 등)  → '서버 문제' 문구(authServerFail)
@@ -1335,6 +1357,8 @@
 
     /* ── 이메일+비밀번호 로그인 ── */
     async function doAccountLogin() {
+      const btn = $('emailBtn');
+      if (sendLocked(btn)) return;   // 보내는 중에 다시 누르거나 Enter — 한 번만 보낸다
       const email = $('emailInput').value.trim().toLowerCase();
       const password = $('loginPwInput').value;
       const errEl = $('emailError');
@@ -1344,8 +1368,7 @@
       if (!EMAIL_RE.test(email)) { authError(errEl, t('emailInvalid'), $('emailInput')); return; }
       if (!password) { authError(errEl, t('passwordRequired'), $('loginPwInput')); return; }
 
-      const btn = $('emailBtn');
-      btn.disabled = true;
+      lockSend(btn, true);
       const original = btn.textContent;
       btn.textContent = t('loginVerifying');
 
@@ -1377,8 +1400,9 @@
         location.replace('/portal/?signed-in=1');
       } catch (e) {
         authError(errEl, authCaught(e), e instanceof AuthFail ? e.field : null);
+        keepFocusOn(btn);
       } finally {
-        btn.disabled = false;
+        lockSend(btn, false);
         btn.textContent = original;
       }
     }
@@ -1420,6 +1444,8 @@
     const PHONE_RE = /^[0-9+\-\s()]{7,20}$/;
     const PASSWORD_RE = /^[\x21-\x7E]{8,}$/;   // 서버(functions/lib/hubAccounts.js isValidPassword)와 같은 규칙: 띄어쓰기 없는 영문 · 숫자 · 기호 8자 이상
     async function doSignup() {
+      const btn = $('signupBtn');
+      if (sendLocked(btn)) return;   // 보내는 중에 다시 누르거나 Enter — 한 번만 보낸다
       const name = $('signupNameInput').value.trim();
       const phone = $('signupPhoneInput').value.trim();
       const email = $('signupEmailInput').value.trim().toLowerCase();
@@ -1438,8 +1464,7 @@
       if (!auto && !password) { authError(errEl, t('passwordRequired'), $('signupPwInput')); return; }
       if (!auto && !PASSWORD_RE.test(password)) { authError(errEl, t('passwordInvalid'), $('signupPwInput')); return; }
 
-      const btn = $('signupBtn');
-      btn.disabled = true;
+      lockSend(btn, true);
       const original = btn.textContent;
       btn.textContent = t('signupSending');
 
@@ -1451,8 +1476,9 @@
         showSignupStatus(data.status, email);
       } catch (e) {
         authError(errEl, authCaught(e));
+        keepFocusOn(btn);
       } finally {
-        btn.disabled = false;
+        lockSend(btn, false);
         btn.textContent = original;
       }
     }
@@ -1460,12 +1486,27 @@
 
     /* ── 가입 뒤 안내: 받는 주소를 보여 주고, 메일 다시 보내기(1분 간격) · 주소 고치기 · 문의할 곳 ── */
     let lastSignup = null, resendTimer = null;
-    function showSignupStatus(status, email) {
+    // 안내 화면이 지금 보여 주는 상태(verify · pending · 승인)와 받는 주소. 언어를 바꾸면 applyLangToDOM 이 이것으로 글자를 다시 채운다
+    let statusShown = null, resendLeft = 0;
+    function fillSignupStatusText() {
+      if (!statusShown) return;
+      const { status, email } = statusShown;
       const verify = status === 'verify', pending = status === 'pending';
       $('statusTitle').textContent = t(verify ? 'verifySentTitle' : pending ? 'pendingStatusTitle' : 'signupApprovedTitle');
       $('statusDesc').textContent = t(verify ? 'verifySentDesc' : pending ? 'pendingStatusDesc' : 'signupApprovedDesc');
-      $('statusEmail').hidden = !(verify || pending);
       $('statusEmail').textContent = verify ? t('sentToLine', email) : pending ? t('pendingToLine', email) : '';
+      const wait = $('statusResendWait');
+      if (!wait.hidden && resendLeft > 0) wait.textContent = t('resendWait', resendLeft);
+      // 알림 줄(#statusMsg)도 화면이 만든 문장(다시 보냈어요 · 연결 실패 · 서버 문제 · 보내지 못함)이면 새 언어로. 서버가 준 오류 글은 그대로 둔다
+      const msg = $('statusMsg');
+      const key = ['resendDone', 'authNetFail', 'authServerFail', 'sendFail'].find(k => msg.textContent && (msg.textContent === HUB_T.ko[k] || msg.textContent === HUB_T.en[k]));
+      if (key) msg.textContent = t(key);
+    }
+    function showSignupStatus(status, email) {
+      const verify = status === 'verify', pending = status === 'pending';
+      statusShown = { status, email };
+      fillSignupStatusText();
+      $('statusEmail').hidden = !(verify || pending);
       $('statusContact').hidden = !pending;
       $('statusActions').hidden = !verify;
       $('statusFixBtn').hidden = !verify;
@@ -1480,7 +1521,7 @@
     // 남은 시간은 단추 이름이 아니라 아래 작은 글(#statusResendWait)에 쓴다: 단추 이름이 매초 바뀌어 읽히지 않게.
     function setResendBlocked(on) { $('statusResendBtn').setAttribute('aria-disabled', on ? 'true' : 'false'); }
     function stopResendWait() {
-      clearInterval(resendTimer); resendTimer = null;
+      clearInterval(resendTimer); resendTimer = null; resendLeft = 0;
       const wait = $('statusResendWait'); wait.hidden = true; wait.textContent = '';
       setResendBlocked(false);
     }
@@ -1491,6 +1532,7 @@
       const tick = () => {
         if (left <= 0) { stopResendWait(); return; }
         setResendBlocked(true);
+        resendLeft = left;
         wait.hidden = false; wait.textContent = t('resendWait', left);
         left--;
       };
@@ -1733,25 +1775,29 @@
     /* ── 비밀번호 재설정 (메일 링크) ── */
     $('resetRequestForm').addEventListener('submit', async event => {
       event.preventDefault();
+      const btn = $('resetReqBtn');
+      if (sendLocked(btn)) return;   // 보내는 중에 다시 누르거나 Enter — 한 번만 보낸다
       const msg = $('resetReqMsg'); msg.textContent = ''; msg.classList.remove('is-ok');
       const email = $('resetEmailInput').value.trim().toLowerCase();
       if (!email) { authError(msg, t('emailRequired'), $('resetEmailInput')); return; }
       if (!EMAIL_RE.test(email)) { authError(msg, t('emailInvalid'), $('resetEmailInput')); return; }
-      const btn = $('resetReqBtn'); btn.disabled = true;
+      lockSend(btn, true);
       try {
         const { res, data } = await authPost('/api/hub/password-reset', { action: 'request', email });
         if (!res.ok) throw new AuthFail(authFailText(res, data, 'sendFail'));
         authOk(msg, t('resetReqSent'));
-      } catch (e) { authError(msg, authCaught(e)); }
-      finally { btn.disabled = false; }
+      } catch (e) { authError(msg, authCaught(e)); keepFocusOn(btn); }
+      finally { lockSend(btn, false); }
     });
     $('resetNewForm').addEventListener('submit', async event => {
       event.preventDefault();
+      const btn = $('resetNewBtn');
+      if (sendLocked(btn)) return;   // 보내는 중에 다시 누르거나 Enter — 한 번만 보낸다
       const msg = $('resetNewMsg'); clearAuthErrors($('resetNewScreen')); msg.textContent = '';
       const pw = $('resetNewPw').value;
       if (!PASSWORD_RE.test(pw)) { authError(msg, t('resetShort'), $('resetNewPw')); return; }
       if (pw !== $('resetNewPw2').value) { authError(msg, t('resetMismatch'), $('resetNewPw2')); return; }
-      const btn = $('resetNewBtn'); btn.disabled = true;
+      lockSend(btn, true);
       try {
         const verifying = !!verifyToken();
         const token = verifying ? verifyToken() : (linkParams().get('reset') || '');
@@ -1766,8 +1812,8 @@
         showScreen('emailScreen', false);
         $('loginPwInput').value = ''; authOk($('emailError'), t(verifying ? 'verifyDoneLogin' : 'resetDoneLogin'));
         ($('emailInput').value ? $('loginPwInput') : $('emailInput')).focus();
-      } catch (e) { authError(msg, authCaught(e)); }
-      finally { btn.disabled = false; }
+      } catch (e) { authError(msg, authCaught(e)); keepFocusOn(btn); }
+      finally { lockSend(btn, false); }
     });
 
     /* ── 초기화 ── */

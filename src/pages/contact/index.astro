@@ -246,7 +246,7 @@ import PageHero from '../../components/PageHero.astro';
     <span class="wl-en">Reach Out. <em>We're Listening.</em></span>
   </Fragment>
   <Fragment slot="desc">
-    <span class="wl-ko">선교 동역, 후원, 기도 제목까지, 어떤 이유로 연락 주셔도 성심껏 응답하겠습니다.</span>
+    <span class="wl-ko">선교 동역, 후원, 기도 제목까지, 어떤 이유로 연락 주셔도 정성껏 답해 드릴게요.</span>
     <span class="wl-en">From ministry inquiries and partnership to prayer requests, every message matters to us, and we'll respond with care.</span>
   </Fragment>
 </PageHero>
@@ -340,7 +340,7 @@ import PageHero from '../../components/PageHero.astro';
       <p class="ct-form-note">
         <span class="ct-form-note-icon" aria-hidden="true">i</span>
         <span>
-          <span class="wl-ko">보내주신 문의는 영업일 기준 1–2일 내로 답변 드리겠습니다. 긴급한 사항은 전화로 연락해 주세요.</span>
+          <span class="wl-ko">보내 주신 문의에는 영업일 기준 1–2일 안에 답해 드려요. 급한 일은 전화로 연락해 주세요.</span>
           <span class="wl-en">We typically respond within 1–2 business days. For urgent matters, please call us directly.</span>
         </span>
       </p>
@@ -421,7 +421,7 @@ import PageHero from '../../components/PageHero.astro';
               <span class="wl-ko">내용 *</span><span class="wl-en">Message *</span>
             </label>
             <textarea id="ct-msg" name="message" required
-              placeholder="문의 내용을 자유롭게 작성해 주세요." data-ph-ko="문의 내용을 자유롭게 작성해 주세요." data-ph-en="Please write your message freely."></textarea>
+              placeholder="문의 내용을 자유롭게 작성해 주세요." data-ph-ko="문의 내용을 자유롭게 작성해 주세요." data-ph-en="Write your message here."></textarea>
           </div>
         </div>
 
@@ -576,7 +576,7 @@ async function handleSubmit(e) {
   var errBox = document.getElementById('ct-form-error');   // 실패 안내 — 다시 보낼 때는 먼저 감춘다
   if (errBox) errBox.hidden = true;
   btn.disabled = true;
-  btn.innerHTML = '<span style="opacity:.7">' + ctT('전송 중...', 'Sending...') + '</span>';
+  btn.innerHTML = '<span style="opacity:.7">' + ctT('보내는 중…', 'Sending…') + '</span>';
 
   var name    = form.querySelector('#ct-name').value.trim();
   var email   = form.querySelector('#ct-email').value.trim();
@@ -594,7 +594,7 @@ async function handleSubmit(e) {
 
     if (!res.ok) {
       var errData = await res.json().catch(function() { return {}; });
-      throw new Error(errData.error || ctT('전송 실패', 'Send failed'));
+      throw new Error(errData.error || ctT('보내지 못했어요', 'Could not send'));
     }
 
     // 접수 완료 — 양식 자리에 안내 문장만 남긴다(왼쪽 정렬, 굵은 윗줄)
@@ -606,7 +606,7 @@ async function handleSubmit(e) {
     var koP = document.createElement('p');
     koP.className = 'wl-ko';
     koP.style.cssText = "font-family:var(--ff-serif);font-size:24px;font-weight:700;letter-spacing:-.02em;color:#0b2430;line-height:1.55;";
-    koP.innerHTML = '문의를 잘 받았어요.<br>영업일 기준 1-2일 내로 연락 드릴게요.';
+    koP.innerHTML = '문의를 잘 받았어요.<br>영업일 기준 1–2일 안에 연락 드릴게요.';
     var enP = document.createElement('p');
     enP.className = 'wl-en';
     enP.style.cssText = "font-family:var(--ff-serif);font-size:24px;font-weight:700;letter-spacing:-.02em;color:#0b2430;line-height:1.55;";

@@ -201,6 +201,9 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
   transition: gap .25s, color .2s, border-color .2s;
 }
 .hm-textlink:hover { gap: 14px; color: #00384a; border-color: #00384a; }
+/* 글 링크는 밑줄까지 24px 높이 그대로, 눌리는 자리만 위아래로 넓혀 44px */
+.hm-textlink { position: relative; }
+.hm-textlink::after { content: ''; position: absolute; left: 0; right: 0; top: min(0px, calc(50% - 22px)); bottom: min(0px, calc(50% - 22px)); }
 
 /* ═══════════════════════════
    1. 히어로 — 사진 5장 교체, 아래쪽에 제목과 설명 · 버튼 · 사진 번호 줄 (다른 페이지 맨 위 배너와 같은 모양)
@@ -257,9 +260,12 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 .hm-hero-tg--play,
 .hm-hero.is-paused .hm-hero-tg--pause { display: none; }
 .hm-hero.is-paused .hm-hero-tg--play { display: flex; }
-/* 멈춘 동안은 사진 다가오기와 막대 차오르기도 그 자리에 멈춘다(다시 재생하면 이어서) */
+/* 멈춘 동안은 사진 다가오기와 막대 차오르기도 그 자리에 멈춘다(다시 재생하면 이어서).
+   첫 화면이 화면 밖이거나 탭이 숨겨져 쉬는 동안(.is-asleep)도 같다 — 단추 그림은 바뀌지 않는다 */
 .hm-hero.is-paused .wh-hero-slide.is-zooming,
-.hm-hero.is-paused .hm-hero-seg.is-on::before { animation-play-state: paused; }
+.hm-hero.is-paused .hm-hero-seg.is-on::before,
+.hm-hero.is-asleep .wh-hero-slide.is-zooming,
+.hm-hero.is-asleep .hm-hero-seg.is-on::before { animation-play-state: paused; }
 
 /* 등장 움직임 — 맨 위 배너(PageHero)와 같은 순서: 사진 → 작은 표시 → 제목 → 아래 줄. 스크립트가 .hm-motion 을 붙일 때만 */
 @keyframes hmRise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
@@ -354,7 +360,7 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 }
 /* 터치 화면: 칸 높이를 늘리지 않도록 '자세히'는 글자 없이 이름 오른쪽 꺾쇠만 두고, 칸 어디를 눌러도 펼쳐진다 */
 .hm-vision-item { position: relative; }
-.hm-vision-more { position: absolute; top: 14px; right: -8px; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 0; background: none; cursor: pointer; color: var(--hm-deep); }
+.hm-vision-more { position: absolute; top: 12px; right: -10px; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; background: none; cursor: pointer; color: var(--hm-deep); } /* 44px 칸 — 꺾쇠 자리(가운데)는 예전 40px 칸과 같다 */
 .hm-vision-more > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @media (hover: none), (pointer: coarse) { .hm-vision-list .hm-vision-item { cursor: pointer; padding-right: 30px; -webkit-tap-highlight-color: transparent; } }
 .hm-vision-more::after { content: ''; width: 7px; height: 7px; margin-top: -3px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); transition: transform .2s, margin .2s; }
@@ -447,7 +453,7 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 @media (prefers-reduced-motion: reduce) and (min-width: 741px) and (max-width: 1100px) { .hm-home .hm-wcross-pop { transform: scale(1.4) !important; } }
 @media (prefers-reduced-motion: reduce) and (max-width: 740px) { .hm-home .hm-wcross-pop { transform: scale(1.8) !important; } }
 .hm-wlist { margin-top: 36px; border-top: 1px solid rgba(255,255,255,.14); }
-.hm-wlist summary { display: inline-flex; align-items: center; gap: 8px; padding: 18px 0 4px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; list-style: none; }
+.hm-wlist summary { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; box-sizing: border-box; padding: 18px 0 4px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; list-style: none; }
 .hm-wlist summary::-webkit-details-marker { display: none; }
 .hm-wlist summary::after { content: '+'; font-size: 18px; font-weight: 400; color: #8fd0e4; }
 .hm-wlist[open] summary::after { content: '−'; }
@@ -468,7 +474,7 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
   @keyframes hmWPopBig { 0% { transform: scale(0) rotate(-25deg); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1.8); opacity: 1; } }
   .hm-wcross--home .hm-wcross-pop { transform: scale(1.3); }
   .hm-wring-box { transform: scale(1.6); }
-  .hm-wmap-home { font-size: 9.5px; padding: 2px 6px; transform: translate(-50%, calc(-100% - 12px)); }
+  .hm-wmap-home { font-size: 11px; padding: 2px 6px; transform: translate(-50%, calc(-100% - 12px)); }   /* 9.5px → 11px: 휴대폰에서도 읽히는 크기 */
   .hm-wlist-grid { grid-template-columns: 1fr; gap: 16px; }
 }
 
@@ -533,7 +539,7 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
   .hm-vision-name { font-size: 19px; }
   .hm-vision-text { grid-column: 2; margin-top: 6px; font-size: 14.5px; line-height: 1.65; }
   .hm-vision-full { grid-column: 2; }
-  .hm-vision-more { top: 8px; }
+  .hm-vision-more { top: 6px; }
 
   .hm-min-grid { margin-top: 40px; }
   .hm-min-title { font-size: 20px; }
@@ -578,6 +584,10 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 /* 열려 있을 때만 보이고 눌린다. (예전엔 .is-active 카드가 스스로 visibility:visible 이라, 팝업을 닫아도 투명한 카드와 '초대장 보기' 버튼이 화면 가운데에 남아 눌렸다) */
 .wh-promo-overlay.is-open .wh-promo-stage > .wh-promo-card.is-active { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .45s ease; }
 .wh-promo-overlay:not(.is-open) { pointer-events: none; }
+/* 팝업이 열린 동안 위 메뉴: 덮개(1000) 아래로 내려 덮개의 어두운 막과 흐림이 메뉴에도 똑같이 덮이고, 눌리지 않는다.
+   html 의 class 와 메뉴의 inert 는 아래 '팝업 때 위 메뉴' 스크립트가 붙이고 뗀다.
+   공용 global.css 의 .nav z-index(1100)는 그대로 두고, 홈에서 팝업이 열린 동안만 덮어쓴다. */
+:global(html.wh-promo-open #mainNav) { z-index: 990; pointer-events: none; }
 .wh-promo-stage > .wh-promo-card[hidden] { display: none; }
 .wh-promo-dots { display: flex; gap: 10px; align-items: center; justify-content: center; }
 .wh-promo-dots[hidden] { display: none; }
@@ -594,7 +604,7 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
   transition: transform .4s cubic-bezier(.2,.8,.3,1.1);
 }
 .wh-promo-overlay.is-open .wh-promo-card { transform: translateY(0) scale(1); }
-/* 모바일: 상단 메뉴가 팝업 위에 떠 있으므로(메뉴 버튼이 눌리도록) 팝업 카드는 메뉴 줄 아래에서 시작해 닫기 버튼이 가려지지 않게 한다 */
+/* 모바일: 팝업 카드는 메뉴 줄 아래에서 시작한다 — 덮개 아래 흐려진 메뉴가 카드의 닫기 단추와 겹쳐 보이지 않게 */
 @media (max-width: 900px) {
   .wh-promo-overlay { padding-top: calc(var(--nav-h) + 20px); }
   .wh-promo-card { max-height: calc(100vh - var(--nav-h) - 120px); max-height: calc(100dvh - var(--nav-h) - 120px); }
@@ -611,10 +621,12 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
   padding: 0 !important; aspect-ratio: 1 / 1; flex: none; border-radius: 50% !important;
 }
 .wh-promo-close svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; }
+/* 보이는 동그라미는 34px 그대로, 투명한 덧자리로 눌리는 자리만 44×44 */
+.wh-promo-close::before { content: ''; position: absolute; inset: -5px; }
 .wh-promo-close:hover { background: rgba(0,0,0,.5); }
 .wh-promo-image { display: block; width: 100%; aspect-ratio: 1200 / 630; object-fit: cover; }
 .wh-promo-body { padding: 22px 24px 24px; text-align: center; }
-.wh-promo-eyebrow { font-size: 10.5px; font-weight: 800; letter-spacing: .22em; color: #b0631f; text-transform: uppercase; margin-bottom: 9px; }
+.wh-promo-eyebrow { font-size: 12px; font-weight: 800; letter-spacing: .18em; color: #b0631f; text-transform: uppercase; margin-bottom: 9px; }
 .wh-promo-title { margin: 0 0 8px; font-family: var(--ff-serif); font-size: 24px; font-weight: 800; color: #3b1f17; }
 /* 팝업이 열리면 스크립트가 지금 카드 제목으로, 닫히면 (열기 전 초점 자리가 없을 때) 홈 본문 맨 앞으로 초점을 옮긴다.
    둘 다 누르는 것이 아니라 읽기 시작점이라 테두리는 그리지 않는다. */
@@ -685,12 +697,13 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
           <span class="wl-en">Through camps, youth ministry, discipleship, and Bible education, <br>we raise up the next generation to hear, live, and share the Gospel.</span>
         </p>
         <div class="hm-hero-actions">
-          <a class="hm-btn hm-btn--light" href="/ministry">
-            <span><span class="wl-ko">사역 알아보기</span><span class="wl-en">Explore Our Ministry</span></span>
+          <!-- 학부모가 먼저 찾는 캠프 일정(/camp 다가오는 캠프 카드)을 주 단추로, 처음 온 사람을 위한 사역 소개를 보조 단추로 둔다 -->
+          <a class="hm-btn hm-btn--light" href="/camp#upcoming-camps">
+            <span><span class="wl-ko">캠프 일정 보기</span><span class="wl-en">See Camp Dates</span></span>
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
           </a>
-          <a class="hm-btn hm-btn--ghost" href="/about">
-            <span><span class="wl-ko">월코 소개</span><span class="wl-en">Learn About WOLKO</span></span>
+          <a class="hm-btn hm-btn--ghost" href="/ministry">
+            <span><span class="wl-ko">사역 알아보기</span><span class="wl-en">Explore Our Ministry</span></span>
           </a>
         </div>
         <div class="hm-hero-pager">
@@ -803,7 +816,7 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
         </p>
         <div class="hm-stat-figure">
           <p class="hm-stat-value" aria-label="83%"><b data-count-to="83">83</b><span aria-hidden="true">%</span></p>
-          <span class="hm-waffle" role="img" aria-label="청소년 100명 중 83명은 종교가 없음 · 83 of 100 teens have no religion">
+          <span class="hm-waffle" role="img" aria-label="청소년 100명 중 83명은 종교가 없음" data-wl-label-ko="청소년 100명 중 83명은 종교가 없음" data-wl-label-en="83 of 100 teens have no religion">
             {waffleDots.map((dt) => <i class={dt.on ? 'on' : undefined} style={dt.style} />)}
           </span>
         </div>
@@ -870,7 +883,7 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
       </div>
 
       <div class="hm-wmap" data-rv>
-        <svg class="hm-wmap-svg" viewBox={`0 0 ${WM_W} ${WM_H}`} role="img" aria-label="세계 Word of Life 사역지 지도">
+        <svg class="hm-wmap-svg" viewBox={`0 0 ${WM_W} ${WM_H}`} role="img" aria-label="세계 Word of Life 사역지 지도" data-wl-label-ko="세계 Word of Life 사역지 지도" data-wl-label-en="Map of Word of Life ministry locations around the world">
           <defs>
             <radialGradient id="hmCrossGlow">
               <stop offset="0" stop-color="#f6dfa8" stop-opacity=".6" />
@@ -1138,6 +1151,8 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
   // 아래 줄의 숫자(01 / 05)와 막대가 함께 바뀌고, 막대를 누르면 그 장으로 가서 시간을 새로 센다.
   // 막대 앞 멈춤 단추를 누르면 넘김 · 영상 · 사진 다가오기 · 막대 차오르기가 함께 멈추고, 다시 누르면 남은 시간부터 이어 간다.
   // 움직임 줄이기 설정이면 멈춘 채로 시작한다(재생 단추를 눌러야 넘어간다).
+  // 첫 화면이 화면 밖으로 완전히 나가거나 다른 탭에 가 있는 동안에도 같은 방식으로 쉬었다가, 돌아오면 남은 시간부터 이어 간다.
+  // 이 '쉼'은 사용자가 누른 멈춤(paused)과 따로 기억한다 — 사용자가 멈춘 것은 돌아와도 멈춘 그대로다.
   (function() {
     const hero = document.getElementById('heroSection');
     if (!hero) return;
@@ -1153,7 +1168,9 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
     const useVideo = !!video && window.matchMedia('(min-width: 641px)').matches && !reduce && !conn.saveData;
     let current = 0;
     let timer = 0;
-    let paused = reduce;
+    let paused = reduce;   // 사용자가 멈춤 단추로 멈춤(움직임 줄이기면 처음부터 멈춤)
+    let asleep = false;    // 첫 화면이 화면 밖이거나 탭이 숨겨져 쉬는 중
+    let halted = paused;   // 둘 중 하나라도 참이면 넘김 · 영상 · 막대가 서 있다
     let dueAt = 0;    // 다음 장으로 넘어갈 시각
     let left = 0;     // 멈춘 동안 남겨 둔 시간
     hero.classList.toggle('is-paused', paused);
@@ -1180,7 +1197,7 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
     }
     function playVideo() {
       try { video.currentTime = 0; } catch (e) {}
-      if (!paused) resumeVideo();                  // 멈춘 동안은 처음 화면에 세워 두고, 재생하면 거기서부터
+      if (!halted) resumeVideo();                  // 멈춘 동안은 처음 화면에 세워 두고, 재생하면 거기서부터
     }
 
     function show(idx) {
@@ -1206,17 +1223,17 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
     function schedule(ms) {
       clearTimeout(timer);
       left = ms;
-      if (paused) return;
+      if (halted) return;
       dueAt = Date.now() + ms;
       timer = setTimeout(function() { show(current + 1); schedule(dwell(current)); }, ms);
     }
     function restart() { schedule(dwell(current)); }
-    function setPaused(p) {
-      if (p === paused) return;
-      paused = p;
-      hero.classList.toggle('is-paused', p);
-      hero.classList.toggle('is-running', !p);
-      if (p) {
+    // 사용자 멈춤과 쉼을 합쳐 실제로 세울지 정한다. 서 있던 상태가 바뀔 때만 타이머 · 영상을 멈추거나 이어 간다.
+    function sync() {
+      const h = paused || asleep;
+      if (h === halted) return;
+      halted = h;
+      if (h) {
         clearTimeout(timer);
         left = Math.max(0, dueAt - Date.now());
         if (isVideo(current)) video.pause();
@@ -1224,6 +1241,19 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
         if (isVideo(current) && video.paused) resumeVideo();
         schedule(left);
       }
+    }
+    function setPaused(p) {
+      if (p === paused) return;
+      paused = p;
+      hero.classList.toggle('is-paused', p);      // 단추 그림 · 이름은 사용자 멈춤만 따른다
+      hero.classList.toggle('is-running', !p);
+      sync();
+    }
+    function setAsleep(a) {
+      if (a === asleep) return;
+      asleep = a;
+      hero.classList.toggle('is-asleep', a);      // 쉬는 동안 사진 다가오기 · 막대 차오르기도 그 자리에 세운다(CSS)
+      sync();
     }
     if (toggle) toggle.addEventListener('click', function() { setPaused(!paused); });
     segs.forEach(function(s, i) {
@@ -1240,13 +1270,21 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
         if (current === 0) restart();
       }, { once: true });
       playVideo();
-      // 다른 탭에 갔다 오면 브라우저가 멈춰 둔 영상을 이어서 튼다(멈춤 단추로 멈춘 때는 그대로 둔다)
-      document.addEventListener('visibilitychange', function() {
-        if (!document.hidden && !paused && isVideo(current) && video.paused) { const p = video.play(); if (p && p.catch) p.catch(function() {}); }
-      });
+    }
+    // 화면 밖 · 숨은 탭이면 쉬기. 첫 화면이 한 줄이라도 보이면 돈다.
+    // 다른 탭에 갔다 오면 여기서 영상도 이어서 튼다(멈춤 단추로 멈춘 때나 첫 화면이 화면 밖이면 그대로 둔다).
+    let offscreen = false;
+    function wake() { setAsleep(offscreen || document.hidden); }
+    document.addEventListener('visibilitychange', wake);
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function(entries) {
+        offscreen = !entries[entries.length - 1].isIntersecting;
+        wake();
+      }).observe(hero);
     }
     segs.forEach(function(s, i) { s.style.setProperty('--seg-ms', dwell(i) + 'ms'); });
     restart();
+    wake();
   })();
 
   // ── 비전: 터치 화면에선 칸을 누르면(오른쪽 꺾쇠 포함) 긴 글을 펼치고 접는다 (마우스 화면은 올리기만 해도 펼쳐진다) ──
@@ -1402,6 +1440,28 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
       document.body.style.overflow = 'hidden';
     }
     setTimeout(showPromos, 700);
+  })();
+
+  // ── 팝업 때 위 메뉴: 팝업이 열린 동안 위 메뉴를 덮개 아래로 내려 흐리게 하고, 누르거나 Tab 으로 닿지 않게 한다 ──
+  // 위 팝업 묶음은 테스트가 따로 떼어 돌리므로 손대지 않고, #homePromos 의 is-open 을 바깥에서 지켜본다.
+  // 이 묶음은 아래 '대화상자 접근성' 묶음보다 먼저 지켜보기 시작한다 — 닫힐 때 메뉴를 먼저 풀어야,
+  // 열기 전 초점 자리가 메뉴 안(언어 단추 등)이었을 때 그리로 초점을 돌려보낼 수 있다.
+  // 열릴 때는 다음 그림 차례에 inert 를 건다 — 접근성 묶음이 열기 전 초점 자리를 먼저 기억하고 초점을 팝업 안으로 옮긴 뒤.
+  // 휴대폰 메뉴가 열려 있으면 팝업 묶음이 메뉴가 닫힐 때까지 팝업을 미루므로, 메뉴와 팝업이 함께 열리는 일은 없다.
+  (function () {
+    var promoBox = document.getElementById('homePromos');
+    var nav = document.getElementById('mainNav');
+    if (!promoBox || !nav || !window.MutationObserver) return;
+    var root = document.documentElement, dimmed = false;
+    function sync() {
+      var open = promoBox.classList.contains('is-open') && !promoBox.hidden;
+      if (open === dimmed) return;
+      dimmed = open;
+      root.classList.toggle('wh-promo-open', open);
+      if (open) requestAnimationFrame(function () { if (dimmed) nav.setAttribute('inert', ''); });
+      else nav.removeAttribute('inert');
+    }
+    new MutationObserver(sync).observe(promoBox, { attributes: true, attributeFilter: ['class', 'hidden'] });
   })();
 
   // ── 팝업 대화상자 접근성: 초점 옮기기 · Tab 가두기 · 이름 맞추기 ──

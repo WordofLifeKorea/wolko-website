@@ -7,6 +7,9 @@ import { getCollection } from 'astro:content';
 import { photoFrame, photoFocus } from '../../lib/photoFrame.js';
 // 카드 위 직책 표시(한글 화면은 한글, 영어 화면은 영어) — 프로필 페이지와 같은 표
 import { roleKo } from '../../lib/teamRoles.js';
+// 사진 작은 사본(srcset) — 사본이 없는 사진은 원본만 쓴다
+import { photoSrcset, photoSizes } from '../../utils/photoSrcset.js';
+import { headcount, headcountOf } from '../../lib/teamHeadcount.js';
 
 const allTeam = (await getCollection('team')).filter(p => p.data.active !== false);
 const byOrder = (a, b) => (a.data.order ?? 99) - (b.data.order ?? 99);
@@ -15,7 +18,13 @@ const locOf = (p) => (p.data.campus === 'pyeongtaek' ? 'pt' : 'jj');
 
 // 사진 카드 칸 비율 — 아래 CSS .pp-photo 의 aspect-ratio 와 같아야 한다
 const CARD_ASPECT = 1;
+// 사진 사본을 고를 때 쓰는 칸 폭 — 아래 CSS(.pp-shell · .pp-grid · .pp-lead · .pp-faces)와 같은 셈
+const SIZES_CARD = ['(max-width: 640px) calc((100vw - 52px) / 2)', '(max-width: 760px) calc((100vw - 88px) / 3)', '(max-width: 1100px) calc((100vw - 144px) / 3)', '(max-width: 1336px) calc((100vw - 168px) / 4)', '292px'];
+const SIZES_LEAD = ['(max-width: 640px) calc(100vw - 40px)', '(max-width: 760px) calc((100vw - 40px) / 2)', '(max-width: 1100px) 360px', '(max-width: 1336px) calc((100vw - 120px) * 0.26)', '317px'];
+const SIZES_FACE = ['30px'];
 const initialOf = (p) => (p.data.name_ko || p.data.name_en || '?').trim().charAt(0);
+// 영어 화면 머리글자는 영어 이름 첫 글자 — 영어 이름이 없으면 한국어와 같은 글자 (TeamNavList와 같은 셈)
+const initialEnOf = (p) => (p.data.name_en || p.data.name_ko || '?').trim().charAt(0);
 
 const leads = allTeam.filter(isDirector).sort((a, b) => (locOf(a) === locOf(b) ? byOrder(a, b) : locOf(a) === 'pt' ? -1 : 1));
 const groups = [
@@ -26,14 +35,15 @@ const groups = [
   people: allTeam.filter(p => locOf(p) === g.loc && !isDirector(p))
     .sort((a, b) => (a.data.category === b.data.category ? byOrder(a, b) : a.data.category === 'missionary' ? -1 : 1)),
   // 그 거점 인원 전체(위 '대표'에 따로 나온 디렉터 포함) — 거르기 막대 · 지도 숫자와 같다
-  total: allTeam.filter(p => locOf(p) === g.loc).length,
+  total: headcount(allTeam.filter(p => locOf(p) === g.loc)),
 }));
 const counts = {
-  all: allTeam.length,
-  pt: allTeam.filter(p => locOf(p) === 'pt').length,
-  jj: allTeam.filter(p => locOf(p) === 'jj').length,
-  missionary: allTeam.filter(p => p.data.category === 'missionary').length,
-  stw: allTeam.filter(p => p.data.category === 'stw').length,
+  // 항목 수가 아니라 사람 수(부부 항목은 2명) — src/lib/teamHeadcount.js 기준, /give · 프로필 옆 목록과 같다
+  all: headcount(allTeam),
+  pt: headcount(allTeam.filter(p => locOf(p) === 'pt')),
+  jj: headcount(allTeam.filter(p => locOf(p) === 'jj')),
+  missionary: headcount(allTeam.filter(p => p.data.category === 'missionary')),
+  stw: headcount(allTeam.filter(p => p.data.category === 'stw')),
 };
 
 // 첫 화면 지도 — 남한 윤곽을 대략의 경위도로 적고, 그 안에 드는 격자점만 찍는다(제주는 타원)
@@ -109,7 +119,7 @@ const mapPlaces = [
           </dl>
         </div>
 
-        <div class="pp-map" aria-label="사역 거점 지도: 평택 월코센터와 제주 월비">
+        <div class="pp-map" aria-label="사역 거점 지도: 평택 월코센터와 제주 월비" data-wl-label-ko="사역 거점 지도: 평택 월코센터와 제주 월비" data-wl-label-en="Map of our ministry locations: WOLKO Center in Pyeongtaek and WOLBI Jeju">
           <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} aria-hidden="true">
             <defs>
               <radialGradient id="ppCrossGlow">
@@ -138,7 +148,7 @@ const mapPlaces = [
           {mapPlaces.map((m, i) => (
             <a href={m.href} class={`pp-place pp-place--${m.loc}`} style={`left:${pct(m.x, MAP_W)};top:${pct(m.y, MAP_H)};--i:${i}`}>
               <span class="pp-faces" aria-hidden="true">
-                {m.faces.map((p) => <img src={p.data.photo_url} alt="" loading="lazy" style={photoFocus(p.data.photo_url, p.data.photo_position)} />)}
+                {m.faces.map((p) => <img src={p.data.photo_url} srcset={photoSrcset(p.data.photo_url)} sizes={photoSizes(p.data.photo_url, SIZES_FACE, { aspect: 1 })} alt="" loading="lazy" style={photoFocus(p.data.photo_url, p.data.photo_position)} />)}
               </span>
               <span class="pp-place-text">
                 <span class="pp-place-name"><span class="wl-ko">{m.ko}</span><span class="wl-en">{m.en}</span></span>
@@ -150,14 +160,14 @@ const mapPlaces = [
       </div>
     </header>
 
-    <nav class="pp-bar" aria-label="섬기는이 거르기">
+    <nav class="pp-bar" aria-label="섬기는이 골라 보기" data-wl-label-ko="섬기는이 골라 보기" data-wl-label-en="Filter our team">
       <div class="pp-shell pp-bar-inner">
-        <div class="pp-seg" role="group" aria-label="사역 거점">
+        <div class="pp-seg" role="group" aria-label="사역 거점" data-wl-label-ko="사역 거점" data-wl-label-en="Location">
           <button type="button" class="is-on" data-loc="all" aria-pressed="true"><span class="wl-ko">전체</span><span class="wl-en">All</span> <em>{counts.all}</em></button>
           <button type="button" data-loc="pt" aria-pressed="false"><span class="wl-ko">평택<span class="pp-seg-long"> 월코센터</span></span><span class="wl-en">Pyeongtaek</span> <em>{counts.pt}</em></button>
           <button type="button" data-loc="jj" aria-pressed="false"><span class="wl-ko">제주<span class="pp-seg-long"> 월비</span></span><span class="wl-en">Jeju</span> <em>{counts.jj}</em></button>
         </div>
-        <div class="pp-chips" role="group" aria-label="역할">
+        <div class="pp-chips" role="group" aria-label="역할" data-wl-label-ko="역할" data-wl-label-en="Role">
           <button type="button" class="is-on" data-role="all" aria-pressed="true"><span class="wl-ko">모두</span><span class="wl-en">Everyone</span></button>
           <button type="button" data-role="missionary" aria-pressed="false"><span class="wl-ko">선교사</span><span class="wl-en">Missionaries</span></button>
           <button type="button" data-role="stw" aria-pressed="false"><span class="wl-ko">단기 사역자</span><span class="wl-en">Short-term</span></button>
@@ -170,9 +180,9 @@ const mapPlaces = [
         <p class="pp-kicker"><span class="wl-ko">대표</span><span class="wl-en">LEADERSHIP</span></p>
         <div class="pp-leads">
           {leads.map((p) => (
-            <a href={`/team/${p.slug}`} class="pp-card pp-lead" data-loc={locOf(p)} data-role={p.data.category}>
+            <a href={`/team/${p.slug}`} class="pp-card pp-lead" data-loc={locOf(p)} data-role={p.data.category} data-heads={headcountOf(p)}>
               <span class="pp-lead-photo">
-                {p.data.photo_url ? <img src={p.data.photo_url} alt={p.data.name_ko} loading="lazy" style={photoFocus(p.data.photo_url, p.data.photo_position)} /> : <span class="pp-initial">{initialOf(p)}</span>}
+                {p.data.photo_url ? <img src={p.data.photo_url} srcset={photoSrcset(p.data.photo_url)} sizes={photoSizes(p.data.photo_url, SIZES_LEAD, { aspect: 3 / 2 })} alt={p.data.name_ko} data-wl-alt-ko={p.data.name_ko} data-wl-alt-en={p.data.name_en || p.data.name_ko} loading="lazy" style={photoFocus(p.data.photo_url, p.data.photo_position)} /> : <span class="pp-initial"><span class="wl-ko">{initialOf(p)}</span><span class="wl-en">{initialEnOf(p)}</span></span>}
               </span>
               <span class="pp-lead-body">
                 <span class="pp-lead-badge"><span class="wl-ko">{roleKo(p.data.role_badge)}</span><span class="wl-en">{p.data.role_badge}</span></span>
@@ -196,10 +206,10 @@ const mapPlaces = [
           </div>
           <ul class="pp-grid">
             {g.people.map((p) => (
-              <li data-loc={locOf(p)} data-role={p.data.category}>
+              <li data-loc={locOf(p)} data-role={p.data.category} data-heads={headcountOf(p)}>
                 <a href={`/team/${p.slug}`} class="pp-card">
                   <span class="pp-photo">
-                    {p.data.photo_url ? <img src={p.data.photo_url} alt={p.data.name_ko} loading="lazy" style={photoFrame(p.data.photo_url, CARD_ASPECT, 'card', p.data.photo_position)} /> : <span class="pp-initial">{initialOf(p)}</span>}
+                    {p.data.photo_url ? <img src={p.data.photo_url} srcset={photoSrcset(p.data.photo_url)} sizes={photoSizes(p.data.photo_url, SIZES_CARD, { style: photoFrame(p.data.photo_url, CARD_ASPECT, 'card', p.data.photo_position), aspect: CARD_ASPECT })} alt={p.data.name_ko} data-wl-alt-ko={p.data.name_ko} data-wl-alt-en={p.data.name_en || p.data.name_ko} loading="lazy" style={photoFrame(p.data.photo_url, CARD_ASPECT, 'card', p.data.photo_position)} /> : <span class="pp-initial"><span class="wl-ko">{initialOf(p)}</span><span class="wl-en">{initialEnOf(p)}</span></span>}
                     <span class="pp-badge"><span class="wl-ko">{roleKo(p.data.role_badge)}</span><span class="wl-en">{p.data.role_badge}</span></span>
                   </span>
                   <span class="pp-info">
@@ -222,7 +232,7 @@ const mapPlaces = [
         </div>
         <div class="pp-join-btns">
           <a href="/camp-register#staff-recruit" class="pp-btn pp-btn--light"><span class="wl-ko">캠프 스태프 지원</span><span class="wl-en">Apply as camp staff</span></a>
-          <a href="/give" class="pp-btn pp-btn--ghost"><span class="wl-ko">선교사 후원하기</span><span class="wl-en">Support a missionary</span></a>
+          <a href="/give#missionary-give" class="pp-btn pp-btn--ghost"><span class="wl-ko">선교사 후원하기</span><span class="wl-en">Support a missionary</span></a>
         </div>
       </section>
     </div>
@@ -279,10 +289,10 @@ const mapPlaces = [
         root.querySelector('[data-leads]').hidden = !anyLead;
         var total = 0;
         root.querySelectorAll('.pp-group').forEach(function (g) {
-          var n = 0; g.querySelectorAll('li[data-loc]').forEach(function (li) { var ok = match(li); li.hidden = !ok; if (ok) n++; });
+          var n = 0; g.querySelectorAll('li[data-loc]').forEach(function (li) { var ok = match(li); li.hidden = !ok; if (ok) n += Number(li.dataset.heads) || 1; });
           total += n;
           // 인원수에는 위 '대표'에 따로 나온 그 거점 디렉터도 넣는다(거르기 막대 · 지도 숫자와 맞춘다)
-          root.querySelectorAll('.pp-lead[data-loc="' + g.dataset.group + '"]').forEach(function (c) { if (!c.hidden) n++; });
+          root.querySelectorAll('.pp-lead[data-loc="' + g.dataset.group + '"]').forEach(function (c) { if (!c.hidden) n += Number(c.dataset.heads) || 1; });
           g.hidden = !g.querySelector('li[data-loc]:not([hidden])'); g.querySelector('[data-count]').textContent = n;
         });
         root.querySelector('.pp-empty').hidden = !!(total || anyLead);
@@ -425,6 +435,11 @@ const mapPlaces = [
     .pp-btn--light:hover { background: #dff1f6; color: var(--pp-navy); }
     .pp-btn--ghost { border: 1px solid rgba(255,255,255,.4); color: #fff; }
     .pp-btn--ghost:hover { background: rgba(255,255,255,.1); color: #fff; }
+    /* 공용 wolko-ui.css 의 단추 최소 높이(36px !important)가 위 min-height(거르기 단추 40 · 아래 단추 48px)를 덮어써 36px 로 줄였다 — 이 페이지 범위에서 되돌린다.
+       거르기 단추는 보이는 높이 그대로, 눌리는 자리만 위아래로 넓혀 44px(단추 줄 사이 간격 안) */
+    .pp-seg button, .pp-chips button { min-height: 40px !important; position: relative; }
+    .pp-seg button::after, .pp-chips button::after { content: ''; position: absolute; left: 0; right: 0; top: min(0px, calc(50% - 22px)); bottom: min(0px, calc(50% - 22px)); }
+    .pp-btn { min-height: 48px !important; }
 
     @media (max-width: 1100px) {
       .pp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -452,7 +467,7 @@ const mapPlaces = [
       .pp-bar-inner { flex-direction: column; align-items: stretch; gap: 8px; padding: 10px 0; }
       .pp-seg, .pp-chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .pp-chips { gap: 6px; }
-      .pp-seg button, .pp-chips button { min-height: 36px; padding: 0 6px; white-space: nowrap; }
+      .pp-seg button, .pp-chips button { min-height: 36px !important; padding: 0 6px; white-space: nowrap; }
       .pp-seg button { font-size: 13.5px; }
       .pp-chips button { font-size: 13px; }
       .pp-seg-long { display: none; }

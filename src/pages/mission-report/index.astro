@@ -189,13 +189,16 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     padding: 10px 16px; background: #fff;
     border-bottom: 1px solid var(--c-line); gap: 10px; flex-wrap: wrap;
   }
-  .fb-nav { display: flex; align-items: center; gap: 6px; }
+  .fb-nav { display: flex; align-items: center; gap: 8px; }
   .fb-btn, .fb-zoom-btn, .fb-fullscreen-btn {
     width: 36px; height: 36px; border-radius: 2px; border: 1px solid var(--c-line);
     background: #fff; color: var(--c-navy); cursor: pointer; display: flex;
     align-items: center; justify-content: center; padding: 0;
     transition: background-color .18s, border-color .18s; user-select: none;
+    position: relative;
   }
+  /* 보이는 네모는 36px 그대로, 눌리는 자리만 사방 4px 넓혀 44×44 — 단추 사이를 8px 로 벌려 옆 단추와 겹치지 않는다 */
+  .fb-btn::after, .fb-zoom-btn::after, .fb-fullscreen-btn::after { content: ''; position: absolute; inset: -5px; }
   .fb-btn svg, .fb-zoom-btn svg, .fb-fullscreen-btn svg { display: block; }
   .fb-btn:hover, .fb-zoom-btn:hover, .fb-fullscreen-btn:hover { background: var(--c-fill); border-color: #9fb3bd; }
   .fb-btn:disabled, .fb-zoom-btn:disabled { opacity: .35; cursor: default; background: #fff; border-color: var(--c-line); }
@@ -203,8 +206,8 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     font-size: 13px; font-weight: 700; color: var(--c-navy); font-variant-numeric: tabular-nums;
     min-width: 80px; text-align: center; padding: 0 6px;
   }
-  .fb-right { display: flex; align-items: center; gap: 6px; }
-  .fb-zoom-btns { display: flex; gap: 6px; }
+  .fb-right { display: flex; align-items: center; gap: 8px; }
+  .fb-zoom-btns { display: flex; gap: 8px; }
 
   /* 전체화면: iOS Safari는 요소 Fullscreen API가 없어서, 화면을 덮는 오버레이로 통일한다.
      (Android/데스크톱은 가능하면 브라우저 전체화면도 함께 요청) */
@@ -241,14 +244,17 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     opacity: .7;
     transition: opacity .18s, background-color .18s;
   }
+  /* 눌리는 자리는 가로도 44px 이상 — 보이는 막대(40 · 휴대폰 30px)는 그대로 두고 양옆으로만 넓힌다 */
+  .fb-arrow-btn::after { content: ''; position: absolute; top: 0; bottom: 0; left: min(0px, calc(50% - 22px)); right: min(0px, calc(50% - 22px)); }
   .fb-arrow-btn:hover:not(:disabled) { opacity: 1; background: #fff; }
   .fb-arrow-btn:disabled { opacity: .15; cursor: default; }
   #fb-arrow-prev { left: 12px; }
   #fb-arrow-next { right: 12px; }
   @media (max-width: 768px) {
     .fb-arrow-btn { width: 30px; height: 52px; opacity: .75; }
-    #fb-arrow-prev { left: 6px; }
-    #fb-arrow-next { right: 6px; }
+    /* 넓힌 눌리는 자리(양옆 7px)가 쪽 그림 칸 밖으로 잘리지 않게 8px 안쪽에 둔다 */
+    #fb-arrow-prev { left: 8px; }
+    #fb-arrow-next { right: 8px; }
   }
 
   .fb-loading-indicator {
@@ -328,6 +334,11 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
   @media (max-width: 768px) {
     .fb-controls { padding: 10px 14px; }
     .fb-zoom-btns { display: none; }
+  }
+  /* 좁은 폰: 쪽 단추 넷 · 쪽 번호 · 전체 화면이 한 줄에 들어가게 쪽 번호 칸과 좌우 여백만 줄인다 */
+  @media (max-width: 400px) {
+    .fb-controls { padding: 10px; }
+    .fb-page-info { min-width: 60px; padding: 0 4px; }
   }
   @media (max-width: 740px) {
     .archive-section { padding: 72px 0 64px; }
@@ -443,7 +454,7 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
                   {r?.data.thumbnail_url ? (
                     <div class="qc-thumb-wrap">
                       <div class="qc-thumb-spine"></div>
-                      <img class="qc-thumb" src={r.data.thumbnail_url} alt={r.data.title_ko} loading="lazy" />
+                      <img class="qc-thumb" src={r.data.thumbnail_url} alt={r.data.title_ko} data-wl-alt-ko={r.data.title_ko} data-wl-alt-en={r.data.title_en} loading="lazy" />
                     </div>
                   ) : (
                     <div class="qc-book">
@@ -464,14 +475,15 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
                     </div>
                     {r && (
                       <div class="qc-date">
-                        {new Date(r.data.date).toLocaleDateString('ko-KR', { year:'numeric', month:'long' })}
+                        <span class="wl-ko">{new Date(r.data.date).toLocaleDateString('ko-KR', { year:'numeric', month:'long' })}</span>
+                        <span class="wl-en">{new Date(r.data.date).toLocaleDateString('en-US', { year:'numeric', month:'long' })}</span>
                       </div>
                     )}
                     {!r && (
                       <div class="qc-empty-label">
                         {/* 지난 분기는 위 글, 지금 진행 중이거나 아직 오지 않은 분기는 아래 글 — 페이지를 연 날(한국 시간) 기준으로 맨 아래 스크립트가 고른다 */}
                         <span class="qc-empty-past">
-                          <span class="wl-ko">해당 소식지는 발행되지 않았습니다</span>
+                          <span class="wl-ko">이 소식지는 발행되지 않았어요</span>
                           <span class="wl-en">This issue was not published</span>
                         </span>
                         <span class="qc-empty-soon" hidden>
@@ -510,7 +522,8 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
               <span class="wl-en">{latestReport.data.title_en}</span>
             </h2>
             <p class="report-date" id="report-date">
-              {new Date(latestReport.data.date).toLocaleDateString('ko-KR', { year:'numeric', month:'long' })}
+              <span class="wl-ko">{new Date(latestReport.data.date).toLocaleDateString('ko-KR', { year:'numeric', month:'long' })}</span>
+              <span class="wl-en">{new Date(latestReport.data.date).toLocaleDateString('en-US', { year:'numeric', month:'long' })}</span>
             </p>
           </div>
           <a href={latestReport.data.pdf_url} target="_blank" rel="noopener" class="download-btn" id="report-download">
@@ -568,8 +581,8 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
             <div id="fb-loading" class="fb-loading-indicator">
               <div class="fb-spinner"></div>
               <span id="fb-loading-text">
-                <span class="wl-ko">PDF를 불러오는 중입니다...</span>
-                <span class="wl-en">Loading PDF...</span>
+                <span class="wl-ko">PDF를 불러오는 중이에요…</span>
+                <span class="wl-en">Loading the PDF…</span>
               </span>
             </div>
             <div id="flip-book"></div>
@@ -584,7 +597,7 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
           <svg width="44" height="44" viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect x="10" y="6" width="28" height="36" stroke="#004f68" stroke-width="1.8"/><path d="M18 18h12M18 24h12M18 30h8" stroke="#004f68" stroke-width="1.8" stroke-linecap="square"/></svg>
         </div>
         <h3><span class="wl-ko">선교보고 소식지 준비 중</span><span class="wl-en">Mission Report Coming Soon</span></h3>
-        <p><span class="wl-ko">월코 선교보고 소식지가 곧 업로드됩니다. 기도와 관심으로 함께해 주셔서 감사합니다.</span><span class="wl-en">The WOLKO mission report newsletter will be uploaded soon. Thank you for your prayers and support.</span></p>
+        <p><span class="wl-ko">월코 선교보고 소식지를 곧 올릴게요. 기도와 관심으로 함께해 주셔서 감사해요.</span><span class="wl-en">The WOLKO mission report newsletter is coming soon. Thank you for your prayers and support.</span></p>
       </div>
     )}
   </div>
@@ -623,10 +636,10 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
 
   /* 쪽 그림 대체 글 · 점 단추 이름 (한·영)
      page: {n}=쪽 번호, {total}=전체 쪽 수, {title}=지금 보는 호 제목
-     dot : {pages}=그 점이 보여 주는 쪽(예: 1, 2–3), {total}=전체 쪽 수 */
+     dot : {pages}=그 점이 보여 주는 쪽(예: 1, 2–3), {total}=전체 쪽 수, {pl}=여러 쪽이면 's'(영어 복수형) */
   var MR_TEXT = {
     ko: { page: '{title} {n}쪽 (전체 {total}쪽)', dot: '{pages}쪽 보기' },
-    en: { page: '{title}, page {n} of {total}', dot: 'Go to page {pages}' }
+    en: { page: '{title}, page {n} of {total}', dot: 'Go to page{pl} {pages}' }
   };
   function mrLang() { return document.documentElement.classList.contains('lang-en') ? 'en' : 'ko'; }
   function mrFill(tpl, v) { return tpl.replace(/\{(\w+)\}/g, function (m, k) { return v[k] != null ? String(v[k]) : m; }); }
@@ -739,6 +752,7 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
       btn.className = 'fb-dot';
       /* 이름은 숨은 글자 한 쌍 — 언어를 바꾸면 화면 글자처럼 저절로 따라간다 */
       var v = { pages: pagesOf ? pagesOf(i) : String(i + 1), total: count };
+      v.pl = /[–-]/.test(v.pages) ? 's' : '';
       var sr = document.createElement('span');
       sr.className = 'mr-sr';
       ['ko', 'en'].forEach(function (lang) {
@@ -965,7 +979,7 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
         });
       }).catch(function (err) {
         console.error(err);
-        showError('PDF를 불러오지 못했습니다.<br>' + (err && err.message ? err.message : ''));
+        showError('<span class="wl-ko">PDF를 불러오지 못했어요. 잠시 뒤에 페이지를 새로고침해 주세요.</span><span class="wl-en">Couldn\'t load the PDF. Please refresh the page in a moment.</span><br>' + (err && err.message ? err.message : ''));
       });
   }
 
@@ -993,7 +1007,7 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     var url = container.dataset.pdf;
     if (url) loadPdf(url);
   }).catch(function (err) {
-    showError('뷰어를 불러오지 못했습니다.<br>' + (err || ''));
+    showError('<span class="wl-ko">보기 화면을 불러오지 못했어요. 잠시 뒤에 페이지를 새로고침해 주세요.</span><span class="wl-en">Couldn\'t load the viewer. Please refresh the page in a moment.</span><br>' + (err || ''));
   });
 
   /* ── Navigation buttons ── */
@@ -1102,7 +1116,12 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
       var dateEl = document.getElementById('report-date');
       if (dateEl && dateStr) {
         try {
-          dateEl.textContent = new Date(dateStr).toLocaleDateString('ko-KR', { year:'numeric', month:'long' });
+          /* 위 제목처럼 한 · 영 두 짝을 함께 바꾼다(언어를 나중에 바꿔도 맞게) */
+          var dKo = dateEl.querySelector('.wl-ko');
+          var dEn = dateEl.querySelector('.wl-en');
+          var d = new Date(dateStr);
+          if (dKo) dKo.textContent = d.toLocaleDateString('ko-KR', { year:'numeric', month:'long' });
+          if (dEn) dEn.textContent = d.toLocaleDateString('en-US', { year:'numeric', month:'long' });
         } catch(e) {}
       }
       var dlBtn = document.getElementById('report-download');
