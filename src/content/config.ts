@@ -7,6 +7,7 @@ const team = defineCollection({
     name_en: z.string(),
     // 포털 계정에서 쓰는 다른 이름(쉼표로 구분, 예: "Peter Chae, Miriam Kim") — 복음 통계가 풀타임 선교사 계정을 알아볼 때 함께 본다
     other_names: z.string().optional(),
+    gospel_reporter: z.boolean().optional(),   // 단기 사역자(stw)도 복음 통계 보고 담당자로(팀 보고 등)
     title_ko: z.string(),
     title_en: z.string(),
     role_badge: z.string(),

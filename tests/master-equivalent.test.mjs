@@ -14,7 +14,7 @@ function teamRoster() {
   const dir = new URL('../src/content/team/', import.meta.url);
   const field = (text, key) => (new RegExp(`^${key}:\\s*"?([^"\\n]*)"?\\s*$`, 'm').exec(text) || [])[1]?.trim() || '';
   return readdirSync(dir).filter(f => f.endsWith('.md')).map(f => readFileSync(new URL(f, dir), 'utf8'))
-    .filter(text => field(text, 'category') === 'missionary' && field(text, 'active') !== 'false')
+    .filter(text => (field(text, 'category') === 'missionary' || field(text, 'gospel_reporter') === 'true') && field(text, 'active') !== 'false')
     .map(text => ({ nameEn: field(text, 'name_en'), nameKo: field(text, 'name_ko'), otherNames: field(text, 'other_names') }));
 }
 
@@ -41,6 +41,7 @@ test('인원 소개 명단: 풀타임 선교사(missionary)만, 단기 사역자
   const names = teamRoster().map(r => r.nameEn);
   assert.ok(names.includes('Jacob & Crystal Morse') && names.includes('Samuel Song') && names.includes('Steve & Rhonda Nicholes'));
   assert.ok(!names.some(n => /Estelle Sooy|Hyunji Im|Zach Frazier|Joanna Jung|Aiden Park/.test(n)), '단기 사역자는 없다');
+  assert.ok(names.includes('Grace Webster'), '단기 사역자라도 gospel_reporter: true 면 들어간다');
 });
 
 test('이름 나누기: 부부는 두 사람으로, 성이 한 사람에게만 있으면 이어받는다', () => {
@@ -60,6 +61,7 @@ test('계정 맞춰 보기: 영어·한글 이름, 순서·띄어쓰기 무시, 
     { name: 'Joanna Baek', email: 'x@wol.org' }, { name: '채병국', email: 'x@wol.org' }, { name: '김환규', email: 'x@wol.org' }, { name: '제이슨 앤더슨', email: 'x@wol.org' },
     { name: 'Jeremy Rodgers', email: 'x@wol.org' }, { name: 'HwanKyu Kim', email: 'x@wol.org' }, { name: '송승현', email: 'x@wol.org' },
     { name: 'Peter Chae', email: 'x@wol.org' }, { name: 'Chae Peter', email: 'x@wol.org' }, { name: '', email: 'peterchae@wol.org' }, { name: 'Miriam Kim', email: 'x@wol.org' },   // 인원 소개 other_names
+    { name: 'Grace Webster', email: 'x@wol.org' }, { name: '웹스터 그레이스', email: 'x@wol.org' },   // gospel_reporter: true
   ];
   for (const a of yes) assert.equal(matchesMissionary(keys, a), true, JSON.stringify(a));
   const no = [

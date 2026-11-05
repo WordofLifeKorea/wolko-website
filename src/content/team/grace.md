@@ -12,6 +12,7 @@ title_en: Podcast Media Ministry · WOLBI Jeju
 role_badge: Staff
 campus: jeju
 category: stw
+gospel_reporter: true
 order: 3
 photo_url: /images/uploads/grace-webster.png
 photo_position: "center 10%"
