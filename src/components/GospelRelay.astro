@@ -3,7 +3,8 @@
  * 비전 그림 — 가운데 먼저 믿은 한 친구에게서 복음이 원을 그리며 친구에서 친구로 퍼진다.
  * 사람마다: 흐린 모양(아직 못 들음) → 하늘색 고리(들음) → 금색(믿음) → 바깥 친구들에게 선(전함).
  * 흐린 바탕 그물 위로 빛이 선을 타고 다음 친구에게 가고, 받은 친구는 금빛 배지로 밝아진다.
- * 셋째 원까지 퍼지면 그림 전체가 확 줄어들고, 바깥 친구들에게서 복음이 뻗어 나간다 — 뻗는 모양은 되풀이할 때마다 새로 뽑는다. 화면에 보이는 동안 계속 되풀이한다.
+ * 셋째 원까지(여기까지는 자리가 정해져 있다) 퍼지면 그림 전체가 확 줄어들고, 바깥 친구들에게서 복음이 곧게 쭉쭉 뻗어 나간다 —
+ * 그다음부터는 갈래 · 방향 · 길이를 모두 되풀이할 때마다 새로 뽑는다(정해진 자리가 없어 점이 늘 같은 곳에 찍히지 않는다). 화면에 보이는 동안 계속 되풀이한다.
  * 1·2·3 표시는 가운데 친구 · 첫 원 · 둘째 원 친구 곁에 하나씩, 퍼지는 차례대로 켜지며 그림 옆 '믿고 → 전하고 → 또 전합니다'와 짝을 이룬다.
  * 재생 중에는 감싼 section 에도 is-armed / is-on / is-fading 과 data-rl-step(1·2·3)을 붙여, 페이지가 세 걸음을 같은 때에 밝힐 수 있게 한다.
  * 자바스크립트가 없거나 움직임 줄이기 설정이면 처음부터 다 퍼진 그림을 보여 준다.
@@ -34,7 +35,7 @@ ring3.forEach(p => {
   const a = at(R[3] + 16, p.a), b = at(R[3] + 52, p.a);
   arcs.push({ d: `M${a.x} ${a.y} L${b.x} ${b.y}`, delay: f(p.t + LINE), out: true });
 });
-// 마지막 장면: 그림 전체가 확 줄어들고, 바깥 친구들에게서 복음이 규칙대로 퍼져 소용돌이 꽃처럼 피어난다.
+// 마지막 장면: 그림 전체가 확 줄어들고, 바깥 친구들에게서 복음이 곧은 선으로 쭉쭉 뻗어 나간다.
 // 어떻게 갈라져 뻗을지는 되풀이할 때마다 새로 뽑는다(아래 <script>). 여기서는 줄어드는 때와, 바깥 친구마다 맡은 방향(부채꼴)만 넘긴다.
 const ZOOM = 0.47;                // 줄어든 크기 — 가장 멀리 뻗은 친구까지 그림 안에 든다
 const zoomAt = f(Math.max(...ring3.map(p => p.t)) + 0.9);
@@ -228,10 +229,10 @@ const stepTimes = marks.map(m => m.delay);
   // 감싼 section 에도 같은 상태와 data-rl-step 을 붙여, 페이지의 세 걸음 글자가 그림 속 1·2·3 과 같은 때에 밝아지게 한다.
   const still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // 마지막 장면 그리기 — 규칙은 늘 같고, 몇 갈래로 나뉠지와 뻗는 길이만 되풀이할 때마다 새로 뽑는다.
+  // 마지막 장면 그리기 — 셋째 원까지는 자리가 정해져 있고, 그다음부터는 몇 갈래로 나뉠지 · 어느 방향으로 · 얼마나 뻗을지를 모두 되풀이할 때마다 새로 뽑는다.
   // 규칙: 한 사람이 한 명 또는 두 명에게 전한다(두 명일 확률 TWO). 친구마다 맡은 방향(부채꼴)이 있고, 두 친구에게 전하면
-  // 전해 준 친구가 선 자리에서 부채꼴을 둘로 나눠 맡는다. 선은 제 부채꼴 안에서만 바깥으로 뻗으므로 서로 겹치지 않는다.
-  // 소용돌이는 그린 뒤 그림 전체를 '멀수록 더 돌리는' 한 가지 규칙으로 비틀어 만든다(겹치지 않는 그림은 비틀어도 겹치지 않는다).
+  // 부채꼴을 아무 데서나(가운데쯤) 둘로 나눠 맡는다. 받은 친구는 제 부채꼴 안 아무 방향에 서고, 전해 준 친구에게서 곧은 선으로 이어진다.
+  // 부채꼴은 서로 겹치지 않고 안에서 그은 곧은 선은 부채꼴을 벗어나지 않으므로, 선끼리 겹치지 않는다(나선처럼 비틀지 않는다).
   // 한 겹 안에서는 시계 방향으로 훑듯 차례로 켜지고, 바깥 겹으로 갈수록 천천히 퍼진다.
   const LEVELS = 3;                       // 겹 수
   const TWO = 0.55;                       // 두 명에게 전할 확률 — 나머지는 한 명
@@ -241,7 +242,6 @@ const stepTimes = marks.map(m => m.delay);
   const GAPS = [0.85, 1.6];
   const SWEEP = [0.35, 0.6, 2.2];
   const DRAW = [0.5, 0.85, 2.5];
-  const SPIRAL = 0.09;                    // 소용돌이: 바깥 친구에서 1만큼 멀어질 때마다 도는 각도
   // 겹마다 사람 배지 반지름(r), 선 굵기(w), 선 진하기(o) — 바깥일수록 작고 흐리게
   const LOOK = [{ r: 12, w: 2.4, o: .8 }, { r: 11, w: 2, o: .68 }, { r: 10, w: 1.6, o: .56 }];
   type Tip = { a: number; r: number; lo: number; hi: number };
@@ -250,7 +250,8 @@ const stepTimes = marks.map(m => m.delay);
   const norm = (d: number) => ((d % 360) + 360) % 360;
   /** 마지막 장면의 SVG 조각과, 가장 바깥 겹이 다 그려지는 시각(초) */
   function bloom(b: Burst, cid: string) {
-    const twist = (r: number, deg: number) => { const a = (deg + SPIRAL * (r - b.r)) * Math.PI / 180; return { x: fx(300 + r * Math.cos(a)), y: fx(300 + r * Math.sin(a)) }; };
+    const pos = (r: number, deg: number) => { const a = deg * Math.PI / 180; return { x: fx(300 + r * Math.cos(a)), y: fx(300 + r * Math.sin(a)) }; };
+    const between = (lo: number, hi: number, from: number, to: number) => lo + (hi - lo) * (from + (to - from) * Math.random());
     let lines: { d: string; x: number; y: number; delay: number; level: number }[] = [], lastStart = b.at;
     for (let tries = 0; tries < 20; tries++) {
       let tips: Tip[] = b.tips.map(x => ({ ...x, r: b.r })), start = b.at;
@@ -259,12 +260,14 @@ const stepTimes = marks.map(m => m.delay);
         lastStart = start;
         const next: Tip[] = [];
         tips.forEach(tip => {
-          // 한 명 또는 두 명에게 전한다 — 한 명이면 부채꼴을 통째로, 두 명이면 둘로 나눠 맡는다
-          (Math.random() < TWO ? [[tip.lo, tip.a], [tip.a, tip.hi]] : [[tip.lo, tip.hi]]).forEach(([lo, hi]) => {
-            const child: Tip = { lo, hi, a: (lo + hi) / 2, r: tip.r + STEP * (0.7 + 0.6 * Math.random()) };
-            // 선: 각도와 반지름을 함께 고르게 바꿔 가며 잇고(제 부채꼴을 벗어나지 않음), 소용돌이로 비튼다
-            const pts = Array.from({ length: 9 }, (_, k) => twist(tip.r + (child.r - tip.r) * k / 8, tip.a + (child.a - tip.a) * k / 8));
-            lines.push({ d: 'M' + pts.map(q => q.x + ' ' + q.y).join('L'), ...pts[8], delay: fx(start + norm(child.a) / 360 * SWEEP[level]), level });
+          // 한 명 또는 두 명에게 전한다 — 한 명이면 부채꼴을 통째로, 두 명이면 가운데쯤 아무 데서나 둘로 나눠 맡는다
+          const mid = between(tip.lo, tip.hi, 0.35, 0.65);
+          (Math.random() < TWO ? [[tip.lo, mid], [mid, tip.hi]] : [[tip.lo, tip.hi]]).forEach(([lo, hi]) => {
+            // 받은 친구는 제 부채꼴 안 아무 방향에(가장자리는 피해서) 선다 — 정해진 자리가 없다
+            const child: Tip = { lo, hi, a: between(lo, hi, 0.2, 0.8), r: tip.r + STEP * (0.7 + 0.6 * Math.random()) };
+            // 선: 전해 준 친구에게서 받은 친구까지 곧게 쭉 뻗는다
+            const p0 = pos(tip.r, tip.a), p1 = pos(child.r, child.a);
+            lines.push({ d: `M${p0.x} ${p0.y}L${p1.x} ${p1.y}`, ...p1, delay: fx(start + norm(child.a) / 360 * SWEEP[level]), level });
             next.push(child);
           });
         });
