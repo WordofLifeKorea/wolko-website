@@ -5,14 +5,34 @@ import { getCollection } from 'astro:content';
 const campusDayEntry = (await getCollection('camp_schedules')).find((c) => String(c.id).startsWith('2026-jeju-campus-day'));
 const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? campusDayEntry.data : null;
 
-// 맨 위 사진 — 6초마다 바뀌고, 오른쪽 아래 숫자(01 / 05)와 막대가 함께 바뀐다. 막대를 누르면 그 사진으로 간다.
-const heroSlides = [
-  { src: '/images/heroes/worship.jpg' },
-  { src: '/images/heroes/outdoor.jpg' },
+// 맨 위 배너 — 첫 장은 사역 현장 영상(약 15초, 소리 없음 — 예배 · 학교 사역 · 기도 · 캠프 · 소그룹 · 제주 월비 · 교회 사역 장면만), 그 뒤로 사진 4장이 6초마다 바뀐다. 오른쪽 아래 숫자(01 / 05)와 막대가 함께 바뀌고, 막대를 누르면 그 장으로 간다.
+// 사진은 아래 묶음(실제 사역 장면만 — 예배 · 기도 · 말씀 · 소그룹 · 캠프 활동, 얼굴만 크게 나온 사진과 나들이 사진은 넣지 않는다.
+// 넓은 화면을 꽉 채우므로 가로로 찍은 사진만 — 세로 사진을 잘라 쓰면 너무 크게 확대된다)에서
+// 매주 월요일 0시(한국 시간)마다 4장씩 차례로 바뀐다. 묶음이 4장보다 넉넉해서 바로 다음 주와 겹치는 사진은 없다.
+// 빌드할 때의 주로 먼저 그려 두고, 페이지를 연 주가 다르면 브라우저에서 바로 그 주의 사진으로 바꿔 끼운다(다시 빌드하지 않아도 된다).
+const HERO_VIDEO = { poster: '/videos/home-hero-poster.jpg', webm: '/videos/home-hero.webm', mp4: '/videos/home-hero.mp4' };
+const HERO_POOL = [
+  { src: '/images/heroes/home-jeju-winter-cheer.jpg' },
   { src: '/images/heroes/books.jpg', pos: 'center 20%' },
+  { src: '/images/heroes/home/s26-37.jpg' },
+  { src: '/images/heroes/outdoor.jpg' },
+  { src: '/images/heroes/home/w26-17.jpg' },
   { src: '/images/heroes/cross.jpg' },
+  { src: '/images/heroes/home/jwc-34.jpg' },
+  { src: '/images/heroes/home/s26-35.jpg' },
+  { src: '/images/heroes/contact-conversation-2025.jpg' },
   { src: '/images/heroes/samuel.jpg', pos: 'center 15%' },
+  { src: '/images/heroes/home/jwc-03.jpg' },
+  { src: '/images/heroes/ministry-jeju-crowd.jpg' },
+  { src: '/images/heroes/home/s25-03.jpg' },
+  { src: '/images/heroes/worship.jpg' },
+  { src: '/images/heroes/camp-outdoor-2026.jpg' },
 ];
+const HERO_PER_WEEK = 4;
+const HERO_WEEK0 = Date.UTC(2026, 0, 4, 15);   // 2026-01-05(월) 0시, 한국 시간
+const heroWeek = Math.floor((Date.now() - HERO_WEEK0) / 604800000);
+const heroPhotos = Array.from({ length: HERO_PER_WEEK }, (_, k) => HERO_POOL[(((heroWeek * HERO_PER_WEEK + k) % HERO_POOL.length) + HERO_POOL.length) % HERO_POOL.length]);
+const heroSlides = [{ src: HERO_VIDEO.poster, video: true }, ...heroPhotos];
 const pad2 = (n: number) => String(n).padStart(2, '0');
 
 // 월코 비전 다섯 가지 — 펼치기 없이 다섯 칸에 글을 모두 보여 준다
@@ -52,17 +72,17 @@ const visions = [
 // 사역 소개 네 칸 — 사진(4:3) · 번호 · 이름 · 한 줄 설명
 const ministries = [
   {
-    href: '/camp', img: '/images/ministries/camp.jpg', ko: '캠프 사역', en: 'Camp Ministry',
+    href: '/camp', img: '/images/ministries/camp-2026.jpg', ko: '캠프 사역', en: 'Camp Ministry',
     dKo: '청소년과 다음 세대가 복음을 듣고 삶의 전환점을 경험하도록 돕는 월코의 대표 사역입니다.',
     dEn: "WOLKO's flagship ministry — helping youth and the next generation hear the Gospel and experience life-changing encounters.",
   },
   {
-    href: '/youth', img: '/images/ministries/youth.jpg', ko: '청소년 사역', en: 'Youth Ministry',
+    href: '/youth', img: '/images/ministries/youth-2026.jpg', ko: '청소년 사역', en: 'Youth Ministry',
     dKo: '교회와 삶 속에서 청소년들이 말씀 위에 세워지고 예수 그리스도를 따르도록 섬깁니다.',
     dEn: "Serving youth in churches and communities, helping them build their lives on God's Word and follow Jesus Christ.",
   },
   {
-    href: '/wolbi-jeju', img: '/images/ministries/wolbi.jpg', ko: '제주 월비', en: 'WOLBI Jeju',
+    href: '/wolbi-jeju', img: '/images/ministries/wolbi-2026.jpg', ko: '제주 월비', en: 'WOLBI Jeju',
     dKo: '깊이 있는 성경 연구와 훈련을 통해 복음을 삶으로 살아내는 제자를 세워갑니다.',
     dEn: 'Through in-depth Bible study and training, we raise disciples who live out the Gospel in everyday life.',
   },
@@ -196,6 +216,10 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
    사라지는 사진도 흐려지는 2초 동안 계속 다가오게 두어서, 바뀌는 순간 크기가 툭 튀지 않는다. */
 .wh-hero-slide.is-zooming { animation: whSlideZoom 9s linear forwards; }
 @keyframes whSlideZoom { from { transform: scale(1); } to { transform: scale(1.07); } }
+/* 첫 장 영상: 받아서 재생이 시작되면(.is-playing) 정지 화면 위로 서서히 나타난다. 영상 장은 다가오기 움직임 없이 그대로 */
+.wh-hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .8s ease; pointer-events: none; }
+.wh-hero-video.is-playing { opacity: 1; }
+.wh-hero-slide--video.is-zooming { animation: none; }
 .hm-hero-shade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(0deg, rgba(5,20,28,0.9) 0%, rgba(5,20,28,0.6) 40%, rgba(5,20,28,0.1) 72%, rgba(5,20,28,0.32) 100%); }
 .hm-hero-inner { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 64px; }
 .hm-hero-eyebrow { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,.86); font-size: 13px; font-weight: 700; line-height: 1.4; letter-spacing: .12em; text-transform: uppercase; }
@@ -593,7 +617,7 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 .hm-hero-seg::before { border-radius: 2px; }
 .hm-hero-seg.is-on::before { background: rgba(255,255,255,.35); }
 .hm-hero-seg::after { content: ''; position: absolute; left: 0; top: 50%; height: 2px; margin-top: -1px; width: 0; border-radius: 2px; background: #fff; }
-.hm-hero-seg.is-on::after { animation: hmSegFill 6s linear forwards; }
+.hm-hero-seg.is-on::after { animation: hmSegFill var(--seg-ms, 6s) linear forwards; }
 @keyframes hmSegFill { from { width: 0; } to { width: 100%; } }
 @media (max-width: 740px) {
   .hm-hero-actions { flex-direction: row; gap: 8px; }
@@ -679,12 +703,16 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 <div class="hm-home">
 
   <!-- ══ 1. HERO — 사진 5장이 6초마다 바뀌고, 아래 줄 오른쪽 숫자·막대가 함께 바뀐다 ══ -->
-  <section class="hm-hero" id="heroSection">
+  <section class="hm-hero" id="heroSection" data-pool={JSON.stringify(HERO_POOL)} data-per-week={HERO_PER_WEEK} data-week0={HERO_WEEK0}>
     {heroSlides.map((s, i) => (
       <div
-        class:list={['wh-hero-slide', { 'wh-slide-active is-zooming': i === 0 }]}
+        class:list={['wh-hero-slide', { 'wh-hero-slide--video': s.video, 'wh-slide-active is-zooming': i === 0 }]}
+        data-k={s.video ? undefined : i - 1}
         style={`background-image:url('${s.src}')${s.pos ? `; background-position: ${s.pos};` : ''}`}
-      ></div>
+      >{s.video && (
+        <video class="wh-hero-video" muted playsinline preload="none" aria-hidden="true" tabindex="-1"
+          data-webm={HERO_VIDEO.webm} data-mp4={HERO_VIDEO.mp4} poster={HERO_VIDEO.poster}></video>
+      )}</div>
     ))}
     <div class="hm-hero-shade" aria-hidden="true"></div>
     <div class="hm-shell hm-hero-inner">
@@ -723,6 +751,22 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
       </div>
     </div>
   </section>
+  <script is:inline>
+    // 이번 주 사진: 빌드한 주와 페이지를 연 주가 다르면, 그 주의 사진 4장으로 바꿔 끼운다(위 HERO_POOL 설명 참고).
+    (function () {
+      var h = document.getElementById('heroSection');
+      if (!h) return;
+      try {
+        var pool = JSON.parse(h.getAttribute('data-pool')), per = +h.getAttribute('data-per-week'), w0 = +h.getAttribute('data-week0');
+        var wk = Math.floor((Date.now() - w0) / 604800000), n = pool.length;
+        [].forEach.call(h.querySelectorAll('.wh-hero-slide[data-k]'), function (el) {
+          var p = pool[(((wk * per + (+el.getAttribute('data-k'))) % n) + n) % n];
+          el.style.backgroundImage = "url('" + p.src + "')";
+          el.style.backgroundPosition = p.pos || '';
+        });
+      } catch (e) {}
+    })();
+  </script>
   <script is:inline>
     // 히어로 등장: 첫 사진을 다 받은 뒤(.is-ready) 사진 → 작은 표시 → 제목 → 아래 줄 순서로 떠오른다(맨 위 배너와 같은 움직임).
     // 움직임 줄이기 설정이거나 IntersectionObserver 가 없으면 아무것도 하지 않는다 — 처음부터 그대로 다 보인다. 사진이 2.5초 넘게 안 오면 기다리지 않는다.
@@ -825,7 +869,7 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
       </div>
       <div class="hm-video" id="homeVideo" data-rv data-src="https://www.youtube.com/embed/pDTo4oNcAMg?cc_load_policy=1&cc_lang_pref=ko&hl=ko&autoplay=1">
         <button type="button" class="hm-video-poster">
-          <img src="/images/heroes/campgroup.jpg" alt="" loading="lazy" decoding="async">
+          <img src="/images/heroes/video-poster-jeju-cheer.jpg" alt="" loading="lazy" decoding="async">
           <span class="hm-video-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
           <span class="hm-sr"><span class="wl-ko">영상 재생: </span><span class="wl-en">Play video: </span></span>
           <span class="hm-video-title">
@@ -1040,8 +1084,10 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 
 
 <script>
-  // ── 히어로 사진 교체 ─────────────────────────────────────
-  // 6초마다 다음 사진으로. 아래 줄의 숫자(01 / 05)와 막대가 함께 바뀌고, 막대를 누르면 그 사진으로 가서 6초를 새로 센다.
+  // ── 히어로 장 넘기기 ─────────────────────────────────────
+  // 첫 장은 영상: 끝까지 한 번 재생한 뒤 다음 장으로(막대도 영상 길이만큼 차오른다). 나머지 사진은 6초씩.
+  // 휴대폰 폭, 움직임 줄이기, 데이터 절약 모드에서는 영상을 받지 않고 정지 화면을 6초 사진처럼 보여 준다.
+  // 아래 줄의 숫자(01 / 05)와 막대가 함께 바뀌고, 막대를 누르면 그 장으로 가서 시간을 새로 센다.
   (function() {
     const hero = document.getElementById('heroSection');
     if (!hero) return;
@@ -1049,12 +1095,39 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
     if (!slides.length) return;
     const segs = hero.querySelectorAll('.hm-hero-seg');
     const cur = hero.querySelector('.hm-hero-cur');
+    const video = hero.querySelector('.wh-hero-video');
+    const PHOTO_MS = 6000;
+    const conn = navigator.connection || {};
+    const useVideo = !!video && window.matchMedia('(min-width: 641px)').matches &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches && !conn.saveData;
     let current = 0;
     let timer = 0;
+
+    if (useVideo) {
+      [['webm', 'video/webm'], ['mp4', 'video/mp4']].forEach(function(t) {
+        const src = document.createElement('source');
+        src.src = video.getAttribute('data-' + t[0]); src.type = t[1];
+        video.appendChild(src);
+      });
+      video.addEventListener('playing', function() { video.classList.add('is-playing'); });
+      video.load();
+    }
+    function isVideo(i) { return useVideo && slides[i].classList.contains('wh-hero-slide--video'); }
+    function dwell(i) {
+      if (!isVideo(i)) return PHOTO_MS;
+      const d = video.duration;
+      return isFinite(d) && d > 1 ? Math.round(d * 1000) - 400 : 13000;
+    }
+    function playVideo() {
+      try { video.currentTime = 0; } catch (e) {}
+      const p = video.play();
+      if (p && p.catch) p.catch(function() { video.classList.remove('is-playing'); });
+    }
 
     function show(idx) {
       const prev = slides[current];
       prev.classList.remove('wh-slide-active');
+      if (isVideo(current)) setTimeout(function() { if (!slides[0].classList.contains('wh-slide-active')) video.pause(); }, 2200);
       // 사라지는 사진은 흐려지는 동안(2초) 계속 다가오게 두었다가, 다 사라진 뒤에 움직임을 뗀다
       setTimeout(function() { if (!prev.classList.contains('wh-slide-active')) prev.classList.remove('is-zooming'); }, 2200);
       current = (idx + slides.length) % slides.length;
@@ -1062,23 +1135,38 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
       next.classList.remove('is-zooming');
       void next.offsetWidth;                       // 다가오기를 처음(100%)부터 다시
       next.classList.add('wh-slide-active', 'is-zooming');
+      if (isVideo(current)) playVideo();
       if (cur) cur.textContent = String(current + 1).padStart(2, '0');
       segs.forEach(function(s, i) {
+        s.style.setProperty('--seg-ms', dwell(i) + 'ms');
         s.classList.toggle('is-on', i === current);
         s.setAttribute('aria-current', i === current ? 'true' : 'false');
       });
     }
     function restart() {
-      clearInterval(timer);
-      timer = setInterval(function() { show(current + 1); }, 6000);
+      clearTimeout(timer);
+      timer = setTimeout(function step() { show(current + 1); timer = setTimeout(step, dwell(current)); }, dwell(current));
     }
     segs.forEach(function(s, i) {
       s.addEventListener('click', function() {
         if (i !== current) show(i);
-        else { s.classList.remove('is-on'); void s.offsetWidth; s.classList.add('is-on'); }   // 같은 막대를 누르면 차오르기도 처음부터
+        else { s.classList.remove('is-on'); void s.offsetWidth; s.classList.add('is-on'); if (isVideo(i)) playVideo(); }   // 같은 막대를 누르면 차오르기도 처음부터
         restart();
       });
     });
+    // 영상 길이를 알게 되면 첫 장의 막대 시간과 넘김 시간을 그 길이에 맞춘다
+    if (useVideo) {
+      video.addEventListener('loadedmetadata', function() {
+        if (segs[0]) segs[0].style.setProperty('--seg-ms', dwell(0) + 'ms');
+        if (current === 0) restart();
+      }, { once: true });
+      playVideo();
+      // 다른 탭에 갔다 오면 브라우저가 멈춰 둔 영상을 이어서 튼다
+      document.addEventListener('visibilitychange', function() {
+        if (!document.hidden && isVideo(current) && video.paused) { const p = video.play(); if (p && p.catch) p.catch(function() {}); }
+      });
+    }
+    segs.forEach(function(s, i) { s.style.setProperty('--seg-ms', dwell(i) + 'ms'); });
     restart();
   })();
 

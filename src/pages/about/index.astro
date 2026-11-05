@@ -5,9 +5,9 @@ import GospelRelay from '../../components/GospelRelay.astro';
 
 // 사명 아래 '그래서 월코는 이런 자리를 섬깁니다' — 듣고(캠프) → 자라고(청소년·월비) → 전하고(Jr. SYME) 순서
 const missionWorks = [
-  { href: '/camp', img: '/images/ministries/camp.jpg', ko: '캠프 사역', en: 'Camp Ministry', roleKo: '복음을 듣고 삶의 전환점을 맞도록', roleEn: 'Where youth hear the Gospel and find a turning point' },
-  { href: '/youth', img: '/images/ministries/youth.jpg', ko: '청소년 사역', en: 'Youth Ministry', roleKo: '교회와 일상에서 믿음이 자라도록', roleEn: 'Where faith grows in church and everyday life' },
-  { href: '/wolbi-jeju', img: '/images/ministries/wolbi.jpg', ko: '제주 월비', en: 'WOLBI Jeju', roleKo: '말씀 위에 깊이 뿌리내리도록', roleEn: 'Where students are rooted deeply in the Word' },
+  { href: '/camp', img: '/images/ministries/camp-2026.jpg', ko: '캠프 사역', en: 'Camp Ministry', roleKo: '복음을 듣고 삶의 전환점을 맞도록', roleEn: 'Where youth hear the Gospel and find a turning point' },
+  { href: '/youth', img: '/images/ministries/youth-2026.jpg', ko: '청소년 사역', en: 'Youth Ministry', roleKo: '교회와 일상에서 믿음이 자라도록', roleEn: 'Where faith grows in church and everyday life' },
+  { href: '/wolbi-jeju', img: '/images/ministries/wolbi-2026.jpg', ko: '제주 월비', en: 'WOLBI Jeju', roleKo: '말씀 위에 깊이 뿌리내리도록', roleEn: 'Where students are rooted deeply in the Word' },
   { href: '/jr-syme', img: '/images/ministries/syme.jpg', ko: 'Jr. SYME', en: 'Jr. SYME', roleKo: '복음을 전하는 리더로 서도록', roleEn: 'Where students grow into leaders who share the Gospel' },
 ];
 ---
@@ -139,9 +139,12 @@ const missionWorks = [
   /* ── VISION & MISSION: 사진 위 비전 → 같은 어두운 바탕에 사명과 그림 (한 섹션) ── */
   .vm { padding:0; background:#052833; color:#fff; overflow:hidden; }
   .vm-wrap { max-width:1240px; margin:0 auto; }
-  .vm-vision { position:relative; padding:136px 0 168px; background:#052833 url('/images/heroes/worship.jpg') 50% 32% / cover no-repeat; }
-  .vm-vision::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg, rgba(5,40,51,0.84) 0%, rgba(5,40,51,0.6) 46%, rgba(5,40,51,0.24) 100%); }
-  .vm-vision::after { content:""; position:absolute; left:0; right:0; bottom:0; height:220px; background:linear-gradient(180deg, rgba(5,40,51,0), #052833); }
+  /* 비전 문장과 '믿고 → 전하고 → 또 전합니다' 칸은 한 장의 사진(코어 트레이닝: 청소년들이 둘씩 짝지어 서로에게 복음을 전하는 모습) 위에 놓인다. 사진 전체에 같은 농도의 남색을 덮어서
+     사람 머리만 잘려 보이지 않고, 글과 그림은 어디서나 같은 대비로 읽힌다 */
+  .vm-top { position:relative; background:#052833 url('/images/heroes/about-core-training.jpg') 50% 45% / cover no-repeat; }
+  .vm-top::before { content:""; position:absolute; inset:0; background:rgba(5,40,51,0.8); }
+  .vm-top > * { position:relative; z-index:1; }
+  .vm-vision { position:relative; padding:136px 0 72px; }
   .vm-vision .vm-wrap { position:relative; z-index:1; }
   .vm-label { margin:0; font-family:var(--ff-sans); font-size:16px; font-weight:700; letter-spacing:-0.01em; color:#f3dca6; }
   .vision-statement { max-width:820px; margin:22px 0 0; font-family:var(--ff-serif); font-size:clamp(34px, 4.3vw, 62px); font-weight:700; line-height:1.26; letter-spacing:-0.035em; color:#fff; word-break:keep-all; }
@@ -225,8 +228,8 @@ const missionWorks = [
     .value-desc { font-size:14.5px; }
     .vm { padding:0; }
     .vm-wrap { padding:0 20px; }
-    .vm-vision { padding:92px 0 120px; background-position:60% 30%; }
-    .vm-vision::before { background:rgba(5,40,51,0.64); }
+    .vm-vision { padding:92px 0 48px; }
+    .vm-top { background-position:60% 30%; }
     .vision-statement { font-size:28px; margin-top:16px; }
     .vm-flow { grid-template-columns:1fr; gap:20px; padding-bottom:64px; }
     /* 휴대폰: 세 걸음과 설명 바로 아래에 그림 */
@@ -416,6 +419,7 @@ const missionWorks = [
 <!-- ══ VISION & MISSION — 사진 위 비전 → 비전이 이루어지는 모습(듣고·구원받고·전하고 + '친구에서 친구로' 그림) → 사명과 그 일을 하는 사역 ══ -->
 <section class="section vm">
   <h2 class="sr-only"><span class="wl-ko">비전과 사명</span><span class="wl-en">Our Vision & Mission</span></h2>
+  <div class="vm-top">
   <div class="vm-vision">
     <div class="page-wrap vm-wrap">
       <p class="vm-label"><span class="wl-ko">우리의 비전</span><span class="wl-en">Our vision</span></p>
@@ -427,12 +431,12 @@ const missionWorks = [
   </div>
   <div class="page-wrap vm-wrap vm-flow">
     <div class="vm-flow-text">
-      <p class="vm-steps" aria-label="믿고, 전하고, 또 전하고">
+      <p class="vm-steps" aria-label="믿고, 전하고, 또 전합니다">
         <span class="vm-step" data-n="1"><span class="vm-step-num" aria-hidden="true">1</span><span class="wl-ko">믿고</span><span class="wl-en">Believe</span></span>
         <svg class="vm-step-arrow" viewBox="0 0 20 12" aria-hidden="true"><path d="M1 6h16M12 1.5 17 6l-5 4.5" /></svg>
         <span class="vm-step" data-n="2"><span class="vm-step-num" aria-hidden="true">2</span><span class="wl-ko">전하고</span><span class="wl-en">Share</span></span>
         <svg class="vm-step-arrow" viewBox="0 0 20 12" aria-hidden="true"><path d="M1 6h16M12 1.5 17 6l-5 4.5" /></svg>
-        <span class="vm-step" data-n="3"><span class="vm-step-num" aria-hidden="true">3</span><span class="wl-ko">또 전하고</span><span class="wl-en">Share again</span></span>
+        <span class="vm-step" data-n="3"><span class="vm-step-num" aria-hidden="true">3</span><span class="wl-ko">또 전합니다</span><span class="wl-en">Share again</span></span>
       </p>
       <p class="vm-flow-desc">
         <span class="wl-ko">한 친구가 예수님을 믿고 곁의 친구에게 복음을 전하면, 그 친구가 또 다른 친구에게 전합니다. 그렇게 한 사람에게서 시작된 복음이 셀 수 없이 많은 친구에게 계속해서 전해집니다.</span>
@@ -441,10 +445,11 @@ const missionWorks = [
     </div>
     <div class="vm-relay">
       <GospelRelay
-        labelKo="가운데 먼저 믿은 한 친구에게서 세 친구, 여섯 친구, 열 친구로 원을 그리며 복음이 퍼져 나가는 그림. 가운데 친구 곁에 1 믿고, 첫 원에 2 전하고, 둘째 원에 3 또 전하고가 표시되어 있습니다."
+        labelKo="가운데 먼저 믿은 한 친구에게서 세 친구, 여섯 친구, 열 친구로 원을 그리며 복음이 퍼져 나가는 그림. 가운데 친구 곁에 1 믿고, 첫 원에 2 전하고, 둘째 원에 3 또 전합니다가 표시되어 있습니다."
         labelEn="A picture of the Gospel spreading in circles from one friend who believed first, to three, six, then ten friends. The center friend is marked 1 Believe, the first circle 2 Share, and the second circle 3 Share again."
       />
     </div>
+  </div>
   </div>
   <div class="page-wrap vm-wrap vm-mission">
     <h3 class="vm-label"><span class="wl-ko">우리의 사명</span><span class="wl-en">Our mission</span></h3>
