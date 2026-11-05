@@ -117,7 +117,8 @@ const hasBar = Astro.slots.has('bar');
   }
   @media (max-width: 640px) {
     /* 휴대폰 photo: 화면을 꽉 채우되 위쪽은 사진이 또렷하고, 아래로 남색에 이어진 뒤 글이 놓인다 */
-    .ph--photo { padding-top: 0; }
+    /* 위 여백은 머리 메뉴 아래(약 76px)+띄움 — 글이 길거나 화면이 낮아도 메뉴가 첫 줄을 가리지 않게. 넘치면 머리가 길어진다 */
+    .ph--photo { padding-top: 100px; }
     .ph--photo::before { bottom: auto; height: 62%; background-position: var(--ph-mpos, 50% 40%); }
     .ph--photo::after { background: linear-gradient(180deg, rgba(5,20,28,0.35) 0%, rgba(5,20,28,0) 14%, rgba(5,20,28,0) 32%, #0b1e27 62%); }
     .ph--photo .ph-inner { padding: 0 20px 28px; }
