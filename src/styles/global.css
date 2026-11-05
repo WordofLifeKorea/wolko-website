@@ -134,9 +134,16 @@ span.wl-en   { display: none; }
 .nav-link:hover { background: rgba(0,79,104,0.06); color: var(--blue-dark); }
 .nav.scrolled .nav-link:hover,
 .nav.always-white .nav-link:hover { background: rgba(0,79,104,0.06); color: var(--blue-dark); }
-.nav-link.active { color: var(--blue-mid); }
-.nav.scrolled .nav-link.active,
-.nav.always-white .nav-link.active { color: var(--blue-mid); }
+/* 지금 보고 있는 묶음 — 색만으로 구분하지 않고 청록(#004f68) 밑줄로 표시한다.
+   글자는 다른 메뉴와 같은 진한 색(#12303c, 마우스를 올리면 다른 메뉴처럼 청록)이라
+   흰 메뉴(13.9:1)에서도, 사진 위 반투명 메뉴에서도 다른 메뉴보다 흐려지지 않는다.
+   (예전 #007ea1 글자는 사진 위에서 1.6~3.6:1까지 떨어졌다) */
+.nav-link.active {
+  text-decoration: underline;
+  text-decoration-color: var(--blue-dark);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 7px;
+}
 
 .nav-link.has-dropdown::after {
   content: ''; display: inline-block; width: 6px; height: 6px;
@@ -174,7 +181,15 @@ span.wl-en   { display: none; }
   border-radius: 8px; padding: 3px; cursor: pointer;
   position: relative; width: 120px; height: 36px; box-sizing: border-box;
   transition: background 0.3s, border-color 0.3s;
+  /* <button> 기본 모양 지우기 */
+  -webkit-appearance: none; appearance: none;
+  font: inherit; color: inherit; line-height: 1; text-align: left;
+  /* wolko-ui.css 의 전역 단추 최소 높이(36px !important)가 휴대폰 34px 단추를 늘리지 않게 */
+  min-height: 0 !important;
 }
+.lang-toggle:focus-visible { outline: 2px solid var(--blue-dark); outline-offset: 2px; }
+/* 보이는 크기(컴퓨터 36px · 휴대폰 34px)는 그대로 두고, 눌리는 자리만 위아래로 넓혀 높이 44px — 투명한 덧칸이라 모양은 전과 같다 */
+.lang-toggle::after { content: ''; position: absolute; left: 0; right: 0; top: calc(50% - 22px); height: 44px; }
 .lang-slider {
   position: absolute; left: 3px; width: 55px; height: 28px;
   background: #004f68; border-radius: 6px;
@@ -190,14 +205,16 @@ span.wl-en   { display: none; }
 
 .nav-hamburger {
   display: none; flex-direction: column; gap: 5px; cursor: pointer;
-  width: 38px; height: 38px; border-radius: 10px;
+  width: 44px; height: 44px; border-radius: 10px; /* 손가락으로 누르는 자리 44px */
   align-items: center; justify-content: center;
   margin-left: 8px;
   background: rgba(255,255,255,0.15);
   border: 1px solid rgba(255,255,255,0.25);
   transition: background 0.2s, border-color 0.2s;
+  -webkit-appearance: none; appearance: none; font: inherit; color: inherit; /* <button> 기본 모양 지우기 */
 }
-.nav-hamburger span { display: block; width: 18px; height: 2px; background: rgba(255,255,255,0.9); border-radius: 2px; transition: background 0.3s; }
+.nav-hamburger:focus-visible { outline: 2px solid var(--blue-dark); outline-offset: 2px; }
+.nav-hamburger > span:not(.sr-only) { display: block; width: 18px; height: 2px; background: rgba(255,255,255,0.9); border-radius: 2px; transition: background 0.3s; }
 .nav.scrolled .nav-hamburger,
 .nav.always-white .nav-hamburger {
   background: var(--blue-dark);
@@ -270,16 +287,23 @@ span.wl-en   { display: none; }
 }
 .mobile-menu-item.is-open .mobile-parent-chevron { transform: rotate(180deg); }
 
-/* 서브메뉴 — 기본 숨김 */
+/* 서브메뉴 — 기본 숨김.
+   접힌 칸은 visibility: hidden 이라 안의 링크가 Tab 에 잡히지 않고 화면 읽기 프로그램에도 읽히지 않는다.
+   펼칠 때는 바로 보이고, 접을 때는 높이가 줄어드는 0.3초 뒤에 숨긴다('동작 줄이기'에서는 전역 규칙으로 늦춤 없이 바로). */
 .mobile-sub {
   list-style: none;
   max-height: 0; overflow: hidden;
-  transition: max-height 0.3s cubic-bezier(0.4,0,0.2,1);
+  visibility: hidden;
+  transition: max-height 0.3s cubic-bezier(0.4,0,0.2,1), visibility 0s linear 0.3s;
   padding: 0 8px;
 }
-.mobile-menu-item.is-open .mobile-sub { max-height: 400px; padding: 4px 8px 6px; }
+.mobile-menu-item.is-open .mobile-sub {
+  max-height: 400px; padding: 4px 8px 6px;
+  visibility: visible;
+  transition: max-height 0.3s cubic-bezier(0.4,0,0.2,1), visibility 0s linear 0s;
+}
 .mobile-sub a {
-  display: block; padding: 10px 12px;
+  display: flex; align-items: center; min-height: 44px; box-sizing: border-box; padding: 10px 12px; /* 누르는 자리 높이 44px (예전 38px) */
   font-size: 15px; color: var(--text-mid);
   text-decoration: none; font-weight: 500;
   border-radius: 9px;
@@ -297,19 +321,51 @@ span.wl-en   { display: none; }
   margin: 4px 8px;
 }
 
+/* ── 본문 바로가기 · 숨은 글자 ── */
+/* 평소에는 화면 위로 숨어 있다가 키보드 초점을 받으면 왼쪽 위에 나타난다. 메뉴(1100)·휴대폰 메뉴(1099)보다 위 */
+.skip-link {
+  position: fixed; top: 12px; left: 12px; z-index: 1200;
+  padding: 13px 18px; border-radius: 10px; /* 높이 44px */
+  background: var(--blue-dark); color: #fff;
+  font-size: 15px; font-weight: 700; line-height: 1.2; text-decoration: none;
+  transform: translateY(calc(-100% - 40px));
+}
+.skip-link:focus {
+  transform: none;
+  outline: 2px solid var(--blue-dark); outline-offset: 3px;
+  box-shadow: 0 8px 24px rgba(0,79,104,0.18);
+}
+/* 메뉴 링크·펼침 단추의 키보드 초점 테두리 — 브라우저 기본 파란 테두리 대신 언어·메뉴 단추와 같은 청록 2px */
+.nav-link:focus-visible,
+.nav-dropdown a:focus-visible,
+.mobile-menu a:focus-visible,
+.mobile-menu .mobile-parent:focus-visible { outline: 2px solid var(--blue-dark); outline-offset: 2px; }
+/* 바로가기의 도착점(main#main)은 누르는 곳이 아니라서 초점 테두리를 그리지 않는다 */
+#main:focus { outline: none; }
+/* 화면에는 안 보이고 화면 읽기 프로그램만 읽는 글자(단추 이름 등) */
+.sr-only {
+  position: absolute !important; width: 1px !important; height: 1px !important;
+  padding: 0 !important; margin: -1px !important; overflow: hidden !important;
+  clip: rect(0 0 0 0) !important; clip-path: inset(50%) !important;
+  white-space: nowrap !important; border: 0 !important;
+}
+
 /* ── FOOTER ── */
 .footer { background: #0a1e28; color: rgba(255,255,255,0.6); padding: 56px 5% 40px; }
 .footer-inner { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr; gap: 36px; padding-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.08); }
 .footer-logo-lockup { display: flex; align-items: center; margin-bottom: 16px; }
 .footer-logo-lockup img { display: block; height: 36px; width: auto; }
-.footer-desc { font-size: 15px; line-height: 1.8; color: rgba(255,255,255,0.45); }
-.footer-col-title { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: rgba(255,255,255,0.35); margin-bottom: 16px; font-family: 'GmarketSans', 'Pretendard Variable', sans-serif; }
-.footer-col .footer-col-title a { display: inline; padding: 0; margin: 0; font: inherit; letter-spacing: inherit; color: inherit; text-decoration: none; } /* 제목이 곧 링크인 칸(사역 · 오시는길)도 다른 제목과 똑같이 보이게 */
+.footer-desc { font-size: 15px; line-height: 1.8; color: rgba(255,255,255,0.5); } /* 5.1:1 (예전 0.45 = 4.4:1) */
+.footer-col-title { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: rgba(255,255,255,0.5); margin-bottom: 16px; font-family: 'GmarketSans', 'Pretendard Variable', sans-serif; } /* 5.1:1 (예전 0.35 = 3.2:1) */
+.footer-col .footer-col-title a { display: inline-block; position: relative; min-width: 44px; min-height: 0; padding: 0; margin: 0; font: inherit; letter-spacing: inherit; color: inherit; text-decoration: none; } /* 제목이 곧 링크인 칸(사역 · 오시는길)도 다른 제목과 똑같이 보이게 */
+/* 제목 링크의 눌리는 자리 — 글자 줄 높이는 그대로 두고 투명한 덧칸으로 위아래 44px (아래 링크와는 겹치지 않는다: 제목 아래 여백 16px) */
+.footer-col .footer-col-title a::after { content: ''; position: absolute; left: 0; right: 0; top: calc(50% - 22px); height: 44px; }
 .footer-col .footer-col-title a:hover { color: rgba(255,255,255,0.75); }
 .footer-col-title--sub { margin-top: 24px; }
-.footer-col a { display: block; font-size: 15px; color: rgba(255,255,255,0.55); text-decoration: none; margin-bottom: 10px; transition: color 0.2s; }
+.footer-col a { display: flex; align-items: center; min-height: 44px; font-size: 15px; color: rgba(255,255,255,0.55); text-decoration: none; margin-bottom: 0; transition: color 0.2s; } /* 5.9:1 그대로 · 누르는 자리 높이 44px (예전 글자 18px + 간격 10px) */
 .footer-col a:hover { color: rgba(255,255,255,0.9); }
-.footer-bottom { max-width: 1180px; margin: 0 auto; padding-top: 28px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: rgba(255,255,255,0.28); }
+.footer a:focus-visible { outline: 2px solid rgba(255,255,255,0.85); outline-offset: 3px; border-radius: 2px; }
+.footer-bottom { max-width: 1180px; margin: 0 auto; padding-top: 28px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: rgba(255,255,255,0.5); } /* 5.1:1 (예전 0.28 = 2.5:1) */
 
 /* ── RESPONSIVE: NAV/FOOTER ── */
 @media (max-width: 1500px) and (min-width: 901px) {
@@ -348,8 +404,16 @@ span.wl-en   { display: none; }
     background: transparent !important;
     border-color: transparent !important;
     box-shadow: none !important;
+    /* 누르는 자리는 44px 로 넓혔지만 세 줄과 언어 단추가 보이는 자리는 전(38px 일 때)과 같게 */
+    margin-left: 5px; margin-right: -3px;
   }
   .nav-hamburger span { background: var(--blue-dark) !important; }
+}
+@media (max-width: 374px) {
+  /* 아주 좁은 폰(320~374): 메뉴 막대 양옆 여백과 로고를 조금 줄여 로고 · 언어 단추 · 메뉴 단추(44px)가 한 줄에 들어가게
+     (예전엔 320px 에서 메뉴 단추가 막대 밖 · 화면 밖으로 1px 밀려 있었다) */
+  .nav { width: calc(100% - 20px); padding: 0 12px; }
+  .nav-logo img { height: 28px; }
 }
 @media (max-width: 768px) {
   .footer-inner { gap: 28px 20px; padding-bottom: 32px; }
@@ -358,10 +422,19 @@ span.wl-en   { display: none; }
 @media (max-width: 560px) {
   /* 폰: 네 칸을 두 칸씩 두 줄로 — 한 줄로 길게 늘어서지 않게 */
   .footer-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 16px; }
-  .footer-col a { margin-bottom: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; opacity: 1 !important; transform: none !important; }
+  /* 움직임만 끈다. 자리(transform)·투명도(opacity)·보임(visibility)은 건드리지 않는다 — 메뉴 가운데 맞춤과 닫힌 드롭다운이 그대로 남게.
+     0 대신 아주 짧은 시간: 끝 상태가 유지되고, transitionend 를 기다리는 스크립트도 멈추지 않는다.
+     맨 위 html 의 부드러운 스크롤(scroll-behavior: smooth)도 여기서 끈다(html 과 페이지 안 스크롤 칸 모두). */
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+    transition-duration: .01ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* 업무 페이지: 홈페이지 메뉴 없이 언어 토글만 표시 */

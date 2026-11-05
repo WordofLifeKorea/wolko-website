@@ -87,6 +87,10 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
 
   .quarter-card { display: flex; flex-direction: column; gap: 0; text-align: left; min-width: 0; }
   .quarter-card.has-pdf { cursor: pointer; }
+  /* 발행된 칸은 키보드로도 간다(role=button) — 초점 테두리는 칸 전체를, 지금 보는 호 표지 테두리(5px)와 겹치지 않게 조금 더 바깥에 */
+  .quarter-card.has-pdf:focus-visible { outline: 2px solid var(--c-deep); outline-offset: 10px; }
+  /* 발행 안 된 칸은 누르는 곳이 아니다 — 손가락 모양 · 초점 없음, 점선 표지와 안내 글로 비어 있음을 알린다 */
+  .quarter-card.no-pdf-slot { cursor: default; }
 
   /* 표지 틀 — 썸네일이 있으면 사진, 없으면 단색 표지 */
   .qc-thumb-wrap, .qc-book {
@@ -109,8 +113,9 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
   .has-pdf .qc-q-label { color: #fff; }
   .has-pdf .qc-y-label { color: rgba(255,255,255,.72); }
   .no-pdf-slot .qc-book { background: var(--c-soft); border-style: dashed; }
-  .no-pdf-slot .qc-q-label { color: #a9b8bf; }
-  .no-pdf-slot .qc-y-label { color: #9aabb3; }
+  /* 발행 안 된 칸: 점선 · 옅은 바탕으로 비어 있음을 보이되, 글자는 옅은 바탕 위 4.5:1 이상(4.7:1) */
+  .no-pdf-slot .qc-q-label { color: var(--c-muted); }
+  .no-pdf-slot .qc-y-label { color: var(--c-label); }
 
   .quarter-card.has-pdf:hover .qc-thumb { transform: scale(1.03); }
   .quarter-card.has-pdf:hover .qc-thumb-wrap,
@@ -129,8 +134,9 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
   .quarter-card.has-pdf:hover .qc-label svg { transform: translateX(4px); }
   .quarter-card.current .qc-label { color: var(--c-deep); }
   .qc-date { font-size: 14px; font-weight: 500; color: var(--c-muted); font-variant-numeric: tabular-nums; }
-  .qc-empty-label { font-size: 13.5px; line-height: 1.6; color: #7f939c; }
-  .no-pdf-slot .qc-label { color: #8a9ba3; }
+  /* 흰 바탕 위 — 칸 이름 6.9:1, 안내 글 5.0:1. 발행된 칸(남색 이름)보다 한 단계씩 옅다 */
+  .qc-empty-label { font-size: 13.5px; line-height: 1.6; color: var(--c-muted); }
+  .no-pdf-slot .qc-label { color: var(--c-text); }
   .qc-current-badge { display: none; }
 
   /* ── 소식지 보기 (넘겨보기) ── */
@@ -152,6 +158,10 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     margin-bottom: 36px; padding-bottom: 28px; border-bottom: 1px solid var(--c-line);
   }
   .report-head { min-width: 0; }
+  /* 분기 카드를 키보드로 고르면 스크립트가 이 제목으로 초점을 옮긴다 — 누르는 곳이 아니라 읽기 시작점이라 테두리는 그리지 않는다.
+     고정 머리 메뉴에 가리지 않게 위 여백을 두고 화면 안으로 끌어온다. */
+  .report-meta { scroll-margin-top: calc(var(--nav-h, 72px) + 16px); }
+  .report-title:focus { outline: none; }
   .report-title {
     margin-top: 18px; font-family: var(--ff-serif); font-size: clamp(28px, 2.8vw, 40px); font-weight: 700;
     line-height: 1.22; letter-spacing: -.03em; color: var(--c-navy);
@@ -283,21 +293,25 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
   /* 페이지 위치 표시줄 */
   .fb-dots-bar {
     display: flex; align-items: center; justify-content: center;
-    padding: 12px 20px; gap: 6px; min-height: 42px; flex-wrap: wrap;
+    padding: 0 12px; gap: 0; min-height: 44px; flex-wrap: wrap; /* 좌우 12px — 스크립트(buildDots)가 한 줄에 들어갈 점 개수를 셀 때 이 값을 뺀다 */
     background: #fff; border-top: 1px solid var(--c-line);
   }
-  /* 전역 버튼 규격(wolko-ui.css: min-height/min-width 44px !important)에 눌려 모양이 틀어지던 것을 !important로 확보.
-     터치 영역은 ::after로 넓힌다. */
+  /* 점 단추 — 눌리는 자리는 44×44 칸(서로 붙어 있고 겹치지 않음), 보이는 막대(14×3, 지금 쪽 28×3)는 ::before 로 가운데에 그린다.
+     전역 버튼 규격(wolko-ui.css 최소 높이 !important)에 눌리지 않게 크기를 !important 로 고정 */
   :global(.fb-dot) {
     position: relative; box-sizing: border-box;
-    width: 14px !important; height: 3px !important; min-width: 0 !important; min-height: 0 !important;
-    border-radius: 0; border: none; background: #c5d2d8;
+    width: 44px !important; height: 44px !important; min-width: 0 !important; min-height: 0 !important;
+    border-radius: 0; border: none; background: none;
     cursor: pointer; padding: 0 !important; margin: 0; flex: 0 0 auto;
-    transition: background-color .18s, width .22s;
   }
-  :global(.fb-dot::after) { content: ''; position: absolute; inset: -14px -3px; }
-  :global(.fb-dot.active) { background: var(--c-deep, #004f68); width: 28px !important; }
-  :global(.fb-dot:hover:not(.active)) { background: #7f9ba8; }
+  :global(.fb-dot::before) {
+    content: ''; position: absolute; inset: 0; margin: auto; width: 14px; height: 3px;
+    background: #c5d2d8; transition: background-color .18s, width .22s;
+  }
+  :global(.fb-dot.active::before) { background: var(--c-deep, #004f68); width: 28px; }
+  /* 점 단추 안의 숨은 이름(한·영) — 스크립트가 만든 요소라 :global */
+  :global(.mr-sr) { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  :global(.fb-dot:hover:not(.active)::before) { background: #7f9ba8; }
   :global(.fb-dots-text) {
     font-size: 13px; font-weight: 700; color: #587383; letter-spacing: .04em; font-variant-numeric: tabular-nums;
   }
@@ -355,9 +369,10 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     :global(#flipbook-container.fb-full .fb-btn),
     :global(#flipbook-container.fb-full .fb-fullscreen-btn) { width: 30px; height: 30px; }
     :global(#flipbook-container.fb-full #spread-viewport) { padding: 4px; }
-    :global(#flipbook-container.fb-full .fb-dots-bar) { min-height: 0; padding: 4px 12px calc(4px + env(safe-area-inset-bottom)); }
+    /* 점 단추가 44px 이 되어 아래 줄이 높아진 만큼(위아래 여백은 0) 쪽 그림 최대 높이를 조금 줄인다 */
+    :global(#flipbook-container.fb-full .fb-dots-bar) { min-height: 0; padding: 0 12px env(safe-area-inset-bottom); }
     :global(#flipbook-container.fb-full .spread-img),
-    :global(#flipbook-container.fb-full #mob-page-img) { max-height: calc(100vh - 80px) !important; max-height: calc(100dvh - 80px) !important; }
+    :global(#flipbook-container.fb-full #mob-page-img) { max-height: calc(100vh - 96px) !important; max-height: calc(100dvh - 96px) !important; }
   }
 </style>
 
@@ -418,6 +433,12 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
                   data-title-ko={r?.data.title_ko ?? ''}
                   data-title-en={r?.data.title_en ?? ''}
                   data-date={r?.data.date ?? ''}
+                  data-year={yr}
+                  data-q={q.key.slice(1)}
+                  role={r ? 'button' : undefined}
+                  tabindex={r ? 0 : undefined}
+                  aria-labelledby={r ? `qc-name-${yr}-${q.key}` : undefined}
+                  aria-current={isCurrent ? 'true' : undefined}
                 >
                   {r?.data.thumbnail_url ? (
                     <div class="qc-thumb-wrap">
@@ -435,7 +456,7 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
                   )}
                   <div class="qc-text">
                     <div class="qc-label">
-                      <span>
+                      <span id={`qc-name-${yr}-${q.key}`}>
                         <span class="wl-ko">{yr}년 {q.ko}</span>
                         <span class="wl-en">{q.en} {yr}</span>
                       </span>
@@ -448,8 +469,15 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
                     )}
                     {!r && (
                       <div class="qc-empty-label">
-                        <span class="wl-ko">해당 소식지는 발행되지 않았습니다</span>
-                        <span class="wl-en">This issue was not published</span>
+                        {/* 지난 분기는 위 글, 지금 진행 중이거나 아직 오지 않은 분기는 아래 글 — 페이지를 연 날(한국 시간) 기준으로 맨 아래 스크립트가 고른다 */}
+                        <span class="qc-empty-past">
+                          <span class="wl-ko">해당 소식지는 발행되지 않았습니다</span>
+                          <span class="wl-en">This issue was not published</span>
+                        </span>
+                        <span class="qc-empty-soon" hidden>
+                          <span class="wl-ko">아직 발행 전이에요</span>
+                          <span class="wl-en">Not published yet</span>
+                        </span>
                       </div>
                     )}
                   </div>
@@ -477,7 +505,7 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
         <div class="report-meta">
           <div class="report-head">
             <p class="mr-eyebrow"><span class="wl-ko">현재 보는 중</span><span class="wl-en">Viewing</span></p>
-            <h2 class="report-title" id="report-title">
+            <h2 class="report-title" id="report-title" tabindex="-1">
               <span class="wl-ko">{latestReport.data.title_ko}</span>
               <span class="wl-en">{latestReport.data.title_en}</span>
             </h2>
@@ -493,40 +521,49 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
         <div id="flipbook-container" data-pdf={latestReport.data.pdf_url}>
           <div class="fb-controls">
             <div class="fb-nav">
-              <button class="fb-btn" id="fb-first" title="처음 페이지" disabled>
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 2v10M5 7l5-4v8L5 7z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <button class="fb-btn" id="fb-first" title="처음 쪽으로" disabled>
+                <span class="mr-sr"><span class="wl-ko">처음 쪽으로</span><span class="wl-en">First page</span></span>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 2v10M5 7l5-4v8L5 7z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
-              <button class="fb-btn" id="fb-prev" title="이전 페이지" disabled>
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L4 7l5-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <button class="fb-btn" id="fb-prev" title="이전 쪽" disabled>
+                <span class="mr-sr"><span class="wl-ko">이전 쪽</span><span class="wl-en">Previous page</span></span>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M9 11L4 7l5-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
               <span class="fb-page-info" id="fb-page-info">1 / —</span>
-              <button class="fb-btn" id="fb-next" title="다음 페이지" disabled>
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l5 4-5 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <button class="fb-btn" id="fb-next" title="다음 쪽" disabled>
+                <span class="mr-sr"><span class="wl-ko">다음 쪽</span><span class="wl-en">Next page</span></span>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M5 3l5 4-5 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
-              <button class="fb-btn" id="fb-last" title="마지막 페이지" disabled>
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 2v10M9 7L4 3v8l5-4z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <button class="fb-btn" id="fb-last" title="마지막 쪽으로" disabled>
+                <span class="mr-sr"><span class="wl-ko">마지막 쪽으로</span><span class="wl-en">Last page</span></span>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M11 2v10M9 7L4 3v8l5-4z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
             </div>
             <div class="fb-right">
               <div class="fb-zoom-btns">
-                <button class="fb-zoom-btn" id="fb-zoom-out" title="축소">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <button class="fb-zoom-btn" id="fb-zoom-out" title="작게 보기">
+                  <span class="mr-sr"><span class="wl-ko">작게 보기</span><span class="wl-en">Zoom out</span></span>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                 </button>
-                <button class="fb-zoom-btn" id="fb-zoom-in" title="확대">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <button class="fb-zoom-btn" id="fb-zoom-in" title="크게 보기">
+                  <span class="mr-sr"><span class="wl-ko">크게 보기</span><span class="wl-en">Zoom in</span></span>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                 </button>
               </div>
-              <button class="fb-fullscreen-btn" id="fb-fullscreen" title="전체화면">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5V2h3M9 2h3v3M12 9v3H9M5 12H2V9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <button class="fb-fullscreen-btn" id="fb-fullscreen" title="전체 화면" aria-pressed="false">
+                <span class="mr-sr"><span class="wl-ko">전체 화면</span><span class="wl-en">Full screen</span></span>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 5V2h3M9 2h3v3M12 9v3H9M5 12H2V9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
             </div>
           </div>
           <div id="spread-viewport">
-            <button class="fb-arrow-btn" id="fb-arrow-prev" title="이전 페이지" disabled>
-              <svg width="10" height="18" viewBox="0 0 10 18" fill="none"><path d="M8 2L2 9l6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <button class="fb-arrow-btn" id="fb-arrow-prev" title="이전 쪽" disabled>
+              <span class="mr-sr"><span class="wl-ko">이전 쪽</span><span class="wl-en">Previous page</span></span>
+              <svg width="10" height="18" viewBox="0 0 10 18" fill="none" aria-hidden="true"><path d="M8 2L2 9l6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-            <button class="fb-arrow-btn" id="fb-arrow-next" title="다음 페이지" disabled>
-              <svg width="10" height="18" viewBox="0 0 10 18" fill="none"><path d="M2 2l6 7-6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <button class="fb-arrow-btn" id="fb-arrow-next" title="다음 쪽" disabled>
+              <span class="mr-sr"><span class="wl-ko">다음 쪽</span><span class="wl-en">Next page</span></span>
+              <svg width="10" height="18" viewBox="0 0 10 18" fill="none" aria-hidden="true"><path d="M2 2l6 7-6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
             <div id="fb-loading" class="fb-loading-indicator">
               <div class="fb-spinner"></div>
@@ -556,6 +593,22 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
 </div><!-- /.mr-page -->
 
 <script is:inline>
+  // 빈 분기 글: 지난 분기는 '발행되지 않았습니다', 지금 진행 중이거나 아직 오지 않은 분기는 '아직 발행 전'.
+  // 정적 빌드라 빌드한 날로 정하면 틀어지므로, 페이지를 연 날(한국 시간) 기준으로 여기서 고른다.
+  (function () {
+    var kst = new Date(Date.now() + 9 * 3600 * 1000);
+    var nowY = kst.getUTCFullYear(), nowQ = Math.floor(kst.getUTCMonth() / 3) + 1;
+    [].forEach.call(document.querySelectorAll('.quarter-card.no-pdf-slot[data-year][data-q]'), function (card) {
+      var y = +card.getAttribute('data-year'), q = +card.getAttribute('data-q');
+      var notYet = y > nowY || (y === nowY && q >= nowQ);
+      var past = card.querySelector('.qc-empty-past'), soon = card.querySelector('.qc-empty-soon');
+      if (past) past.hidden = notYet;
+      if (soon) soon.hidden = !notYet;
+    });
+  })();
+</script>
+
+<script is:inline>
 (function () {
   var container = document.getElementById('flipbook-container');
   if (!container) return;
@@ -567,6 +620,24 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
   var isMobile     = window.innerWidth < 768;
   var SCALE        = isMobile ? 2.0 : 3.0;
   var displayVh    = 80;
+
+  /* 쪽 그림 대체 글 · 점 단추 이름 (한·영)
+     page: {n}=쪽 번호, {total}=전체 쪽 수, {title}=지금 보는 호 제목
+     dot : {pages}=그 점이 보여 주는 쪽(예: 1, 2–3), {total}=전체 쪽 수 */
+  var MR_TEXT = {
+    ko: { page: '{title} {n}쪽 (전체 {total}쪽)', dot: '{pages}쪽 보기' },
+    en: { page: '{title}, page {n} of {total}', dot: 'Go to page {pages}' }
+  };
+  function mrLang() { return document.documentElement.classList.contains('lang-en') ? 'en' : 'ko'; }
+  function mrFill(tpl, v) { return tpl.replace(/\{(\w+)\}/g, function (m, k) { return v[k] != null ? String(v[k]) : m; }); }
+  function mrTitle(lang) {
+    var el = document.querySelector('#report-title .wl-' + lang);
+    return el ? el.textContent.trim() : '';
+  }
+  function pageAlt(n, total) {
+    var lang = mrLang();
+    return mrFill(MR_TEXT[lang].page, { n: n, total: total, title: mrTitle(lang) });
+  }
 
   var loadingEl  = document.getElementById('fb-loading');
   var flipBookEl = document.getElementById('flip-book');
@@ -648,12 +719,12 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
   }
 
   /* ── Dots navigation ── */
-  function buildDots(count, onDotClick) {
+  function buildDots(count, onDotClick, pagesOf) {
     if (!dotsBar) return;
     dotsBar.innerHTML = '';
     if (count <= 1) return;
 
-    if (count > 12) {
+    if (count > Math.min(12, Math.max(2, Math.floor((dotsBar.clientWidth - 24) / 44)))) { /* 44px 점이 한 줄에 다 안 들어가면(휴대폰) 숫자 표시로 */
       /* Too many items — show a text counter */
       var span = document.createElement('span');
       span.className = 'fb-dots-text';
@@ -664,8 +735,19 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
 
     for (var i = 0; i < count; i++) {
       var btn = document.createElement('button');
+      btn.type = 'button';
       btn.className = 'fb-dot';
-      btn.setAttribute('aria-label', (i + 1) + '번째');
+      /* 이름은 숨은 글자 한 쌍 — 언어를 바꾸면 화면 글자처럼 저절로 따라간다 */
+      var v = { pages: pagesOf ? pagesOf(i) : String(i + 1), total: count };
+      var sr = document.createElement('span');
+      sr.className = 'mr-sr';
+      ['ko', 'en'].forEach(function (lang) {
+        var t = document.createElement('span');
+        t.className = 'wl-' + lang;
+        t.textContent = mrFill(MR_TEXT[lang].dot, v);
+        sr.appendChild(t);
+      });
+      btn.appendChild(sr);
       (function (idx) {
         btn.addEventListener('click', function () { onDotClick(idx); });
       })(i);
@@ -682,8 +764,39 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     }
     var dots = dotsBar.querySelectorAll('.fb-dot');
     dots.forEach(function (dot, i) {
-      dot.classList.toggle('active', i === activeIdx);
+      var on = i === activeIdx;
+      dot.classList.toggle('active', on);
+      if (on) dot.setAttribute('aria-current', 'true');
+      else dot.removeAttribute('aria-current');
     });
+  }
+
+  /* 지금 보이는 쪽 그림에 지금 언어로 된 대체 글을 단다 (쪽을 넘기거나 언어를 바꿀 때마다) */
+  function refreshAlts() {
+    var m = document.getElementById('mob-page-img');
+    if (m && mobilePages.length) m.alt = pageAlt(mobilePage + 1, mobilePages.length);
+    var li = document.getElementById('desk-left'), ri = document.getElementById('desk-right');
+    if (li && ri && allPages.length) {
+      if (spreadIdx === 0) { li.alt = ''; ri.alt = pageAlt(1, allPages.length); }
+      else { li.alt = pageAlt(spreadIdx * 2, allPages.length); ri.alt = pageAlt(spreadIdx * 2 + 1, allPages.length); }
+    }
+  }
+  /* 넘김 · 크기 · 전체 화면 단추의 마우스 풍선 글(title)을 지금 언어로 — 단추 안 숨은 이름(한·영 짝)에서 가져온다 */
+  function syncButtonTitles() {
+    var lang = mrLang();
+    [].forEach.call(container.querySelectorAll('.fb-btn, .fb-zoom-btn, .fb-fullscreen-btn, .fb-arrow-btn'), function (b) {
+      var t = b.querySelector('.mr-sr .wl-' + lang);
+      if (t) b.title = t.textContent.trim();
+    });
+  }
+  syncButtonTitles();
+  new MutationObserver(function () { refreshAlts(); syncButtonTitles(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+  /* 넓은 화면 점 하나가 보여 주는 쪽: 0번은 표지(1쪽), 그다음부터 두 쪽씩 */
+  function spreadPages(i) {
+    if (i === 0) return '1';
+    var a = i * 2, b = Math.min(i * 2 + 1, allPages.length);
+    return b > a ? a + '–' + b : String(a);
   }
 
   /* ── Mobile: single-page viewer ── */
@@ -700,7 +813,7 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     img.src = pages[0].url;
     flipBookEl.appendChild(img);
 
-    buildDots(pages.length, goMobilePage);
+    buildDots(pages.length, goMobilePage, function (i) { return String(i + 1); });
     updateMobileNav();
     loadingEl.style.display = 'none';
     flipBookEl.style.display = 'flex';
@@ -718,6 +831,7 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     document.getElementById('fb-arrow-prev').disabled = atFirst;
     document.getElementById('fb-arrow-next').disabled = atLast;
     updateDots(mobilePage, tot);
+    refreshAlts();
   }
 
   /* 페이지 전환: 현재 면이 이동 방향으로 밀려 사라지고, 다음 면이 반대편에서 들어온다 (이미지 화질은 그대로) */
@@ -769,7 +883,7 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     flipBookEl.appendChild(li);
     flipBookEl.appendChild(ri);
 
-    buildDots(totalSpreads, goDesktopSpread);
+    buildDots(totalSpreads, goDesktopSpread, spreadPages);
     applySpreadImages();
     loadingEl.style.display = 'none';
     flipBookEl.style.display = 'flex';
@@ -813,6 +927,7 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     document.getElementById('fb-arrow-prev').disabled = atFirst;
     document.getElementById('fb-arrow-next').disabled = atLast;
     updateDots(spreadIdx, totalSpreads);
+    refreshAlts();
   }
 
   function goDesktopSpread(idx) {
@@ -890,15 +1005,16 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
   document.getElementById('fb-arrow-next').addEventListener('click', navigateNext);
 
   var fsBtn = document.getElementById('fb-fullscreen');
-  var FS_ENTER = fsBtn.innerHTML;
-  var FS_EXIT  = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2v3H2M12 5H9V2M9 12V9h3M2 9h3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  /* 그림만 바꾼다 — 단추 안 숨은 이름(전체 화면 / Full screen)은 그대로 두고, 켜짐 · 꺼짐은 aria-pressed 로 알린다 */
+  var FS_ENTER = fsBtn.querySelector('svg').outerHTML;
+  var FS_EXIT  = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M5 2v3H2M12 5H9V2M9 12V9h3M2 9h3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   function isFull() { return container.classList.contains('fb-full'); }
   function setFull(on) {
     container.classList.toggle('fb-full', on);
     document.documentElement.style.overflow = on ? 'hidden' : '';
-    fsBtn.innerHTML = on ? FS_EXIT : FS_ENTER;
-    fsBtn.title = on ? '전체화면 닫기' : '전체화면';
-    fsBtn.setAttribute('aria-label', fsBtn.title);
+    var fsIcon = fsBtn.querySelector('svg');
+    if (fsIcon) fsIcon.outerHTML = on ? FS_EXIT : FS_ENTER;
+    fsBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
     var nativeOn = document.fullscreenElement === container;
     try {
       if (on && !nativeOn && container.requestFullscreen) {
@@ -950,13 +1066,26 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
 
   /* ── Quarter card click → load PDF ── */
   document.querySelectorAll('.quarter-card.has-pdf').forEach(function (card) {
+    /* 키보드: 칸이 role=button 이라 단추처럼 Enter 는 누를 때, 스페이스는 뗄 때 연다(스페이스로 화면이 내려가지 않게 막는다) */
+    /* 키보드로 골랐는지 기억해 둔다 — 키보드면 초점을 보고서 제목으로 옮긴다(다음 Tab 이 위 카드 목록으로 튀지 않게) */
+    var viaKey = false;
+    card.addEventListener('keydown', function (e) {
+      if (e.target !== card) return;
+      if (e.key === 'Enter') { e.preventDefault(); viaKey = true; card.click(); }
+      else if (e.key === ' ' || e.key === 'Spacebar') e.preventDefault();
+    });
+    card.addEventListener('keyup', function (e) {
+      if (e.target === card && (e.key === ' ' || e.key === 'Spacebar')) { viaKey = true; card.click(); }
+    });
     card.addEventListener('click', function () {
+      var byKey = viaKey; viaKey = false;
       var url = card.dataset.pdf;
       if (!url) return;
 
-      /* Mark current */
-      document.querySelectorAll('.quarter-card').forEach(function (c) { c.classList.remove('current'); });
+      /* Mark current — 모양(current)과 함께 화면 읽기 프로그램에도 지금 보는 호를 알린다 */
+      document.querySelectorAll('.quarter-card').forEach(function (c) { c.classList.remove('current'); c.removeAttribute('aria-current'); });
       card.classList.add('current');
+      card.setAttribute('aria-current', 'true');
 
       /* Update report meta */
       var titleKo = card.dataset.titleKo || '';
@@ -979,9 +1108,19 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
       var dlBtn = document.getElementById('report-download');
       if (dlBtn) dlBtn.href = url;
 
+      /* 키보드: 바로 제목으로 초점을 옮기고, 그 제목 줄이 보이게 화면을 옮긴다(소식지를 다 불러올 때까지 기다리지 않는다).
+         '동작 줄이기'면 부드러운 스크롤 없이 바로. 보기 칸은 제목 줄 바로 아래에서 불러오는 중으로 보인다. */
+      if (byKey && titleEl) {
+        try { titleEl.focus({ preventScroll: true }); } catch (e3) { titleEl.focus(); }
+        var reduceKey = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var meta = titleEl.closest('.report-meta') || titleEl;
+        meta.scrollIntoView(reduceKey ? { block: 'start' } : { behavior: 'smooth', block: 'start' });
+      }
+
       /* Load PDF */
       container.dataset.pdf = url;
       loadPdf(url).then(function () {
+        if (byKey) return;   /* 키보드는 위에서 이미 제목 줄로 옮겼다 */
         container.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     });

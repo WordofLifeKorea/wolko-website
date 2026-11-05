@@ -72,5 +72,5 @@ test('신청서 번호 칸도 같은 규칙으로 고치고, 숫자를 고쳤으
   assert.match(src, /번호를 ' \+ fixed \+ ' 로 고쳤어요\. 맞는지 확인해 주세요\./);
   assert.match(src, /We corrected the number to /);
   const page = readFileSync(new URL('../src/pages/camp-register/index.astro', import.meta.url), 'utf8');
-  assert.match(page, /phone-input\.js\?v=3/);
+  assert.match(page, /phone-input\.js\?v=4/);
 });

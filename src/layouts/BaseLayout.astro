@@ -25,6 +25,8 @@ const {
 } = Astro.props;
 // 불러오는 중 · 처리 중 덮개(wolko-busy.js)는 포탈에서만 — 공개 홈페이지(랜딩 · 하위 페이지)에는 띄우지 않는다
 const isPortal = /^\/portal(\/|$)/.test(Astro.url.pathname);
+// 바닥글 연도 — 빌드할 때의 올해가 저절로 들어간다(사용자 결정 2026-11-05)
+const year = new Date().getFullYear();
 ---
 
 <!DOCTYPE html>
@@ -57,6 +59,8 @@ const isPortal = /^\/portal(\/|$)/.test(Astro.url.pathname);
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
 </head>
 <body>
+  <!-- 본문 바로가기 — 키보드로 들어오면 첫 Tab 에 보이고, 누르면 메뉴를 건너 본문(main#main)으로 간다 -->
+  <a class="skip-link" href="#main"><span class="wl-ko">본문 바로가기</span><span class="wl-en">Skip to main content</span></a>
 
   <!-- NAV -->
   <nav class={`nav${whiteNav ? ' always-white' : ''}${languageOnlyNav ? ' language-only' : ''}`} id="mainNav">
@@ -65,10 +69,10 @@ const isPortal = /^\/portal(\/|$)/.test(Astro.url.pathname);
     </a>
     <ul class="nav-menu">
       <li class="nav-item">
-        <a href="/" class={`nav-link${activeNav === 'home' ? ' active' : ''}`}>HOME</a>
+        <a href="/" class={`nav-link${activeNav === 'home' ? ' active' : ''}`} aria-current={activeNav === 'home' ? 'true' : undefined}>HOME</a>
       </li>
       <li class="nav-item">
-        <a href="/about" class={`nav-link has-dropdown${activeNav === 'about' ? ' active' : ''}`}>
+        <a href="/about" class={`nav-link has-dropdown${activeNav === 'about' ? ' active' : ''}`} aria-current={activeNav === 'about' ? 'true' : undefined}>
           <span class="wl-ko">소개</span><span class="wl-en">About</span>
         </a>
         <ul class="nav-dropdown">
@@ -78,7 +82,7 @@ const isPortal = /^\/portal(\/|$)/.test(Astro.url.pathname);
         </ul>
       </li>
       <li class="nav-item">
-        <a href="/ministry" data-direct-link class={`nav-link has-dropdown${activeNav === 'ministry' ? ' active' : ''}`}>
+        <a href="/ministry" data-direct-link class={`nav-link has-dropdown${activeNav === 'ministry' ? ' active' : ''}`} aria-current={activeNav === 'ministry' ? 'true' : undefined}>
           <span class="wl-ko">사역</span><span class="wl-en">Ministry</span>
         </a>
         <ul class="nav-dropdown">
@@ -89,7 +93,7 @@ const isPortal = /^\/portal(\/|$)/.test(Astro.url.pathname);
         </ul>
       </li>
       <li class="nav-item">
-        <a href="/mission-report" class={`nav-link has-dropdown${activeNav === 'connect' ? ' active' : ''}`}>
+        <a href="/mission-report" class={`nav-link has-dropdown${activeNav === 'connect' ? ' active' : ''}`} aria-current={activeNav === 'connect' ? 'true' : undefined}>
           <span class="wl-ko">소통</span><span class="wl-en">Connect</span>
         </a>
         <ul class="nav-dropdown">
@@ -100,7 +104,7 @@ const isPortal = /^\/portal(\/|$)/.test(Astro.url.pathname);
         </ul>
       </li>
       <li class="nav-item">
-        <a href="/give" class={`nav-link has-dropdown${activeNav === 'give' ? ' active' : ''}`}>
+        <a href="/give" class={`nav-link has-dropdown${activeNav === 'give' ? ' active' : ''}`} aria-current={activeNav === 'give' ? 'true' : undefined}>
           <span class="wl-ko">후원</span><span class="wl-en">Give</span>
         </a>
         <ul class="nav-dropdown">
@@ -108,26 +112,29 @@ const isPortal = /^\/portal(\/|$)/.test(Astro.url.pathname);
         </ul>
       </li>
       <li class="nav-item">
-        <a href="/location" class={`nav-link${activeNav === 'location' ? ' active' : ''}`}>
+        <a href="/location" class={`nav-link${activeNav === 'location' ? ' active' : ''}`} aria-current={activeNav === 'location' ? 'true' : undefined}>
           <span class="wl-ko">오시는길</span><span class="wl-en">Location</span>
         </a>
       </li>
     </ul>
     <div class="nav-right">
-      <div class="lang-toggle" id="langToggle">
-        <div class="lang-slider" id="langSlider"></div>
-        <div class="lang-side is-active" id="langKo">
-          <img src="/images/flags/kr.svg" alt="KR">
+      <!-- 언어 단추: 누르면 영어 화면이 켜지고(aria-pressed=true) 다시 누르면 한국어. 이름은 언어를 바꿔도 같다 -->
+      <button type="button" class="lang-toggle" id="langToggle" aria-pressed="false">
+        <span class="lang-slider" id="langSlider" aria-hidden="true"></span>
+        <span class="lang-side is-active" id="langKo" aria-hidden="true">
+          <img src="/images/flags/kr.svg" alt="">
           <span>KO</span>
-        </div>
-        <div class="lang-side is-inactive" id="langEn">
-          <img src="/images/flags/us.svg?v=2" alt="US">
+        </span>
+        <span class="lang-side is-inactive" id="langEn" aria-hidden="true">
+          <img src="/images/flags/us.svg?v=2" alt="">
           <span>EN</span>
-        </div>
-      </div>
-      <div class="nav-hamburger" id="hamburger" onclick="toggleMobile()">
-        <span></span><span></span><span></span>
-      </div>
+        </span>
+        <span class="sr-only" lang="en">English</span>
+      </button>
+      <button type="button" class="nav-hamburger" id="hamburger" aria-controls="mobileMenu" aria-expanded="false" onclick="toggleMobile()">
+        <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+        <span class="sr-only"><span class="wl-ko">메뉴</span><span class="wl-en">Menu</span></span>
+      </button>
     </div>
   </nav>
 
@@ -140,13 +147,13 @@ const isPortal = /^\/portal(\/|$)/.test(Astro.url.pathname);
     <div class="mobile-menu-divider"></div>
 
     <div class="mobile-menu-item">
-      <button class="mobile-parent" onclick="toggleMobileSub(this)">
+      <button class="mobile-parent" type="button" onclick="toggleMobileSub(this)" aria-controls="mobileAboutSub" aria-expanded="false">
         <span><span class="wl-ko">소개</span><span class="wl-en">About</span></span>
-        <span class="mobile-parent-chevron">
+        <span class="mobile-parent-chevron" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="#004f68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </span>
       </button>
-      <ul class="mobile-sub">
+      <ul class="mobile-sub" id="mobileAboutSub">
         <li><a href="/about"><span class="wl-ko">월코소개</span><span class="wl-en">About WOLKO</span></a></li>
         <li><a href="/people"><span class="wl-ko">섬기는이</span><span class="wl-en">Our Team</span></a></li>
         <li><a href="/endorsements"><span class="wl-ko">추천사</span><span class="wl-en">Endorsements</span></a></li>
@@ -172,13 +179,13 @@ const isPortal = /^\/portal(\/|$)/.test(Astro.url.pathname);
 
     <div class="mobile-menu-divider"></div>
     <div class="mobile-menu-item">
-      <button class="mobile-parent" onclick="toggleMobileSub(this)">
+      <button class="mobile-parent" type="button" onclick="toggleMobileSub(this)" aria-controls="mobileConnectSub" aria-expanded="false">
         <span><span class="wl-ko">소통</span><span class="wl-en">Connect</span></span>
-        <span class="mobile-parent-chevron">
+        <span class="mobile-parent-chevron" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="#004f68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </span>
       </button>
-      <ul class="mobile-sub">
+      <ul class="mobile-sub" id="mobileConnectSub">
         <li><a href="/contact"><span class="wl-ko">문의</span><span class="wl-en">Contact</span></a></li>
         <li><a href="/mission-report"><span class="wl-ko">선교보고</span><span class="wl-en">Mission Reports</span></a></li>
         <li><a href="/camp-register"><span class="wl-ko">캠프 신청</span><span class="wl-en">Camp Register</span></a></li>
@@ -188,13 +195,13 @@ const isPortal = /^\/portal(\/|$)/.test(Astro.url.pathname);
 
     <div class="mobile-menu-divider"></div>
     <div class="mobile-menu-item">
-      <button class="mobile-parent" onclick="toggleMobileSub(this)">
+      <button class="mobile-parent" type="button" onclick="toggleMobileSub(this)" aria-controls="mobileGiveSub" aria-expanded="false">
         <span><span class="wl-ko">후원</span><span class="wl-en">Give</span></span>
-        <span class="mobile-parent-chevron">
+        <span class="mobile-parent-chevron" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="#004f68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </span>
       </button>
-      <ul class="mobile-sub">
+      <ul class="mobile-sub" id="mobileGiveSub">
         <li><a href="/give"><span class="wl-ko">월코후원</span><span class="wl-en">Support WOLKO</span></a></li>
       </ul>
     </div>
@@ -205,10 +212,12 @@ const isPortal = /^\/portal(\/|$)/.test(Astro.url.pathname);
     </div>
   </div>
 
-  <!-- 페이지 콘텐츠 -->
-  <div id={langRoot}>
-    <slot />
-  </div>
+  <!-- 페이지 콘텐츠 — 본문 바로가기의 도착점. 페이지 안에는 main 을 따로 두지 않는다(한 페이지에 main 은 하나) -->
+  <main id="main" tabindex="-1">
+    <div id={langRoot}>
+      <slot />
+    </div>
+  </main>
 
   <!-- FOOTER -->
   <footer class="footer">
@@ -250,7 +259,7 @@ const isPortal = /^\/portal(\/|$)/.test(Astro.url.pathname);
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2025 Word of Life Korea. All rights reserved.</span>
+      <span>© {year} Word of Life Korea. All rights reserved.</span>
       <span>경기도 평택시 경기대로 1407, 2층 | 제주시 애월읍 광상로 622</span>
     </div>
   </footer>
@@ -310,6 +319,9 @@ const isPortal = /^\/portal(\/|$)/.test(Astro.url.pathname);
         koSide.className = 'lang-side is-active';
         enSide.className = 'lang-side is-inactive';
       }
+      // 화면 읽기 프로그램·번역기가 지금 언어를 알도록 문서 언어와 단추 상태도 함께 바꾼다
+      document.documentElement.lang = en ? 'en' : 'ko';
+      document.getElementById('langToggle')?.setAttribute('aria-pressed', en ? 'true' : 'false');
       syncLangSliderPosition();
       try { localStorage.setItem('wolko-lang', en ? 'en' : 'ko'); } catch(e) {}
       restoreHashScroll();
@@ -328,11 +340,21 @@ const isPortal = /^\/portal(\/|$)/.test(Astro.url.pathname);
         target.scrollIntoView({ block: 'start' });
       });
     }
-    function closeMobileMenu() {
+    // 본문 바로가기: 주소(#main)를 바꾸지 않고 초점만 본문으로 옮긴다 — 주소에 #main 이 남으면 언어를 바꿀 때 맨 위로 튀기 때문
+    document.querySelector('.skip-link')?.addEventListener('click', function(e) {
+      const main = document.getElementById('main');
+      if (!main) return;
+      e.preventDefault();
+      main.focus();
+    });
+
+    const hamburger = document.getElementById('hamburger');
+    function closeMobileMenu(leaveFocus) {
       const menu = document.getElementById('mobileMenu');
       const backdrop = document.getElementById('menuBackdrop');
       menu.classList.remove('open');
       backdrop.classList.remove('open');
+      hamburger?.setAttribute('aria-expanded', 'false');
       clearTimeout(window.__mobileMenuHideTimer);
       window.__mobileMenuHideTimer = setTimeout(function() {
         if (!menu.classList.contains('open')) {
@@ -340,7 +362,12 @@ const isPortal = /^\/portal(\/|$)/.test(Astro.url.pathname);
           backdrop.style.display = 'none';
         }
       }, 200);
-      document.querySelectorAll('.mobile-menu-item.is-open').forEach(function(el) { el.classList.remove('is-open'); });
+      document.querySelectorAll('.mobile-menu-item.is-open').forEach(function(el) {
+        el.classList.remove('is-open');
+        el.querySelector('[aria-expanded]')?.setAttribute('aria-expanded', 'false');
+      });
+      // 초점이 닫히는 메뉴 안에 있었으면 갈 곳을 잃지 않게 메뉴 단추로 돌려보낸다
+      if (!leaveFocus && hamburger && menu.contains(document.activeElement)) hamburger.focus({ preventScroll: true });
     }
 
     window.toggleMobile = function() {
@@ -364,8 +391,28 @@ const isPortal = /^\/portal(\/|$)/.test(Astro.url.pathname);
         void menu.offsetWidth;
         menu.classList.add('open');
         backdrop.classList.add('open');
+        hamburger?.setAttribute('aria-expanded', 'true');
+        // 열면 메뉴 첫 링크로 초점을 옮긴다(키보드·화면 읽기 프로그램이 바로 메뉴를 고를 수 있게)
+        menu.querySelector('a[href], button')?.focus({ preventScroll: true });
       }
     };
+    // Esc 로 닫고 초점을 메뉴 단추로 돌려보낸다
+    document.addEventListener('keydown', function(e) {
+      if (e.key !== 'Escape') return;
+      const menu = document.getElementById('mobileMenu');
+      if (!menu.classList.contains('open')) return;
+      closeMobileMenu();
+      hamburger?.focus({ preventScroll: true });
+    });
+    // 메뉴 끝에서 Tab 으로 본문에 나가면 닫는다 — 덮인 화면 뒤에 초점이 숨지 않게.
+    // 초점이 갈 곳이 정해진 경우(relatedTarget)만 본다. 손가락으로 빈 곳을 눌러 초점이 잠깐 사라질 때는 닫지 않는다.
+    // 위 메뉴 막대(언어·메뉴 단추)로 가는 것은 덮인 곳이 아니므로 열어 둔다(지금처럼 메뉴를 연 채 언어를 바꿀 수 있게).
+    document.getElementById('mobileMenu').addEventListener('focusout', function(e) {
+      const menu = e.currentTarget;
+      const to = e.relatedTarget;
+      if (!to || !menu.classList.contains('open') || menu.contains(to) || to.closest('#mainNav')) return;
+      closeMobileMenu(true);
+    });
     // 지금 보고 있는 페이지를 메뉴에서 강조한다 — 주소가 가장 길게 맞는 링크 하나(하위 페이지도 포함), 그 묶음 제목도 함께
     (function markCurrent() {
       const here = location.pathname.replace(/\/+$/, '') || '/';

@@ -72,8 +72,8 @@ const REFERRAL_OPTIONS = [
   activeNav="connect"
 >
 
-<link rel="stylesheet" href="/phone-input.css?v=5">
-<script is:inline src="/phone-input.js?v=3" defer></script>
+<link rel="stylesheet" href="/phone-input.css?v=6">
+<script is:inline src="/phone-input.js?v=4" defer></script>
 <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
 <script is:inline src="/wolko-datepicker.js?v=4" defer></script>
 <style is:global>
@@ -189,7 +189,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
 .crp-status-open     { color: var(--c-deep); }
 .crp-status-upcoming { color: var(--c-body); }
 .crp-status-full,
-.crp-status-closed   { color: #7d8f98; }
+.crp-status-closed   { color: var(--c-muted); } /* 흰 카드 위 5.0:1 */
 
 .crp-reg-title {
   font-family: var(--f-serif); font-size: 24px; font-weight: 700;
@@ -249,14 +249,14 @@ html, body { overflow-x: hidden; max-width: 100%; }
 .crp-cap-bar-row .crp-cap-track { height: 4px; }
 .crp-cap-bar-count { min-width: 52px; text-align: right; font-size: 13px; font-weight: 700; color: var(--c-navy); font-variant-numeric: tabular-nums; }
 
-/* 준비중 / 비활성 상태 — 회색 */
-.crp-cap--gray .crp-cap-info { opacity: 0.75; }
+/* 준비중 / 비활성 상태 — 회색. 글자는 투명도 대신 --c-muted 로 흐리게 해 흰 바탕 4.5:1 이상을 지킨다(네모 표시만 옅게) */
 .crp-cap--gray .crp-cap-info strong { font-size: 14px; color: var(--c-muted); }
 .crp-cap--gray .crp-cap-fill-m,
 .crp-cap--gray .crp-cap-fill-f,
 .crp-cap--gray .crp-cap-fill { display: none; }
 .crp-cap--gray .crp-cap-bar-label,
-.crp-cap--gray .crp-cap-bar-count { opacity: 0.55; }
+.crp-cap--gray .crp-cap-bar-count { color: var(--c-muted); }
+.crp-cap--gray .crp-cap-bar-label::before { opacity: 0.55; }
 
 /* ── REG BUTTONS ── */
 .crp-reg-btn {
@@ -276,7 +276,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
 .crp-reg-btn-outline:hover { background: var(--c-fill); }
 .crp-reg-btn-disabled {
   justify-content: center;
-  background: #eef2f4; border-color: #e1e8eb; color: #7d8f98;
+  background: #eef2f4; border-color: #e1e8eb; color: var(--c-sub);   /* 회색 바탕 위 6.1:1 — 잠김은 회색 바탕 · 가운데 글 · 화살표 없음 · 기본 커서로 알린다 */
   cursor: default; pointer-events: none;
 }
 .crp-reg-btn:disabled { cursor: default; }
@@ -386,7 +386,7 @@ body.lang-en .crp-countdown-notice {
 .crp-staff-open-btn:hover:not(:disabled) { background: var(--c-deep-dk); border-color: var(--c-deep-dk); }
 .crp-staff-open-btn:hover:not(:disabled) .crp-arrow { transform: translateX(3px); }
 .crp-staff-open-btn:focus-visible { outline: 2px solid var(--c-deep); outline-offset: 3px; }
-.crp-staff-open-btn:disabled { background: #eef2f4; border-color: #e1e8eb; color: #7d8f98; cursor: default; }
+.crp-staff-open-btn:disabled { background: #eef2f4; border-color: #e1e8eb; color: var(--c-sub); cursor: default; } /* 회색 바탕 위 6.1:1 (--c-muted·--c-label 은 4.4:1이라 모자람) */
 
 /* ── 스태프 지원서: 섬길 수 있는 캠프 목록 ── */
 .staff-camp-group { width: 100%; }
@@ -599,12 +599,12 @@ body.lang-en .crp-countdown-notice {
 @supports not selector(::-webkit-scrollbar) {
   .crp-modal-card, #staffModal .crp-staff-modal-body { scrollbar-width: thin; scrollbar-color: rgba(0,79,104,0.32) transparent; }
 }
-/* 닫기 — 40px 네모, 가는 테두리. 스크롤해도 오른쪽 위에 붙어 있다 */
+/* 닫기 — 44px 네모(손가락으로 누르는 자리), 가는 테두리. 스크롤해도 오른쪽 위에 붙어 있다 */
 .crp-modal-close {
   position: sticky; top: 16px; z-index: 40;
-  margin: 16px 16px -56px auto; /* 버튼 높이(40)+위 여백(16)만큼 겹쳐서 헤더 위 흰 띠가 생기지 않게 */
+  margin: 16px 16px -60px auto; /* 버튼 높이(44)+위 여백(16)만큼 겹쳐서 헤더 위 흰 띠가 생기지 않게 */
   /* wolko-ui.css의 전역 버튼 최소 높이 때문에 늘어나지 않도록 가로·세로를 같이 고정 */
-  width: 40px !important; height: 40px !important; min-width: 40px !important; min-height: 40px !important;
+  width: 44px !important; height: 44px !important; min-width: 44px !important; min-height: 44px !important;
   padding: 0; flex-shrink: 0; border-radius: 2px;
   border: 1px solid var(--c-field); background: #fff;
   cursor: pointer;
@@ -738,7 +738,7 @@ body:has(#crpModal.crp-modal--unity) .crp-refund-section--deposit { display: non
 .crp-field label .req { color: var(--c-deep); margin-left: 2px; font-weight: 700; }
 .crp-field input:not([type="checkbox"]):not([type="radio"]), .crp-field select, .crp-field textarea {
   border: 1px solid var(--c-field); border-radius: 2px;
-  padding: 0 14px; font-size: 15px; font-family: var(--f-sans);
+  padding: 0 14px; font-size: 16px; font-family: var(--f-sans); /* 16px 이상이어야 아이폰이 눌렀을 때 화면을 확대하지 않는다 */
   color: var(--c-ink); background-color: #fff;
   transition: border-color 0.15s, box-shadow 0.15s;
   outline: none; width: 100%; resize: vertical;
@@ -760,12 +760,12 @@ body:has(#crpModal.crp-modal--unity) .crp-refund-section--deposit { display: non
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23004f68' stroke-width='1.5' stroke-linecap='square'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 14px center; background-size: 10px 6px;
 }
-#crpModal .ip-cc, #staffModal .ip-cc { border: 1px solid var(--c-field); border-radius: 2px; font-size: 14px; padding-left: 10px; }
+#crpModal .ip-cc, #staffModal .ip-cc { border: 1px solid var(--c-field); border-radius: 2px; font-size: 16px; padding-left: 10px; } /* 16px: 아이폰 확대 방지 */
 #crpModal .ip-cc:focus, #staffModal .ip-cc:focus { border-color: var(--c-deep); box-shadow: 0 0 0 1px var(--c-deep); }
 /* 입력 커서(캐럿)가 흰색으로 보이는 환경(OS·브라우저 다크 모드 자동 변환 등)에서도 잘 보이도록 색을 직접 지정하고, 신청 창은 라이트 모드로 고정한다 */
 .crp-reg-modal { color-scheme: light; }
 .crp-field input:not([data-datepick]), .crp-field textarea, .crp-group-participant input:not([data-datepick]) { caret-color: var(--c-deep); }
-.crp-field input::placeholder, .crp-field textarea::placeholder { color: #9aaab3; }
+.crp-field input::placeholder, .crp-field textarea::placeholder { color: var(--c-muted); opacity: 1; } /* 흰 바탕 5.0:1 */
 .staff-birth-grid { display: grid; grid-template-columns: 1.2fr 0.9fr 0.9fr; gap: 8px; }
 .crp-field input:not([type="checkbox"]):not([type="radio"]):hover, .crp-field select:hover, .crp-field textarea:hover { border-color: #9fb3bd; }
 .crp-field input:focus, .crp-field select:focus, .crp-field textarea:focus {
@@ -773,6 +773,8 @@ body:has(#crpModal.crp-modal--unity) .crp-refund-section--deposit { display: non
   box-shadow: 0 0 0 1px var(--c-deep);
 }
 .crp-field input.error, .crp-field select.error, .crp-field textarea.error { border-color: var(--c-error); box-shadow: 0 0 0 1px var(--c-error); }
+/* 오류 칸에 초점이 오면 빨간 테두리에 묻히지 않게 바깥 초점 선을 더한다(다른 단추의 초점 선과 같은 모양) */
+.crp-field input.error:focus, .crp-field select.error:focus, .crp-field textarea.error:focus { outline: 2px solid var(--c-deep); outline-offset: 2px; }
 
 /* 도움말 */
 .crp-help, .crp-birth-hint { font-size: 13px; color: var(--c-muted); line-height: 1.6; }
@@ -864,6 +866,9 @@ body:has(#crpModal.crp-modal--unity) .crp-refund-section--deposit { display: non
   outline: 2px solid var(--c-deep);
   outline-offset: 2px;
 }
+/* 동의 체크가 빠졌을 때 — 사진 동의(.is-invalid)와 같은 빨간 테두리 */
+.crp-consent input[type="checkbox"].error { border-color: var(--c-error); }
+.crp-consent:has(> input.error) { border-color: var(--c-error); box-shadow: inset 0 0 0 1px var(--c-error); }
 
 /* 장학금 / 할인 선택 */
 .crp-scholarship-options { display: grid; gap: 8px; }
@@ -1046,6 +1051,66 @@ body:has(#crpModal.crp-modal--unity) .crp-refund-section--deposit { display: non
   background: #fbf5f5; border: 1px solid #e3c2c5;
   font-size: 13.5px; line-height: 1.6; color: var(--c-error); text-align: left;
 }
+/* 오류 요약 — 개수 한 줄 + 칸 이름(글 안의 링크처럼 이어서, 누르면 그 칸으로) */
+.crp-error-summary-title { margin: 0; font-size: 14px; font-weight: 700; line-height: 1.55; color: var(--c-error); }
+.crp-error-list { margin: 6px 0 0; padding: 0; list-style: none; line-height: 1.9; word-break: keep-all; }
+.crp-error-list li { display: inline; }
+.crp-error-list li + li::before { content: '·'; margin: 0 8px; }
+#crpModal .crp-error-list a {
+  color: var(--c-error); font-weight: 600;
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px;
+  padding-block: 4px;
+}
+#crpModal .crp-error-list a:hover { text-decoration-thickness: 2px; }
+#crpModal .crp-error-list a:focus-visible { outline: 2px solid var(--c-error); outline-offset: 2px; }
+/* 칸 바로 아래 오류 문장 (흰 바탕 7.3:1) */
+.crp-field-error {
+  margin: 0; font-size: 13.5px; font-weight: 600; line-height: 1.55;
+  color: var(--c-error); word-break: keep-all; overflow-wrap: anywhere;
+}
+.crp-field-error[hidden] { display: none; }
+.crp-field-error > span { display: block; }
+.crp-field-error > span + span { margin-top: 2px; }
+.crp-consent + .crp-field-error { margin: -2px 0 12px; }
+.crp-media-consent .crp-field-error { margin-top: 10px; }
+#crpScholarshipErr { margin: 10px 0 2px; }
+#crpBestCamperErr { margin: 0 0 8px; }
+/* 오류 칸으로 옮겨 갈 때 위의 닫기 단추 · 아래 단추 줄에 가리지 않게 */
+#crpModal .crp-modal-card { scroll-padding-block: 72px 104px; }
+/* 스크립트가 초점만 옮기는 제목은 테두리를 그리지 않는다 */
+.crp-modal-title:focus, .crp-success-title:focus, .crp-refund-modal-title:focus { outline: none; }
+
+/* 임시 저장 되살림 안내 */
+.crp-restore-note {
+  margin: 20px 0 0; padding: 12px 16px;
+  background: var(--c-fill); border: 1px solid var(--c-line);
+  font-size: 13.5px; font-weight: 600; line-height: 1.6; color: var(--c-body); word-break: keep-all;
+}
+.crp-restore-note[hidden] { display: none; }
+
+/* 닫기 확인 — 신청서 위에 뜨는 작은 상자.
+   덮개는 신청서 카드 전체(위 X · 아래 '취소 · 신청 완료하기' 막대 포함) 위에 깔린다(z-index 50 > 카드 1).
+   예전 0.4 덮개는 진한 '신청 완료하기'와 X가 그대로 또렷해 눌러도 되는 것처럼 보여서, 신청 모달 바깥 덮개와 같은 0.62로 진하게 했다. */
+.crp-confirm {
+  position: absolute; inset: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  background: rgba(11,36,48,0.62);
+}
+.crp-confirm[hidden] { display: none; }
+.crp-confirm-box {
+  width: 100%; max-width: 420px;
+  padding: 24px 24px 20px;
+  background: #fff; border-radius: 2px;
+  border-top: 2px solid var(--c-navy);
+  box-shadow: 0 16px 40px rgba(11,36,48,0.24);
+  font-family: var(--f-sans); color: var(--c-ink); word-break: keep-all;
+}
+.crp-confirm-title { margin: 0; font-family: var(--f-serif); font-size: 18px; font-weight: 700; line-height: 1.4; letter-spacing: -.02em; color: var(--c-navy); }
+.crp-confirm-desc { margin: 8px 0 0; font-size: 14px; line-height: 1.7; color: var(--c-body); }
+.crp-confirm-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 12px; margin-top: 20px; }
+.crp-confirm-actions .crp-cancel-btn,
+.crp-confirm-actions .crp-submit { width: 100%; }
 .crp-success-wrap { padding: 36px 40px 40px; }
 .crp-success-icon {
   width: 48px; height: 48px;
@@ -1120,7 +1185,7 @@ body:has(#crpModal.crp-modal--unity) .crp-refund-section--deposit { display: non
 .crp-group-participants:empty { display: none; }
 .crp-group-participant { display: grid; grid-template-columns: 28px minmax(0,1fr) 150px 112px; gap: 8px; align-items: center; }
 .crp-group-participant-num { color: var(--c-label); font-size: 13px; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums; }
-.crp-group-participant input, .crp-group-participant select { width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; }
+.crp-group-participant input, .crp-group-participant select { width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; } /* 16px: 아이폰 확대 방지 */
 @media (max-width: 560px) {
   /* 모바일: 1줄 번호·이름, 2줄 생년월일·성별 (자동 배치에 맡기면 성별 칸이 번호 칸으로 밀려 좁아진다) */
   .crp-group-participant { grid-template-columns: 24px minmax(0,1fr) 104px; gap: 6px; }
@@ -1153,7 +1218,7 @@ body:has(#crpModal.crp-modal--unity) .crp-refund-section--deposit { display: non
 .crp-gsch-opt input { width: 16px; height: 16px; min-height: 0 !important; padding: 0; margin: 0; accent-color: var(--c-deep); flex-shrink: 0; }
 .crp-gsch-opt:has(input:checked) { border-color: var(--c-deep); background: var(--c-fill); box-shadow: inset 0 0 0 1px var(--c-deep); color: var(--c-navy); font-weight: 700; }
 .crp-gsch-opt:has(input:disabled) { opacity: .45; cursor: not-allowed; }
-.crp-gsch-sibling { width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; }
+.crp-gsch-sibling { width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; } /* 16px: 아이폰 확대 방지 */
 .crp-gsch-sibling[hidden] { display: none; }
 
 /* 환불 기준 tooltip */
@@ -1167,6 +1232,7 @@ body:has(#crpModal.crp-modal--unity) .crp-refund-section--deposit { display: non
 .crp-refund-modal-overlay[hidden] { display: none; }
 .crp-refund-modal-overlay:not([hidden]) { display: flex; }
 .crp-refund-modal {
+  position: relative;
   background: #fff; border-radius: 2px;
   width: 100%; max-width: 480px;
   display: flex; flex-direction: column;
@@ -1175,14 +1241,17 @@ body:has(#crpModal.crp-modal--unity) .crp-refund-section--deposit { display: non
   font-family: var(--f-sans);
 }
 .crp-refund-modal-head {
-  padding: 22px 24px 16px;
+  padding: 22px 72px 16px 24px; /* 오른쪽 위 닫기(X) 자리 */
   border-bottom: 2px solid var(--c-navy);
   flex-shrink: 0;
 }
+.crp-refund-modal > .crp-refund-close { position: absolute; top: 18px; right: 20px; } /* 44px 로 커져도 X 의 가운데는 전(36px, 위 22 · 오른쪽 24)과 같은 자리 */
+.crp-refund-close:focus-visible { outline: 2px solid var(--c-deep); outline-offset: 2px; }
+.crp-refund-modal-body:focus-visible { outline: 2px solid var(--c-deep); outline-offset: -2px; }
 .crp-refund-modal-title { font-family: var(--f-serif); font-size: 18px; font-weight: 700; letter-spacing: -.02em; color: var(--c-navy); }
 .crp-refund-modal-hint { font-size: 13px; color: var(--c-muted); margin-top: 6px; line-height: 1.55; }
 .crp-refund-close {
-  flex-shrink: 0; width: 36px !important; height: 36px !important; min-width: 36px; min-height: 36px !important;
+  flex-shrink: 0; width: 44px !important; height: 44px !important; min-width: 44px; min-height: 44px !important; /* 손가락으로 누르는 자리 44px */
   padding: 0; border: 1px solid var(--c-field); border-radius: 2px; background: #fff; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   font-size: 20px; line-height: 1; color: var(--c-navy);
@@ -1297,7 +1366,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
     height: 100%; max-height: none;
     border-radius: 0; box-shadow: none;
   }
-  .crp-modal-close { margin: 12px 12px -52px auto; top: 12px; }
+  .crp-modal-close { margin: 12px 12px -56px auto; top: 12px; } /* 44px + 위 12px */
   .crp-modal-head,
   .crp-staff-modal-head { padding: 20px 20px 18px; }
   .crp-modal-badge, .crp-modal-title, #staffModal .crp-staff-modal-desc { padding-right: 52px; }
@@ -1306,6 +1375,17 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
   .crp-modal-summary { padding: 18px 20px 0; }
   .crp-modal-bank { padding: 12px 16px 2px; }
   .crp-modal-bank-top { flex-wrap: wrap; }
+  /* 계좌번호 복사: 스크롤하면 오른쪽 위에 붙어 있는 X(카드 오른쪽 끝에서 12~56px) 밑으로 지나가며 글자가 가렸다.
+     단추를 X 자리에서 비켜 두고(카드 끝에서 64px 안쪽), 보이는 높이(36px)는 그대로 눌리는 자리만 위아래 44px 로 */
+  .crp-acct-copy { position: relative; margin-right: 28px; }
+  .crp-acct-copy::after { content: ''; position: absolute; left: -1px; right: -1px; top: -5px; bottom: -5px; } /* 테두리 1px 바깥 기준 위아래 4px → 44px */
+  /* 선택칸 글자가 16px 로 커져 좁은 칸(성별 · 월 · 일 · 학생 성별)의 글자가 화살표에 잘리지 않게 — 오른쪽 화살표 자리를 38px → 30px */
+  #crpModal .crp-field select, #staffModal .crp-field select { padding-right: 30px; background-position: right 12px center; }
+  /* 국가번호 칸: 글자가 16px 로 커져 320px 에서 번호 칸 예시 글자(010-0000-0000)가 잘리던 것 — 칸 폭을 100px 로 고정하고 화살표 자리를 줄인다
+     (스태프 지원서의 '선택칸 폭 100% !important' 규칙보다 앞서야 해서 !important) */
+  #crpModal .crp-field .ip-cc, #staffModal .crp-field .ip-cc { width: 100px !important; min-width: 0; padding: 0 26px 0 10px; background-position: right 10px center; }
+  /* 사진·영상 공유 동의(동의 / 동의 안 함): 손가락으로 누르는 자리 높이 44px */
+  .crp-media-options label { min-height: 44px; }
   .crp-acct-row { grid-template-columns: 72px minmax(0, 1fr); }
   .crp-acct-row dd.crp-modal-bank-acct { font-size: 18px; }
   .crp-waitlist-notice { margin: 16px 20px 0; }
@@ -1313,6 +1393,9 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
   .crp-tab-sub { display: none !important; }
   #lang-root .crp-modal-card .crp-tab-sub,
   body .crp-modal-card .crp-tab-sub { display: none !important; }
+  /* 영어 화면: 언어 잠금 규칙(span.wl-en 보이기)이 위 숨김을 이겨 작은 설명이 다시 나와 탭 글자가 빽빽했다 — 한국어 화면처럼 숨긴다 */
+  #lang-root.lang-en .crp-modal-card span.crp-tab-sub,
+  body.lang-en .crp-modal-card span.crp-tab-sub { display: none !important; }
   .crp-form-wrap { padding: 0 20px; }
   #staffFormWrap { padding-top: 20px; }
   .crp-form-grid { grid-template-columns: minmax(0, 1fr); gap: 18px; } /* 1fr 은 안쪽 내용 최소폭만큼 늘어나 모바일에서 가로로 넘쳤다 */
@@ -1323,7 +1406,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
     margin: 24px -20px 0;
     padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
   }
-  .crp-form-actions, .staff-form-actions { grid-template-columns: 96px minmax(0, 1fr); }
+  /* '취소'가 '신청 완료하기'에 바로 붙어 잘못 눌리지 않게 사이를 16px 로 (취소를 눌러도 입력이 있으면 확인 상자가 먼저 뜬다) */
+  .crp-form-actions, .staff-form-actions { grid-template-columns: 96px minmax(0, 1fr); gap: 16px; }
   .staff-draft-btn { padding: 0 12px; }
   .crp-consent { padding: 13px 14px; }
   .crp-scholarship-option--count { align-items: stretch; grid-template-columns: 1fr; gap: 10px; }
@@ -1928,21 +2012,22 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
   </div>
 
   <!-- ── 신청 모달 ── -->
-  <div id="crpModal" class="crp-reg-modal" hidden aria-modal="true" role="dialog">
+  <div id="crpModal" class="crp-reg-modal" hidden aria-modal="true" role="dialog" aria-labelledby="crpModalTitle">
     <div class="crp-modal-overlay" id="crpOverlay"></div>
     <div class="crp-modal-card">
-      <button class="crp-modal-close" id="crpCloseBtn" aria-label="닫기">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+      <button type="button" class="crp-modal-close" id="crpCloseBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" focusable="false">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
+        <span class="crp-sr"><span class="wl-ko">닫기</span><span class="wl-en">Close</span></span>
       </button>
 
-      <!-- 헤더 — 기관 표기 + 캠프 이름 -->
+      <!-- 헤더 — 기관 표기 + 캠프 이름 (열면 초점이 캠프 이름으로 온다) -->
       <div class="crp-modal-head">
         <div class="crp-modal-badge">
           <span class="wl-ko">Word of Life Korea · 캠프 참가 신청서</span><span class="wl-en">Word of Life Korea · Camp Application Form</span>
         </div>
-        <div class="crp-modal-title" id="crpModalTitle"></div>
+        <h2 class="crp-modal-title" id="crpModalTitle" tabindex="-1"></h2>
       </div>
 
       <!-- 신청 현황 + 입금 계좌 -->
@@ -2007,6 +2092,10 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
 
       <!-- 폼 -->
       <div class="crp-form-wrap" id="crpFormWrap">
+        <!-- 이 탭에 임시 저장해 둔 내용을 되살렸을 때 한 줄 안내 -->
+        <p class="crp-restore-note" id="crpRestoreNote" role="status" hidden>
+          <span class="wl-ko">이 탭에 임시 저장된 내용을 불러왔어요. 환불 계좌와 동의는 저장되지 않으니 다시 확인해 주세요.</span><span class="wl-en">We restored what you'd entered in this tab. Refund account details and consents aren't saved, so please check them again.</span>
+        </p>
         <form id="crpForm" novalidate>
           <input type="hidden" id="crpCampId">
           <input type="hidden" id="crpCampCap">
@@ -2021,28 +2110,35 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
             </div>
             <div class="crp-form-grid crp-form-grid--contact">
               <div class="crp-field">
-                <label><span class="wl-ko">캠퍼 이름</span><span class="wl-en">Camper Name</span> <span class="req">*</span></label>
-                <input id="crpName" class="wl-tall" name="name" data-ph-ko="홍길동" data-ph-en="Full name" placeholder="홍길동">
+                <label for="crpName"><span class="wl-ko">캠퍼 이름</span><span class="wl-en">Camper Name</span> <span class="req">*</span></label>
+                <input id="crpName" class="wl-tall" name="name" autocomplete="off" data-ph-ko="홍길동" data-ph-en="Full name" placeholder="홍길동">
+                <p class="crp-field-error" id="crpNameErr" hidden></p>
               </div>
               <div class="crp-field">
-                <label><span class="wl-ko">연락 받을 번호</span><span class="wl-en">Phone number to reach you</span> <span class="req">*</span></label>
-                <input id="crpPhone" class="wl-tall" name="phone" data-intl-phone placeholder="010-0000-0000">
+                <label for="crpPhone"><span class="wl-ko">연락 받을 번호</span><span class="wl-en">Phone number to reach you</span> <span class="req">*</span></label>
+                <input id="crpPhone" class="wl-tall" name="phone" autocomplete="tel" data-intl-phone placeholder="010-0000-0000">
+                <p class="crp-field-error" id="crpPhoneErr" hidden></p>
               </div>
               <div class="crp-field">
-                <label><span class="wl-ko">성별</span><span class="wl-en">Gender</span> <span class="req">*</span></label>
+                <label for="crpGender"><span class="wl-ko">성별</span><span class="wl-en">Gender</span> <span class="req">*</span></label>
                 <select id="crpGender" class="wl-tall" name="gender" data-opt-ko="— 선택 —" data-opt-en="— Select —">
                   <option value="">— 선택 —</option>
                   <option value="male" data-ko="남학생" data-en="Male">남학생</option>
                   <option value="female" data-ko="여학생" data-en="Female">여학생</option>
                 </select>
+                <p class="crp-field-error" id="crpGenderErr" hidden></p>
               </div>
               <div class="crp-field crp-field--full" id="crpBirthField" hidden>
-                <label><span class="wl-ko">생년월일</span><span class="wl-en">Date of Birth</span> <span class="req">*</span></label>
-                <div class="crp-birth-grid">
-                  <select id="crpBirthYear" class="wl-tall" name="birthYear" data-opt-ko="년도" data-opt-en="Year"><option value="">년도</option></select>
-                  <select id="crpBirthMonth" class="wl-tall" name="birthMonth" data-opt-ko="월" data-opt-en="Month"><option value="">월</option></select>
-                  <select id="crpBirthDay" class="wl-tall" name="birthDay" data-opt-ko="일" data-opt-en="Day"><option value="">일</option></select>
+                <label for="crpBirthYear" id="crpBirthLabel"><span class="wl-ko">생년월일</span><span class="wl-en">Date of Birth</span> <span class="req">*</span></label>
+                <span class="crp-sr" id="crpBirthYearName"><span class="wl-ko">년도</span><span class="wl-en">Year</span></span>
+                <span class="crp-sr" id="crpBirthMonthName"><span class="wl-ko">월</span><span class="wl-en">Month</span></span>
+                <span class="crp-sr" id="crpBirthDayName"><span class="wl-ko">일</span><span class="wl-en">Day</span></span>
+                <div class="crp-birth-grid" role="group" aria-labelledby="crpBirthLabel">
+                  <select id="crpBirthYear" class="wl-tall" name="birthYear" aria-labelledby="crpBirthLabel crpBirthYearName" aria-describedby="crpBirthHint" data-opt-ko="년도" data-opt-en="Year"><option value="">년도</option></select>
+                  <select id="crpBirthMonth" class="wl-tall" name="birthMonth" aria-labelledby="crpBirthLabel crpBirthMonthName" data-opt-ko="월" data-opt-en="Month"><option value="">월</option></select>
+                  <select id="crpBirthDay" class="wl-tall" name="birthDay" aria-labelledby="crpBirthLabel crpBirthDayName" data-opt-ko="일" data-opt-en="Day"><option value="">일</option></select>
                 </div>
+                <p class="crp-field-error" id="crpBirthErr" hidden></p>
                 <p class="crp-birth-hint" id="crpBirthHint"></p>
                 <div class="crp-age-warn" id="crpAgeWarn" role="alert" hidden>
                   <p id="crpAgeWarnText"></p>
@@ -2052,16 +2148,18 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 </div>
               </div>
               <div class="crp-field crp-field--full">
-                <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span></label>
-                <input id="crpEmail" class="wl-tall" name="email" type="email" placeholder="email@example.com">
+                <label for="crpEmail"><span class="wl-ko">이메일</span><span class="wl-en">Email</span></label>
+                <input id="crpEmail" class="wl-tall" name="email" type="email" autocomplete="email" placeholder="email@example.com">
               </div>
               <div class="crp-field crp-field--full">
-                <label><span class="wl-ko">어떤 경로를 통해 월코 캠프를 알게 되었나요?</span><span class="wl-en">How did you hear about WOLKO Camp?</span> <span class="req">*</span></label>
-                <select id="crpReferral" class="wl-tall" data-opt-ko="선택" data-opt-en="Select">
+                <label for="crpReferral" id="crpReferralLabel"><span class="wl-ko">어떤 경로를 통해 월코 캠프를 알게 되었나요?</span><span class="wl-en">How did you hear about WOLKO Camp?</span> <span class="req">*</span></label>
+                <select id="crpReferral" class="wl-tall" data-opt-ko="선택" data-opt-en="Select" data-crp-name-ko="알게 된 경로" data-crp-name-en="How you heard about us">
                   <option value="" disabled selected>선택</option>
                   {REFERRAL_OPTIONS.map(o => <option value={o.value} data-ko={o.ko} data-en={o.en}>{o.ko}</option>)}
                 </select>
-                <input id="crpReferralOther" class="wl-tall crp-referral-other" maxlength="100" hidden data-ph-ko="어떤 경로였는지 적어 주세요" data-ph-en="Please tell us how" placeholder="어떤 경로였는지 적어 주세요">
+                <span class="crp-sr" id="crpReferralOtherName"><span class="wl-ko">기타 (직접 입력)</span><span class="wl-en">Other (please specify)</span></span>
+                <input id="crpReferralOther" class="wl-tall crp-referral-other" maxlength="100" hidden aria-labelledby="crpReferralLabel crpReferralOtherName" data-ph-ko="어떤 경로였는지 적어 주세요" data-ph-en="Please tell us how" placeholder="어떤 경로였는지 적어 주세요">
+                <p class="crp-field-error" id="crpReferralErr" hidden></p>
               </div>
             </div>
             <div class="crp-form-section">
@@ -2070,19 +2168,19 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
             </div>
             <div class="crp-form-grid">
               <div class="crp-field">
-                <label><span class="wl-ko">소속 교회</span><span class="wl-en">Church</span></label>
+                <label for="crpChurch"><span class="wl-ko">소속 교회</span><span class="wl-en">Church</span></label>
                 <input id="crpChurch" class="wl-tall" name="church" data-ph-ko="교회 이름" data-ph-en="Church name" placeholder="교회 이름">
               </div>
               <div class="crp-field">
-                <label><span class="wl-ko">학교</span><span class="wl-en">School</span></label>
+                <label for="crpSchool"><span class="wl-ko">학교</span><span class="wl-en">School</span></label>
                 <input id="crpSchool" class="wl-tall" name="school" data-ph-ko="학교 이름" data-ph-en="School name" placeholder="학교 이름">
               </div>
               <div class="crp-field crp-field--full">
-                <label><span class="wl-ko">비상연락처</span><span class="wl-en">Emergency Contact</span></label>
+                <label for="crpEmergency"><span class="wl-ko">비상연락처</span><span class="wl-en">Emergency Contact</span></label>
                 <input id="crpEmergency" class="wl-tall" name="emergency" data-ph-ko="보호자 이름 및 연락처" data-ph-en="Guardian name & phone" placeholder="보호자 이름 및 연락처">
               </div>
               <div class="crp-field crp-field--full">
-                <label><span class="wl-ko">특이사항</span><span class="wl-en">Special Notes</span></label>
+                <label for="crpNotes"><span class="wl-ko">특이사항</span><span class="wl-en">Special Notes</span></label>
                 <textarea id="crpNotes" name="notes" rows="4" data-ph-ko="캠프 문의사항, 알레르기, 건강 상태, 복용약 등 월코에서 꼭 알아야 할 점들을 적어주세요." data-ph-en="Questions, allergies, health conditions, medications, or anything WOLKO should know." placeholder="캠프 문의사항, 알레르기, 건강 상태, 복용약 등 월코에서 꼭 알아야 할 점들을 적어주세요."></textarea>
               </div>
             </div>
@@ -2096,52 +2194,59 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
             </div>
             <div class="crp-form-grid crp-form-grid--contact">
               <div class="crp-field">
-                <label><span class="wl-ko">담당자 이름</span><span class="wl-en">Contact Name</span> <span class="req">*</span></label>
-                <input id="crpGName" class="wl-tall" name="gName" data-ph-ko="홍길동" data-ph-en="Full name" placeholder="홍길동">
+                <label for="crpGName"><span class="wl-ko">담당자 이름</span><span class="wl-en">Contact Name</span> <span class="req">*</span></label>
+                <input id="crpGName" class="wl-tall" name="gName" autocomplete="name" data-ph-ko="홍길동" data-ph-en="Full name" placeholder="홍길동">
+                <p class="crp-field-error" id="crpGNameErr" hidden></p>
               </div>
               <div class="crp-field">
-                <label><span class="wl-ko">연락 받을 번호</span><span class="wl-en">Phone number to reach you</span> <span class="req">*</span></label>
-                <input id="crpGPhone" class="wl-tall" name="gPhone" data-intl-phone placeholder="010-0000-0000">
+                <label for="crpGPhone"><span class="wl-ko">연락 받을 번호</span><span class="wl-en">Phone number to reach you</span> <span class="req">*</span></label>
+                <input id="crpGPhone" class="wl-tall" name="gPhone" autocomplete="tel" data-intl-phone placeholder="010-0000-0000">
+                <p class="crp-field-error" id="crpGPhoneErr" hidden></p>
               </div>
               <div class="crp-field crp-field--full">
-                <label><span class="wl-ko">총 참여 인원</span><span class="wl-en">Total Participants</span> <span class="crp-unity-only"><span class="wl-ko">(지도교사 포함)</span><span class="wl-en">(leaders included)</span></span> <span class="req">*</span></label>
+                <label for="crpGCount"><span class="wl-ko">총 참여 인원</span><span class="wl-en">Total Participants</span> <span class="crp-unity-only"><span class="wl-ko">(지도교사 포함)</span><span class="wl-en">(leaders included)</span></span> <span class="req">*</span></label>
                 <select id="crpGCount" class="wl-tall" name="gCount" data-opt-ko="— 선택 —" data-opt-en="— Select —">
                   <option value="">— 선택 —</option>
                   {Array.from({length: 59}, (_, i) => i + 2).map(n => (
                     <option value={n}>{n}</option>
                   ))}
                 </select>
+                <p class="crp-field-error" id="crpGCountErr" hidden></p>
               </div>
               <div class="crp-field crp-field--full" id="crpGroupParticipantsField">
-                <label><span class="wl-ko">참가 학생 명단</span><span class="wl-en">Participant List</span> <span class="req">*</span></label>
-                <div class="crp-group-participants" id="crpGParticipants"></div>
+                <label id="crpGParticipantsLabel"><span class="wl-ko">참가 학생 명단</span><span class="wl-en">Participant List</span> <span class="req">*</span></label>
+                <div class="crp-group-participants" id="crpGParticipants" role="group" aria-labelledby="crpGParticipantsLabel"></div>
+                <p class="crp-field-error" id="crpGParticipantsErr" hidden></p>
                 <label class="crp-defer-list" for="crpGDeferList">
                   <input type="checkbox" id="crpGDeferList">
                   <span><span class="wl-ko">추후 명단 제출하겠습니다. (체크하면 지금 명단을 입력하지 않아도 신청할 수 있습니다)</span><span class="wl-en">I will submit the participant list later. (If checked, you can register now without entering names.)</span></span>
                 </label>
               </div>
               <div class="crp-field crp-field--full">
-                <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span></label>
-                <input id="crpGEmail" class="wl-tall" name="gEmail" type="email" placeholder="email@example.com">
+                <label for="crpGEmail"><span class="wl-ko">이메일</span><span class="wl-en">Email</span></label>
+                <input id="crpGEmail" class="wl-tall" name="gEmail" type="email" autocomplete="email" placeholder="email@example.com">
               </div>
               <div class="crp-field crp-field--full">
-                <label><span class="wl-ko">소속 교회 / 단체</span><span class="wl-en">Church / Organization</span> <span class="req">*</span></label>
-                <input id="crpGOrg" class="wl-tall" name="gOrg" data-ph-ko="교회 또는 단체 이름" data-ph-en="Church or organization" placeholder="교회 또는 단체 이름">
-                <p class="crp-help">
+                <label for="crpGOrg"><span class="wl-ko">소속 교회 / 단체</span><span class="wl-en">Church / Organization</span> <span class="req">*</span></label>
+                <input id="crpGOrg" class="wl-tall" name="gOrg" aria-describedby="crpGOrgHelp" data-ph-ko="교회 또는 단체 이름" data-ph-en="Church or organization" placeholder="교회 또는 단체 이름">
+                <p class="crp-field-error" id="crpGOrgErr" hidden></p>
+                <p class="crp-help" id="crpGOrgHelp">
                   <span class="wl-ko">개인 다자녀의 경우 소속 단체 없이 개인 이름으로 입력하셔도 됩니다.</span>
                   <span class="wl-en">For families with multiple children, you may enter your personal name without an organization.</span>
                 </p>
               </div>
               <div class="crp-field crp-field--full">
-                <label><span class="wl-ko">어떤 경로를 통해 월코 캠프를 알게 되었나요?</span><span class="wl-en">How did you hear about WOLKO Camp?</span> <span class="req">*</span></label>
-                <select id="crpGReferral" class="wl-tall" data-opt-ko="선택" data-opt-en="Select">
+                <label for="crpGReferral" id="crpGReferralLabel"><span class="wl-ko">어떤 경로를 통해 월코 캠프를 알게 되었나요?</span><span class="wl-en">How did you hear about WOLKO Camp?</span> <span class="req">*</span></label>
+                <select id="crpGReferral" class="wl-tall" data-opt-ko="선택" data-opt-en="Select" data-crp-name-ko="알게 된 경로" data-crp-name-en="How you heard about us">
                   <option value="" disabled selected>선택</option>
                   {REFERRAL_OPTIONS.map(o => <option value={o.value} data-ko={o.ko} data-en={o.en}>{o.ko}</option>)}
                 </select>
-                <input id="crpGReferralOther" class="wl-tall crp-referral-other" maxlength="100" hidden data-ph-ko="어떤 경로였는지 적어 주세요" data-ph-en="Please tell us how" placeholder="어떤 경로였는지 적어 주세요">
+                <span class="crp-sr" id="crpGReferralOtherName"><span class="wl-ko">기타 (직접 입력)</span><span class="wl-en">Other (please specify)</span></span>
+                <input id="crpGReferralOther" class="wl-tall crp-referral-other" maxlength="100" hidden aria-labelledby="crpGReferralLabel crpGReferralOtherName" data-ph-ko="어떤 경로였는지 적어 주세요" data-ph-en="Please tell us how" placeholder="어떤 경로였는지 적어 주세요">
+                <p class="crp-field-error" id="crpGReferralErr" hidden></p>
               </div>
               <div class="crp-field crp-field--full">
-                <label><span class="wl-ko">전달 사항</span><span class="wl-en">Notes</span></label>
+                <label for="crpGNotes"><span class="wl-ko">전달 사항</span><span class="wl-en">Notes</span></label>
                 <textarea id="crpGNotes" name="gNotes" rows="4" data-ph-ko="월코에서 꼭 알아야 할 사항들을 적어주세요." data-ph-en="Please write anything WOLKO should know." placeholder="월코에서 꼭 알아야 할 사항들을 적어주세요."></textarea>
               </div>
             </div>
@@ -2153,16 +2258,19 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
           </div>
           <div class="crp-form-grid" id="crpRefundFields">
             <div class="crp-field">
-              <label><span class="wl-ko">은행명</span><span class="wl-en">Bank Name</span> <span class="req">*</span></label>
-              <input id="crpRefundBank" class="wl-tall" name="refundBank" data-ph-ko="예: 농협" data-ph-en="Example: NH Bank" placeholder="예: 농협">
+              <label for="crpRefundBank"><span class="wl-ko">은행명</span><span class="wl-en">Bank Name</span> <span class="req">*</span></label>
+              <input id="crpRefundBank" class="wl-tall" name="refundBank" autocomplete="off" data-ph-ko="예: 농협" data-ph-en="Example: NH Bank" placeholder="예: 농협">
+              <p class="crp-field-error" id="crpRefundBankErr" hidden></p>
             </div>
             <div class="crp-field">
-              <label><span class="wl-ko">예금주</span><span class="wl-en">Account Holder</span> <span class="req">*</span></label>
-              <input id="crpRefundHolder" class="wl-tall" name="refundHolder" data-ph-ko="예: 홍길동" data-ph-en="Example: Hong Gil Dong" placeholder="예: 홍길동">
+              <label for="crpRefundHolder"><span class="wl-ko">예금주</span><span class="wl-en">Account Holder</span> <span class="req">*</span></label>
+              <input id="crpRefundHolder" class="wl-tall" name="refundHolder" autocomplete="off" data-ph-ko="예: 홍길동" data-ph-en="Example: Hong Gil Dong" placeholder="예: 홍길동">
+              <p class="crp-field-error" id="crpRefundHolderErr" hidden></p>
             </div>
             <div class="crp-field crp-field--full">
-              <label><span class="wl-ko">환불 계좌번호</span><span class="wl-en">Refund Account Number</span> <span class="req">*</span></label>
-              <input id="crpRefundAccount" class="wl-tall" name="refundAccount" data-ph-ko="숫자와 하이픈을 포함해 정확히 입력해주세요." data-ph-en="Enter the account number accurately, including hyphens if needed." placeholder="숫자와 하이픈을 포함해 정확히 입력해주세요.">
+              <label for="crpRefundAccount"><span class="wl-ko">환불 계좌번호</span><span class="wl-en">Refund Account Number</span> <span class="req">*</span></label>
+              <input id="crpRefundAccount" class="wl-tall" name="refundAccount" autocomplete="off" data-ph-ko="숫자와 하이픈을 포함해 정확히 입력해주세요." data-ph-en="Enter the account number accurately, including hyphens if needed." placeholder="숫자와 하이픈을 포함해 정확히 입력해주세요.">
+              <p class="crp-field-error" id="crpRefundAccountErr" hidden></p>
             </div>
           </div>
 
@@ -2177,7 +2285,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
           </label>
 
           <div class="crp-form-section">
-            <span class="crp-form-section-label"><span class="crp-unity-hide"><span class="wl-ko">장학금 / 할인</span><span class="wl-en">Scholarship / Discounts</span></span><span class="crp-unity-only"><span class="wl-ko">참가비</span><span class="wl-en">Camp Fee</span></span></span>
+            <span class="crp-form-section-label" id="crpScholarshipSectionLabel"><span class="crp-unity-hide"><span class="wl-ko">장학금 / 할인</span><span class="wl-en">Scholarship / Discounts</span></span><span class="crp-unity-only"><span class="wl-ko">참가비</span><span class="wl-en">Camp Fee</span></span></span>
             <hr class="crp-form-section-line">
           </div>
           <div class="crp-field crp-field--full">
@@ -2249,7 +2357,9 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 <select class="crp-scholarship-count" name="scholarshipDiscountCount" data-discount="excellent_camper"></select>
               </label>
             </div>
+            <p class="crp-field-error" id="crpScholarshipErr" hidden></p>
             <label id="crpBestCamperConfirmation" class="crp-consent" hidden><input id="crpBestCamperEligible" type="checkbox"><span><strong class="wl-ko">바로 지난 캠프의 Best Camper 수상자임을 확인합니다. 그 이전 캠프 수상자는 해당하지 않습니다.</strong><strong class="wl-en">Yes, everyone claiming this was Best Camper at the camp right before this one. (Winners from earlier camps don't qualify.)</strong></span></label>
+            <p class="crp-field-error" id="crpBestCamperErr" hidden></p>
             <div class="crp-scholarship-details crp-unity-hide" id="crpScholarshipDetails" hidden>
               <div class="crp-scholarship-detail" id="crpWolbiSymeDetail" hidden>
                 <strong class="crp-scholarship-detail-title">
@@ -2258,20 +2368,22 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 </strong>
                 <div class="crp-scholarship-detail-grid">
                   <div class="crp-field">
-                    <label>
+                    <label for="crpWolbiSymeYear">
                       <span class="wl-ko">참여 연도</span>
                       <span class="wl-en">Participation Year</span>
                       <span class="req">*</span>
                     </label>
                     <select id="crpWolbiSymeYear" class="wl-tall" name="wolbiSymeYear" data-opt-ko="연도 선택" data-opt-en="Select year"></select>
+                    <p class="crp-field-error" id="crpWolbiSymeYearErr" hidden></p>
                   </div>
                   <div class="crp-field">
-                    <label>
+                    <label for="crpWolbiSymeName">
                       <span class="wl-ko">참여자 이름</span>
                       <span class="wl-en">Participant Name</span>
                       <span class="req">*</span>
                     </label>
                     <input id="crpWolbiSymeName" class="wl-tall" name="wolbiSymeName" data-ph-ko="예: 홍길동" data-ph-en="Example: John Kim" placeholder="예: 홍길동">
+                    <p class="crp-field-error" id="crpWolbiSymeNameErr" hidden></p>
                   </div>
                 </div>
               </div>
@@ -2282,7 +2394,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 </strong>
                 <div class="crp-scholarship-detail-grid">
                   <div class="crp-field">
-                    <label>
+                    <label for="crpSiblingCamp">
                       <span class="wl-ko">참여 캠프</span>
                       <span class="wl-en">Camp Attending</span>
                       <span class="req">*</span>
@@ -2292,14 +2404,16 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                       <option value="wolko" data-ko="월코 캠프" data-en="WOLKO Camp">월코 캠프</option>
                       <option value="jeju" data-ko="제주 캠프" data-en="Jeju Camp">제주 캠프</option>
                     </select>
+                    <p class="crp-field-error" id="crpSiblingCampErr" hidden></p>
                   </div>
                   <div class="crp-field">
-                    <label>
+                    <label for="crpSiblingCamperName">
                       <span class="wl-ko">함께 참여하는 캠퍼 이름</span>
                       <span class="wl-en">Sibling or Friend Camper Name</span>
                       <span class="req">*</span>
                     </label>
                     <input id="crpSiblingCamperName" class="wl-tall" name="siblingCamperName" data-ph-ko="예: 홍길동" data-ph-en="Example: John Kim" placeholder="예: 홍길동">
+                    <p class="crp-field-error" id="crpSiblingCamperNameErr" hidden></p>
                   </div>
                 </div>
               </div>
@@ -2331,8 +2445,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
           </div>
 
           <!-- 사진·영상 공유 동의 -->
-          <fieldset class="crp-media-consent" id="crpMediaConsent">
-            <div class="crp-media-question">
+          <fieldset class="crp-media-consent" id="crpMediaConsent" aria-labelledby="crpMediaQuestion" data-crp-name-ko="사진·영상 공유 동의" data-crp-name-en="Photo and video sharing">
+            <div class="crp-media-question" id="crpMediaQuestion">
               <span class="wl-ko">캠프로 참여한 아이들의 사진과 영상이 네이버 카페와 유튜브에 공유되는 것에 동의하시나요?</span>
               <span class="wl-en">Do you agree to photos and videos of the campers being shared on Naver Cafe and YouTube?</span>
             </div>
@@ -2340,6 +2454,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               <label><input type="radio" name="mediaConsent" value="yes" id="crpMediaYes"><span class="wl-ko">동의</span><span class="wl-en">Agree</span></label>
               <label><input type="radio" name="mediaConsent" value="no" id="crpMediaNo"><span class="wl-ko">동의 안 함</span><span class="wl-en">Do not agree</span></label>
             </div>
+            <p class="crp-field-error" id="crpMediaErr" hidden></p>
             <div class="crp-media-warning" id="crpMediaWarning" hidden role="status">
               <span class="wl-ko">동의하지 않으시면 캠프 중 아이들의 사진과 영상을 받아보실 수 없는 점을 미리 알려드립니다.</span>
               <span class="wl-en">Please note in advance: if you do not agree, you will not be able to receive photos and videos of your child from camp.</span>
@@ -2348,20 +2463,21 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
 
           <!-- 개인정보 동의 -->
           <label class="crp-consent">
-            <input type="checkbox" id="crpConsent">
-            <label for="crpConsent">
+            <input type="checkbox" id="crpConsent" data-crp-name-ko="개인정보 수집·이용 동의" data-crp-name-en="Privacy consent">
+            <span class="crp-consent-text">
               <strong class="wl-ko">개인정보 수집 및 이용에 동의합니다.</strong>
               <strong class="wl-en">I agree to the collection and use of personal information.</strong>
               <br>
               <span class="wl-ko crp-note">수집 항목: 이름, 연락처, 이메일, 환불 계좌 정보, 할인 해당 여부 &nbsp;·&nbsp; 목적: 캠프 신청 접수, 안내 및 환불 처리 &nbsp;·&nbsp; 보유기간: 캠프 종료 후 요청 시까지</span>
               <span class="wl-en crp-note">Items: name, phone, email, refund account information, discount eligibility &nbsp;·&nbsp; Purpose: registration processing, communication, and refunds &nbsp;·&nbsp; Retention: until deletion is requested after camp ends</span>
-            </label>
+            </span>
           </label>
+          <p class="crp-field-error" id="crpConsentErr" hidden></p>
 
           <!-- 예약금 및 캠프 참가비 확인 동의 -->
           <label class="crp-consent crp-consent--deposit">
-            <input type="checkbox" id="crpDepositConsent">
-            <label for="crpDepositConsent">
+            <input type="checkbox" id="crpDepositConsent" data-crp-name-ko="등록 확정 안내 확인" data-crp-name-en="Registration and payment">
+            <span class="crp-consent-text">
               <strong class="wl-ko crp-unity-hide">예약금과 캠프 참가비의 입금이 모두 확인된 후 캠프 등록이 최종 확정됨을 이해합니다.</strong>
               <strong class="wl-en crp-unity-hide">I understand that camp registration is finalized only after both the deposit and camp fee payments have been verified.</strong>
               <strong class="wl-ko crp-unity-only">캠프 참가비 입금이 확인된 후 캠프 등록이 최종 확정됨을 이해합니다.</strong>
@@ -2371,22 +2487,25 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               <span class="wl-en crp-note crp-unity-hide">After applying, please transfer the deposit and camp fee to the provided account. If applications exceed camp capacity, participation priority will be determined by the order in which deposit payments are verified.</span>
               <span class="wl-ko crp-note crp-unity-only">연합캠프는 예약금이 없습니다. 납부 방법과 기한은 신청 후 담당자가 개별로 안내해 드립니다.</span>
               <span class="wl-en crp-note crp-unity-only">Unity Camp has no deposit. Our team will tell you how and when to pay after you apply.</span>
-            </label>
+            </span>
           </label>
+          <p class="crp-field-error" id="crpDepositConsentErr" hidden></p>
 
-          <!-- 환불 규정 동의 (클릭 시 모달 오픈) -->
+          <!-- 환불 규정 동의 — 체크하려 하면(누르기 · 스페이스) 규정 창이 열리고, 창의 '동의하기'를 눌러야 체크된다 -->
           <label class="crp-consent" id="crpRefundConsentLabel">
-            <input type="checkbox" id="crpRefundConsent" readonly>
-            <label for="crpRefundConsent" style="pointer-events:none;">
+            <input type="checkbox" id="crpRefundConsent" data-crp-name-ko="환불 규정 동의" data-crp-name-en="Refund policy">
+            <span class="crp-consent-text">
               <strong class="wl-ko">환불 규정을 읽어보았으며 이에 동의합니다.</strong>
               <strong class="wl-en">I have read and agree to the refund policy.</strong>
               <br>
-              <span class="wl-ko crp-note">클릭하면 환불 규정을 확인할 수 있습니다.</span>
-              <span class="wl-en crp-note">Click to read the full refund policy.</span>
-            </label>
+              <span class="wl-ko crp-note">체크하면 환불 규정 창이 열려요. 읽어 본 뒤 "동의하기"를 눌러 주세요.</span>
+              <span class="wl-en crp-note">Selecting this box opens the refund policy. Read it, then choose "I Agree."</span>
+            </span>
           </label>
+          <p class="crp-field-error" id="crpRefundConsentErr" hidden></p>
 
-          <div class="crp-error-msg" id="crpErrorMsg" hidden></div>
+          <!-- 오류 요약 — 제출 단추 바로 위. 고칠 칸 개수와 칸 이름(누르면 그 칸으로 간다) -->
+          <div class="crp-error-msg" id="crpErrorMsg" role="alert" hidden></div>
 
           <!-- 아래 버튼 줄 (취소 · 제출) — 모달 아래에 붙어 있다 -->
           <div class="crp-form-actions">
@@ -2406,8 +2525,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
 
       <!-- 성공 화면 -->
       <div class="crp-success-wrap" id="crpSuccessWrap" hidden>
-        <div class="crp-success-icon">✓</div>
-        <div class="crp-success-title">
+        <div class="crp-success-icon" aria-hidden="true">✓</div>
+        <div class="crp-success-title" id="crpSuccessTitle" tabindex="-1">
           <span class="wl-ko">신청이 완료되었습니다!</span>
           <span class="wl-en">Registration Complete!</span>
         </div>
@@ -2466,9 +2585,25 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
           <span class="wl-ko">추가 문의</span><span class="wl-en">Questions</span>
           <strong>010-7310-9216 &nbsp;·&nbsp; wolkorea1@gmail.com</strong>
         </div>
-        <button class="crp-success-close" id="crpSuccessClose">
+        <button type="button" class="crp-success-close" id="crpSuccessClose">
           <span class="wl-ko">닫기</span><span class="wl-en">Close</span>
         </button>
+      </div>
+    </div>
+
+    <!-- 닫기 확인 — 입력한 칸이 있을 때 X · 취소 · Esc · 바깥 누르기 전에 먼저 묻는다 (처음 초점: 계속 쓰기) -->
+    <div class="crp-confirm" id="crpCloseConfirm" hidden>
+      <div class="crp-confirm-box" role="alertdialog" aria-modal="true" aria-labelledby="crpCloseConfirmTitle" aria-describedby="crpCloseConfirmDesc">
+        <p class="crp-confirm-title" id="crpCloseConfirmTitle">
+          <span class="wl-ko">신청서를 닫을까요?</span><span class="wl-en">Close this form?</span>
+        </p>
+        <p class="crp-confirm-desc" id="crpCloseConfirmDesc">
+          <span class="wl-ko">이 탭을 닫기 전에 다시 열면 쓰던 내용이 그대로 있어요. 환불 계좌와 동의는 다시 해야 해요.</span><span class="wl-en">Reopen it before you close this tab and your answers will still be here. You'll need to fill in the refund account and consents again.</span>
+        </p>
+        <div class="crp-confirm-actions">
+          <button type="button" class="crp-cancel-btn" id="crpConfirmCloseBtn"><span class="wl-ko">닫기</span><span class="wl-en">Close</span></button>
+          <button type="button" class="crp-submit" id="crpConfirmKeepBtn"><span class="wl-ko">계속 쓰기</span><span class="wl-en">Keep editing</span></button>
+        </div>
       </div>
     </div>
   </div>
@@ -2477,20 +2612,16 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
 
 <!-- 환불 규정 모달 -->
 <div class="crp-refund-modal-overlay" id="crpRefundModalOverlay" hidden>
-  <div class="crp-refund-modal" role="dialog" aria-modal="true">
+  <div class="crp-refund-modal" role="dialog" aria-modal="true" aria-labelledby="crpRefundModalTitle">
     <div class="crp-refund-modal-head">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
-        <div>
-          <div class="crp-refund-modal-title">
-            <span class="wl-ko">환불 규정</span>
-            <span class="wl-en">Refund Policy</span>
-          </div>
-          <div class="crp-refund-modal-hint wl-ko">내용을 확인하신 후 아래 동의하기 버튼을 눌러주세요.</div>
-          <div class="crp-refund-modal-hint wl-en">Please review the policy and click Agree below.</div>
-        </div>
-        <button type="button" id="crpRefundCloseBtn" class="crp-refund-close" aria-label="닫기">×</button>
+      <div class="crp-refund-modal-title" id="crpRefundModalTitle" tabindex="-1">
+        <span class="wl-ko">환불 규정</span>
+        <span class="wl-en">Refund Policy</span>
       </div>
+      <div class="crp-refund-modal-hint wl-ko">내용을 읽어 본 뒤 아래 "동의하기"를 눌러 주세요.</div>
+      <div class="crp-refund-modal-hint wl-en">Please read the policy, then choose "I Agree" below.</div>
     </div>
+    <!-- 규정이 창보다 길면(작은 화면) 스크립트가 tabindex="0"을 달아 키보드로도 내려 읽게 한다 -->
     <div class="crp-refund-modal-body" id="crpRefundModalBody">
       <div class="crp-refund-section crp-refund-section--deposit">
         <div class="crp-refund-section-head wl-ko">예약금</div>
@@ -2521,6 +2652,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
         <span class="wl-en">I Agree</span>
       </button>
     </div>
+    <!-- 닫기(X)는 오른쪽 위에 보이지만 순서는 맨 끝 — 제목에서 Tab 한 번이면 '동의하기'로 간다 -->
+    <button type="button" id="crpRefundCloseBtn" class="crp-refund-close"><span aria-hidden="true">×</span><span class="crp-sr"><span class="wl-ko">닫기</span><span class="wl-en">Close</span></span></button>
   </div>
 </div>
 
@@ -3025,9 +3158,9 @@ async function loadCrpCapacities() {
         if (subs >= cap + WAITLIST_SIZE) {
           btn.disabled = true;
           btn.innerHTML = '<span class="wl-ko">마감</span><span class="wl-en">Closed</span>';
-          btn.style.background = 'rgba(100,116,139,0.15)';
-          btn.style.color = '#64748b';
-          btn.style.cursor = 'default';
+          // 다른 잠긴 단추(오픈 예정 · 마감)와 같은 모양으로 — 짙은 바탕 단추의 흰 글자 규칙(!important)이 남아 글자가 회색 바탕에 묻히지 않게 클래스를 바꾼다
+          btn.classList.remove('crp-reg-btn-primary');
+          btn.classList.add('crp-reg-btn-disabled');
         } else if (subs >= cap) {
           btn.innerHTML = '<span class="wl-ko">예비 신청하기 →</span><span class="wl-en">Join Waitlist →</span>';
           btn.style.background = '#0b2430'; // 예비 신청 — 평평한 짙은 남색 (모양만, 동작은 그대로)
@@ -3198,20 +3331,20 @@ function crpSyncReferralOther() {
 CRP_REFERRAL_PAIRS.forEach(function(pair) {
   document.getElementById(pair[0]).addEventListener('change', function() { this.style.borderColor = ''; crpSyncReferralOther(); });
 });
-/** 고른 경로를 글로 돌려준다. 빠졌으면 오류를 보여 주고 null. */
+/** 고른 경로를 글로 돌려준다. 빠졌으면 null — 오류 표시는 crpCollectErrors 가 한다. */
 function crpReferralText(selectId, otherId) {
   var select = document.getElementById(selectId);
   var other = document.getElementById(otherId);
-  if (!select.value || (select.value === '기타' && !other.value.trim())) {
-    var target = select.value ? other : select;
-    crpShowError(errorMsg, select.value ? '월코 캠프를 알게 된 경로를 적어 주세요.' : '월코 캠프를 알게 된 경로를 선택해 주세요.', 'Please tell us how you heard about WOLKO Camp.');
-    target.style.borderColor = '#c42a36';
-    target.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    target.focus({ preventScroll: true });
-    return null;
-  }
+  if (!select.value || (select.value === '기타' && !other.value.trim())) return null;
   if (select.value === '기타') return '기타: ' + other.value.trim();
   return select.value === '월코 캠퍼' ? '월코 캠퍼로 참여한 적 있음' : select.value;
+}
+/** 경로 검사 — 고르지 않았으면 고르는 칸, '기타'인데 비었으면 적는 칸에 오류 */
+function crpReferralErrors(selectId, otherId, add) {
+  var select = document.getElementById(selectId);
+  var other = document.getElementById(otherId);
+  if (!select.value) add(select, '월코 캠프를 알게 된 경로를 선택해 주세요.', 'Please tell us how you heard about WOLKO Camp.', selectId + 'Err');
+  else if (select.value === '기타' && !other.value.trim()) add(other, '월코 캠프를 알게 된 경로를 적어 주세요.', 'Please tell us how you heard about WOLKO Camp.', selectId + 'Err', { name: select });
 }
 
 function crpFormatWon(amount, english) {
@@ -3410,62 +3543,51 @@ function getScholarshipDiscountDetails() {
   };
 }
 
-function crpFocusScholarshipField(id) {
-  var field = document.getElementById(id);
-  if (!field) return;
-  field.scrollIntoView({ block: 'center', behavior: 'smooth' });
-  field.focus();
-}
-
-function validateScholarshipDiscountDetails(counts) {
+/** 장학금 검사 — 칸마다 오류를 모은다(하나 찾고 멈추지 않는다). 규칙은 전과 같다. */
+function crpScholarshipErrors(counts, add) {
   var details = getScholarshipDiscountDetails();
   var winter = usesWinterCampPolicy(campIdInput.value);
+  var optionsWrap = document.getElementById(regTypeInput.value === 'group' ? (crpPerCamperMode() ? 'crpCamperScholarships' : 'crpScholarshipGroup') : 'crpScholarshipIndividual');
+  var perCamperSiblingMissing = false;
   if (winter) {
     if (crpPerCamperMode()) {
       var rows = crpCamperRows();
       for (var i = 0; i < rows.length; i++) {
         var sib = rows[i].querySelector('.crp-gsch-sibling');
         if (crpCamperScholarshipKeys(rows[i]).indexOf('sibling') >= 0 && sib && !sib.value.trim()) {
-          crpShowError(errorMsg, '학생' + (i + 1) + '의 함께 참여하는 친구·지인·가족 이름을 입력해 주세요.', 'Please enter the name of the friend/family joining student ' + (i + 1) + '.');
-          rows[i].open = true; sib.scrollIntoView({ block: 'center', behavior: 'smooth' }); sib.focus();
-          return null;
+          perCamperSiblingMissing = true;
+          add(sib, '학생 ' + (i + 1) + '의 함께 참여하는 친구·지인·가족 이름을 입력해 주세요.', 'Please enter the name of the friend/family joining student ' + (i + 1) + '.', 'crpScholarshipErr', { reveal: rows[i] });
         }
       }
     }
     try { winterCampQuote(counts, Math.max(1, scholarshipParticipantCount()), Date.now(), { perCamper: crpPerCamperMode() }); }
-    catch (error) { crpShowError(errorMsg, error.message, 'Please check the scholarship options and Early Bird deadline.'); return null; }
+    catch (error) {
+      var firstControl = optionsWrap && Array.from(optionsWrap.querySelectorAll('input[type="checkbox"], select, summary')).filter(function(el) { return !el.disabled; })[0];
+      add(firstControl || optionsWrap, error.message, 'Please check the scholarship options and Early Bird deadline.', 'crpScholarshipErr', { name: document.getElementById('crpScholarshipSectionLabel') });
+    }
     if (counts.excellent_camper && !document.getElementById('crpBestCamperEligible').checked) {
-      crpShowError(errorMsg, 'Best Camper 수상 조건을 확인해주세요.', 'Please tick the box to confirm Best Camper eligibility.');
-      return null;
+      add(document.getElementById('crpBestCamperEligible'), 'Best Camper 수상 조건을 확인하고 체크해 주세요.', 'Please check the box to confirm Best Camper eligibility.', 'crpBestCamperErr', { name: [WINTER_CAMP_POLICY.discounts.excellent_camper.ko, WINTER_CAMP_POLICY.discounts.excellent_camper.en] });
     }
   }
   if (scholarshipDiscountActive(counts, 'wolbi_syme')) {
-    if (!details.wolbi_syme.year) {
-      crpShowError(errorMsg, '월비 또는 SYME 참여 연도를 선택해 주세요.', 'Please select the WOLBI/SYME participation year.');
-      crpFocusScholarshipField('crpWolbiSymeYear');
-      return null;
-    }
-    if (!details.wolbi_syme.participantName) {
-      crpShowError(errorMsg, '월비 또는 SYME 졸업자 및 프로그램 참여자 이름을 입력해 주세요.', 'Please enter the WOLBI/SYME graduate or participant name.');
-      crpFocusScholarshipField('crpWolbiSymeName');
-      return null;
-    }
+    if (!details.wolbi_syme.year) add(document.getElementById('crpWolbiSymeYear'), '월비 또는 SYME 참여 연도를 선택해 주세요.', 'Please select the WOLBI/SYME participation year.', 'crpWolbiSymeYearErr');
+    if (!details.wolbi_syme.participantName) add(document.getElementById('crpWolbiSymeName'), '월비 또는 SYME 졸업자 및 프로그램 참여자 이름을 입력해 주세요.', 'Please enter the WOLBI/SYME graduate or participant name.', 'crpWolbiSymeNameErr');
   }
   if (scholarshipDiscountActive(counts, 'sibling')) {
-    if (!winter && !details.sibling.camp) {
-      crpShowError(errorMsg, '형제·자매 또는 친구가 참여하는 캠프를 선택해 주세요.', 'Please select which camp the sibling or friend is attending.');
-      crpFocusScholarshipField('crpSiblingCamp');
-      return null;
-    }
-    if (!details.sibling.camperName) {
-      crpShowError(errorMsg, '함께 참여하는 캠퍼 이름을 입력해 주세요.', 'Please enter the name of the camper joining you.');
+    if (!winter && !details.sibling.camp) add(document.getElementById('crpSiblingCamp'), '형제·자매 또는 친구가 참여하는 캠프를 선택해 주세요.', 'Please select which camp the sibling or friend is attending.', 'crpSiblingCampErr');
+    if (!details.sibling.camperName && !perCamperSiblingMissing) {
       if (winter) {
         var inlineName = document.querySelector('#' + (regTypeInput.value === 'group' ? 'crpScholarshipGroup' : 'crpScholarshipIndividual') + ' [data-sibling-names]');
-        if (inlineName) { inlineName.scrollIntoView({ block: 'center', behavior: 'smooth' }); inlineName.focus(); }
-      } else crpFocusScholarshipField('crpSiblingCamperName');
-      return null;
+        add(inlineName || optionsWrap, '함께 참여하는 캠퍼 이름을 입력해 주세요.', 'Please enter the name of the camper joining you.', 'crpScholarshipErr');
+      } else add(document.getElementById('crpSiblingCamperName'), '함께 참여하는 캠퍼 이름을 입력해 주세요.', 'Please enter the name of the camper joining you.', 'crpSiblingCamperNameErr');
     }
   }
+}
+
+/** 서버로 보낼 장학 상세 — 검사는 crpScholarshipErrors 가 먼저 끝낸다(보내는 모양은 전과 같다). */
+function validateScholarshipDiscountDetails(counts) {
+  var details = getScholarshipDiscountDetails();
+  var winter = usesWinterCampPolicy(campIdInput.value);
   return {
     wolbi_syme: scholarshipDiscountActive(counts, 'wolbi_syme') ? details.wolbi_syme : null,
     sibling: scholarshipDiscountActive(counts, 'sibling') ? details.sibling : null,
@@ -3628,7 +3750,7 @@ function crpCamperRowHtml(index) {
         var extra = item.reward ? (en ? ' (reward after camp)' : ' (종료 후 지급)') : ' (−' + (item.amount || 0).toLocaleString('ko-KR') + (en ? ' KRW)' : '원)');
         return '<label class="crp-gsch-opt"><input type="checkbox" data-camper-sch value="' + key + '"><span>' + crpEscHtml(crpCamperShortLabel(key) + extra) + '</span></label>';
       }).join('') + '</div>' +
-      '<input type="text" class="crp-gsch-sibling" hidden maxlength="100" placeholder="' + crpEscAttr(en ? 'Name of the friend/family joining' : '함께 참여하는 친구·지인·가족 이름') + '">' +
+      '<input type="text" class="crp-gsch-sibling" hidden maxlength="100" placeholder="' + crpEscAttr(en ? 'Name of the friend/family joining' : '함께 참여하는 친구·지인·가족 이름') + '" aria-label="' + crpEscAttr((en ? 'Student ' : '학생 ') + (index + 1) + ' · ' + (en ? 'Name of the friend/family joining' : '함께 참여하는 친구·지인·가족 이름')) + '">' +
     '</div></details>';
 }
 function renderCamperScholarships() {
@@ -3684,11 +3806,13 @@ function renderGroupParticipants() {
   var femaleLabel = crpText('여', 'Female');
   wrap.innerHTML = Array.from({ length: count }, function(_, index) {
     var participant = previous[index] || {};
+    // 칸마다 '학생 n 이름 · 생년월일 · 성별' 이름을 달아 화면 읽기 프로그램이 어느 학생의 어느 칸인지 알 수 있게 한다
+    var who = crpText('학생 ', 'Student ') + (index + 1) + ' ';
     return '<div class="crp-group-participant">' +
-      '<span class="crp-group-participant-num">' + (index + 1) + '</span>' +
-      '<input class="crp-g-participant-name" type="text" value="' + crpEscAttr(participant.name) + '" placeholder="' + crpEscAttr(namePlaceholder) + '">' +
-      '<input class="crp-g-participant-birth" type="date" data-cal-center data-cal-jump data-cal-years="' + birthYears + '" data-cal-start="' + birthStart + '" value="' + crpEscAttr(participant.birthDate) + '" placeholder="' + crpEscAttr(birthPlaceholder) + '" aria-label="' + crpEscAttr(birthPlaceholder) + '">' +
-      '<select class="crp-g-participant-gender">' +
+      '<span class="crp-group-participant-num" aria-hidden="true">' + (index + 1) + '</span>' +
+      '<input class="crp-g-participant-name" type="text" autocomplete="off" value="' + crpEscAttr(participant.name) + '" placeholder="' + crpEscAttr(namePlaceholder) + '" aria-label="' + crpEscAttr(who + crpText('이름', 'name')) + '">' +
+      '<input class="crp-g-participant-birth" type="date" data-cal-center data-cal-jump data-cal-years="' + birthYears + '" data-cal-start="' + birthStart + '" value="' + crpEscAttr(participant.birthDate) + '" placeholder="' + crpEscAttr(birthPlaceholder) + '" aria-label="' + crpEscAttr(who + crpText('생년월일', 'date of birth')) + '">' +
+      '<select class="crp-g-participant-gender" aria-label="' + crpEscAttr(who + crpText('성별', 'gender')) + '">' +
         '<option value="">' + genderPlaceholder + '</option>' +
         '<option value="male"' + (participant.gender === 'male' ? ' selected' : '') + '>' + maleLabel + '</option>' +
         '<option value="female"' + (participant.gender === 'female' ? ' selected' : '') + '>' + femaleLabel + '</option>' +
@@ -3812,6 +3936,7 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
     var nameEn   = this.dataset.campNameEn;
     var capacity = parseInt(this.dataset.capacity) || 40;
     var requestId = ++modalCapacityRequestId;
+    crpOpener = this; // 닫으면 초점을 이 단추로 돌려준다
     currentCapMale   = parseInt(this.dataset.capacityMale)   || 0;
     currentCapFemale = parseInt(this.dataset.capacityFemale) || 0;
     currentRegisteredCount = null;
@@ -3843,9 +3968,17 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
     var waitlistNotice = document.getElementById('crpWaitlistNotice');
     if (waitlistNotice) waitlistNotice.hidden = true;
     updateCrpModalCap({ count: '…', countMale: 0, countFemale: 0 }, capacity);
+    // 오류 표시 · 확인 상자를 비우고, 빈 신청서 상태를 기억한 다음(닫기 확인 기준) 이 탭에 저장해 둔 같은 캠프 내용을 되살린다
+    crpErrorsActive = false;
+    crpRenderErrors([], false);
+    crpCloseConfirmBox(false);
+    crpBaseline = crpSnapshot();
+    document.getElementById('crpRestoreNote').hidden = !crpRestoreDraft(campId);
+    crpNameDynamicFields();
 
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
+    modalTitle.focus(); // 화면 읽기 프로그램이 캠프 이름부터 읽고, Tab 은 신청서 안에서만 돈다
 
     try {
       var res = await fetch('/api/capacity/' + campId);
@@ -3883,15 +4016,214 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
 });
 
 /* ── 모달 닫기 ── */
+var crpOpener = null;          // 신청서를 연 단추 — 닫으면 초점을 돌려준다
+var crpBaseline = '';          // 열었을 때(빈 신청서)의 입력 상태 — 이것과 다르면 닫기 전에 묻는다
 function closeCrpModal() {
   modalCapacityRequestId++;
+  if (!modal.hidden && successWrap.hidden) crpSaveDraft();
+  crpCloseConfirmBox(false);
   modal.hidden = true;
   document.body.style.overflow = '';
+  if (crpOpener && document.contains(crpOpener)) crpOpener.focus();
 }
-document.getElementById('crpOverlay').addEventListener('click', closeCrpModal);
-document.getElementById('crpCloseBtn').addEventListener('click', closeCrpModal);
+/** X · 취소 · Esc · 바깥 누르기: 입력한 것이 있으면 모달 안의 확인 상자를 먼저 보여 준다. 성공 화면이거나 입력이 없으면 바로 닫는다. */
+function crpRequestClose() {
+  if (modal.hidden) return;
+  if (!successWrap.hidden || crpSnapshot() === crpBaseline) { closeCrpModal(); return; }
+  crpOpenConfirmBox();
+}
+document.getElementById('crpOverlay').addEventListener('click', crpRequestClose);
+document.getElementById('crpCloseBtn').addEventListener('click', crpRequestClose);
 document.getElementById('crpSuccessClose').addEventListener('click', closeCrpModal);
-document.getElementById('crpCancelBtn').addEventListener('click', closeCrpModal); // 아래 버튼 줄의 '취소' — 닫기(X)와 같다
+document.getElementById('crpCancelBtn').addEventListener('click', crpRequestClose); // 아래 버튼 줄의 '취소' — 닫기(X)와 같다
+
+/* ── 닫기 확인 상자 ── */
+var confirmBox = document.getElementById('crpCloseConfirm');
+var crpConfirmReturn = null;
+function crpOpenConfirmBox() {
+  crpConfirmReturn = document.activeElement;
+  confirmBox.hidden = false;
+  document.getElementById('crpConfirmKeepBtn').focus();
+}
+function crpCloseConfirmBox(restoreFocus) {
+  if (!confirmBox || confirmBox.hidden) return;
+  confirmBox.hidden = true;
+  if (restoreFocus) {
+    var back = crpConfirmReturn && modal.contains(crpConfirmReturn) && crpConfirmReturn !== document.body ? crpConfirmReturn : modalTitle;
+    back.focus({ preventScroll: true });
+  }
+}
+document.getElementById('crpConfirmKeepBtn').addEventListener('click', function() { crpCloseConfirmBox(true); });
+document.getElementById('crpConfirmCloseBtn').addEventListener('click', closeCrpModal);
+confirmBox.addEventListener('click', function(e) { if (e.target === confirmBox) crpCloseConfirmBox(true); });
+
+/* ── 신청서 임시 저장 — 이 탭(sessionStorage)에만, 캠프마다 따로. 탭을 닫으면 사라진다.
+   저장하지 않는 것: 환불 은행·예금주·계좌번호, 동의 체크 3개, 사진 동의, Best Camper 확인 ── */
+var CRP_DRAFT_KEY = 'wolko-camp-register-draft-v1';
+var CRP_DRAFT_FIELDS = ['crpName', 'crpPhone', 'crpGender', 'crpBirthYear', 'crpBirthMonth', 'crpBirthDay', 'crpEmail', 'crpReferral', 'crpReferralOther',
+  'crpChurch', 'crpSchool', 'crpEmergency', 'crpNotes', 'crpGName', 'crpGPhone', 'crpGEmail', 'crpGOrg', 'crpGReferral', 'crpGReferralOther', 'crpGNotes',
+  'crpWolbiSymeYear', 'crpWolbiSymeName', 'crpSiblingCamp', 'crpSiblingCamperName'];
+var crpDraftTimer = null;
+function crpReadDrafts() {
+  try { return JSON.parse(sessionStorage.getItem(CRP_DRAFT_KEY) || '{}') || {}; } catch (e) { return {}; }
+}
+function crpWriteDrafts(all) {
+  try {
+    if (Object.keys(all).length) sessionStorage.setItem(CRP_DRAFT_KEY, JSON.stringify(all));
+    else sessionStorage.removeItem(CRP_DRAFT_KEY);
+  } catch (e) {}
+}
+/** 입력 상태 한 줄 — 닫기 확인에서 '처음과 다른가'를 볼 때 쓴다(동의·환불 칸 포함 모든 칸) */
+function crpSnapshot() {
+  return Array.from(document.getElementById('crpForm').elements).filter(function(el) {
+    return el.type !== 'hidden' && el.type !== 'submit' && el.type !== 'button' && el.tagName !== 'BUTTON' && el.tagName !== 'FIELDSET';
+  }).map(function(el) {
+    return el.type === 'checkbox' || el.type === 'radio' ? (el.checked ? '1' : '0') : String(el.value || '');
+  }).join('\u0001');
+}
+function crpCollectDraft() {
+  var fields = {};
+  CRP_DRAFT_FIELDS.forEach(function(id) { var el = document.getElementById(id); if (el && el.value) fields[id] = el.value; });
+  var draft = {
+    type: regTypeInput.value,
+    fields: fields,
+    payOnSite: document.getElementById('crpPayOnSite').checked,
+    deferList: document.getElementById('crpGDeferList').checked,
+    gCount: document.getElementById('crpGCount').value,
+    participants: Array.from(document.querySelectorAll('#crpGParticipants .crp-group-participant')).map(function(row) {
+      return {
+        name: row.querySelector('.crp-g-participant-name').value,
+        birthDate: row.querySelector('.crp-g-participant-birth').value,
+        gender: row.querySelector('.crp-g-participant-gender').value,
+      };
+    }),
+    scholarships: Array.from(document.querySelectorAll('#crpScholarshipIndividual input[name="scholarshipDiscount"]:checked')).map(function(input) { return input.value; }),
+    scholarshipCounts: Array.from(document.querySelectorAll('#crpScholarshipGroup select[name="scholarshipDiscountCount"]')).reduce(function(acc, select) {
+      if ((parseInt(select.value, 10) || 0) > 0) acc[select.dataset.discount] = select.value;
+      return acc;
+    }, {}),
+    siblingNames: Array.from(document.querySelectorAll('[data-sibling-names]')).map(function(input) { return input.value; }),
+    camperScholarships: crpCamperRows().map(function(row) {
+      return { keys: crpCamperScholarshipKeys(row), sibling: row.querySelector('.crp-gsch-sibling')?.value || '' };
+    }),
+  };
+  var meaningful = Object.keys(fields).length || draft.payOnSite || draft.deferList || draft.scholarships.length || Object.keys(draft.scholarshipCounts).length ||
+    draft.participants.some(function(p) { return p.name || p.birthDate || p.gender; }) || draft.camperScholarships.some(function(c) { return c.keys.length || c.sibling; });
+  return meaningful ? draft : null;
+}
+function crpSaveDraft() {
+  clearTimeout(crpDraftTimer);
+  var campId = campIdInput.value;
+  if (!campId || modal.hidden || !successWrap.hidden) return;
+  var all = crpReadDrafts();
+  var draft = crpCollectDraft();
+  if (draft) all[campId] = draft; else delete all[campId];
+  crpWriteDrafts(all);
+}
+function crpSaveDraftSoon() {
+  clearTimeout(crpDraftTimer);
+  crpDraftTimer = setTimeout(crpSaveDraft, 250);
+}
+function crpClearDraft(campId) {
+  var all = crpReadDrafts();
+  delete all[campId];
+  crpWriteDrafts(all);
+}
+/** 신청서 안에서 보이는 칸인지 — 모달이 아직 닫혀 있어도(되살리는 중) 폼 안의 숨김만 본다 */
+function crpShownInForm(el) {
+  for (var n = el; n && n.id !== 'crpForm'; n = n.parentElement) if (n.hidden) return false;
+  return !!el;
+}
+function crpSetValue(id, value) {
+  var el = document.getElementById(id);
+  if (el && value != null) el.value = value;
+}
+/** 같은 캠프 신청서를 다시 열면 되살린다. 되살렸으면 true. (빈 신청서 준비가 모두 끝난 뒤에 부른다) */
+function crpRestoreDraft(campId) {
+  var draft = crpReadDrafts()[campId];
+  if (!draft || !draft.fields) return false;
+  var f = draft.fields;
+  if (draft.type === 'group' && !crpIsUnionCampMode()) crpSwitchTab('group');
+  ['crpName', 'crpPhone', 'crpGender', 'crpEmail', 'crpChurch', 'crpSchool', 'crpEmergency', 'crpNotes',
+    'crpGName', 'crpGPhone', 'crpGEmail', 'crpGOrg', 'crpGNotes'].forEach(function(id) { crpSetValue(id, f[id]); });
+  // 생년월일(개인) — 년·월·일 목록은 열 때 이미 만들어져 있다
+  ['crpBirthYear', 'crpBirthMonth', 'crpBirthDay'].forEach(function(id) { crpSetValue(id, f[id]); });
+  updateBirthCheck();
+  // 알게 된 경로 — '기타'면 적는 칸을 연 다음 글을 넣는다
+  crpSetValue('crpReferral', f.crpReferral);
+  crpSetValue('crpGReferral', f.crpGReferral);
+  crpSyncReferralOther();
+  crpSetValue('crpReferralOther', f.crpReferralOther);
+  crpSetValue('crpGReferralOther', f.crpGReferralOther);
+  // 단체 인원 → 학생 명단 → 학생별 장학금
+  if (draft.gCount) {
+    crpSetValue('crpGCount', draft.gCount);
+    renderGroupParticipants();
+    updateScholarshipCountOptions();
+  }
+  document.querySelectorAll('#crpGParticipants .crp-group-participant').forEach(function(row, i) {
+    var p = (draft.participants || [])[i];
+    if (!p) return;
+    row.querySelector('.crp-g-participant-name').value = p.name || '';
+    row.querySelector('.crp-g-participant-birth').value = p.birthDate || '';
+    row.querySelector('.crp-g-participant-gender').value = p.gender || '';
+  });
+  crpCamperRows().forEach(function(row, i) {
+    var c = (draft.camperScholarships || [])[i];
+    if (!c) return;
+    (c.keys || []).forEach(function(key) {
+      var input = row.querySelector('input[data-camper-sch][value="' + key + '"]');
+      if (input) input.checked = true;
+    });
+    crpRefreshCamperRow(row);
+    var sib = row.querySelector('.crp-gsch-sibling');
+    if (sib && !sib.hidden) sib.value = c.sibling || '';
+  });
+  var defer = document.getElementById('crpGDeferList');
+  if (draft.deferList && crpShownInForm(defer)) { defer.checked = true; defer.dispatchEvent(new Event('change', { bubbles: true })); }
+  if (draft.payOnSite) {
+    var onSite = document.getElementById('crpPayOnSite');
+    onSite.checked = true;
+    onSite.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  // 장학금 — 고른 것을 되살리고 금액을 다시 센 다음, 열린 상세 칸에 글을 넣는다
+  (draft.scholarships || []).forEach(function(value) {
+    var input = document.querySelector('#crpScholarshipIndividual input[name="scholarshipDiscount"][value="' + value + '"]');
+    if (input && !input.disabled) input.checked = true;
+  });
+  Object.keys(draft.scholarshipCounts || {}).forEach(function(key) {
+    var select = document.querySelector('#crpScholarshipGroup select[name="scholarshipDiscountCount"][data-discount="' + key + '"]');
+    if (select) select.value = draft.scholarshipCounts[key];
+  });
+  updateScholarshipSummary();
+  document.querySelectorAll('[data-sibling-names]').forEach(function(input, i) {
+    if (!input.disabled && (draft.siblingNames || [])[i]) input.value = draft.siblingNames[i];
+  });
+  ['crpWolbiSymeYear', 'crpWolbiSymeName', 'crpSiblingCamp', 'crpSiblingCamperName'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && crpShownInForm(el)) crpSetValue(id, f[id]);
+  });
+  if (GENDER_CAPACITY[campId]) updateGenderWaitlistNotice();
+  return true;
+}
+var crpFormEl = document.getElementById('crpForm');
+crpFormEl.addEventListener('input', crpSaveDraftSoon);
+crpFormEl.addEventListener('change', crpSaveDraftSoon);
+[tabIndividual, tabGroup].forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    // 신청 유형을 바꾸면 오류 표시를 지운다(검사할 칸이 달라진다)
+    crpErrorsActive = false;
+    crpRenderErrors([], false);
+    crpSaveDraftSoon();
+  });
+});
+
+/** 스크립트가 만드는 칸의 이름(지금 언어) — 겨울 캠프 '함께 참여하는 캠퍼 이름' 칸 */
+function crpNameDynamicFields() {
+  document.querySelectorAll('#crpModal [data-sibling-names]').forEach(function(input) {
+    input.setAttribute('aria-label', crpText(input.dataset.phKo || '', input.dataset.phEn || ''));
+  });
+}
 
 /* ── 입금 계좌번호 복사 (후원 페이지와 같은 방식: 클립보드 → 안 되면 숨은 입력칸으로 복사). 화면의 계좌번호 글자는 바꾸지 않는다 ── */
 (function() {
@@ -3931,7 +4263,65 @@ document.getElementById('crpCancelBtn').addEventListener('click', closeCrpModal)
     });
   });
 })();
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeCrpModal(); });
+/* ── 키보드: Esc 는 맨 위 창만 닫고, Tab 은 열린 창 안에서만 돈다 ──
+   창 순서(위부터): 날짜 달력 → 환불 규정 창 → 닫기 확인 상자 → 신청서. 달력은 자기 Esc 로 닫히므로 여기서는 건드리지 않는다.
+   달력 스크립트보다 먼저 보도록 window 에서 먼저 받는다(capture). 스태프 지원 창의 Esc 는 그쪽 코드가 따로 처리한다.
+   Tab 은 브라우저마다 건너뛰는 칸이 달라(사파리는 기본으로 단추·체크박스를 건너뛴다) 창 안에서는 직접 다음 칸으로 옮긴다. */
+function crpFocusables(root) {
+  var radioSeen = {};
+  return Array.from(root.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'))
+    .filter(function(el) {
+      if (el.closest('[hidden]') || el.closest('[inert]')) return false;
+      if (el.tagName !== 'SUMMARY' && el.closest('details:not([open])') && !el.closest('summary')) return false;
+      var style = window.getComputedStyle(el);
+      return style.visibility !== 'hidden' && style.display !== 'none' && el.getClientRects().length > 0;
+    })
+    .filter(function(el, i, all) {
+      // 라디오 묶음은 한 자리 — 고른 것(없으면 첫 번째)만. 묶음 안에서는 방향키로 옮긴다
+      if (el.type !== 'radio' || !el.name) return true;
+      if (radioSeen[el.name]) return false;
+      var group = all.filter(function(x) { return x.type === 'radio' && x.name === el.name; });
+      var pick = group.filter(function(x) { return x.checked; })[0] || group[0];
+      if (pick !== el) return false;
+      radioSeen[el.name] = true;
+      return true;
+    });
+}
+function crpTrapTab(e, root) {
+  var list = crpFocusables(root);
+  e.preventDefault();
+  if (!list.length) return;
+  var a = document.activeElement;
+  var i = list.indexOf(a);
+  if (i < 0 && a && a.type === 'radio') i = list.findIndex(function(el) { return el.type === 'radio' && el.name === a.name; });
+  var next;
+  if (i >= 0) next = list[e.shiftKey ? (i === 0 ? list.length - 1 : i - 1) : (i === list.length - 1 ? 0 : i + 1)];
+  else if (a && a !== document.body && root.contains(a)) {
+    // 제목처럼 Tab 순서에 없는 곳에 초점이 있으면 문서 순서로 바로 다음(앞) 칸
+    next = e.shiftKey
+      ? list.filter(function(el) { return el.compareDocumentPosition(a) & Node.DOCUMENT_POSITION_FOLLOWING; }).pop()
+      : list.filter(function(el) { return a.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING; })[0];
+  }
+  (next || (e.shiftKey ? list[list.length - 1] : list[0])).focus();
+}
+function crpCalendarOpen() {
+  var cal = document.querySelector('.wl-cal');
+  return !!(cal && !cal.hidden);
+}
+window.addEventListener('keydown', function(e) {
+  if (e.key !== 'Escape' && e.key !== 'Tab') return;
+  if (crpCalendarOpen()) return;
+  var refundOpen = !refundOverlay.hidden;
+  if (modal.hidden && !refundOpen) return;
+  var layer = refundOpen ? refundOverlay.querySelector('.crp-refund-modal')
+    : !confirmBox.hidden ? confirmBox.querySelector('.crp-confirm-box')
+    : modal.querySelector('.crp-modal-card');
+  if (e.key === 'Tab') { crpTrapTab(e, layer); return; }
+  e.preventDefault();
+  if (refundOpen) closeRefundModal();
+  else if (!confirmBox.hidden) crpCloseConfirmBox(true);
+  else crpRequestClose();
+}, true);
 
 /* ── 환불 규정 모달 ── */
 // 현금·현장 결제를 고르면 환불 계좌 입력칸을 숨기고 필수에서 뺀다.
@@ -3950,24 +4340,37 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
 var refundOverlay  = document.getElementById('crpRefundModalOverlay');
 var refundAgreeBtn = document.getElementById('crpRefundAgreeBtn');
 var refundCheckbox = document.getElementById('crpRefundConsent');
+var refundTitle    = document.getElementById('crpRefundModalTitle');
+var refundBody     = document.getElementById('crpRefundModalBody');
 
-// 체크박스 / 라벨 클릭 → 모달 열기
-document.getElementById('crpRefundConsentLabel').addEventListener('click', function(e) {
-  e.preventDefault();
-  if (refundCheckbox.checked) {
-    refundCheckbox.checked = false;
-    return;
-  }
-  refundOverlay.hidden = false;
+// 체크하려 하면 — 네모 누르기 · 글자 누르기 · 스페이스 모두 같은 change 로 들어온다 — 체크를 되돌리고 규정 창을 연다.
+// '동의하기'를 눌러야 체크된다. 이미 체크된 것을 풀 때는 창 없이 그대로 풀린다.
+refundCheckbox.addEventListener('change', function() {
+  if (!refundCheckbox.checked) return;
+  refundCheckbox.checked = false;
+  openRefundModal();
 });
 
+function openRefundModal() {
+  refundOverlay.hidden = false;
+  // 규정이 창보다 길면(작은 화면) 본문을 Tab 으로 갈 수 있게 해서 키보드로도 내려 읽게 한다
+  var scrolls = refundBody.scrollHeight > refundBody.clientHeight + 1;
+  if (scrolls) { refundBody.setAttribute('tabindex', '0'); refundBody.setAttribute('role', 'region'); refundBody.setAttribute('aria-labelledby', 'crpRefundModalTitle'); }
+  else { refundBody.removeAttribute('tabindex'); refundBody.removeAttribute('role'); refundBody.removeAttribute('aria-labelledby'); }
+  refundBody.scrollTop = 0;
+  refundTitle.focus();
+}
+
+// 닫으면(동의 · X · 바깥 · Esc) 초점을 체크박스로 돌려준다
 function closeRefundModal() {
   refundOverlay.hidden = true;
+  refundCheckbox.focus();
 }
 
 refundAgreeBtn.addEventListener('click', function() {
-  refundCheckbox.checked = true;
+  refundCheckbox.checked = true; // change 를 보내지 않는다(위의 되돌리기와 부딪히지 않게)
   closeRefundModal();
+  crpRevalidateSoon();
 });
 
 document.getElementById('crpRefundCloseBtn').addEventListener('click', closeRefundModal);
@@ -3982,43 +4385,226 @@ document.querySelectorAll('input[name="mediaConsent"]').forEach(function(r) {
   });
 });
 
+/* ── 신청서 오류 — 한 번에 모두 검사해서 칸마다 바로 아래에 문장을 달고, 제출 단추 위에 개수와 칸 이름을 모은다 ──
+   검사 규칙은 전과 같다(새 필수 칸 · 형식 검사를 더하거나 빼지 않는다). 순서는 화면 위 → 아래(문서 순서로 정렬). */
+var crpErrorsActive = false;   // 한 번 제출해서 오류가 났으면, 칸을 고칠 때마다 다시 검사해 오류를 지운다
+var crpRevalidateTimer = null;
+function crpCollectErrors() {
+  var errs = [];
+  function add(focusEl, ko, en, slot, opt) {
+    if (!focusEl) return;
+    opt = opt || {};
+    errs.push({ focus: focusEl, ko: ko, en: en, slot: slot, mark: opt.mark || [focusEl], name: opt.name || focusEl, reveal: opt.reveal || null, box: opt.box || null });
+  }
+  var byId = function(id) { return document.getElementById(id); };
+  if (regTypeInput.value === 'group') {
+    var gTotal = parseInt(byId('crpGCount').value) || 0;
+    var deferNames = crpIsUnionCampMode() || byId('crpGDeferList').checked;
+    if (!byId('crpGName').value.trim()) add(byId('crpGName'), '담당자 이름을 적어 주세요.', 'Please enter the contact person\'s name.', 'crpGNameErr');
+    if (!byId('crpGPhone').value.trim()) add(byId('crpGPhone'), '연락 받을 번호를 적어 주세요.', 'Please enter a phone number where we can reach you.', 'crpGPhoneErr');
+    var gRemaining = Math.max(0, (parseInt(campCapInput.value) || 40) - (currentRegisteredCount || 0));
+    if (gTotal < 2) add(byId('crpGCount'), '참여 인원을 2명 이상 선택해 주세요.', 'Please select at least 2 participants.', 'crpGCountErr');
+    else if (currentRegisteredCount !== null && gTotal > gRemaining) add(byId('crpGCount'), '남은 자리가 ' + gRemaining + '명이에요. 참여 인원을 줄여 주세요.', 'Only ' + gRemaining + (gRemaining === 1 ? ' spot is' : ' spots are') + ' left. Please choose fewer participants.', 'crpGCountErr');
+    if (!deferNames) {
+      var rows = Array.from(document.querySelectorAll('.crp-group-participant'));
+      var missing = [];
+      rows.forEach(function(row) {
+        var n = row.querySelector('.crp-g-participant-name'), g = row.querySelector('.crp-g-participant-gender');
+        if (!n.value.trim()) missing.push(n);
+        if (!g.value) missing.push(g);
+      });
+      var listName = byId('crpGParticipantsLabel');
+      if (rows.length !== gTotal || missing.length) add(missing[0] || byId('crpGCount'), '모든 참가 학생의 이름과 성별을 입력해 주세요.', 'Please enter each student\'s name and gender.', 'crpGParticipantsErr', { mark: missing, name: listName });
+      // 지원 연령이 정해진 캠프는 학생마다 생년월일이 꼭 필요하고 연령 범위 안이어야 한다 — 문장은 첫 학생 것, 빨간 테두리는 해당 학생 모두
+      var badBirth = [], firstBirthMsg = null;
+      rows.forEach(function(row, bi) {
+        var birthInput = row.querySelector('.crp-g-participant-birth');
+        var pName = row.querySelector('.crp-g-participant-name').value.trim();
+        var bc = birthYearCheck(campIdInput.value, birthInput.value);
+        if (bc.ok) return;
+        badBirth.push(birthInput);
+        if (firstBirthMsg) return;
+        var who = (bi + 1) + (pName ? ' (' + pName + ')' : '');
+        firstBirthMsg = bc.reason === 'out-of-range'
+          ? ['학생 ' + who + '의 출생연도가 이 캠프의 지원 연령(' + bc.range.min + '년생 ~ ' + bc.range.max + '년생)에 맞지 않으니, 문의를 남겨 주세요.', 'Student ' + who + ' is outside this camp\'s age range (born ' + bc.range.min + ' – ' + bc.range.max + '), so please leave us an inquiry.']
+          : ['학생 ' + who + '의 생년월일을 선택해 주세요.', 'Please select the date of birth for student ' + who + '.'];
+      });
+      if (badBirth.length) add(badBirth[0], firstBirthMsg[0], firstBirthMsg[1], 'crpGParticipantsErr', { mark: badBirth });
+    }
+    if (!byId('crpGOrg').value.trim()) add(byId('crpGOrg'), '소속 교회나 단체 이름을 적어 주세요.', 'Please enter your church or organization.', 'crpGOrgErr');
+    crpReferralErrors('crpGReferral', 'crpGReferralOther', add);
+  } else {
+    if (!byId('crpName').value.trim()) add(byId('crpName'), '캠퍼 이름을 적어 주세요.', 'Please enter the camper\'s name.', 'crpNameErr');
+    if (!byId('crpPhone').value.trim()) add(byId('crpPhone'), '연락 받을 번호를 적어 주세요.', 'Please enter a phone number where we can reach you.', 'crpPhoneErr');
+    if (!byId('crpGender').value) add(byId('crpGender'), '성별을 선택해 주세요.', 'Please select the camper\'s gender.', 'crpGenderErr');
+    var birthCheck = birthYearCheck(campIdInput.value, currentBirthDate());
+    if (!birthCheck.ok) {
+      var birthSelects = ['crpBirthYear', 'crpBirthMonth', 'crpBirthDay'].map(byId);
+      if (birthCheck.reason === 'out-of-range') {
+        updateBirthCheck();
+        add(birthSelects[0], '출생연도가 이 캠프의 지원 연령에 맞지 않으니, 아래 "문의 남기기"로 문의해 주세요.', 'This birth year is outside the camp\'s age range, so please use "Leave an inquiry" below.', 'crpBirthErr', { name: byId('crpBirthLabel') });
+      } else {
+        var emptyBirth = birthSelects.filter(function(el) { return !el.value; });
+        var birthMark = emptyBirth.length ? emptyBirth : birthSelects;
+        add(birthMark[0], '생년월일을 정확히 선택해 주세요.', 'Please select a valid date of birth for the camper.', 'crpBirthErr', { mark: birthMark, name: byId('crpBirthLabel') });
+      }
+    }
+    crpReferralErrors('crpReferral', 'crpReferralOther', add);
+  }
+  // 공통: 환불 계좌(현장 결제가 아니면) → 장학 → Best Camper → 사진 동의 → 개인정보 → 예약금 → 환불 동의
+  if (!byId('crpPayOnSite').checked) {
+    var refundReq = {
+      crpRefundBank: ['환불받을 은행 이름을 적어 주세요.', 'Please enter the bank name for your refund.'],
+      crpRefundHolder: ['예금주 이름을 적어 주세요.', 'Please enter the account holder\'s name.'],
+      crpRefundAccount: ['환불받을 계좌번호를 적어 주세요.', 'Please enter the refund account number.'],
+    };
+    ['crpRefundBank', 'crpRefundHolder', 'crpRefundAccount'].forEach(function(id) {
+      if (!byId(id).value.trim()) add(byId(id), refundReq[id][0], refundReq[id][1], id + 'Err');
+    });
+  }
+  crpScholarshipErrors(getScholarshipCounts(), add);
+  if (!document.querySelector('input[name="mediaConsent"]:checked')) {
+    add(byId('crpMediaYes'), '사진·영상 공유에 "동의"와 "동의 안 함" 중 하나를 골라 주세요.', 'Please choose "Agree" or "Do not agree" for photo and video sharing.', 'crpMediaErr', { mark: [byId('crpMediaYes'), byId('crpMediaNo')], name: byId('crpMediaConsent'), box: byId('crpMediaConsent') });
+  }
+  if (!byId('crpConsent').checked) add(byId('crpConsent'), '개인정보 수집 및 이용에 동의해 주세요.', 'Please agree to the collection and use of personal information.', 'crpConsentErr');
+  if (!byId('crpDepositConsent').checked) add(byId('crpDepositConsent'), '등록 확정 안내를 읽고 체크해 주세요.', 'Please read how registration is finalized, then check the box.', 'crpDepositConsentErr');
+  if (!byId('crpRefundConsent').checked) add(byId('crpRefundConsent'), '체크해서 환불 규정 창을 열고 "동의하기"를 눌러 주세요.', 'Select the box to open the refund policy, then choose "I Agree."', 'crpRefundConsentErr');
+  // 화면 위 → 아래 순서
+  errs.sort(function(a, b) {
+    if (a.focus === b.focus) return 0;
+    return a.focus.compareDocumentPosition(b.focus) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+  });
+  return errs;
+}
+
+/** 칸 이름(지금 언어) — 이름표 글자에서 * 를 뺀 것. 따로 정한 이름(data-crp-name-ko/en)이 있으면 그것 */
+function crpFieldName(src) {
+  if (Array.isArray(src)) return crpText(src[0], src[1]);
+  if (!src) return '';
+  if (src.dataset && src.dataset.crpNameKo) return crpText(src.dataset.crpNameKo, src.dataset.crpNameEn || src.dataset.crpNameKo);
+  var text = '';
+  if (src.labels && src.labels.length) text = src.labels[0].innerText;
+  else if (src.getAttribute && src.getAttribute('aria-labelledby')) {
+    text = src.getAttribute('aria-labelledby').split(/\s+/).map(function(id) { var el = document.getElementById(id); return el ? el.innerText || el.textContent : ''; }).join(' ');
+  } else if (src.getAttribute && src.getAttribute('aria-label')) text = src.getAttribute('aria-label');
+  else text = src.innerText || src.textContent || '';
+  return text.replace(/\*/g, '').replace(/\s+/g, ' ').trim();
+}
+function crpDescribedBy(el, id, on) {
+  var list = (el.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean).filter(function(x) { return x !== id; });
+  if (on) list.push(id);
+  if (list.length) el.setAttribute('aria-describedby', list.join(' ')); else el.removeAttribute('aria-describedby');
+}
+function crpRenderErrors(errs, moveFocus) {
+  // 지난 표시를 지운다
+  document.querySelectorAll('#crpForm [data-crp-invalid]').forEach(function(el) {
+    crpDescribedBy(el, el.dataset.crpInvalid, false);
+    el.removeAttribute('aria-invalid');
+    el.classList.remove('error');
+    el.removeAttribute('data-crp-invalid');
+  });
+  document.querySelectorAll('#crpForm .crp-field-error').forEach(function(slot) { slot.hidden = true; slot.textContent = ''; });
+  document.getElementById('crpMediaConsent').classList.remove('is-invalid');
+  // 칸마다 표시 — 빨간 테두리(.error), aria-invalid, 바로 아래 문장(aria-describedby)
+  var slotLines = {};
+  errs.forEach(function(err) {
+    var line = crpText(err.ko, err.en);
+    slotLines[err.slot] = slotLines[err.slot] || [];
+    if (slotLines[err.slot].indexOf(line) < 0) slotLines[err.slot].push(line);
+    err.mark.forEach(function(el) {
+      if (!el || el.dataset.crpInvalid) return;
+      el.setAttribute('aria-invalid', 'true');
+      el.classList.add('error');
+      el.dataset.crpInvalid = err.slot;
+      crpDescribedBy(el, err.slot, true);
+    });
+    if (err.box) err.box.classList.add('is-invalid');
+  });
+  Object.keys(slotLines).forEach(function(id) {
+    var slot = document.getElementById(id);
+    if (!slot) return;
+    slot.innerHTML = slotLines[id].map(function(line) { return '<span>' + crpEscHtml(line) + '</span>'; }).join('');
+    slot.hidden = false;
+  });
+  // 제출 단추 바로 위 요약 — 개수 + 칸 이름(누르면 그 칸으로)
+  delete errorMsg.dataset.errKo;
+  delete errorMsg.dataset.errEn;
+  if (!errs.length) { errorMsg.hidden = true; errorMsg.innerHTML = ''; delete errorMsg.dataset.crpSig; return; }
+  crpLastErrors = errs;
+  // 요약 내용이 그대로면 다시 그리지 않는다(누르는 중인 링크가 바뀌지 않게, 화면 읽기 프로그램이 같은 말을 되풀이하지 않게)
+  var sig = errs.map(function(err) { return err.slot + ':' + (err.focus.id || '') + ':' + crpText(err.ko, err.en); }).join('|');
+  if (errorMsg.dataset.crpSig === sig && !errorMsg.hidden) { if (moveFocus) crpGoToError(errs[0]); return; }
+  errorMsg.dataset.crpSig = sig;
+  var seen = [];
+  var items = errs.filter(function(err) {
+    var key = crpFieldName(err.name);
+    if (seen.indexOf(key) >= 0) return false;
+    seen.push(key);
+    return true;
+  });
+  errorMsg.innerHTML = '<p class="crp-error-summary-title">' + crpEscHtml(crpText('확인할 칸이 ' + items.length + '개 있어요.', items.length + (items.length === 1 ? ' field needs' : ' fields need') + ' your attention.')) + '</p>' +
+    '<ul class="crp-error-list">' + items.map(function(err, i) {
+      var target = err.focus.id ? '#' + err.focus.id : '#crpForm';
+      return '<li><a href="' + crpEscAttr(target) + '" data-crp-err-index="' + errs.indexOf(err) + '">' + crpEscHtml(crpFieldName(err.name)) + '</a></li>';
+    }).join('') + '</ul>';
+  errorMsg.hidden = false;
+  if (moveFocus) crpGoToError(errs[0]);
+}
+var crpLastErrors = [];
+/** 오류 칸으로 옮겨 간다 — 접힌 학생별 장학금은 펼치고, 화면 가운데로 스크롤한 뒤 초점을 준다(움직임 줄이기면 바로) */
+function crpGoToError(err) {
+  if (!err) return;
+  if (err.reveal && 'open' in err.reveal) err.reveal.open = true;
+  var target = err.focus;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  target.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+  try { target.focus({ preventScroll: true }); } catch (e) { target.focus(); }
+}
+// 누르는 순간 칸에서 초점이 빠지며 요약이 다시 그려져 클릭이 사라지지 않도록, 링크를 누를 때는 초점을 옮기지 않는다(옮기는 것은 click 이 한다)
+errorMsg.addEventListener('mousedown', function(e) {
+  if (e.target.closest && e.target.closest('a[data-crp-err-index]')) e.preventDefault();
+});
+errorMsg.addEventListener('click', function(e) {
+  var link = e.target.closest && e.target.closest('a[data-crp-err-index]');
+  if (!link) return;
+  e.preventDefault(); // 주소 # 를 바꾸지 않는다
+  crpGoToError(crpLastErrors[parseInt(link.dataset.crpErrIndex, 10)]);
+});
+/** 칸을 고치면 다시 검사해서 고친 칸의 오류를 지우고 요약 개수를 줄인다(초점은 옮기지 않는다) */
+function crpRevalidate() {
+  if (!crpErrorsActive || modal.hidden || formWrap.hidden) return;
+  crpRenderErrors(crpCollectErrors(), false);
+}
+function crpRevalidateSoon() {
+  clearTimeout(crpRevalidateTimer);
+  crpRevalidateTimer = setTimeout(crpRevalidate, 0); // 다른 change 처리(명단 다시 그리기 등)가 끝난 뒤
+}
+crpFormEl.addEventListener('input', crpRevalidateSoon);
+crpFormEl.addEventListener('change', crpRevalidateSoon);
+// 언어를 바꾸면 오류 문장 · 칸 이름을 그 언어로 다시 쓴다(명단을 다시 그린 뒤에)
+new MutationObserver(function() {
+  setTimeout(function() { crpNameDynamicFields(); crpRevalidate(); }, 0);
+}).observe(document.getElementById('lang-root') || document.body, { attributes: true, attributeFilter: ['class'] });
+
 /* ── 폼 제출 ── */
 document.getElementById('crpForm').addEventListener('submit', async function(e) {
   e.preventDefault();
   errorMsg.hidden = true;
 
-  var mediaChoice = document.querySelector('input[name="mediaConsent"]:checked');
-  if (!mediaChoice) {
-    document.getElementById('crpMediaConsent').classList.add('is-invalid');
-    crpShowError(errorMsg, '사진·영상 공유 동의 여부(동의 또는 동의 안 함)를 선택해 주세요.', 'Please choose whether you agree to the photo/video sharing (Agree or Do not agree).');
+  var errs = crpCollectErrors();
+  if (errs.length) {
+    crpErrorsActive = true;
+    crpRenderErrors(errs, true);
     return;
   }
-  var mediaConsent = mediaChoice.value;
+  crpErrorsActive = false;
+  crpRenderErrors([], false);
 
-  var consent = document.getElementById('crpConsent').checked;
-  if (!consent) {
-    crpShowError(errorMsg, '개인정보 수집 및 이용에 동의해 주세요.', 'Please agree to the privacy policy.');
-    return;
-  }
-  var depositConsent = document.getElementById('crpDepositConsent').checked;
-  if (!depositConsent) {
-    crpShowError(errorMsg, '예약금과 캠프 참가비 입금 확인 후 최종 확정됨에 동의해 주세요.', 'Please confirm that you understand the deposit and camp fee requirements.');
-    return;
-  }
-  var refundConsent = document.getElementById('crpRefundConsent').checked;
-  if (!refundConsent) {
-    crpShowError(errorMsg, '환불 규정을 읽어보았으며 이에 동의해 주세요.', 'Please read and agree to the refund policy.');
-    return;
-  }
-
+  var mediaConsent = document.querySelector('input[name="mediaConsent"]:checked').value;
   var payOnSite = document.getElementById('crpPayOnSite').checked;
   var refundBank = payOnSite ? '' : document.getElementById('crpRefundBank').value.trim();
   var refundAccount = payOnSite ? '' : document.getElementById('crpRefundAccount').value.trim();
   var refundHolder = payOnSite ? '' : document.getElementById('crpRefundHolder').value.trim();
-  if (!payOnSite && (!refundBank || !refundAccount || !refundHolder)) {
-    crpShowError(errorMsg, '환불을 위한 은행명, 계좌번호, 예금주를 모두 입력해 주세요.', 'Please enter the bank name, refund account number, and account holder.');
-    return;
-  }
 
   var currentType = regTypeInput.value;
   var payload;
@@ -4048,46 +4634,10 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
     var gMaleCount = deferNames ? 0 : participants.filter(function(p) { return p.gender === 'male'; }).length;
     var gFemCount  = deferNames ? 0 : participants.filter(function(p) { return p.gender === 'female'; }).length;
 
-    if (!gName || !gPhone || !gOrg) {
-      crpShowError(errorMsg, '담당자 이름, 연락 받을 번호, 소속은 필수 항목입니다.', 'Contact name, phone number, and organization are required.');
-      return;
-    }
-    if (gTotal < 2) {
-      crpShowError(errorMsg, '참여 인원을 2명 이상 선택해 주세요.', 'Please select at least 2 participants.');
-      return;
-    }
-    var gRemaining = Math.max(0, (parseInt(campCapInput.value) || 40) - (currentRegisteredCount || 0));
-    if (currentRegisteredCount !== null && gTotal > gRemaining) {
-      crpShowError(errorMsg, '현재 잔여 정원은 ' + gRemaining + '명입니다. 참여 인원을 줄여 주세요.', 'Only ' + gRemaining + ' spots remain. Please reduce the number of participants.');
-      return;
-    }
-    if (!deferNames && (participants.length !== gTotal || participants.some(function(p) { return !p.name || !p.gender; }))) {
-      crpShowError(errorMsg, '모든 참가 학생의 이름과 성별을 입력해 주세요.', 'Please enter every participant name and gender.');
-      return;
-    }
-    // 지원 연령이 정해진 캠프는 학생마다 생년월일이 꼭 필요하고 연령 범위 안이어야 한다.
-    if (!deferNames) {
-      for (var bi = 0; bi < participants.length; bi++) {
-        var bc = birthYearCheck(campIdInput.value, participants[bi].birthDate);
-        if (bc.ok) continue;
-        var who = (bi + 1) + (participants[bi].name ? ' (' + participants[bi].name + ')' : '');
-        var birthInput = document.querySelectorAll('.crp-group-participant')[bi].querySelector('.crp-g-participant-birth');
-        birthInput.style.borderColor = '#c42a36';
-        birthInput.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        birthInput.addEventListener('change', function clearBirthErr() { birthInput.style.borderColor = ''; birthInput.removeEventListener('change', clearBirthErr); });
-        if (bc.reason === 'out-of-range') {
-          crpShowError(errorMsg, '학생 ' + who + '의 출생연도가 이 캠프의 지원 연령(' + bc.range.min + '년생 ~ ' + bc.range.max + '년생)에 해당하지 않습니다. 문의를 남겨 주세요.', 'Participant ' + who + ' is outside this camp\'s age range (born ' + bc.range.min + ' – ' + bc.range.max + '). Please leave us an inquiry.');
-        } else {
-          crpShowError(errorMsg, '학생 ' + who + '의 생년월일을 선택해 주세요.', 'Please select the date of birth for participant ' + who + '.');
-        }
-        return;
-      }
-    }
+    // 검사는 제출 처음(crpCollectErrors)에서 모두 끝냈다 — 여기서는 보낼 내용만 만든다
     var groupReferralSource = crpReferralText('crpGReferral', 'crpGReferralOther');
-    if (groupReferralSource === null) return;
     var groupScholarshipCounts = getScholarshipCounts();
     var groupScholarshipDetails = validateScholarshipDiscountDetails(groupScholarshipCounts);
-    if (!groupScholarshipDetails) return;
     var groupScholarshipDiscountTotal = scholarshipDiscountAmount(groupScholarshipCounts);
     payload = {
       registrationType: 'group',
@@ -4120,32 +4670,11 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
     var email  = document.getElementById('crpEmail').value.trim();
     var gender = document.getElementById('crpGender').value;
 
-    if (!name || !phone) {
-      crpShowError(errorMsg, '이름, 연락 받을 번호는 필수 항목입니다.', 'Name and phone number are required.');
-      return;
-    }
-    if (!gender) {
-      crpShowError(errorMsg, '성별을 선택해 주세요.', 'Please select gender.');
-      return;
-    }
     var birthDate = currentBirthDate();
-    var birthCheck = birthYearCheck(campIdInput.value, birthDate);
-    if (!birthCheck.ok) {
-      if (birthCheck.reason === 'out-of-range') {
-        updateBirthCheck();
-        crpShowError(errorMsg, '입력하신 출생연도는 이 캠프의 지원 연령에 해당하지 않습니다. 아래 "문의 남기기"로 문의해 주세요.', 'The birth year you entered is outside this camp\'s age range. Please use "Leave an inquiry".');
-        document.getElementById('crpBirthField').scrollIntoView({ block: 'center', behavior: 'smooth' });
-      } else {
-        crpShowError(errorMsg, '생년월일을 정확히 선택해 주세요.', 'Please select your date of birth.');
-        document.getElementById('crpBirthYear').focus();
-      }
-      return;
-    }
+    // 검사는 제출 처음(crpCollectErrors)에서 모두 끝냈다 — 여기서는 보낼 내용만 만든다
     var referralSource = crpReferralText('crpReferral', 'crpReferralOther');
-    if (referralSource === null) return;
     var scholarshipDiscounts = getScholarshipCounts();
     var scholarshipDiscountDetails = validateScholarshipDiscountDetails(scholarshipDiscounts);
-    if (!scholarshipDiscountDetails) return;
     var scholarshipDiscountTotal = scholarshipDiscountAmount(scholarshipDiscounts);
     payload = {
       registrationType: 'individual',
@@ -4193,6 +4722,8 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       }
       formWrap.hidden = true;
       successWrap.hidden = false;
+      crpClearDraft(payload.campId); // 신청이 끝났으니 임시 저장을 지운다(다시 열면 빈 신청서)
+      document.getElementById('crpRestoreNote').hidden = true;
 
       var successMsg = document.getElementById('crpSuccessMsg');
       var successCount = document.getElementById('crpSuccessCount');
@@ -4274,13 +4805,17 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
 
       // pending 상태이므로 카드 카운터는 업데이트하지 않음 (확정 후 반영)
 
+      // 성공 화면 맨 위로 올리고 초점을 성공 제목으로 — 화면 읽기 프로그램이 '신청이 완료되었습니다'부터 읽는다
+      modal.querySelector('.crp-modal-card').scrollTop = 0;
+      document.getElementById('crpSuccessTitle').focus({ preventScroll: true });
+
     } else {
-      crpShowError(errorMsg, data.error || '오류가 발생했습니다. 다시 시도해 주세요.', 'An error occurred. Please try again.');
+      crpShowError(errorMsg, data.error || '신청을 접수하지 못했어요. 잠시 뒤 다시 시도해 주세요.', 'We couldn\'t complete your registration. Please try again in a moment.');
       submitBtn.disabled = false;
       submitBtn.classList.remove('loading');
     }
   } catch(err) {
-    crpShowError(errorMsg, '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.', 'Network error. Please try again.');
+    crpShowError(errorMsg, '연결에 문제가 있어 신청을 보내지 못했어요. 잠시 뒤 다시 시도해 주세요.', 'We couldn\'t send your registration because of a connection problem. Please try again in a moment.');
     submitBtn.disabled = false;
     submitBtn.classList.remove('loading');
   }

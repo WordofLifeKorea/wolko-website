@@ -28,6 +28,8 @@
     return fmtKr(digits) || fmtKr('0' + digits);
   }
   function isEn() { var h = document.documentElement, b = document.body; return h.classList.contains('lang-en') || (b && b.classList.contains('lang-en')) || h.lang === 'en'; }
+  // 국가번호 칸 이름(화면 읽기 프로그램용) — 화면 언어를 따라간다
+  function ccName() { return isEn() ? 'Country code' : '국가 번호'; }
 
   function enhance(input) {
     if (input.dataset.ipReady) return;
@@ -37,7 +39,7 @@
     wrap.className = 'ip-wrap';
     var select = document.createElement('select');
     select.className = 'ip-cc';
-    select.setAttribute('aria-label', 'Country code');
+    select.setAttribute('aria-label', ccName());
     select.innerHTML = COUNTRIES.map(function (c) { return '<option value="' + c[0] + '">' + c[0] + ' +' + c[2] + '</option>'; }).join('');
     input.parentNode.insertBefore(wrap, input);
     wrap.append(select, input);
@@ -98,6 +100,18 @@
     input.addEventListener('input', function (e) { if (e.isTrusted) note.hidden = true; });
   }
 
-  function init() { document.querySelectorAll('input[data-intl-phone]').forEach(enhance); }
+  // 언어를 바꾸면 이미 만든 칸의 이름도 바꾼다 — 공개 페이지는 html · body 의 lang-en 클래스, 포탈은 html 의 lang 이 바뀐다
+  function relabel() {
+    var name = ccName();
+    document.querySelectorAll('select.ip-cc').forEach(function (s) { if (s.getAttribute('aria-label') !== name) s.setAttribute('aria-label', name); });
+  }
+  function init() {
+    document.querySelectorAll('input[data-intl-phone]').forEach(enhance);
+    if (!window.MutationObserver) return;
+    var mo = new MutationObserver(relabel);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'lang'] });
+    if (document.body) mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    relabel();
+  }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

@@ -84,7 +84,7 @@ const ministries = [
   description="캠프, 제주월비, 청소년 사역, SYME로 이어지는 Word of Life Korea의 다음 세대 사역을 한눈에 살펴보세요."
   activeNav="ministry"
 >
-  <main class="ministry-hub">
+  <div class="ministry-hub">
     <PageHero align="center" image="/images/heroes/ministry-jeju-crowd.jpg" pos="50% 45%">
       <Fragment slot="eyebrow"><span class="wl-ko">월코 사역</span><span class="wl-en">Our Ministries</span></Fragment>
       <Fragment slot="title">
@@ -128,7 +128,9 @@ const ministries = [
     {ministries.map((m, i) => (
       <section class:list={['mh-chapter', { 'mh-chapter--flip': i % 2 === 1 }]} id={m.id}>
         <div class="mh-shell mh-chapter-inner">
-          <a class="mh-chapter-media" href={m.href} tabindex="-1" aria-hidden="true">
+          {/* 사진도 같은 곳으로 가는 링크 — 키보드는 바로 아래 글자 링크(.mh-chapter-link)로 가므로 Tab 순서에서는 뺀다. 화면 읽기용 이름은 글자 링크와 같게. */}
+          <a class="mh-chapter-media" href={m.href} tabindex="-1">
+            <span class="mh-sr"><span class="wl-ko">{m.linkKo}</span><span class="wl-en">{m.linkEn}</span></span>
             <img src={m.img} alt="" loading="lazy" style={`object-position:${m.pos}`}>
           </a>
           <div class="mh-chapter-body">
@@ -182,7 +184,7 @@ const ministries = [
         </div>
       </div>
     </section>
-  </main>
+  </div>
 
   <script is:inline>
     // 사역 페이지 움직임: 스크롤하면 사진은 살짝 당겨지며 자리 잡고, 글은 아래에서 차례로 떠오른다.
@@ -221,6 +223,8 @@ const ministries = [
       overflow: hidden;
     }
     .mh-shell { width: min(1200px, calc(100% - 48px)); margin-inline: auto; }
+    /* 화면에는 안 보이고 화면 읽기 프로그램만 읽는 글자 */
+    .mh-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
     .ministry-hub svg { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: square; }
 
     /* 작은 표시 — 앞에 가는 선 (맨 위 배너와 같은 모양) */

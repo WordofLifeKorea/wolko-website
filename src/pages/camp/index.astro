@@ -456,15 +456,18 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
     if (hashCard && hashCard.classList.contains('prog-card')) setTimeout(function () { landOn(hashCard); }, 900);
   }
 
-  // 같은 페이지 안 바로가기 링크는 부드럽게 이동
+  // 같은 페이지 안 바로가기 링크는 부드럽게 이동 (움직임 줄이기 설정이면 미끄러지지 않고 바로 그 자리로)
+  var jumpReduce = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
   document.querySelectorAll('.wcp-wrap a[href^="#"]').forEach(function (a) {
     a.addEventListener('click', function (e) {
       var target = document.querySelector(a.getAttribute('href'));
       if (!target) return;
       e.preventDefault();
       var before = window.scrollY;
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      var instant = !!(jumpReduce && jumpReduce.matches);
+      target.scrollIntoView({ behavior: instant ? 'auto' : 'smooth', block: 'start' });
       if (target.classList.contains('prog-card')) {
+        if (instant) { landOn(target); return; }   // 바로 도착했으니 스크롤 끝을 기다리지 않고 표시
         // 이미 그 자리라 스크롤이 일어나지 않으면 바로 반짝인다
         requestAnimationFrame(function () { if (Math.abs(window.scrollY - before) < 2) landOn(target); else landAfterScroll(target); });
       }
@@ -646,9 +649,11 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   .wcp-wrap .flow-step.cp-rv.is-in .flow-step-num { opacity: 1; transform: none; }
 }
 
-/* '특별한 이유' — 지금 읽는 줄 말고는 살짝 흐리게 */
-.wcp-wrap .feat-item.cp-rv > * { transition: opacity .45s ease; }
-.wcp-wrap .feat-list.is-spot .feat-item:not(.is-on) > * { opacity: .4; }
+/* '특별한 이유' — 지금 읽는 줄 말고는 살짝 흐리게.
+   투명도 대신 글자색(--cp-muted, 이 바탕에서 4.7:1)으로 흐린다 — 흐린 줄도 본문 대비 4.5:1 이상으로 읽힌다.
+   지금 줄은 제목이 남색·작은 표시가 청록으로 남아 차이가 보인다. */
+.wcp-wrap .feat-item.cp-rv :is(.feat-key, .feat-name, .feat-desc) { transition: color .45s ease; }
+.wcp-wrap .feat-list.is-spot .feat-item:not(.is-on) :is(.feat-key, .feat-name, .feat-desc) { color: var(--cp-muted); }
 
 /* '특별한 경험' 큰 사진 — 컴퓨터에서 스크롤보다 느리게 움직일 여유 */
 @media (min-width: 981px) {

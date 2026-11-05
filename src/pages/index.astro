@@ -232,12 +232,34 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 .hm-hero-pager { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 .hm-hero-count { font-family: var(--ff-serif); font-size: 14px; line-height: 1; letter-spacing: .04em; font-variant-numeric: tabular-nums; color: #fff; }
 .hm-hero-total { color: rgba(255,255,255,.5); }
-.hm-hero-segs { display: flex; gap: 6px; }
-.hm-hero-seg { position: relative; width: 28px; height: 16px; min-width: 0 !important; min-height: 0 !important; padding: 0; border: 0; border-radius: 0; background: none; cursor: pointer; }
-.hm-hero-seg::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; background: rgba(255,255,255,.35); transition: background-color .3s; }
-.hm-hero-seg:hover::before { background: rgba(255,255,255,.7); }
-.hm-hero-seg.is-on::before { background: #fff; }
-.hm-hero-seg:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+/* 멈춤 단추 + 막대 다섯 개를 한 줄로. 단추마다 누르는 자리는 44×44px이고, 보이는 선 · 그림은 가운데에 작게 둔다.
+   위아래 14px씩은 옆 줄과 겹쳐 두어(음수 여백) 숫자와의 간격 · 줄 높이는 전과 같게 보인다. */
+.hm-hero-ctrl { display: flex; align-items: center; margin: -14px 0; }
+.hm-hero-segs { display: flex; }
+.hm-hero-seg { position: relative; flex: none; width: 44px; height: 44px; min-width: 0 !important; min-height: 0 !important; padding: 0; border: 0; border-radius: 0; background: none; cursor: pointer; }
+/* 보이는 선은 전처럼 34×2px. 지금 장의 선은 머무는 시간(--seg-ms) 동안 왼쪽부터 흰색으로 차오른다 */
+.hm-hero-seg::before {
+  content: ''; position: absolute; left: 5px; right: 5px; top: 50%; height: 2px; margin-top: -1px; border-radius: 2px;
+  background: rgba(255,255,255,.35) linear-gradient(#fff, #fff) no-repeat 0 0 / 0 100%; transition: background-color .3s;
+}
+.hm-hero-seg:hover::before { background-color: rgba(255,255,255,.7); }
+.hm-hero-seg.is-on::before { animation: hmSegFill var(--seg-ms, 6s) linear forwards; }
+@keyframes hmSegFill { from { background-size: 0 100%; } to { background-size: 100% 100%; } }
+/* 키보드 초점 테두리는 선 둘레에만(전과 같은 42×24px) — 누르는 자리 전체를 두르지 않는다 */
+.hm-hero-seg:focus-visible { outline: none; }
+.hm-hero-seg:focus-visible::after { content: ''; position: absolute; left: 1px; right: 1px; top: 10px; bottom: 10px; border: 2px solid #fff; }
+/* 사진 넘김 멈춤 / 재생 단추 — 막대와 같은 흰 2px 선 그림. 지금 상태에 맞는 그림과 이름 하나만 보인다 */
+.hm-hero-toggle { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; min-width: 0 !important; min-height: 0 !important; padding: 0; border: 0; border-radius: 0; background: none; color: rgba(255,255,255,.85); cursor: pointer; transition: color .2s; }
+.hm-hero-toggle:hover { color: #fff; }
+.hm-hero-toggle:focus-visible { outline: 2px solid #fff; outline-offset: -8px; }
+.hm-hero-tg { display: flex; }
+.hm-hero-tg svg { width: 16px; height: 16px; fill: currentColor; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.hm-hero-tg--play,
+.hm-hero.is-paused .hm-hero-tg--pause { display: none; }
+.hm-hero.is-paused .hm-hero-tg--play { display: flex; }
+/* 멈춘 동안은 사진 다가오기와 막대 차오르기도 그 자리에 멈춘다(다시 재생하면 이어서) */
+.hm-hero.is-paused .wh-hero-slide.is-zooming,
+.hm-hero.is-paused .hm-hero-seg.is-on::before { animation-play-state: paused; }
 
 /* 등장 움직임 — 맨 위 배너(PageHero)와 같은 순서: 사진 → 작은 표시 → 제목 → 아래 줄. 스크립트가 .hm-motion 을 붙일 때만 */
 @keyframes hmRise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
@@ -453,9 +475,9 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 /* ═══════════════════════════
    반응형
 ═══════════════════════════ */
-@media (max-width: 1100px) {
+@media (max-width: 1140px) {   /* 1100 → 1140: 멈춤 단추가 붙어 막대 줄이 넓어져, 1101~1140px 에서 첫 화면 설명이 한 줄 더 늘어나던 것을 막는다 */
   .hm-hero-bar { grid-template-columns: minmax(0, 1fr) auto; }
-  .hm-hero-pager { grid-column: 1 / -1; margin-top: 28px; flex-direction: row; justify-content: space-between; align-items: center; }
+  .hm-hero-pager { grid-column: 1 / -1; margin-top: 28px; flex-direction: row; flex-wrap: wrap; justify-content: space-between; align-items: center; }   /* 좁은 폭(약 360px 미만)에서는 숫자 아래 줄로 내려간다 */
 }
 @media (max-width: 1050px) {
   .hm-vision-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 44px 28px; }
@@ -559,6 +581,8 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 .wh-promo-stage > .wh-promo-card[hidden] { display: none; }
 .wh-promo-dots { display: flex; gap: 10px; align-items: center; justify-content: center; }
 .wh-promo-dots[hidden] { display: none; }
+/* 카드가 한 장이라 점이 숨으면 점 묶음 이름도 읽히지 않게 */
+.wh-promo-row:has(> .wh-promo-dots[hidden]) > .wh-promo-dots-name { display: none; }
 :root:root .wh-promo-dots :global(button) { width: 12px !important; height: 12px !important; flex: 0 0 12px; min-width: 0 !important; min-height: 0 !important; padding: 0 !important; aspect-ratio: 1 / 1; border: 0; border-radius: 50%; background: rgba(255,255,255,.45); cursor: pointer; transition: background .2s, transform .2s; }
 :root:root .wh-promo-dots :global(button.is-on) { background: #fff; transform: scale(1.25); }
 :root:root .wh-promo-dots :global(button:focus-visible) { outline: 2px solid #fff; outline-offset: 3px; }
@@ -592,15 +616,22 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 .wh-promo-body { padding: 22px 24px 24px; text-align: center; }
 .wh-promo-eyebrow { font-size: 10.5px; font-weight: 800; letter-spacing: .22em; color: #b0631f; text-transform: uppercase; margin-bottom: 9px; }
 .wh-promo-title { margin: 0 0 8px; font-family: var(--ff-serif); font-size: 24px; font-weight: 800; color: #3b1f17; }
+/* 팝업이 열리면 스크립트가 지금 카드 제목으로, 닫히면 (열기 전 초점 자리가 없을 때) 홈 본문 맨 앞으로 초점을 옮긴다.
+   둘 다 누르는 것이 아니라 읽기 시작점이라 테두리는 그리지 않는다. */
+.wh-promo-title:focus, .hm-home:focus { outline: none; }
+/* 키보드로 다닐 때 지금 위치가 보이게 — 사진 위 닫기는 흰 테두리, 카드 안 단추는 카드 글자색 계열 */
+.wh-promo-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.wh-promo-btn:focus-visible, .wh-promo-dismiss:focus-visible { outline: 2px solid #9a3b22; outline-offset: 3px; }
 .wh-promo-meta { margin: 0 0 20px; font-size: 13.5px; line-height: 1.6; color: #6b5346; }
 .wh-promo-actions { display: flex; flex-direction: column; gap: 9px; }
 .wh-promo-btn {
   display: block; padding: 13px 20px; border-radius: 12px; text-decoration: none;
-  background: linear-gradient(135deg, #9a3b22, #d9772f); color: #fff;
+  /* 흰 글자 대비: 밝은 쪽 끝을 #d9772f(3.2:1)에서 팝업 소제목 색 #b0631f(4.5:1)로 낮춰, 단추 어디서나 4.5:1 이상 (진한 쪽 #9a3b22는 7.0:1) */
+  background: linear-gradient(135deg, #9a3b22, #b0631f); color: #fff;
   font-weight: 800; font-size: 14.5px; box-shadow: 0 10px 24px rgba(154,59,34,.28);
 }
 .wh-promo-dismiss {
-  background: none; border: none; padding: 4px; font-size: 12px; color: #9a8a80;
+  background: none; border: none; padding: 4px; font-size: 12px; color: #6b5346;   /* 날짜 줄(.wh-promo-meta)과 같은 색 — 흰 카드 위 7.1:1 */
   cursor: pointer; text-decoration: underline; text-underline-offset: 2px; font-family: var(--ff-sans);
 }
 @media (prefers-reduced-motion: reduce) {
@@ -612,93 +643,20 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 .hm-hero .hm-btn { height: 50px; padding: 0 26px; border-radius: 999px; }
 .hm-hero .hm-btn--ghost { border-color: rgba(255,255,255,.4); background: rgba(255,255,255,.08); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 .hm-hero .hm-btn--ghost:hover { background: rgba(255,255,255,.18); }
-.hm-hero-segs { gap: 8px; }
-.hm-hero-seg { width: 34px; }
-.hm-hero-seg::before { border-radius: 2px; }
-.hm-hero-seg.is-on::before { background: rgba(255,255,255,.35); }
-.hm-hero-seg::after { content: ''; position: absolute; left: 0; top: 50%; height: 2px; margin-top: -1px; width: 0; border-radius: 2px; background: #fff; }
-.hm-hero-seg.is-on::after { animation: hmSegFill var(--seg-ms, 6s) linear forwards; }
-@keyframes hmSegFill { from { width: 0; } to { width: 100%; } }
+/* (막대 차오르기 · 멈춤 단추는 위 1. 히어로의 .hm-hero-ctrl 부분) */
 @media (max-width: 740px) {
   .hm-hero-actions { flex-direction: row; gap: 8px; }
   .hm-hero .hm-btn { width: auto; flex: 1 1 0; justify-content: center; gap: 8px; height: 50px; padding: 0 16px; }
   .hm-hero .hm-btn--light { flex-grow: 1.3; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hm-hero-seg.is-on::after { animation: none; width: 100%; }
+  /* 움직임 줄이기: 막대는 차오르지 않고 지금 장이 바로 흰색. 사진 넘김은 멈춘 채로 시작하므로,
+     스크립트가 돌기 전에도 단추를 '재생' 그림 · 이름으로 보여 준다(재생 중이면 스크립트가 .is-running 을 붙인다) */
+  .hm-hero-seg.is-on::before { animation: none; background-size: 100% 100%; }
+  .hm-hero:not(.is-running) .hm-hero-tg--pause { display: none; }
+  .hm-hero:not(.is-running) .hm-hero-tg--play { display: flex; }
 }
 </style>
-
-<!-- ══ 홈 안내 팝업: 감사의 밤 · 제주 캠퍼스 데이 (한 장씩 3초마다 교체 + 아래 점으로 이동, "다시 보지 않기"는 카드별) ══ -->
-<div class="wh-promo-overlay" id="homePromos" hidden>
-  <div class="wh-promo-row">
-  <div class="wh-promo-stage" id="homePromoStage">
-  <div class="wh-promo-card" id="thanksgivingPromo">
-    <button type="button" class="wh-promo-close" id="thanksgivingPromoClose" aria-label="닫기">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-    </button>
-    <img class="wh-promo-image" src="/images/rsvp-share.png" alt="Night of Thanksgiving" loading="lazy">
-    <div class="wh-promo-body">
-      <div class="wh-promo-eyebrow">
-        <span class="wl-ko">감사의 밤에 초대합니다</span>
-        <span class="wl-en">You're Invited</span>
-      </div>
-      <h2 class="wh-promo-title">
-        <span class="wl-ko">감사의 밤</span>
-        <span class="wl-en">Night of Thanksgiving</span>
-      </h2>
-      <p class="wh-promo-meta">
-        <span class="wl-ko">2026년 11월 26일(목) 오후 6시 · 월코센터</span>
-        <span class="wl-en">Thu, Nov 26, 2026 · 6:00 PM · WOLKO Center</span>
-      </p>
-      <div class="wh-promo-actions">
-        <a class="wh-promo-btn" href="/rsvp/thanksgiving/" id="thanksgivingPromoCta">
-          <span class="wl-ko">초대장 보기 · 참석 신청</span>
-          <span class="wl-en">View Invitation &amp; RSVP</span>
-        </a>
-        <button type="button" class="wh-promo-dismiss" id="thanksgivingPromoDismiss">
-          <span class="wl-ko">다시 보지 않기</span>
-          <span class="wl-en">Don't show again</span>
-        </button>
-      </div>
-    </div>
-  </div>
-    {campusDay && (
-      <div class="wh-promo-card" id="campusDayPromo" data-start={campusDay.start_date ?? ''}>
-            <button type="button" class="wh-promo-close" id="campusDayPromoClose" aria-label="닫기">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-            </button>
-            <img class="wh-promo-image" src="/images/wolbi-jeju/hero-campus-spring-2026.jpeg" alt="Jeju Campus Day" loading="lazy">
-            <div class="wh-promo-body">
-              <div class="wh-promo-eyebrow">
-                <span class="wl-ko">학생들을 초대합니다</span>
-                <span class="wl-en">Students Welcome</span>
-              </div>
-              <h2 class="wh-promo-title">
-                <span class="wl-ko">제주 캠퍼스 데이</span>
-                <span class="wl-en">Jeju Campus Day</span>
-              </h2>
-              <p class="wh-promo-meta">
-                <span class="wl-ko">{campusDay.date_ko} · 월비연수원</span>
-                <span class="wl-en">{campusDay.date_en} · WOLBI Center</span>
-              </p>
-              <div class="wh-promo-actions">
-                <a class="wh-promo-btn" href={campusDay.registration_url || '/camp-register/'} target={campusDay.registration_url ? '_blank' : undefined} rel="noopener" id="campusDayPromoCta">
-                  <span class="wl-ko">신청하기</span>
-                  <span class="wl-en">Apply Now</span>
-                </a>
-                <button type="button" class="wh-promo-dismiss" id="campusDayPromoDismiss">
-                  <span class="wl-ko">다시 보지 않기</span>
-                  <span class="wl-en">Don't show again</span>
-                </button>
-              </div>
-            </div>
-          </div>
-    )}
-  </div>
-  <div class="wh-promo-dots" id="homePromoDots" role="tablist" aria-label="Announcements" hidden></div>
-  </div>
-</div>
 
 <div class="hm-home">
 
@@ -737,15 +695,28 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
         </div>
         <div class="hm-hero-pager">
           <span class="hm-hero-count" aria-hidden="true"><span class="hm-hero-cur">01</span> <span class="hm-hero-total">/ {pad2(heroSlides.length)}</span></span>
-          <span class="hm-hero-segs">
-            {heroSlides.map((_, i) => (
-              <button
-                type="button"
-                class:list={['hm-hero-seg', { 'is-on': i === 0 }]}
-                aria-label={`${i + 1} / ${heroSlides.length}`}
-                aria-current={i === 0 ? 'true' : 'false'}
-              ></button>
-            ))}
+          <span class="hm-hero-ctrl">
+            <!-- 멈춤 / 재생 단추: 막대보다 먼저 두어 Tab 으로 가장 먼저 닿는다. 상태에 따라 그림과 이름이 함께 바뀐다(아래 스크립트) -->
+            <button type="button" class="hm-hero-toggle">
+              <span class="hm-hero-tg hm-hero-tg--pause">
+                <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5.5 3.5v9M10.5 3.5v9"/></svg>
+                <span class="sr-only"><span class="wl-ko">사진 넘김 멈추기</span><span class="wl-en">Pause slideshow</span></span>
+              </span>
+              <span class="hm-hero-tg hm-hero-tg--play">
+                <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5.5 3.8v8.4L12.5 8z"/></svg>
+                <span class="sr-only"><span class="wl-ko">사진 넘김 재생하기</span><span class="wl-en">Play slideshow</span></span>
+              </span>
+            </button>
+            <span class="hm-hero-segs">
+              {heroSlides.map((_, i) => (
+                <button
+                  type="button"
+                  class:list={['hm-hero-seg', { 'is-on': i === 0 }]}
+                  aria-label={`${i + 1} / ${heroSlides.length}`}
+                  aria-current={i === 0 ? 'true' : 'false'}
+                ></button>
+              ))}
+            </span>
           </span>
         </div>
       </div>
@@ -1082,12 +1053,91 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 
 </div>
 
+<!-- ══ 홈 안내 팝업: 감사의 밤 · 제주 캠퍼스 데이 (한 장씩 3초마다 교체 + 아래 점으로 이동, "다시 보지 않기"는 카드별) ══ -->
+<!-- 화면에는 가운데 떠 있지만(position: fixed), 문서 순서에서는 홈 본문 뒤에 둔다 — 첫 제목이 홈의 h1이 되도록. -->
+<!-- 대화상자 이름(aria-labelledby)과 초점은 아래 "팝업 대화상자 접근성" 스크립트가 지금 보이는 카드에 맞춘다. -->
+<div class="wh-promo-overlay" id="homePromos" hidden>
+  <div class="wh-promo-row" role="dialog" aria-modal="true" aria-labelledby="thanksgivingPromoTitle">
+  <div class="wh-promo-stage" id="homePromoStage">
+  <div class="wh-promo-card" id="thanksgivingPromo">
+    <button type="button" class="wh-promo-close" id="thanksgivingPromoClose">
+      <span class="hm-sr"><span class="wl-ko">닫기</span><span class="wl-en">Close</span></span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <img class="wh-promo-image" src="/images/rsvp-share.png" alt="" loading="lazy">
+    <div class="wh-promo-body">
+      <div class="wh-promo-eyebrow">
+        <span class="wl-ko">감사의 밤에 초대합니다</span>
+        <span class="wl-en">You're Invited</span>
+      </div>
+      <h2 class="wh-promo-title" id="thanksgivingPromoTitle" tabindex="-1">
+        <span class="wl-ko">감사의 밤</span>
+        <span class="wl-en">Night of Thanksgiving</span>
+      </h2>
+      <p class="wh-promo-meta">
+        <span class="wl-ko">2026년 11월 26일(목) 오후 6시 · 월코센터</span>
+        <span class="wl-en">Thu, Nov 26, 2026 · 6:00 PM · WOLKO Center</span>
+      </p>
+      <div class="wh-promo-actions">
+        <a class="wh-promo-btn" href="/rsvp/thanksgiving/" id="thanksgivingPromoCta">
+          <span class="wl-ko">초대장 보기 · 참석 신청</span>
+          <span class="wl-en">View Invitation &amp; RSVP</span>
+        </a>
+        <button type="button" class="wh-promo-dismiss" id="thanksgivingPromoDismiss">
+          <span class="wl-ko">다시 보지 않기</span>
+          <span class="wl-en">Don't show again</span>
+        </button>
+      </div>
+    </div>
+  </div>
+    {campusDay && (
+      <div class="wh-promo-card" id="campusDayPromo" data-start={campusDay.start_date ?? ''}>
+            <button type="button" class="wh-promo-close" id="campusDayPromoClose">
+              <span class="hm-sr"><span class="wl-ko">닫기</span><span class="wl-en">Close</span></span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+            <img class="wh-promo-image" src="/images/wolbi-jeju/hero-campus-spring-2026.jpeg" alt="" loading="lazy">
+            <div class="wh-promo-body">
+              <div class="wh-promo-eyebrow">
+                <span class="wl-ko">학생들을 초대합니다</span>
+                <span class="wl-en">Students Welcome</span>
+              </div>
+              <h2 class="wh-promo-title" id="campusDayPromoTitle" tabindex="-1">
+                <span class="wl-ko">제주 캠퍼스 데이</span>
+                <span class="wl-en">Jeju Campus Day</span>
+              </h2>
+              <p class="wh-promo-meta">
+                <span class="wl-ko">{campusDay.date_ko} · 월비연수원</span>
+                <span class="wl-en">{campusDay.date_en} · WOLBI Center</span>
+              </p>
+              <div class="wh-promo-actions">
+                <a class="wh-promo-btn" href={campusDay.registration_url || '/camp-register/'} target={campusDay.registration_url ? '_blank' : undefined} rel="noopener" id="campusDayPromoCta">
+                  <span class="wl-ko">신청하기</span>
+                  <span class="wl-en">Apply Now</span>
+                </a>
+                <button type="button" class="wh-promo-dismiss" id="campusDayPromoDismiss">
+                  <span class="wl-ko">다시 보지 않기</span>
+                  <span class="wl-en">Don't show again</span>
+                </button>
+              </div>
+            </div>
+          </div>
+    )}
+  </div>
+  <!-- 점 묶음 이름: 점은 스크립트가 다시 그리므로 이름은 바깥 숨은 글자(한·영 짝)에서 가져온다 — 화면 언어에 맞는 쪽만 읽힌다 -->
+  <span class="hm-sr wh-promo-dots-name" id="homePromoDotsName"><span class="wl-ko">안내 소식</span><span class="wl-en">Announcements</span></span>
+  <div class="wh-promo-dots" id="homePromoDots" role="tablist" aria-labelledby="homePromoDotsName" hidden></div>
+  </div>
+</div>
+
 
 <script>
   // ── 히어로 장 넘기기 ─────────────────────────────────────
   // 첫 장은 영상: 끝까지 한 번 재생한 뒤 다음 장으로(막대도 영상 길이만큼 차오른다). 나머지 사진은 6초씩.
   // 휴대폰 폭, 움직임 줄이기, 데이터 절약 모드에서는 영상을 받지 않고 정지 화면을 6초 사진처럼 보여 준다.
   // 아래 줄의 숫자(01 / 05)와 막대가 함께 바뀌고, 막대를 누르면 그 장으로 가서 시간을 새로 센다.
+  // 막대 앞 멈춤 단추를 누르면 넘김 · 영상 · 사진 다가오기 · 막대 차오르기가 함께 멈추고, 다시 누르면 남은 시간부터 이어 간다.
+  // 움직임 줄이기 설정이면 멈춘 채로 시작한다(재생 단추를 눌러야 넘어간다).
   (function() {
     const hero = document.getElementById('heroSection');
     if (!hero) return;
@@ -1096,12 +1146,18 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
     const segs = hero.querySelectorAll('.hm-hero-seg');
     const cur = hero.querySelector('.hm-hero-cur');
     const video = hero.querySelector('.wh-hero-video');
+    const toggle = hero.querySelector('.hm-hero-toggle');
     const PHOTO_MS = 6000;
     const conn = navigator.connection || {};
-    const useVideo = !!video && window.matchMedia('(min-width: 641px)').matches &&
-      !window.matchMedia('(prefers-reduced-motion: reduce)').matches && !conn.saveData;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const useVideo = !!video && window.matchMedia('(min-width: 641px)').matches && !reduce && !conn.saveData;
     let current = 0;
     let timer = 0;
+    let paused = reduce;
+    let dueAt = 0;    // 다음 장으로 넘어갈 시각
+    let left = 0;     // 멈춘 동안 남겨 둔 시간
+    hero.classList.toggle('is-paused', paused);
+    hero.classList.toggle('is-running', !paused);
 
     if (useVideo) {
       [['webm', 'video/webm'], ['mp4', 'video/mp4']].forEach(function(t) {
@@ -1118,10 +1174,13 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
       const d = video.duration;
       return isFinite(d) && d > 1 ? Math.round(d * 1000) - 400 : 13000;
     }
-    function playVideo() {
-      try { video.currentTime = 0; } catch (e) {}
+    function resumeVideo() {
       const p = video.play();
       if (p && p.catch) p.catch(function() { video.classList.remove('is-playing'); });
+    }
+    function playVideo() {
+      try { video.currentTime = 0; } catch (e) {}
+      if (!paused) resumeVideo();                  // 멈춘 동안은 처음 화면에 세워 두고, 재생하면 거기서부터
     }
 
     function show(idx) {
@@ -1143,10 +1202,30 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
         s.setAttribute('aria-current', i === current ? 'true' : 'false');
       });
     }
-    function restart() {
+    // ms 뒤에 다음 장으로. 멈춘 동안에는 시간만 남겨 두고 재생할 때 건다.
+    function schedule(ms) {
       clearTimeout(timer);
-      timer = setTimeout(function step() { show(current + 1); timer = setTimeout(step, dwell(current)); }, dwell(current));
+      left = ms;
+      if (paused) return;
+      dueAt = Date.now() + ms;
+      timer = setTimeout(function() { show(current + 1); schedule(dwell(current)); }, ms);
     }
+    function restart() { schedule(dwell(current)); }
+    function setPaused(p) {
+      if (p === paused) return;
+      paused = p;
+      hero.classList.toggle('is-paused', p);
+      hero.classList.toggle('is-running', !p);
+      if (p) {
+        clearTimeout(timer);
+        left = Math.max(0, dueAt - Date.now());
+        if (isVideo(current)) video.pause();
+      } else {
+        if (isVideo(current) && video.paused) resumeVideo();
+        schedule(left);
+      }
+    }
+    if (toggle) toggle.addEventListener('click', function() { setPaused(!paused); });
     segs.forEach(function(s, i) {
       s.addEventListener('click', function() {
         if (i !== current) show(i);
@@ -1161,9 +1240,9 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
         if (current === 0) restart();
       }, { once: true });
       playVideo();
-      // 다른 탭에 갔다 오면 브라우저가 멈춰 둔 영상을 이어서 튼다
+      // 다른 탭에 갔다 오면 브라우저가 멈춰 둔 영상을 이어서 튼다(멈춤 단추로 멈춘 때는 그대로 둔다)
       document.addEventListener('visibilitychange', function() {
-        if (!document.hidden && isVideo(current) && video.paused) { const p = video.play(); if (p && p.catch) p.catch(function() {}); }
+        if (!document.hidden && !paused && isVideo(current) && video.paused) { const p = video.play(); if (p && p.catch) p.catch(function() {}); }
       });
     }
     segs.forEach(function(s, i) { s.style.setProperty('--seg-ms', dwell(i) + 'ms'); });
@@ -1270,8 +1349,13 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
     var paused = false;
     dotsEl.addEventListener('click', function (e) { var b = e.target.closest('[data-n]'); if (b) render(+b.dataset.n); });
     // 읽는 중에는 넘어가지 않게: 마우스를 올리거나 손가락을 대고 있거나 키보드 포커스가 있는 동안 멈춘다
+    // 단, 팝업이 열리거나 카드가 바뀔 때 스크립트가 카드 제목(.wh-promo-title)으로 옮겨 주는 초점은 사람이 움직인 것이 아니라서 멈추지 않는다.
+    // (제목은 tabindex=-1 이라 Tab 으로는 가지 않는다 — 키보드로 단추 · 점에 들어왔을 때만 멈춘다)
     var row = overlay.querySelector('.wh-promo-row');
-    ['mouseenter', 'focusin', 'touchstart'].forEach(function (ev) { row.addEventListener(ev, function () { paused = true; clearInterval(timer); timer = null; }, { passive: true }); });
+    ['mouseenter', 'focusin', 'touchstart'].forEach(function (ev) { row.addEventListener(ev, function (e) {
+      if (ev === 'focusin' && e.target && e.target.classList && e.target.classList.contains('wh-promo-title')) return;
+      paused = true; clearInterval(timer); timer = null;
+    }, { passive: true }); });
     ['mouseleave', 'focusout', 'touchend'].forEach(function (ev) { row.addEventListener(ev, function () { paused = false; restart(); }, { passive: true }); });
     var stage = document.getElementById('homePromoStage');
     var touchOrigin = null, suppressClickUntil = 0;
@@ -1318,6 +1402,116 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
       document.body.style.overflow = 'hidden';
     }
     setTimeout(showPromos, 700);
+  })();
+
+  // ── 팝업 대화상자 접근성: 초점 옮기기 · Tab 가두기 · 이름 맞추기 ──
+  // 위 팝업 묶음은 테스트가 따로 떼어 가짜 화면에서 돌리므로 그대로 두고, 여기서 바깥에서 지켜본다.
+  // (#homePromos 의 is-open 클래스, 카드의 is-active · hidden, 아래 점 다시 그리기)
+  //  · 열리면: 열기 전 초점 자리를 기억하고, 지금 카드 제목으로 초점을 옮긴다.
+  //  · 열려 있는 동안: Tab / Shift+Tab 이 팝업 안에서만 돈다. 카드가 바뀌면 대화상자 이름도 그 카드 제목으로 바꾸고,
+  //    초점이 사라지는 카드나 다시 그려진 점에 있었으면 새 카드 제목(또는 새로 켜진 점)으로 옮긴다.
+  //  · 닫히면: 열기 전 초점 자리로, 없으면 본문 맨 앞(공용 틀의 main#main)으로 돌려보낸다(다음 Tab 이 본문 첫 링크로 간다).
+  (function () {
+    var box = document.getElementById('homePromos');
+    if (!box || !window.MutationObserver) return;
+    var dialog = box.querySelector('.wh-promo-row');
+    var dots = document.getElementById('homePromoDots');
+    var cards = [].slice.call(box.querySelectorAll('.wh-promo-card'));
+    if (!dialog || !cards.length) return;
+    var isOpen = false, activeCard = null, returnTo = null, lastInside = null, lastWasDot = false;
+
+    function shownCard() {
+      for (var i = 0; i < cards.length; i++) if (cards[i].classList.contains('is-active') && !cards[i].hidden) return cards[i];
+      return null;
+    }
+    function titleOf(card) { return card ? card.querySelector('.wh-promo-title') : null; }
+    function isVisible(el) {
+      return !!el && el.isConnected && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
+    }
+    function focusables() {
+      return [].slice.call(dialog.querySelectorAll('a[href], button:not([disabled])')).filter(isVisible);
+    }
+    function moveTo(el) { if (el) { try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); } } }
+    function nameAfter(card) {
+      var t = titleOf(card);
+      if (t && t.id) dialog.setAttribute('aria-labelledby', t.id);
+    }
+
+    function onOpen() {
+      var cur = document.activeElement;
+      returnTo = cur && cur !== document.body && !box.contains(cur) ? cur : null;
+      activeCard = shownCard();
+      nameAfter(activeCard);
+      moveTo(titleOf(activeCard));
+      settleFocus(0);
+    }
+    // '동작 줄이기'에서는 팝업이 숨김 → 보임으로 바뀌는 같은 순간에 focus()를 불러도 사파리가 초점을 붙이지 않는다.
+    // 초점이 아직 팝업 밖(본문 · body)에 있으면 다음 그림 차례에 한 번 더, 그래도 안 되면 짧게 몇 번 더 옮긴다.
+    // 그 사이 사람이 팝업 안 다른 칸으로 옮겼거나 팝업이 닫혔으면 손대지 않는다.
+    function settleFocus(tries) {
+      (tries ? function (fn) { setTimeout(fn, 60); } : requestAnimationFrame)(function () {
+        if (!isOpen) return;
+        var cur = document.activeElement;
+        if (cur && cur !== document.body && dialog.contains(cur)) return;
+        moveTo(titleOf(activeCard || shownCard()));
+        if (tries < 5 && !dialog.contains(document.activeElement)) settleFocus(tries + 1);
+      });
+    }
+    function onClose() {
+      var target = returnTo && returnTo.isConnected ? returnTo : document.getElementById('main');
+      returnTo = null; activeCard = null; lastInside = null; lastWasDot = false;
+      if (!target) return;
+      if (!target.hasAttribute('tabindex') && target.tabIndex < 0) {
+        // 본문 덩어리는 원래 초점을 받지 않으므로 이번 한 번만 받게 하고, 초점이 떠나면 되돌린다
+        target.setAttribute('tabindex', '-1');
+        target.addEventListener('blur', function () { target.removeAttribute('tabindex'); }, { once: true });
+      }
+      moveTo(target);
+    }
+    function onChange() {
+      var card = shownCard(), prev = activeCard;
+      if (card && card !== prev) { activeCard = card; nameAfter(card); }
+      var cur = document.activeElement;
+      var lost = !cur || cur === document.body || !cur.isConnected || (dialog.contains(cur) && !isVisible(cur));
+      if (lost && lastWasDot && dots) {
+        var on = dots.querySelector('button.is-on') || dots.querySelector('button');
+        if (isVisible(on)) { moveTo(on); return; }
+      }
+      if (lost || (prev && card !== prev && prev.contains(cur))) moveTo(titleOf(card));
+    }
+
+    new MutationObserver(function () {
+      var open = box.classList.contains('is-open') && !box.hidden;
+      if (open && !isOpen) { isOpen = true; onOpen(); }
+      else if (!open && isOpen) { isOpen = false; onClose(); }
+      else if (open) onChange();
+    }).observe(box, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'hidden'] });
+
+    dialog.addEventListener('focusin', function (e) {
+      lastInside = e.target;
+      lastWasDot = !!dots && dots.contains(e.target);
+    });
+
+    // Tab 은 브라우저에 맡기지 않고 직접 다음 칸을 고른다 — 초점이 제목(tabindex=-1)에 있을 때
+    // 브라우저마다 다음 칸을 다르게 잡아 팝업 밖으로 나가는 일이 있어서다. 순서는 화면(문서) 순서 그대로.
+    // 사파리에서 링크 · 단추로 옮겨 다니는 Option(Alt)+Tab 도 같이 가둔다(캠프 신청 모달과 같게).
+    document.addEventListener('keydown', function (e) {
+      if (!isOpen || e.key !== 'Tab' || e.ctrlKey || e.metaKey) return;
+      e.preventDefault();
+      var list = focusables();
+      if (!list.length) { moveTo(titleOf(shownCard())); return; }
+      var cur = document.activeElement, i = list.indexOf(cur), next = null;
+      if (i >= 0) next = list[(i + (e.shiftKey ? list.length - 1 : 1)) % list.length];
+      else if (cur && dialog.contains(cur)) {
+        // 목록에 없는 자리(카드 제목 등): 문서 순서로 바로 뒤(또는 앞) 칸
+        for (var k = 0; k < list.length; k++) {
+          var after = cur.compareDocumentPosition(list[k]) & Node.DOCUMENT_POSITION_FOLLOWING;
+          if (!e.shiftKey && after) { next = list[k]; break; }
+          if (e.shiftKey && !after) next = list[k];
+        }
+      }
+      moveTo(next || (e.shiftKey ? list[list.length - 1] : list[0]));
+    });
   })();
 </script>
 
