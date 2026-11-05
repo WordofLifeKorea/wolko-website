@@ -1,0 +1,127 @@
+/* 포탈 로그인 전 화면(로그인 · 가입 · 안내 · 비밀번호) 전용 — 공용 로그인 디자인(wolko-login.css) 위에 얹는다.
+   다른 로그인 화면(스태프 포탈 등)은 건드리지 않도록 .portal-auth 가 붙은 화면에만 쓴다.
+   - 오류는 빨간색, 성공 · 안내만 초록색 / 틀린 칸은 빨간 테두리
+   - 칸 위에 보이는 이름표(예시 글자는 예시로만), 글자 16px(아이폰 확대 방지)
+   - 손가락으로 누르는 곳은 44px 이상, 흐린 글자는 대비 4.5:1 이상 */
+
+:root:root .login-screen.portal-auth .login-card { text-align: left; }
+:root:root .login-screen.portal-auth :is(.login-logo, .login-title, .login-description) { text-align: center; }
+:root:root .login-screen.portal-auth .login-logo-sub { color: #5a7380; font-size: 11px; }
+:root:root .login-screen.portal-auth .login-title { display: block; margin: 0 0 6px; outline: none; }
+:root:root .login-screen.portal-auth .login-description { margin-bottom: 24px; }
+
+/* 이름표 */
+:root:root .login-screen.portal-auth .login-input-wrap { margin-bottom: 14px; }
+:root:root .login-screen.portal-auth .auth-label {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  margin: 0 0 6px; padding: 0; color: #2c4652; font: 700 13px/1.35 'Noto Sans KR', sans-serif;
+}
+:root:root .login-screen.portal-auth .auth-label-note { color: #587383; font-size: 12px; font-weight: 500; text-align: right; }
+:root:root .login-screen.portal-auth .auth-fieldset { min-width: 0; margin: 0 0 14px; padding: 0; border: 0; }
+:root:root .login-screen.portal-auth .auth-fieldset legend { width: 100%; float: left; }
+:root:root .login-screen.portal-auth .auth-fieldset .signup-campus { clear: both; }
+
+/* 입력칸: 16px, 테두리가 흰 카드 위에서 보이게(3:1), 예시 글자 4.5:1 */
+:root:root .login-screen.portal-auth :is(.login-input, .ip-cc) {
+  font-size: 16px; border-color: #8396a1; background: #fff;
+}
+:root:root .login-screen.portal-auth .login-input::placeholder { color: #5f7581; opacity: 1; }
+:root:root .login-screen.portal-auth .login-input:hover { border-color: #5f7581; }
+:root:root .login-screen.portal-auth :is(.login-input, .ip-cc):focus {
+  border-color: #004f68; box-shadow: 0 0 0 3px rgba(0, 79, 104, .16); outline: none;
+}
+:root:root .login-screen.portal-auth .login-input[aria-invalid="true"] {
+  border-color: #c42a36; background: #fff7f7; box-shadow: 0 0 0 3px rgba(196, 42, 54, .12);
+}
+/* 휴대폰 번호 앞 나라 번호: 옆 칸과 같은 높이 · 같은 글자 크기 */
+:root:root .login-screen.portal-auth .ip-wrap { align-items: stretch; }
+:root:root .login-screen.portal-auth .ip-cc { height: 48px !important; min-height: 48px !important; min-width: 108px; padding: 0 30px 0 12px; border-width: 1px; border-radius: 8px; color: #0b2430; font-size: 16px;
+  -webkit-appearance: none; appearance: none;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5' fill='none' stroke='%23587383' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center; }
+/* 숨긴 요소는 위의 display 설정과 상관없이 숨긴다 */
+:root:root .login-screen.portal-auth [hidden] { display: none !important; }
+
+/* 소속 고르기: 안 고른 쪽 글자도 또렷하게 */
+:root:root .login-screen.portal-auth .signup-campus-opt span { color: #4a6470; }
+:root:root .login-screen.portal-auth .signup-campus-opt input:checked + span { color: #004f68; }
+
+/* 안내 글 · 관리자 권한 링크 */
+:root:root .login-screen.portal-auth .signup-role-hint { margin: 8px 2px 0; color: #587383; font-size: 12.5px; line-height: 1.6; }
+:root:root .login-screen.portal-auth .auth-admin-link {
+  display: inline-flex; align-items: center; min-height: 44px !important; margin: 2px 0 -6px; padding: 0 2px;
+  border: 0; background: none; color: #004f68; font: 700 13px/1.3 'Noto Sans KR', sans-serif;
+  text-decoration: underline; text-decoration-color: rgba(0, 79, 104, .35); text-underline-offset: 3px; cursor: pointer;
+}
+:root:root .login-screen.portal-auth .auth-admin-link:hover { text-decoration-color: currentColor; }
+:root:root .login-screen.portal-auth .auth-admin-link:focus-visible { outline: 2px solid #004f68; outline-offset: 2px; border-radius: 4px; }
+
+/* 오류는 빨강, 성공 · 안내만 초록 */
+:root:root .login-screen.portal-auth .login-error { color: #c42a36; font-size: 13px; line-height: 1.5; }
+:root:root .login-screen.portal-auth .login-error:empty { min-height: 0; margin: 0; }
+:root:root .login-screen.portal-auth .login-error.is-ok { color: #16865a; }
+
+/* 아이디 저장 · 로그인 유지: 줄 전체가 누르는 자리(44px), 상자 20px, 키보드 초점이 잘 보이게 */
+:root:root .login-screen.portal-auth .auth-checks { display: flex; flex-wrap: wrap; gap: 0 18px; margin: -4px 0 4px; }
+:root:root .login-screen.portal-auth .remember-email { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin: 0; color: #4a6470; font-size: 13.5px; cursor: pointer; }
+:root:root .login-screen.portal-auth .remember-email input { width: 20px; height: 20px; margin: 0; }
+:root:root .login-screen.portal-auth .remember-email input:focus-visible { outline: 2px solid #004f68 !important; outline-offset: 2px !important; box-shadow: none !important; }
+
+/* 보조 링크(비밀번호 찾기 · 돌아가기 등): 44px 높이, 가운데 */
+:root:root .login-screen.portal-auth .login-link-btn {
+  display: flex; align-items: center; justify-content: center; min-height: 44px !important; margin: 10px auto 0; padding: 0 10px;
+}
+:root:root .login-screen.portal-auth .login-link-btn:focus-visible { outline: 2px solid #004f68; outline-offset: 2px; }
+:root:root .login-screen.portal-auth .login-link-btn:disabled { color: #587383; cursor: default; text-decoration: none; }
+
+/* 가입 뒤 안내 */
+:root:root .login-screen.portal-auth .auth-status-email {
+  margin: 4px 0 14px; padding: 11px 14px; border-radius: 8px; background: #eef5f8;
+  color: #0b2430; font-size: 14px; font-weight: 700; text-align: center; overflow-wrap: anywhere;
+}
+:root:root .login-screen.portal-auth#statusScreen .login-description { margin-bottom: 16px; }
+:root:root .login-screen.portal-auth .auth-status-contact { margin: -4px 0 16px; color: #4a6470; font-size: 13px; line-height: 1.6; text-align: center; }
+:root:root .login-screen.portal-auth .auth-status-contact a { color: #004f68; font-weight: 700; text-underline-offset: 3px; }
+:root:root .login-screen.portal-auth .auth-status-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 6px; margin: 0 0 12px; }
+:root:root .login-screen.portal-auth .auth-status-actions .login-link-btn { margin: 0; }
+
+/* 로그인 전 화면의 언어 바꾸기 — 오른쪽 위, 어두운 바탕 위의 작은 두 칸 */
+.auth-lang {
+  position: fixed; z-index: 10000;
+  top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px));
+  display: flex; gap: 2px; padding: 2px; border-radius: 999px; background: rgba(255, 255, 255, .12);
+}
+.auth-lang[hidden] { display: none; }
+.auth-lang button {
+  min-width: 64px; height: 44px; min-height: 44px !important; padding: 0 14px; border: 0; border-radius: 999px; background: transparent;
+  color: #d9e9ef; font: 700 13px/1 'Noto Sans KR', sans-serif; cursor: pointer;
+}
+.auth-lang button:hover { color: #fff; }
+.auth-lang button.is-active { background: #fff; color: #004f68; }
+.auth-lang button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* 가입을 막 마친 첫 로그인의 환영 인사 — 화면 아래에서 떠올랐다가 8초 뒤 사라진다 */
+.auth-welcome {
+  position: fixed; z-index: 9000; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 14px; width: max-content; max-width: calc(100vw - 32px);
+  padding: 12px 12px 12px 18px; border-radius: 12px; background: #0b2430; color: #fff;
+  font: 700 14.5px/1.5 'Noto Sans KR', sans-serif;
+  box-shadow: 0 18px 40px -16px rgba(0, 12, 20, .6);
+  transform: translateX(-50%); animation: auth-welcome-in .5s cubic-bezier(.16, 1, .3, 1) both;
+  transition: opacity .3s ease, transform .3s ease;
+}
+.auth-welcome.is-leaving { opacity: 0; transform: translate(-50%, 8px); }
+.auth-welcome button {
+  flex: none; min-height: 44px !important; padding: 0 14px; border: 0; border-radius: 8px;
+  background: rgba(255, 255, 255, .14); color: #fff; font: 700 13px/1 'Noto Sans KR', sans-serif; cursor: pointer;
+}
+.auth-welcome button:hover { background: rgba(255, 255, 255, .24); }
+.auth-welcome button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+@keyframes auth-welcome-in { from { opacity: 0; transform: translate(-50%, 16px); } to { opacity: 1; transform: translateX(-50%); } }
+
+@media (max-width: 520px) {
+  .auth-lang button { min-width: 58px; padding: 0 12px; }
+  :root:root .login-screen.portal-auth .login-card { margin-top: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-welcome { animation: none; transition: none; }
+}

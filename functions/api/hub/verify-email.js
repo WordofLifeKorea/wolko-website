@@ -17,7 +17,7 @@ export async function onRequestPost({ env, request }) {
   const token = String(body?.token || '');
   const newPassword = String(body?.newPassword || '');
   if (!token) return fail('링크가 만료됐거나 올바르지 않아요.');
-  if (!isValidPassword(newPassword)) return fail('비밀번호는 8자 이상의 영문/숫자/특수문자로 입력해 주세요.');
+  if (!isValidPassword(newPassword)) return fail('비밀번호는 띄어쓰기 없이 영문·숫자·기호로 8자 이상 입력해 주세요.');
   const email = await peekVerification(env, token);
   if (!email) return fail('링크가 만료됐거나 올바르지 않아요. 가입을 다시 눌러 새 메일을 받아 주세요.');
   const account = await getAccount(env, email);

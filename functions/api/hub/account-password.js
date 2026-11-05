@@ -32,7 +32,7 @@ export async function onRequestPost({ env, request }) {
   const currentPassword = String(body.currentPassword || '');
   const newPassword = String(body.newPassword || '');
   if (!currentPassword) return failure('현재 비밀번호를 입력해 주세요.', 'CURRENT_PASSWORD_REQUIRED', 400);
-  if (!isValidPassword(newPassword)) return failure('비밀번호는 8자 이상의 영문/숫자/특수문자로 입력해 주세요.', 'PASSWORD_INVALID', 400);
+  if (!isValidPassword(newPassword)) return failure('비밀번호는 띄어쓰기 없이 영문·숫자·기호로 8자 이상 입력해 주세요.', 'PASSWORD_INVALID', 400);
   if (currentPassword === newPassword) return failure('새 비밀번호는 현재 비밀번호와 다르게 설정해 주세요.', 'SAME_PASSWORD', 400);
 
   try {

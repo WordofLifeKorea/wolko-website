@@ -64,7 +64,7 @@ export async function onRequestPost(context) {
   // 메일 인증으로 끝나는 가입(wolko.org·wol.org 일반 멤버)은 비밀번호를 메일의 링크에서 정한다
   const autoMember = requestedRole === 'member' && isWolDomain(email) && !isMasterEmail(email);
   if (!autoMember && !isValidPassword(password)) {
-    return Response.json({ error: '비밀번호는 8자 이상의 영문/숫자/특수문자로 입력해 주세요.' }, { status: 400, headers: CORS });
+    return Response.json({ error: '비밀번호는 띄어쓰기 없이 영문·숫자·기호로 8자 이상 입력해 주세요.' }, { status: 400, headers: CORS });
   }
 
   try {

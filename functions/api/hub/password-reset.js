@@ -69,7 +69,7 @@ export async function onRequestPost(context) {
     const token = String(body.token || '');
     const newPassword = String(body.newPassword || '');
     if (!token) return fail('링크가 만료됐거나 올바르지 않아요.', 400);
-    if (!isValidPassword(newPassword)) return fail('비밀번호는 8자 이상의 영문/숫자/특수문자로 입력해 주세요.');
+    if (!isValidPassword(newPassword)) return fail('비밀번호는 띄어쓰기 없이 영문·숫자·기호로 8자 이상 입력해 주세요.');
     const hash = await sha256Hex(token);
     const stored = await env.CAMP_KV.get(tokenKey(hash), 'json');
     if (!stored) return fail('링크가 만료됐거나 올바르지 않아요. 다시 요청해 주세요.', 400);

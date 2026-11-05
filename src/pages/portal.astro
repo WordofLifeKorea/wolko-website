@@ -31,6 +31,7 @@
   <link rel="stylesheet" href="/wolko-rail.css?v=24">
   <link rel="stylesheet" href="/wolko-site.css?v=11">
   <link rel="stylesheet" href="/wolko-login.css?v=1">
+  <link rel="stylesheet" href="/portal-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-customize.css?v=4">
   <script src="/wolko-customize.js?v=4" defer></script>
   <script src="/wolko-rail.js?v=49" defer></script>
@@ -47,8 +48,14 @@
 </head>
 <body>
 
+  <!-- ── 로그인 전 화면들(로그인 · 가입 · 안내 · 비밀번호)의 언어 바꾸기 — 포탈에 들어가면 숨긴다 ── -->
+  <div class="auth-lang" id="authLang" role="group" aria-label="Language">
+    <button type="button" data-hub-lang="ko" onclick="setHubLang('ko')" lang="ko">한국어</button>
+    <button type="button" data-hub-lang="en" onclick="setHubLang('en')" lang="en">English</button>
+  </div>
+
   <!-- ── 이메일+비밀번호 로그인 (기본) ── -->
-  <div class="login-screen" id="emailScreen">
+  <div class="login-screen portal-auth" id="emailScreen">
     <div class="login-card">
       <div class="login-logo">
         <img src="/images/WOLKO Circle.png" alt="WOLKO">
@@ -57,18 +64,22 @@
           <span class="login-logo-sub">Word of Life Korea</span>
         </div>
       </div>
-      <p class="login-title" data-t="emailLoginTitle">포탈 로그인</p>
+      <h1 class="login-title" tabindex="-1" data-t="emailLoginTitle">포탈 로그인</h1>
       <p class="login-description" data-t="emailLoginDesc">가입하신 이메일과 비밀번호로 로그인하세요.</p>
       <form class="portal-login-form" id="portalLoginForm" action="/api/hub/account-login" method="post" novalidate>
         <div class="login-input-wrap">
-          <input class="login-input" type="email" id="emailInput" name="username" placeholder="you@example.com" autocomplete="username" autocapitalize="none" spellcheck="false">
+          <label class="auth-label" for="emailInput" data-t="emailLabel">이메일</label>
+          <input class="login-input" type="email" id="emailInput" name="username" placeholder="you@wolko.org" autocomplete="username" autocapitalize="none" spellcheck="false" aria-describedby="emailError">
         </div>
         <div class="login-input-wrap">
-          <input class="login-input" type="password" id="loginPwInput" name="password" placeholder="••••••••" autocomplete="current-password">
+          <label class="auth-label" for="loginPwInput" data-t="passwordLabel">비밀번호</label>
+          <input class="login-input" type="password" id="loginPwInput" name="password" autocomplete="current-password" aria-describedby="emailError">
         </div>
-        <label class="remember-email"><input type="checkbox" id="rememberEmail"><span data-t="rememberEmail">아이디 저장</span></label>
-        <label class="remember-email"><input type="checkbox" id="keepLogin" checked><span data-t="keepLogin">로그인 유지 (90일)</span></label>
-        <p class="login-error" id="emailError"></p>
+        <div class="auth-checks">
+          <label class="remember-email"><input type="checkbox" id="rememberEmail"><span data-t="rememberEmail">아이디 저장</span></label>
+          <label class="remember-email"><input type="checkbox" id="keepLogin" checked><span data-t="keepLogin">로그인 유지 (90일)</span></label>
+        </div>
+        <p class="login-error" id="emailError" role="alert"></p>
         <button class="login-btn" id="emailBtn" type="submit" data-t="loginBtn">로그인</button>
       </form>
       <button class="login-link-btn" type="button" onclick="showScreen('resetRequestScreen')" data-t="forgotBtn">비밀번호를 잊으셨나요?</button>
@@ -77,7 +88,7 @@
   </div>
 
   <!-- ── 비밀번호를 잊었을 때: 이메일로 재설정 링크 받기 ── -->
-  <div class="login-screen hidden" id="resetRequestScreen">
+  <div class="login-screen portal-auth hidden" id="resetRequestScreen">
     <div class="login-card">
       <div class="login-logo">
         <img src="/images/WOLKO Circle.png" alt="WOLKO">
@@ -86,11 +97,12 @@
           <span class="login-logo-sub">Word of Life Korea</span>
         </div>
       </div>
-      <p class="login-title" data-t="resetReqTitle">비밀번호 재설정</p>
+      <h1 class="login-title" tabindex="-1" data-t="resetReqTitle">비밀번호 재설정</h1>
       <p class="login-description" data-t="resetReqDesc">가입하신 이메일을 입력하면 새 비밀번호를 정하는 링크를 보내드려요.</p>
       <form class="portal-login-form" id="resetRequestForm" novalidate>
         <div class="login-input-wrap">
-          <input class="login-input" type="email" id="resetEmailInput" placeholder="you@example.com" autocomplete="username" autocapitalize="none" spellcheck="false">
+          <label class="auth-label" for="resetEmailInput" data-t="emailLabel">이메일</label>
+          <input class="login-input" type="email" id="resetEmailInput" name="email" placeholder="you@wolko.org" autocomplete="username" autocapitalize="none" spellcheck="false" aria-describedby="resetReqMsg">
         </div>
         <p class="login-error" id="resetReqMsg" role="status"></p>
         <button class="login-btn" id="resetReqBtn" type="submit" data-t="resetReqBtn">재설정 링크 받기</button>
@@ -99,8 +111,8 @@
     </div>
   </div>
 
-  <!-- ── 메일의 링크로 들어와 새 비밀번호 정하기 ── -->
-  <div class="login-screen hidden" id="resetNewScreen">
+  <!-- ── 메일의 링크로 들어와 새 비밀번호 정하기 (가입 확인 메일이면 '가입 마치기') ── -->
+  <div class="login-screen portal-auth hidden" id="resetNewScreen">
     <div class="login-card">
       <div class="login-logo">
         <img src="/images/WOLKO Circle.png" alt="WOLKO">
@@ -109,14 +121,16 @@
           <span class="login-logo-sub">Word of Life Korea</span>
         </div>
       </div>
-      <p class="login-title" data-t="resetNewTitle">새 비밀번호 정하기</p>
-      <p class="login-description" data-t="resetNewDesc">8자 이상으로 새 비밀번호를 입력해 주세요.</p>
+      <h1 class="login-title" tabindex="-1" data-t="resetNewTitle">새 비밀번호 정하기</h1>
+      <p class="login-description" data-t="resetNewDesc">새 비밀번호를 정해 주세요.</p>
       <form class="portal-login-form" id="resetNewForm" novalidate>
         <div class="login-input-wrap">
-          <input class="login-input" type="password" id="resetNewPw" placeholder="••••••••" autocomplete="new-password">
+          <label class="auth-label" for="resetNewPw"><span data-t="newPasswordLabel">새 비밀번호</span><span class="auth-label-note" data-t="passwordRule">띄어쓰기 없이 영문·숫자·기호 8자 이상</span></label>
+          <input class="login-input" type="password" id="resetNewPw" autocomplete="new-password" aria-describedby="resetNewMsg">
         </div>
         <div class="login-input-wrap">
-          <input class="login-input" type="password" id="resetNewPw2" placeholder="••••••••" autocomplete="new-password">
+          <label class="auth-label" for="resetNewPw2" data-t="newPassword2Label">새 비밀번호 한 번 더</label>
+          <input class="login-input" type="password" id="resetNewPw2" autocomplete="new-password" aria-describedby="resetNewMsg">
         </div>
         <p class="login-error" id="resetNewMsg" role="status"></p>
         <button class="login-btn" id="resetNewBtn" type="submit" data-t="resetNewBtn">비밀번호 변경</button>
@@ -126,7 +140,7 @@
   </div>
 
   <!-- ── 이메일+비밀번호 가입 ── -->
-  <div class="login-screen hidden" id="signupScreen">
+  <div class="login-screen portal-auth hidden" id="signupScreen">
     <div class="login-card">
       <div class="login-logo">
         <img src="/images/WOLKO Circle.png" alt="WOLKO">
@@ -135,38 +149,43 @@
           <span class="login-logo-sub">Word of Life Korea</span>
         </div>
       </div>
-      <p class="login-title" data-t="signupTitle">포탈 가입</p>
-      <p class="login-description" data-t="signupDesc">wolko.org · wol.org 이메일은 메일 인증만 하면 바로 가입돼요. 다른 이메일은 마스터 관리자 승인 후 로그인할 수 있어요.</p>
-      <div class="login-input-wrap">
-        <input class="login-input" type="text" id="signupNameInput" placeholder="이름" autocomplete="name">
-      </div>
-      <div class="login-input-wrap signup-campus" role="radiogroup" aria-label="소속">
-        <label class="signup-campus-opt"><input type="radio" name="signupCampus" value="wolko" checked><span data-t="campusPyeongtaek">평택</span></label>
-        <label class="signup-campus-opt"><input type="radio" name="signupCampus" value="jeju"><span data-t="campusJeju">제주</span></label>
-      </div>
-      <div class="login-input-wrap signup-role" role="radiogroup" aria-label="등급">
-        <label class="signup-campus-opt"><input type="radio" name="signupRole" value="member" checked><span data-t="roleMemberOpt">일반 멤버</span></label>
-        <label class="signup-campus-opt"><input type="radio" name="signupRole" value="admin"><span data-t="roleAdminOpt">관리자</span></label>
-      </div>
-      <p class="signup-role-hint" data-t="roleHint">관리자는 포탈 전체를 유지보수하는 역할이에요 (wolko.org·wol.org 이메일 · 마스터 승인 필요). 페이지별 세부 권한은 따로 정해요.</p>
-      <div class="login-input-wrap">
-        <input class="login-input" type="tel" id="signupPhoneInput" data-intl-phone placeholder="휴대폰 번호" autocomplete="tel">
-      </div>
-      <div class="login-input-wrap">
-        <input class="login-input" type="email" id="signupEmailInput" placeholder="you@wolko.org" autocomplete="email">
-      </div>
-      <p class="signup-role-hint" id="signupDomainHint" hidden></p>
-      <div class="login-input-wrap" id="signupPwWrap">
-        <input class="login-input" type="password" id="signupPwInput" placeholder="8자 이상" autocomplete="new-password">
-      </div>
-      <p class="login-error" id="signupError"></p>
-      <button class="login-btn" id="signupBtn" onclick="doSignup()" data-t="signupBtn">가입 요청</button>
-      <button class="login-link-btn" onclick="showScreen('emailScreen')" data-t="backToLoginBtn">이미 계정이 있으신가요? 로그인</button>
+      <h1 class="login-title" tabindex="-1" data-t="signupTitle">포탈 가입</h1>
+      <p class="login-description" data-t="signupDesc">WOLKO 식구들이 함께 쓰는 공간이에요. 몇 가지만 알려 주세요.</p>
+      <form class="portal-login-form" id="signupForm" novalidate>
+        <div class="login-input-wrap">
+          <label class="auth-label" for="signupNameInput" data-t="nameLabel">이름</label>
+          <input class="login-input" type="text" id="signupNameInput" name="name" autocomplete="name" aria-describedby="signupError">
+        </div>
+        <fieldset class="login-input-wrap auth-fieldset">
+          <legend class="auth-label" data-t="campusLegend">소속</legend>
+          <div class="signup-campus">
+            <label class="signup-campus-opt"><input type="radio" name="signupCampus" value="wolko" checked><span data-t="campusPyeongtaek">평택</span></label>
+            <label class="signup-campus-opt"><input type="radio" name="signupCampus" value="jeju"><span data-t="campusJeju">제주</span></label>
+          </div>
+        </fieldset>
+        <div class="login-input-wrap">
+          <label class="auth-label" for="signupPhoneInput"><span data-t="phoneLabel">휴대폰 번호</span><span class="auth-label-note" data-t="phoneWhy">급한 연락용</span></label>
+          <input class="login-input" type="tel" id="signupPhoneInput" name="tel" data-intl-phone placeholder="010-1234-5678" autocomplete="tel" aria-describedby="signupError">
+        </div>
+        <div class="login-input-wrap">
+          <label class="auth-label" for="signupEmailInput" data-t="emailLabel">이메일</label>
+          <input class="login-input" type="email" id="signupEmailInput" name="email" placeholder="you@wolko.org" autocomplete="email" autocapitalize="none" spellcheck="false" aria-describedby="signupDomainHint signupError">
+          <p class="signup-role-hint" id="signupDomainHint" aria-live="polite" hidden></p>
+          <button type="button" class="auth-admin-link" id="adminReqBtn" hidden></button>
+        </div>
+        <div class="login-input-wrap" id="signupPwWrap">
+          <label class="auth-label" for="signupPwInput"><span data-t="passwordLabel">비밀번호</span><span class="auth-label-note" data-t="passwordRule">띄어쓰기 없이 영문·숫자·기호 8자 이상</span></label>
+          <input class="login-input" type="password" id="signupPwInput" name="new-password" autocomplete="new-password" aria-describedby="signupError">
+        </div>
+        <p class="login-error" id="signupError" role="alert"></p>
+        <button class="login-btn" id="signupBtn" type="submit" data-t="signupBtn">가입 요청</button>
+      </form>
+      <button class="login-link-btn" type="button" onclick="showScreen('emailScreen')" data-t="backToLoginBtn">이미 계정이 있으신가요? 로그인</button>
     </div>
   </div>
 
-  <!-- ── 발송/대기 안내 ── -->
-  <div class="login-screen hidden" id="statusScreen">
+  <!-- ── 가입 뒤 안내: 인증 메일 보냄 / 승인 기다리는 중 ── -->
+  <div class="login-screen portal-auth hidden" id="statusScreen">
     <div class="login-card">
       <div class="login-logo">
         <img src="/images/WOLKO Circle.png" alt="WOLKO">
@@ -175,9 +194,16 @@
           <span class="login-logo-sub">Word of Life Korea</span>
         </div>
       </div>
-      <p class="login-title" id="statusTitle"></p>
+      <h1 class="login-title" tabindex="-1" id="statusTitle"></h1>
+      <p class="auth-status-email" id="statusEmail" hidden></p>
       <p class="login-description" id="statusDesc"></p>
-      <button class="login-btn" onclick="showScreen('emailScreen')" data-t="backBtn">뒤로</button>
+      <p class="auth-status-contact" id="statusContact" hidden><span data-t="pendingContact">궁금하거나 급한 일이 있으면 메일 주세요</span> <a href="mailto:admin@wolko.org">admin@wolko.org</a></p>
+      <p class="login-error" id="statusMsg" role="status"></p>
+      <div class="auth-status-actions" id="statusActions" hidden>
+        <button class="login-link-btn" type="button" id="statusResendBtn" data-t="resendBtn">메일 다시 보내기</button>
+        <button class="login-link-btn" type="button" id="statusFixBtn" data-t="fixEmailBtn">이메일 주소 고치기</button>
+      </div>
+      <button class="login-btn" type="button" onclick="showScreen('emailScreen')" data-t="toLoginBtn">로그인 화면으로</button>
     </div>
   </div>
 
@@ -362,29 +388,36 @@
         dashTodayChip: '오늘', dashUnset: '미정', dashClosed: '닫힘', dashWeekOf: function (a, b) { return '이번 주 ' + a + ' – ' + b; }, relToday: '오늘', relYesterday: '어제', relDaysAgo: function (n) { return n + '일 전'; }, dashNoticeHint: '관리자가 이번 주에 꼭 필요한 소식을 여기에 올려요.',
         recentBadge: '최근 사용',
         emailLoginTitle: '포탈 로그인',
+        emailLabel: '이메일', passwordLabel: '비밀번호', newPasswordLabel: '새 비밀번호', newPassword2Label: '새 비밀번호 한 번 더', passwordRule: '띄어쓰기 없이 영문·숫자·기호 8자 이상',
+        nameLabel: '이름', campusLegend: '소속', phoneLabel: '휴대폰 번호', phoneWhy: '급한 연락용',
+        adminReqOpen: '관리자 권한이 필요하신가요?', adminReqClose: '일반 멤버로 가입할게요',
+        sentToLine: function (e) { return '받는 주소 · ' + e; }, pendingToLine: function (e) { return '신청한 주소 · ' + e; },
+        pendingContact: '궁금하거나 급한 일이 있으면 메일 주세요', resendBtn: '메일 다시 보내기', resendWait: function (n) { return n + '초 뒤에 다시 보낼 수 있어요'; }, resendDone: '메일을 다시 보냈어요. 메일함을 확인해 주세요.',
+        fixEmailBtn: '이메일 주소 고치기', toLoginBtn: '로그인 화면으로', verifyFinishBtn: '가입 마치기',
+        welcomeToast: function (n) { return '환영해요, ' + n + '님! 이제 WOLKO 포탈을 함께 써요.'; }, welcomeClose: '닫기', sendFail: '보내지 못했어요. 잠시 뒤에 다시 해 주세요.',
         rememberEmail: '아이디 저장',
         keepLogin: '로그인 유지 (90일)',
         emailLoginDesc: '가입하신 이메일과 비밀번호로 로그인하세요.',
         goSignupBtn: '계정이 없으신가요? 가입하기',
         signupHint: '계정이 없으신가요?', signupGoLabel: '가입하기',
-        forgotBtn: '비밀번호를 잊으셨나요?', resetReqTitle: '비밀번호 재설정', resetReqDesc: '가입하신 이메일을 입력하면 새 비밀번호를 정하는 링크를 보내드려요.', resetReqBtn: '재설정 링크 받기', resetReqSent: '메일을 보냈어요. 받은편지함(스팸함도)을 확인해 주세요. 링크는 30분 동안 쓸 수 있어요.', backToLoginOnlyBtn: '로그인으로 돌아가기', resetNewTitle: '새 비밀번호 정하기', resetNewDesc: '8자 이상으로 새 비밀번호를 입력해 주세요.', resetNewBtn: '비밀번호 변경', resetAgainBtn: '링크를 다시 받기', resetMismatch: '두 비밀번호가 서로 달라요.', resetShort: '비밀번호는 8자 이상으로 입력해 주세요.', resetDoneLogin: '비밀번호를 바꿨어요. 새 비밀번호로 로그인해 주세요.',
+        forgotBtn: '비밀번호를 잊으셨나요?', resetReqTitle: '비밀번호 재설정', resetReqDesc: '가입하신 이메일을 입력하면 새 비밀번호를 정하는 링크를 보내드려요.', resetReqBtn: '재설정 링크 받기', resetReqSent: '메일을 보냈어요. 받은편지함(스팸함도)을 확인해 주세요. 링크는 30분 동안 쓸 수 있어요.', backToLoginOnlyBtn: '로그인으로 돌아가기', resetNewTitle: '새 비밀번호 정하기', resetNewDesc: '새 비밀번호를 정해 주세요. 정하면 바로 로그인할 수 있어요.', resetNewBtn: '비밀번호 변경', resetAgainBtn: '링크를 다시 받기', resetMismatch: '두 비밀번호가 서로 달라요.', resetShort: '비밀번호는 띄어쓰기 없이 영문·숫자·기호로 8자 이상 입력해 주세요.', resetDoneLogin: '비밀번호를 바꿨어요. 새 비밀번호로 로그인해 주세요.',
         signupTitle: '포탈 가입',
-        signupDesc: 'wolko.org · wol.org 이메일은 메일 인증만 하면 바로 가입돼요. 다른 이메일은 마스터 관리자 승인 후 로그인할 수 있어요.',
-        domainHintOrg: '가입 확인 메일을 보내 드려요. 메일의 링크에서 비밀번호를 정하면 승인 없이 바로 사용할 수 있어요.',
-        domainHintAdmin: '관리자 신청은 마스터 관리자 승인이 필요해요. 승인되면 이메일로 안내해 드려요.',
-        domainHintOther: 'wolko.org · wol.org 이메일이 아니어서 마스터 관리자 승인이 필요해요. 승인되면 이메일로 안내해 드려요.',
-        signupBtnVerify: '인증 메일 받기',
-        verifySentTitle: '인증 메일을 보냈어요',
-        verifySentDesc: '받은편지함(스팸함도)의 가입 확인 메일에서 버튼을 눌러 비밀번호를 정하면 가입이 끝나요. 링크는 24시간 동안 쓸 수 있어요.',
-        verifyNewTitle: '비밀번호 정하고 가입 마치기', verifyNewDesc: '이 이메일로 쓸 비밀번호를 8자 이상으로 입력해 주세요. 정하면 바로 로그인할 수 있어요.',
-        verifyDoneLogin: '가입이 완료됐어요. 방금 정한 비밀번호로 로그인해 주세요.', verifyAgainBtn: '인증 메일 다시 받기',
-        namePlaceholder: '이름',
-        phonePlaceholder: '휴대폰 번호',
+        signupDesc: 'WOLKO 식구들이 함께 쓰는 공간이에요. 몇 가지만 알려 주세요.',
+        domainHintOrg: '확인 메일을 보내 드려요. 메일의 링크에서 비밀번호를 정하면 바로 쓸 수 있어요.',
+        domainHintAdmin: '관리자 권한은 포탈 관리자가 확인한 뒤 열어 드려요. 확인되면 메일로 알려 드려요.',
+        domainHintOther: 'wolko.org · wol.org 메일이 아니라서, 포탈 관리자가 확인한 뒤 쓸 수 있어요. 확인되면 메일로 알려 드려요.',
+        signupBtnVerify: '확인 메일 받기',
+        verifySentTitle: '확인 메일을 보냈어요',
+        verifySentDesc: '메일함(안 보이면 스팸함도)에서 WOLKO 포탈 가입 확인 메일을 열고, 버튼을 눌러 비밀번호를 정하면 가입이 끝나요. 링크는 24시간 동안 쓸 수 있어요.',
+        verifyNewTitle: '비밀번호를 정하면 가입이 끝나요', verifyNewDesc: 'WOLKO 포탈에서 쓸 비밀번호를 정해 주세요. 정하면 바로 로그인할 수 있어요.',
+        verifyDoneLogin: '가입이 끝났어요! 방금 정한 비밀번호로 로그인해 주세요.', verifyAgainBtn: '확인 메일 다시 받기',
+        namePlaceholder: '예: 홍길동',
+        phonePlaceholder: '예: 010-1234-5678',
         campusPyeongtaek: '평택', campusJeju: '제주',
         roleMemberOpt: '일반 멤버', roleAdminOpt: '관리자', adminNotListed: '관리자 목록에 없음 — 개발자에게 등록 요청', roleHint: '관리자는 포탈 전체를 유지보수하는 역할이에요 (wolko.org·wol.org 이메일 · 마스터 승인 필요). 페이지별 세부 권한은 따로 정해요.', requestedLabel: '신청 등급',
-        signupPwPlaceholder: '8자 이상',
-        signupBtn: '가입 요청',
-        signupSending: '요청 중…',
+        signupPwPlaceholder: '',
+        signupBtn: '가입 신청하기',
+        signupSending: '보내는 중…',
         backToLoginBtn: '이미 계정이 있으신가요? 로그인',
         nameRequired: '이름을 입력해 주세요.',
         phoneRequired: '휴대폰 번호를 입력해 주세요.',
@@ -392,12 +425,12 @@
         emailRequired: '이메일을 입력해 주세요.',
         emailInvalid: '올바른 이메일 주소를 입력해 주세요.',
         passwordRequired: '비밀번호를 입력해 주세요.',
-        passwordInvalid: '비밀번호는 8자 이상의 영문/숫자/특수문자로 입력해 주세요.',
+        passwordInvalid: '비밀번호는 띄어쓰기 없이 영문·숫자·기호로 8자 이상 입력해 주세요.',
         backBtn: '뒤로',
-        signupApprovedTitle: '가입이 완료되었습니다',
-        signupApprovedDesc: '이제 방금 등록한 이메일과 비밀번호로 로그인할 수 있습니다.',
-        pendingStatusTitle: '승인 대기 중',
-        pendingStatusDesc: '마스터 관리자 승인 후 로그인할 수 있습니다. 승인되면 이메일로 안내해 드립니다.',
+        signupApprovedTitle: '가입이 끝났어요',
+        signupApprovedDesc: '방금 등록한 이메일과 비밀번호로 로그인해 주세요.',
+        pendingStatusTitle: '가입 신청을 받았어요',
+        pendingStatusDesc: '포탈 관리자가 확인하면 바로 메일로 알려 드려요. 그 전까지는 따로 하실 일이 없어요.',
         loginBtn: '로그인',
         loginVerifying: '확인 중…',
         loginWrong: '비밀번호가 올바르지 않습니다.',
@@ -443,29 +476,36 @@
         dashTodayChip: 'Today', dashUnset: 'Not set', dashClosed: 'CLOSED', dashWeekOf: function (a, b) { return 'This week ' + a + ' – ' + b; }, relToday: 'today', relYesterday: 'yesterday', relDaysAgo: function (n) { return n + ' days ago'; }, dashNoticeHint: 'Admins post what everyone needs to know this week.',
         recentBadge: 'Recent',
         emailLoginTitle: 'Portal Login',
+        emailLabel: 'Email', passwordLabel: 'Password', newPasswordLabel: 'New password', newPassword2Label: 'New password again', passwordRule: '8+ characters, no spaces',
+        nameLabel: 'Name', campusLegend: 'Campus', phoneLabel: 'Mobile phone', phoneWhy: 'for urgent contact',
+        adminReqOpen: 'Need admin access?', adminReqClose: 'Sign up as a member instead',
+        sentToLine: function (e) { return 'Sent to ' + e; }, pendingToLine: function (e) { return 'Requested for ' + e; },
+        pendingContact: 'Questions or something urgent? Email', resendBtn: 'Resend email', resendWait: function (n) { return 'You can resend in ' + n + 's'; }, resendDone: 'Sent again. Please check your inbox.',
+        fixEmailBtn: 'Fix email address', toLoginBtn: 'Back to login', verifyFinishBtn: 'Finish sign-up',
+        welcomeToast: function (n) { return 'Welcome, ' + n + "! You're all set in the WOLKO Portal."; }, welcomeClose: 'Close', sendFail: 'Could not send. Please try again in a moment.',
         rememberEmail: 'Remember email',
         keepLogin: 'Keep me signed in (90 days)',
         emailLoginDesc: 'Log in with the email and password you signed up with.',
         goSignupBtn: "Don't have an account? Sign up",
         signupHint: "Don't have an account?", signupGoLabel: 'Sign up',
-        forgotBtn: 'Forgot your password?', resetReqTitle: 'Reset password', resetReqDesc: 'Enter the email you signed up with and we will send you a link to choose a new password.', resetReqBtn: 'Send reset link', resetReqSent: 'We sent an email. Please check your inbox (and spam). The link works for 30 minutes.', backToLoginOnlyBtn: 'Back to log in', resetNewTitle: 'Choose a new password', resetNewDesc: 'Enter a new password of at least 8 characters.', resetNewBtn: 'Change password', resetAgainBtn: 'Get a new link', resetMismatch: 'The two passwords do not match.', resetShort: 'Use at least 8 characters.', resetDoneLogin: 'Password changed. Please log in with the new password.',
+        forgotBtn: 'Forgot your password?', resetReqTitle: 'Reset password', resetReqDesc: 'Enter the email you signed up with and we will send you a link to choose a new password.', resetReqBtn: 'Send reset link', resetReqSent: 'We sent an email. Please check your inbox (and spam). The link works for 30 minutes.', backToLoginOnlyBtn: 'Back to log in', resetNewTitle: 'Choose a new password', resetNewDesc: 'Choose a new password. You can log in right after.', resetNewBtn: 'Change password', resetAgainBtn: 'Get a new link', resetMismatch: 'The two passwords do not match.', resetShort: 'Use at least 8 characters: letters, numbers or symbols, no spaces.', resetDoneLogin: 'Password changed. Please log in with the new password.',
         signupTitle: 'Portal Sign Up',
-        signupDesc: 'wolko.org and wol.org emails join right after confirming the email. Other emails need master admin approval before you can log in.',
-        domainHintOrg: "We'll email you a confirmation link. Choose your password there and you can start using the portal right away, no approval needed.",
-        domainHintAdmin: 'Admin requests need master admin approval. We will email you when that happens.',
-        domainHintOther: 'This is not a wolko.org / wol.org email, so a master admin must approve it. We will email you when that happens.',
+        signupDesc: 'A shared space for the WOLKO family. Just a few details to get you started.',
+        domainHintOrg: "We'll email you a confirmation link. Choose your password there and you're in.",
+        domainHintAdmin: 'A portal admin will review admin access and email you once it is approved.',
+        domainHintOther: 'This is not a wolko.org / wol.org email, so a portal admin will review it first. We will email you once it is approved.',
         signupBtnVerify: 'Send confirmation email',
-        verifySentTitle: 'Confirmation email sent',
-        verifySentDesc: 'Open the confirmation email (check spam too) and use the button to choose your password. The link works for 24 hours.',
-        verifyNewTitle: 'Choose a password to finish', verifyNewDesc: 'Enter a password of at least 8 characters for this email. You can log in right after.',
-        verifyDoneLogin: 'You are all set. Please log in with the password you just chose.', verifyAgainBtn: 'Get a new confirmation email',
-        namePlaceholder: 'Name',
-        phonePlaceholder: 'Phone number',
+        verifySentTitle: 'Check your email',
+        verifySentDesc: 'Open the WOLKO Portal confirmation email (check spam if you do not see it) and use the button to choose your password. The link works for 24 hours.',
+        verifyNewTitle: 'Choose a password to finish', verifyNewDesc: 'Choose the password you will use for the WOLKO Portal. You can log in right after.',
+        verifyDoneLogin: "You're all set! Log in with the password you just chose.", verifyAgainBtn: 'Get a new confirmation email',
+        namePlaceholder: 'e.g. Jane Kim',
+        phonePlaceholder: 'e.g. 010-1234-5678',
         campusPyeongtaek: 'Pyeongtaek', campusJeju: 'Jeju',
         roleMemberOpt: 'Member', roleAdminOpt: 'Admin', adminNotListed: 'not on the admin list — ask the developer', roleHint: 'Admins maintain the whole portal (wol.org email, master approval required). Page-level permissions are set separately.', requestedLabel: 'Requested',
-        signupPwPlaceholder: '8+ characters',
-        signupBtn: 'Request access',
-        signupSending: 'Requesting…',
+        signupPwPlaceholder: '',
+        signupBtn: 'Send request',
+        signupSending: 'Sending…',
         backToLoginBtn: 'Already have an account? Log in',
         nameRequired: 'Please enter your name.',
         phoneRequired: 'Please enter your phone number.',
@@ -473,12 +513,12 @@
         emailRequired: 'Please enter your email.',
         emailInvalid: 'Please enter a valid email address.',
         passwordRequired: 'Please enter a password.',
-        passwordInvalid: 'Password must be at least 8 characters (letters/numbers/symbols).',
+        passwordInvalid: 'Use at least 8 characters: letters, numbers or symbols, no spaces.',
         backBtn: 'Back',
-        signupApprovedTitle: 'Sign-up complete',
-        signupApprovedDesc: 'You can now log in with the email and password you just registered.',
-        pendingStatusTitle: 'Awaiting approval',
-        pendingStatusDesc: "You'll be able to log in once a master admin approves your access. We'll email you when that happens.",
+        signupApprovedTitle: "You're signed up",
+        signupApprovedDesc: 'Log in with the email and password you just registered.',
+        pendingStatusTitle: "We've got your request",
+        pendingStatusDesc: "A portal admin will review it and email you as soon as it's approved. There's nothing else you need to do until then.",
         loginBtn: 'Login',
         loginVerifying: 'Verifying…',
         loginWrong: 'Incorrect password.',
@@ -1247,12 +1287,30 @@
 
     /* ── 화면 전환 ── */
     const SCREENS = ['emailScreen', 'signupScreen', 'statusScreen', 'resetRequestScreen', 'resetNewScreen'];
-    function showScreen(id) {
+    function showScreen(id, focusTitle = true) {
       SCREENS.forEach(s => {
         $(s).style.display = s === id ? 'flex' : 'none';
         $(s).classList.toggle('hidden', s !== id);
       });
+      // 누른 단추가 사라진 화면에 남지 않게, 새 화면 제목으로 초점을 옮긴다(화면 읽기 프로그램이 제목을 읽는다)
+      if (focusTitle) { const title = $(id).querySelector('.login-title'); if (title) title.focus({ preventScroll: true }); $(id).scrollTop = 0; }
     }
+
+    /* ── 로그인 전 화면의 오류 표시: 빨간 글씨 + 틀린 칸 빨간 테두리 + 그 칸으로 초점. 다시 입력하면 지운다 ── */
+    function authError(el, message, field) {
+      el.textContent = message; el.classList.remove('is-ok');
+      if (field) { field.setAttribute('aria-invalid', 'true'); field.focus(); }
+    }
+    function authOk(el, message) { el.textContent = message; el.classList.add('is-ok'); }
+    function clearAuthErrors(card) {
+      card.querySelectorAll('[aria-invalid="true"]').forEach(f => f.removeAttribute('aria-invalid'));
+      card.querySelectorAll('.login-error:not(.is-ok)').forEach(e => { e.textContent = ''; });
+    }
+    document.addEventListener('input', event => {
+      const field = event.target.closest && event.target.closest('.portal-auth input');
+      if (!field || field.type === 'radio' || field.type === 'checkbox') return;
+      if (field.getAttribute('aria-invalid') === 'true') clearAuthErrors(field.closest('.login-card'));
+    });
 
     const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const rememberedEmail = window.WolkoSession.rememberedEmail();
@@ -1280,10 +1338,11 @@
       const email = $('emailInput').value.trim().toLowerCase();
       const password = $('loginPwInput').value;
       const errEl = $('emailError');
-      errEl.textContent = '';
-      if (!email) { errEl.textContent = t('emailRequired'); return; }
-      if (!EMAIL_RE.test(email)) { errEl.textContent = t('emailInvalid'); return; }
-      if (!password) { errEl.textContent = t('passwordRequired'); return; }
+      clearAuthErrors($('emailScreen'));
+      errEl.classList.remove('is-ok'); errEl.textContent = '';
+      if (!email) { authError(errEl, t('emailRequired'), $('emailInput')); return; }
+      if (!EMAIL_RE.test(email)) { authError(errEl, t('emailInvalid'), $('emailInput')); return; }
+      if (!password) { authError(errEl, t('passwordRequired'), $('loginPwInput')); return; }
 
       const btn = $('emailBtn');
       btn.disabled = true;
@@ -1321,13 +1380,13 @@
           location.replace('/portal/campstaff');
           return;
         }
-        if (!res.ok) throw new Error(data.error || t('loginWrong'));
+        if (!res.ok) { const err = new Error(data.error || t('loginWrong')); if (res.status === 401) err.field = $('loginPwInput'); throw err; }
         saveRememberedEmail(email);
         applySession(data);
         await offerCredentialUpdate();
         location.replace('/portal/?signed-in=1');
       } catch (e) {
-        errEl.textContent = e.message;
+        authError(errEl, e.message, e.field);
       } finally {
         btn.disabled = false;
         btn.textContent = original;
@@ -1340,40 +1399,54 @@
 
     /* ── 이메일+비밀번호 가입 ── */
     // wolko.org · wol.org 일반 멤버는 메일 인증으로 끝난다(비밀번호는 메일의 링크에서 정한다). 그 밖의 이메일·관리자 신청은 마스터 승인.
+    // 관리자 권한은 코드의 관리자 목록(functions/lib/hubAccounts.js)에 있는 분만 받는다 — 그래서 가입 화면에 '관리자'를
+    // 일반 멤버와 나란히 두지 않고, wolko.org · wol.org 메일을 적었을 때만 작은 '관리자 권한이 필요하신가요?' 링크로 요청한다.
+    let wantsAdmin = false;
+    const isOrgEmail = email => /^[^\s@]+@(wolko\.org|wol\.org)$/i.test(email);
     function isAutoSignup() {
-      const email = $('signupEmailInput').value.trim().toLowerCase();
-      const role = document.querySelector('input[name="signupRole"]:checked')?.value || 'member';
-      return role === 'member' && /^[^\s@]+@(wolko\.org|wol\.org)$/.test(email);
+      return !wantsAdmin && isOrgEmail($('signupEmailInput').value.trim());
     }
     function updateSignupMode() {
       const email = $('signupEmailInput').value.trim();
+      const org = isOrgEmail(email);
+      if (!org) wantsAdmin = false;
       const auto = isAutoSignup();
       $('signupPwWrap').hidden = auto;
       $('signupBtn').textContent = t(auto ? 'signupBtnVerify' : 'signupBtn');
       const hint = $('signupDomainHint');
       hint.hidden = !EMAIL_RE.test(email);
-      const wantsAdmin = (document.querySelector('input[name="signupRole"]:checked')?.value || 'member') === 'admin';
-      hint.textContent = auto ? t('domainHintOrg') : (wantsAdmin && /@(wolko\.org|wol\.org)$/i.test(email) ? t('domainHintAdmin') : t('domainHintOther'));
+      hint.textContent = auto ? t('domainHintOrg') : (wantsAdmin ? t('domainHintAdmin') : t('domainHintOther'));
+      const adminBtn = $('adminReqBtn');
+      adminBtn.hidden = !org;
+      adminBtn.textContent = t(wantsAdmin ? 'adminReqClose' : 'adminReqOpen');
+      adminBtn.setAttribute('aria-pressed', String(wantsAdmin));
     }
     $('signupEmailInput').addEventListener('input', updateSignupMode);
-    document.querySelectorAll('input[name="signupRole"]').forEach(r => r.addEventListener('change', updateSignupMode));
+    $('adminReqBtn').addEventListener('click', () => {
+      wantsAdmin = !wantsAdmin;
+      updateSignupMode();
+      if (wantsAdmin) $('signupPwInput').focus();
+    });
     const PHONE_RE = /^[0-9+\-\s()]{7,20}$/;
+    const PASSWORD_RE = /^[\x21-\x7E]{8,}$/;   // 서버(functions/lib/hubAccounts.js isValidPassword)와 같은 규칙: 띄어쓰기 없는 영문 · 숫자 · 기호 8자 이상
     async function doSignup() {
       const name = $('signupNameInput').value.trim();
       const phone = $('signupPhoneInput').value.trim();
       const email = $('signupEmailInput').value.trim().toLowerCase();
       const password = $('signupPwInput').value;
       const campus = document.querySelector('input[name="signupCampus"]:checked')?.value || 'wolko';
-      const requestedRole = document.querySelector('input[name="signupRole"]:checked')?.value || 'member';
+      const requestedRole = wantsAdmin && isOrgEmail(email) ? 'admin' : 'member';
       const errEl = $('signupError');
+      clearAuthErrors($('signupScreen'));
       errEl.textContent = '';
-      if (!name) { errEl.textContent = t('nameRequired'); return; }
-      if (!phone) { errEl.textContent = t('phoneRequired'); return; }
-      if (!PHONE_RE.test(phone)) { errEl.textContent = t('phoneInvalid'); return; }
-      if (!email) { errEl.textContent = t('emailRequired'); return; }
-      if (!EMAIL_RE.test(email)) { errEl.textContent = t('emailInvalid'); return; }
+      if (!name) { authError(errEl, t('nameRequired'), $('signupNameInput')); return; }
+      if (!phone) { authError(errEl, t('phoneRequired'), $('signupPhoneInput')); return; }
+      if (!PHONE_RE.test(phone)) { authError(errEl, t('phoneInvalid'), $('signupPhoneInput')); return; }
+      if (!email) { authError(errEl, t('emailRequired'), $('signupEmailInput')); return; }
+      if (!EMAIL_RE.test(email)) { authError(errEl, t('emailInvalid'), $('signupEmailInput')); return; }
       const auto = isAutoSignup();
-      if (!auto && !password) { errEl.textContent = t('passwordRequired'); return; }
+      if (!auto && !password) { authError(errEl, t('passwordRequired'), $('signupPwInput')); return; }
+      if (!auto && !PASSWORD_RE.test(password)) { authError(errEl, t('passwordInvalid'), $('signupPwInput')); return; }
 
       const btn = $('signupBtn');
       btn.disabled = true;
@@ -1388,33 +1461,61 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || t('passwordInvalid'));
-
-        if (data.status === 'verify') {
-          $('statusTitle').textContent = t('verifySentTitle');
-          $('statusDesc').textContent = t('verifySentDesc');
-        } else if (data.status === 'pending') {
-          $('statusTitle').textContent = t('pendingStatusTitle');
-          $('statusDesc').textContent = t('pendingStatusDesc');
-        } else {
-          $('statusTitle').textContent = t('signupApprovedTitle');
-          $('statusDesc').textContent = t('signupApprovedDesc');
-        }
-        $('signupNameInput').value = '';
-        $('signupPhoneInput').value = '';
-        $('signupEmailInput').value = '';
-        $('signupPwInput').value = '';
-        updateSignupMode();
-        showScreen('statusScreen');
+        // 다시 보내기 · 주소 고치기를 위해 보낸 내용을 기억하고, 입력한 칸도 그대로 둔다(고치러 돌아와도 처음부터 다시 쓰지 않게)
+        lastSignup = { name, phone, email, password, campus, requestedRole };
+        showSignupStatus(data.status, email);
       } catch (e) {
-        errEl.textContent = e.message;
+        authError(errEl, e.message);
       } finally {
         btn.disabled = false;
         btn.textContent = original;
       }
     }
-    $('signupNameInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSignup(); });
-    $('signupPhoneInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSignup(); });
-    $('signupPwInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSignup(); });
+    $('signupForm').addEventListener('submit', event => { event.preventDefault(); doSignup(); });
+
+    /* ── 가입 뒤 안내: 받는 주소를 보여 주고, 메일 다시 보내기(1분 간격) · 주소 고치기 · 문의할 곳 ── */
+    let lastSignup = null, resendTimer = null;
+    function showSignupStatus(status, email) {
+      const verify = status === 'verify', pending = status === 'pending';
+      $('statusTitle').textContent = t(verify ? 'verifySentTitle' : pending ? 'pendingStatusTitle' : 'signupApprovedTitle');
+      $('statusDesc').textContent = t(verify ? 'verifySentDesc' : pending ? 'pendingStatusDesc' : 'signupApprovedDesc');
+      $('statusEmail').hidden = !(verify || pending);
+      $('statusEmail').textContent = verify ? t('sentToLine', email) : pending ? t('pendingToLine', email) : '';
+      $('statusContact').hidden = !pending;
+      $('statusActions').hidden = !verify;
+      $('statusFixBtn').hidden = !verify;
+      $('statusMsg').textContent = ''; $('statusMsg').classList.remove('is-ok');
+      if (verify) startResendWait();
+      if (!verify && !pending) $('emailInput').value = email;
+      showScreen('statusScreen');
+    }
+    function startResendWait(seconds = 60) {
+      const btn = $('statusResendBtn');
+      clearInterval(resendTimer);
+      let left = seconds;
+      const tick = () => {
+        btn.disabled = left > 0;
+        btn.textContent = left > 0 ? t('resendWait', left) : t('resendBtn');
+        if (left-- <= 0) clearInterval(resendTimer);
+      };
+      tick(); resendTimer = setInterval(tick, 1000);
+    }
+    $('statusResendBtn').addEventListener('click', async () => {
+      if (!lastSignup) return;
+      const btn = $('statusResendBtn'), msg = $('statusMsg');
+      btn.disabled = true; msg.textContent = ''; msg.classList.remove('is-ok');
+      try {
+        const res = await fetch('/api/hub/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(lastSignup) });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || '');
+        authOk(msg, t('resendDone'));
+        startResendWait();
+      } catch (e) { authError(msg, e.message || t('sendFail')); btn.disabled = false; btn.textContent = t('resendBtn'); }
+    });
+    $('statusFixBtn').addEventListener('click', () => {
+      showScreen('signupScreen', false);
+      const field = $('signupEmailInput'); field.focus(); field.select();
+    });
 
     function applySession(data) {
       currentSession = { email: data.email, role: data.role };
@@ -1432,6 +1533,7 @@
     function showHub() {
       SCREENS.forEach(s => { $(s).style.display = 'none'; });
       $('hubShell').hidden = false;
+      $('authLang').hidden = true;
       loadDashboard();
       $('pendingBtn').hidden = currentSession?.role !== 'master';
       if (currentSession?.role === 'master') refreshPendingCount();
@@ -1446,6 +1548,7 @@
         const res = await fetch('/api/hub/me', { headers: authHeaders(), cache: 'no-store' });
         if (!res.ok) return;
         const me = await res.json();
+        if (me && sessionStorage.getItem('wolko-hub-welcome')) { sessionStorage.removeItem('wolko-hub-welcome'); showWelcome(me.name || ''); }
         if (!me || !me.role || !currentSession || me.role === currentSession.role) return;
         currentSession.role = me.role;
         sessionStorage.setItem('wolko-hub-role', me.role);
@@ -1453,6 +1556,17 @@
         $('pendingBtn').hidden = me.role !== 'master';
         if (me.role === 'master') refreshPendingCount();
       } catch (e) {}
+    }
+
+    function showWelcome(name) {
+      const box = document.createElement('div');
+      box.className = 'auth-welcome'; box.setAttribute('role', 'status');
+      const text = document.createElement('span'); text.textContent = t('welcomeToast', name || '');
+      const close = document.createElement('button'); close.type = 'button'; close.textContent = t('welcomeClose');
+      const done = () => { box.classList.add('is-leaving'); setTimeout(() => box.remove(), 300); };
+      close.addEventListener('click', done);
+      box.append(text, close); document.body.append(box);
+      setTimeout(done, 8000);
     }
 
     function isHubTokenValid(token) {
@@ -1614,7 +1728,8 @@
       desc.dataset.t = on ? 'verifyNewDesc' : 'resetNewDesc';
       again.dataset.t = on ? 'verifyAgainBtn' : 'resetAgainBtn';
       again.setAttribute('onclick', on ? "showScreen('signupScreen')" : "showScreen('resetRequestScreen')");
-      title.textContent = t(title.dataset.t); desc.textContent = t(desc.dataset.t); again.textContent = t(again.dataset.t);
+      const btn = $('resetNewBtn'); btn.dataset.t = on ? 'verifyFinishBtn' : 'resetNewBtn';
+      title.textContent = t(title.dataset.t); desc.textContent = t(desc.dataset.t); again.textContent = t(again.dataset.t); btn.textContent = t(btn.dataset.t);
     }
 
     /* ── 비밀번호 재설정 (메일 링크) ── */
@@ -1622,23 +1737,23 @@
       event.preventDefault();
       const msg = $('resetReqMsg'); msg.textContent = ''; msg.classList.remove('is-ok');
       const email = $('resetEmailInput').value.trim().toLowerCase();
-      if (!email) { msg.textContent = t('emailRequired'); return; }
-      if (!EMAIL_RE.test(email)) { msg.textContent = t('emailInvalid'); return; }
+      if (!email) { authError(msg, t('emailRequired'), $('resetEmailInput')); return; }
+      if (!EMAIL_RE.test(email)) { authError(msg, t('emailInvalid'), $('resetEmailInput')); return; }
       const btn = $('resetReqBtn'); btn.disabled = true;
       try {
         const res = await fetch('/api/hub/password-reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'request', email }) });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || '');
-        msg.textContent = t('resetReqSent'); msg.classList.add('is-ok');
-      } catch (e) { msg.textContent = e.message || ''; }
+        authOk(msg, t('resetReqSent'));
+      } catch (e) { authError(msg, e.message || ''); }
       finally { btn.disabled = false; }
     });
     $('resetNewForm').addEventListener('submit', async event => {
       event.preventDefault();
-      const msg = $('resetNewMsg'); msg.textContent = '';
+      const msg = $('resetNewMsg'); clearAuthErrors($('resetNewScreen')); msg.textContent = '';
       const pw = $('resetNewPw').value;
-      if (pw.length < 8) { msg.textContent = t('resetShort'); return; }
-      if (pw !== $('resetNewPw2').value) { msg.textContent = t('resetMismatch'); return; }
+      if (!PASSWORD_RE.test(pw)) { authError(msg, t('resetShort'), $('resetNewPw')); return; }
+      if (pw !== $('resetNewPw2').value) { authError(msg, t('resetMismatch'), $('resetNewPw2')); return; }
       const btn = $('resetNewBtn'); btn.disabled = true;
       try {
         const verifying = !!verifyToken();
@@ -1650,16 +1765,19 @@
         if (!res.ok) throw new Error(data.error || '');
         history.replaceState(null, '', '/portal/');
         setVerifyMode(false);
-        showScreen('emailScreen');
-        $('loginPwInput').value = ''; $('emailError').textContent = t(verifying ? 'verifyDoneLogin' : 'resetDoneLogin'); $('emailError').classList.add('is-ok');
-      } catch (e) { msg.textContent = e.message || ''; }
+        if (data.email) $('emailInput').value = data.email;
+        if (verifying) { try { sessionStorage.setItem('wolko-hub-welcome', '1'); } catch (e) {} }   // 가입을 막 마친 사람 — 첫 로그인 때 환영 인사
+        showScreen('emailScreen', false);
+        $('loginPwInput').value = ''; authOk($('emailError'), t(verifying ? 'verifyDoneLogin' : 'resetDoneLogin'));
+        ($('emailInput').value ? $('loginPwInput') : $('emailInput')).focus();
+      } catch (e) { authError(msg, e.message || ''); }
       finally { btn.disabled = false; }
     });
 
     /* ── 초기화 ── */
     async function initAuthFlow() {
-      if (verifyToken()) { setVerifyMode(true); showScreen('resetNewScreen'); return; } // 가입 확인 메일의 링크로 들어온 경우
-      if (new URLSearchParams(location.search).get('reset')) { showScreen('resetNewScreen'); return; } // 메일의 재설정 링크로 들어온 경우
+      if (verifyToken()) { setVerifyMode(true); showScreen('resetNewScreen', false); return; } // 가입 확인 메일의 링크로 들어온 경우
+      if (new URLSearchParams(location.search).get('reset')) { showScreen('resetNewScreen', false); return; } // 메일의 재설정 링크로 들어온 경우
       const hubToken = sessionStorage.getItem('wolko-hub-token') || '';
       if (hubToken && isHubTokenValid(hubToken)) {
         currentSession = {
@@ -1672,7 +1790,7 @@
         }
         return;
       }
-      showScreen('emailScreen');
+      showScreen('emailScreen', false);
     }
 
     applyLangToDOM();
