@@ -177,7 +177,9 @@
     var sub = data.submission; wrap.hidden = !sub; if (!sub) return;
     var pctDone = sub.expected ? Math.round(sub.submitted / sub.expected * 100) : 100;
     var canExempt = data.me && data.me.role === 'master';   // 보고 제외는 마스터만 바꾼다 — 관리자는 목록만 본다
-    var people = function (list, action, label) { return list.map(function (p) { return '<li><span><strong title="' + esc(p.email) + '">' + esc(p.name) + '</strong></span>' + (p.fixed ? '<span class="gs-fixed">' + esc(t('subFixed')) + '</span>' : !canExempt ? '' : '<button type="button" class="gs-small" data-exempt="' + action + '" data-email="' + esc(p.email) + '">' + esc(label) + '</button>') + '</li>'; }).join(''); };
+    // 이름이 같은 사람이 둘 이상이면(같은 사람이 이메일을 달리해 계정을 두 번 만든 경우 등) 이름 아래에 이메일을 함께 보여 구별되게 한다
+    var nameCount = {}; sub.missing.concat(sub.exempt).forEach(function (p) { var k = String(p.name || '').trim().toLowerCase(); nameCount[k] = (nameCount[k] || 0) + 1; });
+    var people = function (list, action, label) { return list.map(function (p) { var dup = nameCount[String(p.name || '').trim().toLowerCase()] > 1; return '<li><span><strong title="' + esc(p.email) + '">' + esc(p.name) + '</strong>' + (dup ? '<em>' + esc(p.email) + '</em>' : '') + '</span>' + (p.fixed ? '<span class="gs-fixed">' + esc(t('subFixed')) + '</span>' : !canExempt ? '' : '<button type="button" class="gs-small" data-exempt="' + action + '" data-email="' + esc(p.email) + '">' + esc(label) + '</button>') + '</li>'; }).join(''); };
     var kindOf = function (r) { return r.scope === 'ministry' ? t('ministryLabel') : r.scope === 'team' ? t('teamLabel', r.teamName) : t('individual'); };
     var reported = (sub.reports || []).map(function (r) {
       var rows = [];

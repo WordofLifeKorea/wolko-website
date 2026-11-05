@@ -218,11 +218,37 @@ export async function listAccounts(env) {
   let cursor;
   do {
     const result = await env.CAMP_KV.list({ prefix: ACCOUNT_PREFIX, ...(cursor ? { cursor } : {}), limit: 1000 });
-    const values = await Promise.all(result.keys.map(k => env.CAMP_KV.get(k.name, 'json')));
+    const values = await Promise.all(result.keys.map(async k => {
+      const account = await env.CAMP_KV.get(k.name, 'json');
+      return account ? await healAccountKey(env, k.name, account) : null;
+    }));
     items.push(...values.filter(Boolean));
     cursor = result.list_complete ? null : result.cursor;
   } while (cursor);
-  return items;
+  // 같은 이메일이 두 번 나오지 않게 한다 (정리 중 다른 요청과 겹쳐도)
+  const seen = new Set();
+  return items.filter(a => { const e = normalizeEmail(a.email); if (!e) return true; if (seen.has(e)) return false; seen.add(e); return true; });
+}
+
+/**
+ * 예전에 대문자가 섞인 키(hub:account:Niki@…)로 저장된 계정 정리 — 로그인·삭제는 소문자 키만 보므로
+ * 그 기록은 목록에만 한 번 더 나오고 지울 수도 없었다. 소문자 키에 기록이 없으면 그리로 옮기고,
+ * 이미 있으면 소문자 쪽을 그대로 쓴다. 어느 쪽이든 옛 기록은 hub:account-dupe: 에 사본을 남긴 뒤 지운다.
+ */
+async function healAccountKey(env, keyName, account) {
+  const email = normalizeEmail(account.email);
+  const want = `${ACCOUNT_PREFIX}${email}`;
+  // 키가 대소문자·공백만 다른 경우만 정리한다 (다른 이메일 키에 든 기록은 건드리지 않는다)
+  if (!email || keyName === want || normalizeEmail(keyName.slice(ACCOUNT_PREFIX.length)) !== email) return account;
+  try {
+    const current = await env.CAMP_KV.get(want, 'json');
+    if (!current) await env.CAMP_KV.put(want, JSON.stringify({ ...account, email }));
+    await env.CAMP_KV.put(`hub:account-dupe:${keyName.slice(ACCOUNT_PREFIX.length)}`, JSON.stringify({ ...account, movedAt: new Date().toISOString() }), { expirationTtl: 60 * 60 * 24 * 90 });
+    await env.CAMP_KV.delete(keyName);
+    return current || { ...account, email };
+  } catch {
+    return account;   // 정리에 실패해도 목록은 그대로 보여 준다
+  }
 }
 
 export async function sendEmail(env, { to, subject, html, replyTo, fromName, text }) {
