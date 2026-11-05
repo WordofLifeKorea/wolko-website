@@ -587,8 +587,10 @@ body.gs-writing { overflow: hidden; }
 
 /* ── 맨 위 요약: 세 카드를 한 패널로 — 큰 숫자 셋 + 갈래별 표 하나 ── */
 .gs-ov { display: block; margin: 0 0 12px; padding: 22px 24px 8px; border: 1px solid var(--line); border-radius: var(--ws-radius-sm, 8px); background: #fff; }
-.gs-ov-top { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.gs-ov-k { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 0 22px; }
+.gs-ov-top { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(4, auto); }
+/* 칸마다 이름 · 숫자 · 비율 · 막대 네 줄을 같은 줄 높이로 나눠 쓴다(subgrid) — 이름이 몇 줄이든 숫자와 막대 높이가 세 칸에서 같다 */
+.gs-ov-k { display: grid; grid-row: span 4; grid-template-rows: subgrid; row-gap: 6px; align-content: start; min-width: 0; padding: 0 22px; }
+.gs-ov-short { display: none; }
 .gs-ov-k:first-child { padding-left: 0; }
 .gs-ov-k + .gs-ov-k { border-left: 1px solid var(--line); }
 .gs-ov-heard { --kc: #0a6a8f; }
@@ -601,7 +603,8 @@ body.gs-writing { overflow: hidden; }
 .gs-ov-bar { display: flex; gap: 2px; height: 6px; margin-top: 2px; overflow: hidden; border-radius: 3px; background: #eef3f5; }
 .gs-ov-bar i { min-width: 3px; }
 .gs-ov-table { width: 100%; margin-top: 20px; border-collapse: collapse; font-size: 14px; }
-.gs-ov-table th, .gs-ov-table td { padding: 11px 0; border-top: 1px solid var(--line); text-align: right; font-variant-numeric: tabular-nums; }
+.gs-ov-table th, .gs-ov-table td { padding: 11px 0 11px 14px; border-top: 1px solid var(--line); text-align: right; font-variant-numeric: tabular-nums; }
+.gs-ov-table th:first-child { padding-left: 0; }
 .gs-ov-table thead th { padding-top: 0; border-top: 0; color: #557080; font-size: 12.5px; font-weight: 800; }
 .gs-ov-table tbody th { text-align: left; color: var(--ink); font-weight: 700; white-space: nowrap; }
 .gs-ov-table tbody th i { display: inline-block; width: 10px; height: 10px; margin-right: 9px; border-radius: 50%; vertical-align: 0; }
@@ -610,11 +613,19 @@ body.gs-writing { overflow: hidden; }
 .gs-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @media (max-width: 640px) {
   .gs-ov { padding: 18px 16px 4px; }
-  .gs-ov-k { padding: 0 10px; }
-  .gs-ov-label { min-height: 2.8em; font-size: 12.5px; line-height: 1.4; }
-  .gs-ov-all { display: none; }
+  .gs-ov-k { padding: 0 8px; }
+  .gs-ov-k:last-child { padding-right: 0; }
+  .gs-ov-label { font-size: 12px; line-height: 1.4; letter-spacing: -.02em; }
+  .gs-ov-label .gs-info { width: 16px !important; min-width: 16px !important; height: 16px !important; min-height: 16px !important; max-height: 16px !important; margin-left: 3px; font-size: 10px; }
+  .gs-ov-long { display: none; }
+  .gs-ov-short { display: inline; }
   .gs-ov-num { font-size: 28px; }
   .gs-ov-sub { font-size: 11.5px; }
   .gs-ov-table { font-size: 13px; }
-  .gs-ov-table td { width: 21%; }
+  .gs-ov-table th, .gs-ov-table td { padding-left: 10px; }
+  .gs-ov-table th:first-child { padding-left: 0; }
+  .gs-ov-table thead th { font-size: 11.5px; }
+  .gs-ov-table tbody th { white-space: normal; line-height: 1.35; }   /* 영어 이름(WOLKO & church events)은 두 줄로 — 숫자 칸을 밀어내지 않게 */
+  .gs-ov-table tbody th i { margin-right: 7px; }
+  .gs-ov-table td { width: auto; white-space: nowrap; }
 }
