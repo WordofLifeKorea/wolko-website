@@ -2,3 +2,11 @@
   Access-Control-Allow-Origin: https://docs.wolko.org
   Access-Control-Allow-Methods: GET, HEAD, OPTIONS
   Cross-Origin-Resource-Policy: cross-origin
+
+# 직원 포탈 — 검색 엔진에 나오지 않게 한다 (페이지마다 meta 를 넣지 않아도 모든 포탈 주소에 붙는다)
+/portal
+  X-Robots-Tag: noindex, nofollow
+/portal/*
+  X-Robots-Tag: noindex, nofollow
+/portal-manifest.json
+  X-Robots-Tag: noindex, nofollow
