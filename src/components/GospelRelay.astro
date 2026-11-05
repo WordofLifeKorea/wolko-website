@@ -1,7 +1,7 @@
 ---
 /**
  * 비전 그림 — 가운데 먼저 믿은 한 친구에게서 복음이 원을 그리며 친구에서 친구로 퍼진다.
- * 사람마다: 흐린 모양(아직 못 들음) → 하늘색 고리(들음) → 금색(믿음) → 바깥 친구들에게 선(전함).
+ * 사람마다: (아직 못 들은 자리는 보이지 않다가) 하늘색 고리(들음) → 금색(믿음) → 바깥 친구들에게 선(전함).
  * 흐린 바탕 그물 위로 빛이 선을 타고 다음 친구에게 가고, 받은 친구는 금빛 배지로 밝아진다.
  * 셋째 원까지(여기까지는 자리가 정해져 있다) 퍼지면 그림 전체가 확 줄어들고, 바깥 친구들에게서 복음이 곧게 쭉쭉 뻗어 나간다 —
  * 그다음부터는 갈래 · 방향 · 길이를 모두 되풀이할 때마다 새로 뽑는다(정해진 자리가 없어 점이 늘 같은 곳에 찍히지 않는다). 화면에 보이는 동안 계속 되풀이한다.
@@ -85,16 +85,11 @@ const stepTimes = marks.map(m => m.delay);
   </defs>
 
   <g class="rl-world">
-  <!-- 바탕: 아직 아무도 듣지 못한 모습 — 늘 흐리게 깔려 있다 -->
+  <!-- 바탕: 흐린 원 길잡이와 선만 늘 깔려 있다 — 아직 복음이 닿지 않은 친구 자리(흐린 사람 모양)는 미리 보여 주지 않는다
+       (미리 보이면 다음에 어디로 퍼질지 점으로 드러났다) -->
   <g class="rl-ghost">
     {R.slice(1).map(r => <circle class="rl-guide" cx={C} cy={C} r={r} />)}
     {arcs.filter(a => !a.out).map(a => <path d={a.d} />)}
-    {people.map(n => (
-      <g transform={`translate(${n.x} ${n.y})`}>
-        <circle r={n.g ? 12 : 16} />
-        <use href="#rl-person" transform={`scale(${n.g ? 0.68 : 0.9})`} />
-      </g>
-    ))}
   </g>
 
   <!-- 살아나는 층: 금빛 선 · 선을 타고 가는 빛 · 믿음으로 밝아지는 친구 · 원 이름표 · 세 걸음 표시 -->
@@ -139,7 +134,6 @@ const stepTimes = marks.map(m => m.delay);
   .rl-ghost path { fill:none; stroke:rgba(255,255,255,.08); stroke-width:1.2; }
   .rl-ghost circle { fill:rgba(255,255,255,.03); stroke:rgba(255,255,255,.16); stroke-width:1; }
   .rl-ghost .rl-guide { fill:none; stroke:rgba(255,255,255,.1); stroke-dasharray:3 6; }
-  .rl-ghost use { fill:rgba(255,255,255,.26); }
 
   /* 다 퍼진 모습 — 자바스크립트가 없거나 움직임 줄이기 설정일 때 그대로 보인다 */
   .rl-live { transition:opacity .9s ease; }
