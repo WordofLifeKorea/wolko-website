@@ -69,7 +69,13 @@
     if (!tok) return;   // 로그인 전이면 각 페이지의 로그인 화면이 맡는다
     var key = 'wolko-hub-me:' + tok.slice(-16), cached = null;
     try { cached = JSON.parse(sessionStorage.getItem(key) || 'null'); } catch (e) {}
-    if (cached && cached.tools !== undefined) { tools = cached.tools; apply(); return; }   // 배포 전에 저장된 값(tools 없음)은 다시 받는다
+    // 저장된 값(배포 전에 저장돼 tools 가 없는 것은 빼고)이 이 페이지를 열어 주면 바로 쓰고, 뒤에서 새 값을 받아 둔다.
+    // 저장된 값이 막으면 그 뒤에 새로 열린 도구일 수 있으니 서버에 다시 물어보고 나서 막는다.
+    if (cached && cached.tools !== undefined) {
+      tools = cached.tools;
+      if (allows(tools, location.pathname)) apply();
+      else tools = undefined;
+    }
     fetch('/api/hub/me', { headers: { Authorization: 'Bearer ' + tok } })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (me) {

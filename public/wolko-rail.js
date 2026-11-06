@@ -384,7 +384,7 @@
   function mountAccess() {
     if (window.WolkoAccess || document.querySelector('script[data-wolko-access]')) return;
     var script = document.createElement('script');
-    script.src = '/wolko-access.js?v=1'; script.async = true; script.setAttribute('data-wolko-access', '');
+    script.src = '/wolko-access.js?v=2'; script.async = true; script.setAttribute('data-wolko-access', '');
     document.head.appendChild(script);
   }
 

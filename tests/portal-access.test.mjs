@@ -116,6 +116,24 @@ test('화면 스크립트(wolko-access.js): 허용 목록 밖의 /portal 도구 
   assert.equal(open.WolkoAccess.allows('/portal/kitchen'), true);
 });
 
+test('화면 스크립트: 저장해 둔 옛 도구 목록이 막아도 서버에 다시 물어보고, 새로 열린 도구면 막지 않는다', async () => {
+  const vm = await import('node:vm');
+  const src = readFileSync(new URL('../public/wolko-access.js', import.meta.url), 'utf8');
+  const visit = fresh => new Promise(resolve => {
+    let denied = false;
+    const tok = 'tok-1234567890abcdefgh', store = { 'wolko-hub-token': tok, ['wolko-hub-me:' + tok.slice(-16)]: JSON.stringify({ tools: ['/portal/crs'] }) };
+    const el = () => ({ style: {}, setAttribute() {}, append() {}, appendChild() {} });
+    const document = { documentElement: { lang: 'ko' }, body: el(), querySelectorAll: () => [], getElementById: () => null, createElement: el, addEventListener() {} };
+    const window = {};
+    vm.runInNewContext(src, { window, document, sessionStorage: { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = v; } }, location: { pathname: '/portal/gospel-stats/', replace() { denied = true; } }, fetch: async () => ({ ok: true, json: async () => ({ tools: fresh }) }), setTimeout: f => f() });
+    setTimeout(() => resolve({ denied, cached: JSON.parse(store['wolko-hub-me:' + tok.slice(-16)]).tools }), 20);
+  });
+  const opened = await visit(['/portal/crs', '/portal/gospel-stats']);
+  assert.equal(opened.denied, false, '새로 열린 도구는 막지 않는다');
+  assert.deepEqual(opened.cached, ['/portal/crs', '/portal/gospel-stats'], '저장값도 새 목록으로 바뀐다');
+  assert.equal((await visit(['/portal/crs'])).denied, true, '서버도 막으면 그때 막는다');
+});
+
 test('제한된 도구 페이지를 쓰는 모든 포탈 페이지에 접근 스크립트가 연결돼 있다(레일 또는 직접)', () => {
   const read = p => readFileSync(new URL('../' + p, import.meta.url), 'utf8');
   assert.match(read('public/wolko-rail.js'), /wolko-access\.js\?v=\d+/);
