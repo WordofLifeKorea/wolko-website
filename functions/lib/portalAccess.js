@@ -10,7 +10,7 @@ import { normalizeEmail } from './hubAccounts.js';
 import { campusOf, normalizeCampus } from './campus.js';
 
 /** 제주팀 일반 멤버가 쓸 수 있는 도구 */
-export const JEJU_MEMBER_TOOLS = ['/portal/crs', '/portal/resource', '/portal/prayers', '/portal/wolkoadmin', '/portal/expense', '/portal/mypage'];
+export const JEJU_MEMBER_TOOLS = ['/portal/crs', '/portal/resource', '/portal/gospel-stats', '/portal/prayers', '/portal/wolkoadmin', '/portal/expense', '/portal/mypage'];
 
 /** 관리자 등급은 아니지만 전체 메뉴를 쓰는 제주팀 매니저급 계정의 이메일 — 여기에 추가한다 */
 export const FULL_ACCESS_EMAILS = [];
