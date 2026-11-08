@@ -1,0 +1,65 @@
+---
+// 없는 주소 — Cloudflare Pages 는 dist/404.html 이 있으면 없는 주소에 이 화면을 404 로 보낸다.
+// (이 파일이 없으면 없는 주소에도 홈 화면이 200 으로 나가서, 잘못된 링크를 알아채지 못하고 검색에도 홈이 겹쳐 잡힌다)
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const links = [
+  { href: '/', ko: '홈', en: 'Home', subKo: '월코 첫 화면', subEn: 'WOLKO front page' },
+  { href: '/camp-register/', ko: '캠프 신청', en: 'Camp Registration', subKo: '지금 신청할 수 있는 캠프 일정', subEn: 'Camp sessions open now' },
+  { href: '/ministry/', ko: '월코 사역', en: 'Our Ministries', subKo: '캠프 · 제주 월비 · 청소년 사역', subEn: 'Camps, WOLBI Jeju, youth ministry' },
+  { href: '/contact/', ko: '문의하기', en: 'Contact Us', subKo: '찾는 내용을 알려 주세요', subEn: 'Tell us what you were looking for' },
+];
+---
+
+<BaseLayout title="페이지를 찾을 수 없어요 — Word of Life Korea" description="요청하신 페이지를 찾을 수 없습니다." whiteNav noindex>
+  <style>
+    .nf {
+      --nf-navy:#0b2430; --nf-deep:#004f68; --nf-text:#4a5d66; --nf-line:#d6dee2; --nf-soft:#f3f7f9;
+      font-family:var(--ff-sans); color:var(--nf-navy); background:#fff;
+      word-break:keep-all; min-height:calc(100svh - 120px);
+      padding:calc(var(--nav-h) + clamp(56px, 10vw, 120px)) 0 clamp(72px, 10vw, 120px);
+    }
+    .nf-shell { width:min(760px, calc(100% - 40px)); margin-inline:auto; }
+    .nf-code { font-family:var(--ff-serif); font-size:15px; font-weight:700; color:var(--nf-deep); font-variant-numeric:tabular-nums; }
+    .nf-title { margin-top:14px; font-family:var(--ff-serif); font-size:clamp(28px, 4.4vw, 44px); font-weight:700; line-height:1.25; letter-spacing:-.03em; text-wrap:balance; }
+    .nf-text { margin-top:18px; max-width:52ch; font-size:16px; line-height:1.75; color:var(--nf-text); text-wrap:pretty; }
+    .nf-list { margin-top:clamp(36px, 6vw, 52px); border-top:1px solid var(--nf-line); list-style:none; padding:0; }
+    .nf-list li { border-bottom:1px solid var(--nf-line); }
+    .nf-link { display:flex; align-items:center; gap:16px; min-height:72px; padding:14px 4px; color:inherit; text-decoration:none; transition:background-color .2s ease, padding .2s ease; }
+    .nf-link-body { flex:1; min-width:0; }
+    .nf-link-title { display:block; font-size:17px; font-weight:700; }
+    .nf-link-sub { display:block; margin-top:3px; font-size:14px; color:var(--nf-text); }
+    .nf-link svg { width:18px; height:18px; flex:none; fill:none; stroke:var(--nf-deep); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; transition:transform .2s ease; }
+    .nf-link:hover { background:var(--nf-soft); padding-inline:14px; }
+    .nf-link:hover svg { transform:translateX(3px); }
+    .nf-link:focus-visible { outline:2px solid var(--nf-deep); outline-offset:2px; }
+    @media (prefers-reduced-motion: reduce) { .nf-link, .nf-link svg { transition:none; } }
+  </style>
+
+  <div class="nf" id="lang-root">
+    <div class="nf-shell">
+      <p class="nf-code">404</p>
+      <h1 class="nf-title">
+        <span class="wl-ko">찾으시는 페이지가 없어요</span>
+        <span class="wl-en">We can't find that page</span>
+      </h1>
+      <p class="nf-text">
+        <span class="wl-ko">주소가 바뀌었거나 없어진 페이지예요. 아래에서 가려던 곳을 골라 주세요.</span>
+        <span class="wl-en">The address may have changed, or the page no longer exists. Pick where you were heading below.</span>
+      </p>
+      <ul class="nf-list">
+        {links.map(l => (
+          <li>
+            <a class="nf-link" href={l.href}>
+              <span class="nf-link-body">
+                <span class="nf-link-title"><span class="wl-ko">{l.ko}</span><span class="wl-en">{l.en}</span></span>
+                <span class="nf-link-sub"><span class="wl-ko">{l.subKo}</span><span class="wl-en">{l.subEn}</span></span>
+              </span>
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</BaseLayout>
