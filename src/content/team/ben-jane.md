@@ -2,11 +2,11 @@
 
 name_ko: 벤 & 제인 코흘러
 name_en: Ben & Jane Koehler
-title_ko: 시설 관리 및 사역 지원 · 제주 월비
-title_en: Facility & Ministry Support · WOLBI Jeju
-role_badge: Missionaries
+title_ko: 국제사역 인턴십 · 시설 관리 및 사역 지원
+title_en: Cross Cultural Internship · Facility & Ministry Support
+role_badge: CCI Intern
 campus: jeju
-category: missionary
+category: stw
 order: 10
 photo_url: "/images/uploads/ben-jane-photo_url-1779775574634.jpg"
 photo_story: ""

@@ -10,6 +10,7 @@ export const ROLE_KO = {
   Director: '디렉터',
   'Short-term Worker': '단기 사역자',
   Intern: '인턴',
+  'CCI Intern': '국제사역 인턴',
   Staff: '간사',
 };
 export const roleKo = (badge) => (badge ? ROLE_KO[badge] || badge : '');
