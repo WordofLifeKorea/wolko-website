@@ -7,8 +7,8 @@ bio_en: |-
 gender: female
 name_ko: 모슬리 브링클리
 name_en: Brinkley Moseley
-title_ko: 마케팅 코디네이터 · 제주 월비
-title_en: Marketing Coordinator · WOLBI Jeju
+title_ko: 마케팅 코디네이터
+title_en: Marketing Coordinator
 role_badge: Staff
 campus: jeju
 category: stw

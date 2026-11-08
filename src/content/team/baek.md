@@ -4,8 +4,8 @@ bio_en: "Born in 1984 into a Christian home, David received Christ after hearing
 gender: male
 name_ko: 백남규 & 조안나
 name_en: Namkyu Baek & Joanna
-title_ko: 선교사 · 제주 월비
-title_en: Missionaries · Jeju WOLBI
+title_ko: 선교사
+title_en: Missionaries
 role_badge: Missionaries
 campus: jeju
 category: missionary

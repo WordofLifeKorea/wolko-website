@@ -2,8 +2,8 @@
 
 name_ko: 카브레라 버니
 name_en: Berny Cabrera
-title_ko: 카운슬러 & 찬양 인도자 · 제주 월비
-title_en: Counselor & Worship Leader · WOLBI Jeju
+title_ko: 카운슬러 & 찬양 인도자
+title_en: Counselor & Worship Leader
 role_badge: Staff
 campus: jeju
 category: stw

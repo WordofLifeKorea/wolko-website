@@ -13,8 +13,8 @@ bio_en: Growing up I thought that I was Christian because I was born into it and
 gender: male
 name_ko: 챕먼 조
 name_en: Joe Chapman
-title_ko: 선교사 · 제주 요리사
-title_en: Missionary · Jeju Chef
+title_ko: 선교사 · 요리사
+title_en: Missionary · Chef
 role_badge: Missionary
 campus: jeju
 category: missionary
