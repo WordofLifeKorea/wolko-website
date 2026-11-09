@@ -605,16 +605,26 @@ import PageHero from '../../components/PageHero.astro';
   /* 과목은 이름만 보이고, 누르면 설명이 열린다 (details/summary — 키보드·화면낭독기 기본 지원) */
   .wj-course { --wj-num-w: 64px; border-top: 1px solid var(--wj-line); }
   .wj-course:first-child { border-top: 2px solid var(--wj-navy); }
-  .wj-course-sum { display: grid; grid-template-columns: var(--wj-num-w) minmax(0, 1fr) 24px; gap: 8px; align-items: start; padding: 24px 0; list-style: none; cursor: pointer; }
+  .wj-course-sum { display: grid; grid-template-columns: var(--wj-num-w) minmax(0, 1fr) 24px; gap: 8px; align-items: start; padding: 24px 0; list-style: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .wj-course-sum::-webkit-details-marker { display: none; }
   .wj-course-sum:focus-visible { outline: 2px solid var(--wj-deep); outline-offset: 4px; border-radius: 4px; }
   .wj-course-body { display: block; min-width: 0; }
   .wj-course-tag { display: block; }
-  .wj-course-chev { width: 20px; height: 20px; margin-top: 30px; fill: none; stroke: var(--wj-deep); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform .25s ease; }
+  .wj-course-chev { width: 20px; height: 20px; margin-top: 30px; fill: none; stroke: var(--wj-deep); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform .35s cubic-bezier(.2,.7,.2,1); }
   .wj-course-d[open] .wj-course-chev { transform: rotate(180deg); }
-  .wj-course-sum:hover .wj-course-name { color: var(--wj-deep); }
+  .wj-course-name { transition: color .2s ease; }
+  @media (hover: hover) { .wj-course-sum:hover .wj-course-name { color: var(--wj-deep); } }
   .wj-course-d .wj-course-desc { margin: -8px 32px 0 calc(var(--wj-num-w) + 8px); padding-bottom: 26px; }
-  @media (prefers-reduced-motion: reduce) { .wj-course-chev { transition: none; } }
+  /* 펼칠 때: 지원하는 브라우저는 높이가 부드럽게 늘고, 설명 글은 어디서나 살짝 떠오르며 나타난다 */
+  .wj-course-d { interpolate-size: allow-keywords; }
+  .wj-course-d::details-content { height: 0; overflow: clip; transition: height .35s cubic-bezier(.2,.7,.2,1), content-visibility .35s allow-discrete; }
+  .wj-course-d[open]::details-content { height: auto; }
+  .wj-course-d[open] .wj-course-desc { animation: wj-desc-in .35s cubic-bezier(.2,.7,.2,1); }
+  @keyframes wj-desc-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .wj-course-chev, .wj-course-d::details-content { transition: none; }
+    .wj-course-d[open] .wj-course-desc { animation: none; }
+  }
   .wj-course-num { font-family: var(--ff-serif); font-size: 15px; line-height: 1.6; color: var(--wj-deep); }
   .wj-course-tag { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--wj-label); }
   .wj-course-name { margin-top: 8px; font-size: 18px; font-weight: 700; line-height: 1.5; color: var(--wj-navy); }
