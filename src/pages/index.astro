@@ -120,6 +120,10 @@ const WM_POP = 2.6;  // 첫 로고부터 마지막 로고까지 걸리는 초
 const wmDelay = (i) => (0.4 + ((i * 0.6180339) % 1) * WM_POP).toFixed(2);
 const wmFields = WOL_FIELDS.map((f, i) => { const [x, y] = wmXY(f.lat, f.lon); return { ...f, x, y, delay: wmDelay(i + 1) }; });
 const wmHomeDelay = wmDelay(0);
+// 월코 이름표: 한국 로고에서 왼쪽 위(몽골 · 중국 북쪽, 다른 사역지가 없는 곳)로 가는 가는 선을 긋고, 선 끝에 글자를 오른쪽 맞춤으로 둔다.
+// 왼쪽으로 뻗으므로 휴대폰에서도 글자가 지도 오른쪽 밖으로 나가지 않는다
+const [wmLx, wmLy] = wmXY(51, 112);
+const wmLead = `M${(wmKx - 12).toFixed(1)} ${(wmKy - 12).toFixed(1)}L${wmLx.toFixed(1)} ${wmLy.toFixed(1)}h-26`;
 const wmCount = WOL_FIELDS.length + 1; // 한국 포함
 const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) => f.region === r.id) }));
 ---
@@ -423,12 +427,25 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 .hm-wcross-rim { fill: #f6dc9f; opacity: .9; }
 .hm-wcross-glow { opacity: .55; }
 .hm-wcross { cursor: default; }
+/* 마우스를 올리면 나라 이름 — 커서에서 가장 가까운 로고(로고 반지름 + 조금 안쪽일 때만)의 이름을 그 로고 바로 위에 띄운다.
+   예전에는 금빛 번짐 · 퍼지는 원(넓고 서로 겹침)에 반응해 빈 곳이나 옆 나라 위에서 엉뚱한 이름이 떴고,
+   로고끼리 붙어 있는 곳(카리브해 · 중미 · 동유럽)에서는 옆 로고가 가려 다른 이름이 떴다. 그래서 지도 그림은 마우스에 반응하지 않고 스크립트가 거리로 고른다 */
+.hm-wcross, .hm-wcross * { pointer-events: none; }
+.hm-wmap-tip { position: absolute; z-index: 2; transform: translate(-50%, calc(-100% - 14px)); padding: 4px 9px; border-radius: 6px; background: rgba(6,28,37,.94); border: 1px solid rgba(246,214,150,.45); color: #fff; font-size: 12.5px; font-weight: 700; line-height: 1.4; white-space: nowrap; pointer-events: none; }
+.hm-wmap-tip[hidden] { display: none; }
 .hm-wcross-pop, .hm-wcross-bump, .hm-wcross-glow, .hm-wring, .hm-wring-box { transform-box: fill-box; transform-origin: center; }
-.hm-wmap-home { position: absolute; transform: translate(-50%, calc(-100% - 16px)); padding: 3px 8px; border-radius: 999px; background: rgba(255,255,255,.1); border: 1px solid rgba(246,214,150,.45); color: #f6dc9f; font-size: 11px; font-weight: 800; letter-spacing: .08em; pointer-events: none; }
+/* 월코 표시 — 둥근 이름표 대신 한국 로고에서 뻗은 가는 금빛 선 끝에 글자(선 끝에 오른쪽 맞춤, 세로 가운데) */
+.hm-wlead { fill: none; stroke: rgba(246,220,159,.75); stroke-width: 1.4; stroke-linecap: round; stroke-dasharray: 1 2; stroke-dashoffset: 0; }
+.hm-wmap-home { position: absolute; transform: translate(calc(-100% - 8px), -50%); display: grid; justify-items: end; gap: 2px; text-align: right; white-space: nowrap; pointer-events: none; text-shadow: 0 1px 6px rgba(6,28,37,.95), 0 0 2px rgba(6,28,37,.9); }
+.hm-wmap-home b { color: #f6dc9f; font-size: 15px; font-weight: 800; letter-spacing: .1em; line-height: 1.1; }
+.hm-wmap-home > span { color: rgba(255,255,255,.8); font-size: 11.5px; font-weight: 600; line-height: 1.3; }
 .hm-wmap.hm-rv { transform: none; }
 .hm-wmap.hm-rv .hm-wdots { opacity: 0; }
 .hm-wmap.hm-rv.is-in .hm-wdots { animation: hmWDots 1.2s ease-out both; }
 .hm-wmap.hm-rv .hm-wcross-pop, .hm-wmap.hm-rv .hm-wmap-home { opacity: 0; }
+.hm-wmap.hm-rv .hm-wlead { stroke-dashoffset: 1.05; }
+.hm-wmap.hm-rv.is-in .hm-wlead { animation: hmWLead .7s cubic-bezier(.65,0,.35,1) calc(var(--hd) + .3s) both; }
+@keyframes hmWLead { from { stroke-dashoffset: 1.05; } to { stroke-dashoffset: 0; } }
 .hm-wmap.hm-rv.is-in .hm-wcross-pop { animation: hmWPop .7s cubic-bezier(.2,1.7,.4,1) var(--cd) both; }
 .hm-wmap.hm-rv.is-in .hm-wcross-bump { animation: hmWBump 8s ease-out calc(var(--cd) + .5s) infinite; }
 .hm-wmap.hm-rv.is-in .hm-wcross-glow { animation: hmWGlow .9s ease-out var(--cd) both; }
@@ -448,12 +465,14 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
   .hm-wcross-pop { transform: scale(1.4); }
   .hm-wmap.hm-rv.is-in .hm-wcross-pop { animation-name: hmWPopMid; }
   .hm-wring-box { transform: scale(1.3); }
+  .hm-wlead { stroke-width: 2.2; }
 }
 @keyframes hmWPopMid { 0% { transform: scale(0); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1.4); opacity: 1; } }
 /* 움직임 줄이기 — 전체 규칙(모든 요소 opacity:1, transform:none)이 원을 굵은 동그라미로 굳히고 로고를 줄이므로 지도만 따로 되돌린다 */
 @media (prefers-reduced-motion: reduce) {
   .hm-home .hm-wring { opacity: 0 !important; }
   .hm-home .hm-wcross-glow { opacity: .55 !important; }
+  .hm-home .hm-wlead { stroke-dashoffset: 0 !important; }
 }
 @media (prefers-reduced-motion: reduce) and (min-width: 741px) and (max-width: 1100px) { .hm-home .hm-wcross-pop { transform: scale(1.4) !important; } }
 @media (prefers-reduced-motion: reduce) and (max-width: 740px) { .hm-home .hm-wcross-pop { transform: scale(1.8) !important; } }
@@ -479,7 +498,11 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
   @keyframes hmWPopBig { 0% { transform: scale(0); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1.8); opacity: 1; } }
   .hm-wcross--home .hm-wcross-pop { transform: scale(1.3); }
   .hm-wring-box { transform: scale(1.6); }
-  .hm-wmap-home { font-size: 11px; padding: 2px 6px; transform: translate(-50%, calc(-100% - 12px)); }   /* 9.5px → 11px: 휴대폰에서도 읽히는 크기 */
+  .hm-wmap-home { transform: translate(calc(-100% - 5px), -50%); }
+  .hm-wlead { stroke-width: 4; }
+  .hm-wmap-home b { font-size: 12px; }
+  .hm-wmap-home > span { font-size: 10.5px; }
+  .hm-wmap-tip { transform: translate(-50%, calc(-100% - 18px)); }
   .hm-wlist-grid { grid-template-columns: 1fr; gap: 16px; }
 }
 
@@ -903,22 +926,54 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
           </defs>
           <path class="hm-wdots" d={wmDotsPath} />
           {wmFields.map((f) => (
-            <g class="hm-wcross" transform={`translate(${f.x.toFixed(1)} ${f.y.toFixed(1)})`} style={`--cd:${f.delay}s`}>
-              <title>{f.ko} · {f.en}</title>
+            <g class="hm-wcross" transform={`translate(${f.x.toFixed(1)} ${f.y.toFixed(1)})`} style={`--cd:${f.delay}s`} data-ko={f.ko} data-en={f.en} data-left={(f.x / WM_W * 100).toFixed(2)} data-top={(f.y / WM_H * 100).toFixed(2)}>
               <circle class="hm-wcross-glow" r="16" fill="url(#hmCrossGlow)" />
               <g class="hm-wring-box"><circle class="hm-wring" r="22" /><circle class="hm-wring hm-wring--echo" r="22" /></g>
               <g class="hm-wcross-pop"><g class="hm-wcross-bump"><circle class="hm-wcross-rim" r="7.6" /><use class="hm-wcross-mark" href="#hmWMark" x="-7" y="-7" width="14" height="14" /></g></g>
             </g>
           ))}
+          <path class="hm-wlead" d={wmLead} pathLength="1" style={`--hd:${wmHomeDelay}s`} />
           <g class="hm-wcross hm-wcross--home" transform={`translate(${wmKx.toFixed(1)} ${wmKy.toFixed(1)})`} style={`--cd:${wmHomeDelay}s`}>
-            <title>{KOREA.ko} · WOLKO</title>
             <circle class="hm-wcross-glow" r="30" fill="url(#hmCrossGlow)" />
             <g class="hm-wring-box"><circle class="hm-wring" r="34" /><circle class="hm-wring hm-wring--echo" r="34" /></g>
             <g class="hm-wcross-pop"><g class="hm-wcross-bump"><circle class="hm-wcross-rim" r="12.9" /><use class="hm-wcross-mark" href="#hmWMark" x="-12" y="-12" width="24" height="24" /></g></g>
           </g>
         </svg>
-        <span class="hm-wmap-home" style={`--hd:${wmHomeDelay}s;left:${(wmKx / WM_W * 100).toFixed(2)}%;top:${(wmKy / WM_H * 100).toFixed(2)}%`}>WOLKO</span>
+        <span class="hm-wmap-tip" id="hmWmapTip" aria-hidden="true" hidden><span class="wl-ko"></span><span class="wl-en"></span></span>
+        <span class="hm-wmap-home" style={`--hd:${wmHomeDelay}s;left:${((wmLx - 26) / WM_W * 100).toFixed(2)}%;top:${(wmLy / WM_H * 100).toFixed(2)}%`}><b>WOLKO</b><span>Word of Life Korea</span></span>
       </div>
+
+      <script is:inline>
+        // 지도 나라 이름표: 커서(휴대폰은 누른 곳)에서 가장 가까운 로고를 골라 그 로고 바로 위에 이름을 띄운다
+        (function () {
+          var map = document.querySelector('.hm-wmap'), tip = document.getElementById('hmWmapTip');
+          if (!map || !tip) return;
+          var pins = [].slice.call(map.querySelectorAll('.hm-wcross[data-ko]'));
+          var ko = tip.children[0], en = tip.children[1], cur = null;
+          function nearest(x, y) {
+            var best = null, bestD = Infinity;
+            pins.forEach(function (g) {
+              var r = g.querySelector('.hm-wcross-rim').getBoundingClientRect();
+              if (!r.width) return;
+              var d = Math.hypot(r.left + r.width / 2 - x, r.top + r.height / 2 - y);
+              if (d <= Math.max(r.width / 2 + 3, 10) && d < bestD) { best = g; bestD = d; }
+            });
+            return best;
+          }
+          function show(g) {
+            map.style.cursor = g ? 'pointer' : '';
+            if (g === cur) return;
+            cur = g;
+            if (!g) { tip.hidden = true; return; }
+            ko.textContent = g.dataset.ko; en.textContent = g.dataset.en;
+            tip.style.left = g.dataset.left + '%'; tip.style.top = g.dataset.top + '%'; tip.hidden = false;
+          }
+          map.addEventListener('pointermove', function (e) { if (e.pointerType !== 'touch') show(nearest(e.clientX, e.clientY)); });
+          map.addEventListener('pointerleave', function (e) { if (e.pointerType !== 'touch') show(null); });
+          document.addEventListener('pointerdown', function (e) { show(map.contains(e.target) ? nearest(e.clientX, e.clientY) : null); });
+          window.addEventListener('scroll', function () { if (cur) show(null); }, { passive: true });
+        })();
+      </script>
 
       <details class="hm-wlist" data-rv>
         <summary><span class="wl-ko">사역지 전체 보기</span><span class="wl-en">See all ministry locations</span></summary>
