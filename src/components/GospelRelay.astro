@@ -138,7 +138,9 @@ const stepTimes = marks.map(m => m.delay);
   /* 다 퍼진 모습 — 자바스크립트가 없거나 움직임 줄이기 설정일 때 그대로 보인다 */
   .rl-live { transition:opacity .9s ease; }
   .rl-guide-lit { fill:none; stroke:rgba(243,220,166,.3); stroke-width:1.2; stroke-dasharray:3 6; }
-  .rl-arc { fill:none; stroke:#f3dca6; stroke-width:1.5; stroke-linecap:round; stroke-dasharray:1; stroke-dashoffset:0; opacity:.62; }
+  /* 선 그리기: 대시(길이 1) 뒤 빈칸을 선보다 길게(2) 두고 1.05 만큼 밀어 둔다 — 빈칸을 1 로 두면 다음 대시가 선 끝에 길이 0 으로 걸려
+     둥근 끝(round cap)이 점으로 찍혀, 아직 그려지지 않은 선의 끝(다음 친구 자리)이 미리 드러났다 */
+  .rl-arc { fill:none; stroke:#f3dca6; stroke-width:1.5; stroke-linecap:round; stroke-dasharray:1 2; stroke-dashoffset:0; opacity:.62; }
   .rl-arc-out { stroke:url(#rl-fade); opacity:1; }
   /* 빛 점의 번짐: 흐림 필터 대신 옅은 금빛 선을 굵기를 달리해 두 겹 깔아, 가운데가 밝고 바깥으로 갈수록 흐려 보이게 한다 */
   .rl-spark-glow { --g:.3; fill:none; stroke:#fff1c9; stroke-width:5.5; stroke-linecap:round; stroke-dasharray:.14 2; stroke-dashoffset:-1.2; opacity:0; }
@@ -160,7 +162,7 @@ const stepTimes = marks.map(m => m.delay);
   }
 
   /* 재생 준비(.is-armed): 살아나는 층이 모두 꺼진 상태 → .is-on 이 붙으면 차례대로 */
-  .rl.is-armed .rl-arc { stroke-dashoffset:1; }
+  .rl.is-armed .rl-arc { stroke-dashoffset:1.05; }
   .rl.is-armed .rl-halo { opacity:0; transform:scale(.4); }
   .rl.is-armed .rl-badge { opacity:0; transform:scale(.55); }
   .rl.is-armed .rl-guide-lit, .rl.is-armed .rl-name { opacity:0; }
@@ -181,7 +183,7 @@ const stepTimes = marks.map(m => m.delay);
   .rl-world { transform-box:view-box; transform-origin:300px 300px; transition:opacity .9s ease; }
   .rl-burst { display:none; }
   .rl.is-armed .rl-burst { display:inline; }
-  .rl-burst path { fill:none; stroke:#f3dca6; stroke-linecap:round; stroke-dasharray:1; stroke-dashoffset:1; opacity:var(--o); }
+  .rl-burst path { fill:none; stroke:#f3dca6; stroke-linecap:round; stroke-dasharray:1 2; stroke-dashoffset:1.05; opacity:var(--o); }
   .rl-bud { opacity:0; }
   .rl-bud circle { fill:url(#rl-badge-fill); stroke:rgba(255,246,220,.9); stroke-width:1; }
   .rl-bud use { fill:#0b3442; }
@@ -196,7 +198,7 @@ const stepTimes = marks.map(m => m.delay);
   @keyframes rl-shock { 0% { opacity:0; transform:scale(.5); } 20% { opacity:.45; } 100% { opacity:0; transform:scale(1.02); } }
   .rl.is-fading .rl-world, .rl.is-fading .rl-note { opacity:0; }
 
-  @keyframes rl-draw { from { stroke-dashoffset:1; } to { stroke-dashoffset:0; } }
+  @keyframes rl-draw { from { stroke-dashoffset:1.05; } to { stroke-dashoffset:0; } }
   @keyframes rl-spark {
     0% { stroke-dashoffset:.14; opacity:0; }
     12% { opacity:1; }

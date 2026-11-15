@@ -102,17 +102,21 @@ const waffleDots = Array.from({ length: 100 }, (_, i) => {
   return { on, style: `--d:${d.toFixed(3)}s;--w:${((r + c) * 0.04).toFixed(2)}s` };
 });
 
-// 한국에서 세계로 — 세계 Word of Life 사역지 지도(점 지도 + 나라마다 십자가). 사역지 목록과 뺀 곳의 기준은 src/data/wolFields.js
+// 한국에서 세계로 — 세계 Word of Life 사역지 지도(점 지도 + 나라마다 월코 동그라미 로고). 사역지 목록과 뺀 곳의 기준은 src/data/wolFields.js
 import worldDots from '../data/world-dots.json';
 import { KOREA, WOL_FIELDS, WOL_REGIONS } from '../data/wolFields.js';
+// 사역지 표시는 공식 동그라미 W 로고 파일의 경로를 그대로 가져다 쓴다(모양·색을 바꾸지 않는다)
+import wMarkRaw from '../../public/images/wolko-w-circle.svg?raw';
+const wMarkPaths = (wMarkRaw.match(/<path[^>]*\/>/g) || []).join('');
+const wMarkViewBox = (wMarkRaw.match(/viewBox="([^"]+)"/) || [])[1];
 const WM_K = 4, WM_TOP = 75, WM_BOTTOM = -56;           // 등장방형 투영: 경도 1도 = 4, 위도 75 ~ -56
 const WM_W = 360 * WM_K, WM_H = (WM_TOP - WM_BOTTOM) * WM_K;
 const wmXY = (lat, lon) => [(lon + 180) * WM_K, (WM_TOP - lat) * WM_K];
 const wmDotsPath = worldDots.dots.map(([lon, lat]) => { const [x, y] = wmXY(lat, lon); return `M${x.toFixed(1)} ${y.toFixed(1)}h0`; }).join('');
 const [wmKx, wmKy] = wmXY(KOREA.lat, KOREA.lon);
-// 십자가는 한 곳에서 퍼지지 않고 지도 곳곳에서 흩어진 순서로 뿅 나타난다(황금비로 섞어 매번 같은 순서).
+// 로고는 한 곳에서 퍼지지 않고 지도 곳곳에서 흩어진 순서로 뿅 나타난다(황금비로 섞어 매번 같은 순서).
 // 그 뒤로 사역지마다 작은 원이 같은 순서로 번갈아 퍼진다.
-const WM_POP = 2.6;  // 첫 십자가부터 마지막 십자가까지 걸리는 초
+const WM_POP = 2.6;  // 첫 로고부터 마지막 로고까지 걸리는 초
 const wmDelay = (i) => (0.4 + ((i * 0.6180339) % 1) * WM_POP).toFixed(2);
 const wmFields = WOL_FIELDS.map((f, i) => { const [x, y] = wmXY(f.lat, f.lon); return { ...f, x, y, delay: wmDelay(i + 1) }; });
 const wmHomeDelay = wmDelay(0);
@@ -398,7 +402,7 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 
 
 /* ═══════════════════════════
-   4-1. 한국에서 세계로 — 남색 띠 위 점 지도. 사역지마다 십자가가 흩어진 순서로 뿅 나타나고, 저마다 금빛 번짐을 퍼뜨리며 통통 튄다(8초마다 반복)
+   4-1. 한국에서 세계로 — 남색 띠 위 점 지도. 사역지마다 월코 동그라미 로고가 흩어진 순서로 뿅 나타나고, 저마다 금빛 번짐을 퍼뜨리며 통통 튄다(8초마다 반복)
    움직임은 .hm-wmap 이 화면에 들어와 .is-in 이 붙을 때만 — 움직임 줄이기면 처음부터 다 찍힌 지도
 ═══════════════════════════ */
 .hm-world { position: relative; padding: 112px 0 96px; color: #fff; background: radial-gradient(90% 80% at 80% 0%, #123a4a 0%, var(--hm-navy) 60%, #08202a 100%); }
@@ -414,8 +418,9 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 .hm-home .hm-wmap-svg { display: block; width: 100%; height: auto; overflow: visible; stroke: none; fill: none; }
 .hm-wdots { fill: none; stroke: rgba(143,208,228,.26); stroke-width: 5.6; stroke-linecap: round; }
 .hm-wring { fill: url(#hmRingFill); stroke: none; opacity: 0; }
-.hm-wcross-mark { fill: none; stroke: #f6dc9f; stroke-width: 2.2; stroke-linecap: round; filter: drop-shadow(0 0 3px rgba(233,194,122,.9)); }
-.hm-wcross--home .hm-wcross-mark { stroke-width: 3; }
+.hm-wcross-mark { filter: drop-shadow(0 0 2.5px rgba(233,194,122,.85)); }
+/* 로고 뒤 금빛 테 — 남색 동그라미가 남색 바탕에 묻히지 않게 로고 둘레만 살짝 밝힌다(로고 자체는 그대로) */
+.hm-wcross-rim { fill: #f6dc9f; opacity: .9; }
 .hm-wcross-glow { opacity: .55; }
 .hm-wcross { cursor: default; }
 .hm-wcross-pop, .hm-wcross-bump, .hm-wcross-glow, .hm-wring, .hm-wring-box { transform-box: fill-box; transform-origin: center; }
@@ -431,21 +436,21 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 .hm-wmap.hm-rv.is-in .hm-wring--echo { animation-delay: calc(var(--cd) + 1.3s); }
 .hm-wmap.hm-rv.is-in .hm-wmap-home { animation: hmWLabel .6s ease-out calc(var(--hd) + .4s) both; }
 @keyframes hmWDots { from { opacity: 0; } to { opacity: 1; } }
-@keyframes hmWPop { 0% { transform: scale(0) rotate(-25deg); opacity: 0; } 60% { opacity: 1; } 100% { transform: none; opacity: 1; } }
-/* 십자가 — 원이 퍼질 때마다 통통 튀듯 커졌다 살짝 작아졌다 제자리로(8초마다) */
+@keyframes hmWPop { 0% { transform: scale(0); opacity: 0; } 60% { opacity: 1; } 100% { transform: none; opacity: 1; } }
+/* 로고 — 원이 퍼질 때마다 통통 튀듯 커졌다 살짝 작아졌다 제자리로(8초마다) */
 @keyframes hmWBump { 0% { transform: scale(1); } 3% { transform: scale(1.5); } 6% { transform: scale(.88); } 9% { transform: scale(1.12); } 12%, 100% { transform: scale(1); } }
 @keyframes hmWGlow { 0% { transform: scale(.4); opacity: 0; } 40% { transform: scale(1.4); opacity: 1; } 100% { transform: scale(1); opacity: .55; } }
 /* 원 — 테두리 선 없이 금빛 번짐(가장자리가 흐린 고리)만 커지며 사라진다. 두 번째 원이 뒤따라 메아리처럼 */
 @keyframes hmWRing { 0% { transform: scale(.35); opacity: 0; } 6% { opacity: 1; } 60% { transform: scale(1.7); opacity: 0; } 100% { transform: scale(1.7); opacity: 0; } }
 @keyframes hmWLabel { from { opacity: 0; } to { opacity: 1; } }
-/* 태블릿 — 지도가 휴대폰보다 넓어도 십자가가 작아 보이지 않게 중간 크기로 */
+/* 태블릿 — 지도가 휴대폰보다 넓어도 로고가 작아 보이지 않게 중간 크기로 */
 @media (min-width: 741px) and (max-width: 1100px) {
   .hm-wcross-pop { transform: scale(1.4); }
   .hm-wmap.hm-rv.is-in .hm-wcross-pop { animation-name: hmWPopMid; }
   .hm-wring-box { transform: scale(1.3); }
 }
-@keyframes hmWPopMid { 0% { transform: scale(0) rotate(-25deg); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1.4); opacity: 1; } }
-/* 움직임 줄이기 — 전체 규칙(모든 요소 opacity:1, transform:none)이 원을 굵은 동그라미로 굳히고 십자가를 줄이므로 지도만 따로 되돌린다 */
+@keyframes hmWPopMid { 0% { transform: scale(0); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1.4); opacity: 1; } }
+/* 움직임 줄이기 — 전체 규칙(모든 요소 opacity:1, transform:none)이 원을 굵은 동그라미로 굳히고 로고를 줄이므로 지도만 따로 되돌린다 */
 @media (prefers-reduced-motion: reduce) {
   .hm-home .hm-wring { opacity: 0 !important; }
   .hm-home .hm-wcross-glow { opacity: .55 !important; }
@@ -471,7 +476,7 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
   .hm-wdots { stroke-width: 6.4; }
   .hm-wcross-pop { transform: scale(1.8); }
   .hm-wmap.hm-rv.is-in .hm-wcross-pop { animation-name: hmWPopBig; }
-  @keyframes hmWPopBig { 0% { transform: scale(0) rotate(-25deg); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1.8); opacity: 1; } }
+  @keyframes hmWPopBig { 0% { transform: scale(0); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1.8); opacity: 1; } }
   .hm-wcross--home .hm-wcross-pop { transform: scale(1.3); }
   .hm-wring-box { transform: scale(1.6); }
   .hm-wmap-home { font-size: 11px; padding: 2px 6px; transform: translate(-50%, calc(-100% - 12px)); }   /* 9.5px → 11px: 휴대폰에서도 읽히는 크기 */
@@ -865,7 +870,7 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
     </div>
   </section>
 
-  <!-- ══ 4-1. 한국에서 세계로 — 세계 Word of Life 사역지 지도. 한국에서 빛이 퍼지며 사역지마다 십자가가 뿅 하고 나타난다 ══ -->
+  <!-- ══ 4-1. 한국에서 세계로 — 세계 Word of Life 사역지 지도. 한국에서 빛이 퍼지며 사역지마다 월코 동그라미 로고가 뿅 하고 나타난다 ══ -->
   <section class="hm-world" data-rv-group aria-labelledby="hmWorldTitle">
     <div class="hm-shell">
       <div class="hm-world-head">
@@ -894,6 +899,7 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
               <stop offset=".82" stop-color="#f6dc9f" stop-opacity=".3" />
               <stop offset="1" stop-color="#f6dc9f" stop-opacity="0" />
             </radialGradient>
+            <symbol id="hmWMark" viewBox={wMarkViewBox} set:html={wMarkPaths} />
           </defs>
           <path class="hm-wdots" d={wmDotsPath} />
           {wmFields.map((f) => (
@@ -901,14 +907,14 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
               <title>{f.ko} · {f.en}</title>
               <circle class="hm-wcross-glow" r="16" fill="url(#hmCrossGlow)" />
               <g class="hm-wring-box"><circle class="hm-wring" r="22" /><circle class="hm-wring hm-wring--echo" r="22" /></g>
-              <g class="hm-wcross-pop"><g class="hm-wcross-bump"><path class="hm-wcross-mark" d="M0 -7V7M-4.5 -2.5H4.5" /></g></g>
+              <g class="hm-wcross-pop"><g class="hm-wcross-bump"><circle class="hm-wcross-rim" r="7.6" /><use class="hm-wcross-mark" href="#hmWMark" x="-7" y="-7" width="14" height="14" /></g></g>
             </g>
           ))}
           <g class="hm-wcross hm-wcross--home" transform={`translate(${wmKx.toFixed(1)} ${wmKy.toFixed(1)})`} style={`--cd:${wmHomeDelay}s`}>
             <title>{KOREA.ko} · WOLKO</title>
             <circle class="hm-wcross-glow" r="30" fill="url(#hmCrossGlow)" />
             <g class="hm-wring-box"><circle class="hm-wring" r="34" /><circle class="hm-wring hm-wring--echo" r="34" /></g>
-            <g class="hm-wcross-pop"><g class="hm-wcross-bump"><path class="hm-wcross-mark" d="M0 -12V12M-7.5 -4.5H7.5" /></g></g>
+            <g class="hm-wcross-pop"><g class="hm-wcross-bump"><circle class="hm-wcross-rim" r="12.9" /><use class="hm-wcross-mark" href="#hmWMark" x="-12" y="-12" width="24" height="24" /></g></g>
           </g>
         </svg>
         <span class="hm-wmap-home" style={`--hd:${wmHomeDelay}s;left:${(wmKx / WM_W * 100).toFixed(2)}%;top:${(wmKy / WM_H * 100).toFixed(2)}%`}>WOLKO</span>
