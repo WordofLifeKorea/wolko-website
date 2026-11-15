@@ -428,7 +428,8 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 .hm-wmap.hm-rv.is-in .hm-wsonar circle:nth-child(2) { animation-delay: calc(var(--cd) + 1.8s); }
 .hm-wmap.hm-rv.is-in .hm-wsonar circle:nth-child(3) { animation-delay: calc(var(--cd) + 3s); }
 @keyframes hmWSonar { 0% { transform: scale(1); opacity: .85; } 100% { transform: scale(3.4); opacity: 0; } }
-.hm-wmap { container-type: inline-size; --hs: 1; }
+.hm-wmap { container-type: inline-size; --hs: 1; -webkit-tap-highlight-color: transparent; }   /* 휴대폰에서 지도를 누르면 지도 전체에 파란 상자가 덮이던 것 없앰 */
+.hm-wmap * { -webkit-tap-highlight-color: transparent; }
 .hm-wmap-home { position: absolute; transform: translate(-50%, calc(-100% - 17 * var(--hs) * 100cqw / 1440 - 7px)); color: #f3d89b; font-family: var(--ff-serif); font-size: 16px; font-weight: 700; letter-spacing: .04em; margin-left: .02em; line-height: 1; white-space: nowrap; pointer-events: none; text-shadow: 0 1px 8px rgba(6,28,37,.95), 0 0 3px rgba(6,28,37,.9); }
 .hm-wcross-glow { opacity: .55; }
 .hm-wcross { cursor: default; }
@@ -962,7 +963,12 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
             cur = g;
             if (!g) { tip.hidden = true; return; }
             ko.textContent = g.dataset.ko; en.textContent = g.dataset.en;
-            tip.style.left = g.dataset.left + '%'; tip.style.top = g.dataset.top + '%'; tip.hidden = false;
+            tip.style.left = g.dataset.left + '%'; tip.style.top = g.dataset.top + '%'; tip.style.marginLeft = '0px'; tip.hidden = false;
+            // 지도 끝(피지 · 칠레 등)에서 이름표가 화면 밖으로 잘리지 않게 안쪽으로 밀어 넣는다
+            var tr = tip.getBoundingClientRect(), pad = 6, vw = document.documentElement.clientWidth, shift = 0;
+            if (tr.right > vw - pad) shift = vw - pad - tr.right;
+            else if (tr.left < pad) shift = pad - tr.left;
+            if (shift) tip.style.marginLeft = shift + 'px';
           }
           map.addEventListener('pointermove', function (e) { if (e.pointerType !== 'touch') show(nearest(e.clientX, e.clientY)); });
           map.addEventListener('pointerleave', function (e) { if (e.pointerType !== 'touch') show(null); });
