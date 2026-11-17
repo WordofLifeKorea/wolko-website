@@ -2003,8 +2003,15 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
           : '';
         const detailPanelContent = r.registrationType === 'group'
           ? `<div class="registration-detail-section">
-              <div class="registration-detail-grid">${detailItem(t('thMediaConsent'), mediaConsentHtml(r), true)}</div>
-            </div>${participantDetailSection}`
+              <div class="registration-detail-grid">
+                ${r.church ? detailItem(t('thChurch'), trHtml(r, 'church')) : ''}
+                ${r.referralSource ? detailItem(t('thReferral'), trHtml(r, 'referralSource')) : ''}
+                ${detailItem(t('thMediaConsent'), mediaConsentHtml(r), true)}
+                ${applicantMemo ? detailItem(t('thNotes'), trHtml(r, 'notes'), true) : ''}
+              </div>
+            </div>${participantDetailSection}
+            ${refundDetailSection}
+            ${scholarshipDetailSection}`
           : `<div class="registration-detail-section">
               <div class="registration-detail-section-title">${t('detailApplicationInfo')}</div>
               <div class="registration-detail-grid">
