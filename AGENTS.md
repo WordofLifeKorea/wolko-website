@@ -5,3 +5,7 @@
 - Use subtle background fills, uniform outlines, author dots, and clear typography for emphasis instead.
 - Render quoted source text in readable, high-contrast upright type, not muted italics.
 - Adjacent status and page badges should share height, padding, radius, and typography, including when one is a button.
+
+# Workflow
+
+- When a change is finished and its tests pass, push it straight to `main` as well as the working branch (the user asked for this on 2026-11-17: "다음부턴 자동으로 올려줘"). Fetch `origin/main` first and only fast-forward; if `main` has moved, merge or rebase onto it before pushing, and never force-push `main`.
