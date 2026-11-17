@@ -179,11 +179,7 @@ test('winter English camp registration windows: round 1, closed gap, round 2 (al
   assert.equal(registrationState(id, at('2026-11-04T23:59:59+09:00')).state, 'open');
   const gap = registrationState(id, at('2026-11-05T00:00:00+09:00'));
   assert.equal(gap.state, 'gap');
-  assert.equal(gap.nextOpenAt, new Date(at('2026-11-17T13:30:00+09:00')).toISOString(), '11월 17일 오후 임시 접수가 먼저 열린다');
-  assert.equal(registrationState(id, at('2026-11-17T14:00:00+09:00')).state, 'open', '임시 접수 중');
-  const after = registrationState(id, at('2026-11-17T16:00:01+09:00'));
-  assert.equal(after.state, 'gap');
-  assert.equal(after.nextOpenAt, new Date(at('2026-11-18T10:00:00+09:00')).toISOString());
+  assert.equal(gap.nextOpenAt, new Date(at('2026-11-18T10:00:00+09:00')).toISOString());
   assert.equal(registrationState(id, at('2026-11-17T23:59:59+09:00')).state, 'gap');
   assert.equal(registrationState(id, at('2026-11-18T09:59:59+09:00')).state, 'gap');
   assert.equal(registrationState(id, at('2026-11-18T10:00:00+09:00')).state, 'open');
