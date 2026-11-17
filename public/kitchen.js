@@ -118,7 +118,7 @@
   const kindOf = slot => (slot.endsWith('_prep') ? 'prep' : 'clean');
   const capOf = (date, slot) => (state.caps && state.caps[`${date}:${slot}`]) || state.defaultCapacity[kindOf(slot)];
 
-  // 한 칸: 이름표(신청한 사람들) + 남은 자리가 있으면 "+ 신청". 관리 모드에서는 칸 전체가 버튼이다.
+  // 한 칸: 머리줄(라벨 · 인원 · 남은 자리가 있으면 "+ 신청") + 이름표(신청한 사람들). 관리 모드에서는 칸 전체가 버튼이다.
   function slotCell(date, slot) {
     const people = peopleOf(date, slot);
     const cap = capOf(date, slot);
@@ -131,7 +131,16 @@
     if (managing) { cell.type = 'button'; cell.disabled = past; cell.addEventListener('click', () => openAssign(date, slot)); }
     const head = el('span', 'khead');
     head.append(el('span', 'lbl', t(slot.endsWith('_prep') ? 'prepShort' : 'cleanShort')));
-    if (!closed) head.append(el('span', 'cnt' + (full ? ' full' : ''), full ? `${people.length}/${cap} ${t('full')}` : `${people.length}/${cap}`));
+    // 인원 수와 "+ 신청"은 칸 머리줄 오른쪽에 — 빈 칸이 한 줄로 끝나고, 이름은 늘 머리줄 바로 아래에서 시작한다
+    if (!closed) {
+      const meta = el('span', 'kmeta');
+      meta.append(el('span', 'cnt' + (full ? ' full' : ''), full ? `${people.length}/${cap} ${t('full')}` : `${people.length}/${cap}`));
+      if (!full && !meIn && !past) {
+        if (managing) meta.append(el('span', 'kp add', t('signUp')));
+        else { const b = el('button', 'kp add', t('signUp')); b.type = 'button'; b.addEventListener('click', () => claim(date, slot)); meta.append(b); }
+      }
+      head.append(meta);
+    }
     cell.append(head);
     const box = el('span', 'kpeople');
     if (closed) {
@@ -146,10 +155,6 @@
           box.append(b);
         } else box.append(el('span', 'kp' + (p.mine ? ' mine' : ''), p.name));
       });
-      if (!full && !meIn && !past) {
-        if (managing) box.append(el('span', 'kp add', t('signUp')));
-        else { const b = el('button', 'kp add', t('signUp')); b.type = 'button'; b.addEventListener('click', () => claim(date, slot)); box.append(b); }
-      }
     }
     cell.append(box);
     return cell;
