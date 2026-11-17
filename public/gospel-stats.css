@@ -657,3 +657,10 @@ body.gs-writing { overflow: hidden; }
   .gg-text strong { font-size: 17px; }
 }
 @media (prefers-reduced-motion: reduce) { .gg-arc { transition: none; } }
+/* 원이 하나일 때: 원 · 숫자 왼쪽, 갈래별 숫자를 오른쪽에 — 넓은 카드가 비어 보이지 않게 */
+@media (min-width: 721px) {
+  .gg-rings[data-n="1"] .gg-ring { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto 1fr; column-gap: 32px; align-items: center; }
+  .gg-rings[data-n="1"] .gg-name { grid-column: 1 / -1; }
+  .gg-rings[data-n="1"] .gg-parts { flex-direction: column; gap: 8px; padding: 0 0 0 28px; border-top: 0; border-left: 1px solid #e1eaee; }
+  .gg-rings[data-n="1"] .gg-parts li { justify-content: space-between; gap: 24px; max-width: 200px; }
+}

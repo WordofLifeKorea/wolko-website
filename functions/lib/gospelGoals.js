@@ -2,7 +2,7 @@
  * 복음 통계 — 연간 "복음 도달(Gospel Reach)" 목표.
  *
  * 도달 인원 = 개인 전도로 복음을 들은 인원 + 캠프 참석 + 월코·교회 행사 참석 + 전도지 + SNS 도달 (영적 대화는 복음 전달 전 단계라 넣지 않는다).
- * 목표는 본부(Mike VanProoyen)에 낸 숫자 그대로 — 평택(본토)·제주를 따로 세운다.
+ * 목표는 본부(Mike VanProoyen)에 낸 숫자 그대로 — 평택(본토)·제주를 따로 적고, 전체 탭에서는 둘을 더한 목표 하나로 본다.
  * 2026년은 포탈 보고를 연중에 시작해 기록이 일부뿐이라, 평택만 임시로 30,000 으로 둔다(제주는 정하지 않음).
  */
 export const REACH_FIELD_IDS = ['evangelism', 'campAttendance', 'eeAttendance', 'literature', 'social'];
