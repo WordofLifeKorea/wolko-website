@@ -216,7 +216,18 @@
       + (counted.length > 1 ? '<tr class="gs-sumrow"><td><strong>' + esc(t('caTotal')) + '</strong></td>' + (yearly ? '<td></td>' : '') + '<td class="gs-total">' + num(sum.campers) + '</td><td>' + num(sum.staff) + '</td><td>' + num(sum.salv) + '</td><td>' + num(sum.ded) + '</td></tr>' : '')
       + '</tbody></table></div>';
   }
-  function renderCharts() { renderSubmission(); renderCampAuto(); renderChurchStats(); if (window.GospelCharts) window.GospelCharts.render($('charts'), { data: data, tab: tab, lang: lang }); }
+  function renderCharts() { renderSubmission(); renderCampAuto(); renderChurchStats(); if (window.GospelCharts) window.GospelCharts.render($('charts'), { data: data, tab: tab, lang: lang }); renderGoal(); }
+  /** 연간 복음 도달 목표 — 보고 있는 해의 누적으로 그린다. 월별 보기에서는 그 해 누적을 따로 불러온다(5분 동안 기억) */
+  function renderGoal() {
+    var el = $('goalWrap'); if (!el || !window.GospelGoals) return;
+    var year = view === 'year' ? String(data.year) : String(data.month).slice(0, 4);
+    var draw = function (summary) { window.GospelGoals.render(el, { reach: data.reach, summary: summary, year: year, tab: tab, lang: lang }); };
+    if (view === 'year') { draw(data.summary); return; }
+    var hit = cache['y' + year];
+    draw(hit ? hit.body.summary : null);
+    if (hit) return;
+    fetchYear(year).then(function (body) { if (view !== 'year' && String(data.month).slice(0, 4) === year) draw(body.summary); }).catch(function () { /* 누적을 못 불러오면 '불러오는 중' 그대로 둔다 */ });
+  }
 
   function renderTabs() {
     // 탭의 숫자 = 그 지역에서 복음을 들은 인원(첫 번째 숫자 카드와 같은 값) — 제출된 보고 건수가 아니다

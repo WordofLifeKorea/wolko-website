@@ -366,3 +366,19 @@ test('CRS 에 없는 교회는 새로 등록하고, 이름이 같은 교회(띄�
   const broken = await registerNewChurches(env, [{ churchName: 'X' }], { location: 'mainland', month: '2026-10', fetchImpl: async () => new Response('no', { status: 500 }), getToken: async () => 't' });
   assert.deepEqual(broken.created, []); assert.equal(broken.entries[0].churchName, 'X', 'CRS 가 실패해도 이름은 그대로 남는다');
 });
+
+test('복음 도달 목표: 월별·연간 응답에 목표와 도달 항목이 들어 있다 — 평택 2026년 30,000, 2027년부터 본부에 낸 숫자', async () => {
+  const { acc, call } = setup();
+  await acc(anna[0]);
+  const { REACH_GOALS, REACH_FIELD_IDS, reachOf } = await import('../functions/lib/gospelGoals.js');
+  for (const query of ['', '?view=year']) {
+    const res = await call('GET', anna, { query });
+    assert.deepEqual(res.reach.goals, REACH_GOALS);
+    assert.deepEqual(res.reach.fields, REACH_FIELD_IDS);
+    assert.deepEqual(res.reach.partialYears, [2026]);
+  }
+  assert.deepEqual(REACH_GOALS.mainland, { 2026: 30000, 2027: 42000, 2028: 46800, 2029: 51700, 2030: 57000 });
+  assert.deepEqual(REACH_GOALS.jeju, { 2027: 32000, 2028: 36800, 2029: 41700, 2030: 47000 });
+  for (const id of REACH_FIELD_IDS) assert.ok(GOSPEL_FIELD_IDS.includes(id), `${id} 는 보고 항목이어야 한다`);
+  assert.equal(reachOf({ evangelism: 10, campAttendance: 20, eeAttendance: 30, literature: 4, social: 500, preEvangelism: 99, salvation: 7 }), 564, '영적 대화 · 구원은 도달 인원에 넣지 않는다');
+});

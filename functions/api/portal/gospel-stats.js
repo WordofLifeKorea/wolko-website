@@ -14,6 +14,7 @@ import { reporterRoster, missingReporters, submittedEmails } from '../../lib/gos
 import { getAccount, portalSession } from '../../lib/hubAccounts.js';
 import { isDesignated, loadReporters } from '../../lib/gospelReporters.js';
 import { campusOf } from '../../lib/campus.js';
+import { reachGoalsPayload } from '../../lib/gospelGoals.js';
 import { ministryFromCrs } from '../../lib/crsMinistry.js';
 import { loadSlimChurches } from './gospel-ministry.js';
 import { registerNewChurches } from '../../lib/crsChurchRegister.js';
@@ -109,6 +110,7 @@ async function yearView(env, request, session, url, current) {
     view: 'year', year, month: months[months.length - 1], current, reportMonth: reportMonth(), earliest: shiftMonth(current, -MONTHS_BACK),
     me: await meOf(env, session, review),
     schema: { sections: GOSPEL_SECTIONS, locations: LOCATIONS, scopes: SCOPES },
+    reach: reachGoalsPayload(),
     summary, ytd: { year, from: months[0], to: months[months.length - 1], summary },
     campAuto: memo.flatMap(x => x.camps.map(c => ({ ...c, month: x.month }))),
     churchEvents: memo.flatMap(x => x.churchEvents.map(e => ({ ...e, month: x.month }))),
@@ -152,6 +154,7 @@ export async function onRequestGet({ env, request }) {
     me: await meOf(env, session, review),
     month, current, reportMonth: reportMonth(), earliest: shiftMonth(current, -MONTHS_BACK),
     schema: { sections: GOSPEL_SECTIONS, locations: LOCATIONS, scopes: SCOPES },
+    reach: reachGoalsPayload(),
     summary: summaries.get(month),
     campAuto: camps,
     churchEvents: churchEvents(reports),
