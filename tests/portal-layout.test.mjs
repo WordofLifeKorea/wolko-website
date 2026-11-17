@@ -56,11 +56,12 @@ test('page titles are not repeated under the header: no eyebrow labels, no dupli
   }
 });
 
-test('vehicle pages start with the same four-tab menu followed by a one-line lead', async () => {
+test('vehicle pages start with the same four-tab menu and no intro card above it', async () => {
   for (const file of ['src/pages/portal/car-drive/index.astro', 'src/pages/portal/car-log/index.astro']) {
     const source = await read(file);
     assert.ok(!source.includes('class="log-intro"'), `${file}: no duplicated title block`);
-    assert.ok(source.indexOf('class="car-view-tabs') < source.indexOf('class="wl-lead"'), `${file}: tabs first, lead line after`);
+    assert.ok(source.includes('class="car-view-tabs'), `${file}: four-tab menu`);
+    assert.ok(!source.includes('class="wl-lead"'), `${file}: the intro line was removed from every portal page`);
   }
   const css = await read('public/wolko-layout.css');
   assert.match(css, /\.car-view-tabs\s*\{[^}]*repeat\(4, minmax\(0, 1fr\)\) !important/s);
