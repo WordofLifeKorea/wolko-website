@@ -1244,7 +1244,12 @@ body.hub-modal-open { overflow: hidden; }
 .hub-bell-slot--m { display: none; }
 .hub-topbar .hub-bell svg { filter: none; }
 @media (max-width: 767px) {
-  .hub-bell-slot--m:not(:empty) { display: inline-flex; order: 2; margin-left: 6px; }
+  .hub-bell-slot--m:not(:empty) { display: inline-flex; order: 2; margin: 0 6px 0 6px; }
+  /* 폰 위 가로 바: 옆 로그아웃 단추와 같은 36px 칸 · 테두리 · 모서리 — 언어 단추에 붙어 보이지 않게 6px 띄운다. 숫자 배지는 칸 안쪽 오른쪽 위 */
+  :root:root .hub-bell-slot--m .hub-bell { width: 36px; height: 36px; border: 1px solid rgba(255, 255, 255, .24); border-radius: var(--ws-radius-sm, 8px); background: rgba(255, 255, 255, .05); }
+  :root:root .hub-bell-slot--m .hub-bell:hover { transform: none; background: rgba(255, 255, 255, .14); }
+  :root:root .hub-bell-slot--m .hub-bell svg { width: 20px; height: 22px; }
+  :root:root .hub-bell-slot--m .hub-bell-badge { top: -6px; right: -6px; }
 }
 
 /* ── 태블릿(641–1279px): 카드를 한 줄 가득 대신 반씩 두 단으로 (2026-11) — 공지·키친 / 차량·일정 / 기도·교회 ── */
