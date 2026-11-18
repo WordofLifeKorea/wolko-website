@@ -388,7 +388,16 @@
     document.head.appendChild(script);
   }
 
+  // 계절 장식(성탄 12/1–12/26) — 포탈 도구 페이지는 BaseLayout 을 쓰지 않으므로 여기서 불러온다(두 번 불려도 한 번만 돈다)
+  function mountSeason() {
+    if (window.__wolkoSeason || document.querySelector('script[data-wolko-season]')) return;
+    var script = document.createElement('script');
+    script.src = '/wolko-season.js?v=1'; script.async = true; script.setAttribute('data-wolko-season', '');
+    document.head.appendChild(script);
+  }
+
   function init() {
+    mountSeason();
     var path = window.location.pathname.replace(/\/+$/, '') || '/';
     checkPasswordReset();
     mountAccess();
