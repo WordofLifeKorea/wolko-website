@@ -59,7 +59,7 @@
 
   /* 장식을 붙일 로고 — 장식은 로고 그림(img)의 왼쪽 위 모서리에 걸친다. 그림 위치로 계산하므로 메뉴 칸의 여백과 상관없다 */
   var MENU_LOGOS = ['.nav-logo', '.wolko-rail-logo-link', '.hub-sidebar-brand'];   // 홈페이지 머리글 · 포탈 왼쪽 메뉴 · 포탈 첫 화면 메뉴(폰은 위 가로 바)
-  var HEADER_LOGOS = ['.car-header-logo', '.sc-logo', '.ex-title', '.app-brand', '.portal-brand'];   // 포탈 도구 페이지 머리글(페이지마다 이름이 다르다)
+  var HEADER_LOGOS = ['.car-header-logo', '.sc-logo', '.ex-title', '.app-brand', '.portal-brand', '.adm-header-logo', '.brand'];   // 포탈 도구 페이지 머리글(페이지마다 이름이 다르다)
   var LOGOS = MENU_LOGOS.concat(HEADER_LOGOS);
   /** 지금 보이는 메뉴 로고가 있으면(컴퓨터) 머리글 로고는 꾸미지 않는다 — 한 화면에 장식 하나 */
   function menuLogoShown() {
@@ -185,6 +185,7 @@
     today = kstToday();
     if (inSeason()) { if (repaintLine) repaintLine(); return; }
     alive = false;   // 눈 캔버스는 다음 프레임에 스스로 지운다
+    watcher.disconnect();
     document.querySelectorAll('.ws-holly, #wsXmasLine, .ws-snow').forEach(function (el) { el.remove(); });
     style.remove();
   }
@@ -197,7 +198,14 @@
     decorateHub();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
-  // 포탈 메뉴 · 머리글은 wolko-rail.js 가 나중에 그리므로, 잠깐 뒤 한 번 더 붙인다(이미 붙은 곳은 건너뛴다)
-  setTimeout(decorateLogos, 600); setTimeout(decorateLogos, 2000);
+  // 포탈 메뉴 · 머리글은 나중에 그려진다(wolko-rail.js, CRS 는 로그인 확인 뒤). 새로 생긴 로고에 장식을 붙이도록
+  // 문서 변화를 지켜본다 — 변화가 몰려도 0.3초에 한 번만 보고, 이미 붙은 곳은 건너뛴다. 기간이 끝나면 그만 본다
+  var pendingLogos = 0;
+  var watcher = new MutationObserver(function () {
+    if (!alive) { watcher.disconnect(); return; }
+    if (!pendingLogos) pendingLogos = setTimeout(function () { pendingLogos = 0; if (alive) decorateLogos(); }, 300);
+  });
+  function watch() { if (document.body) watcher.observe(document.body, { childList: true, subtree: true }); }
+  if (document.body) watch(); else document.addEventListener('DOMContentLoaded', watch);
   window.addEventListener('load', decorateLogos);
 })();
