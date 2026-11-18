@@ -11,12 +11,14 @@ const at = iso => Date.parse(iso);
 const winter = camp('2027-wolko-winter');
 const jeju = camp('2027-jeju-english');
 const unity = camp('2027-unity-winter');
+// 11월 18일 0시에 자동 작업이 연합 캠프를 'open' 으로 바꿨다(open_date 삭제) — 그 전 시각은 바뀌기 전 내용으로 본다
+const unityBeforeOpen = { id: unity.id, data: { ...unity.data, status: 'upcoming', open_date: '2026-11-18T00:00:00+09:00' } };
 
 // 계획서 A2-3 · A2-6의 세 시각 — 캠프 신청 화면 배지와 같은 글자여야 한다
 test('2026-11-10 12:00 KST: 겨울 영어캠프는 1 · 2차 사이라 일시 마감, 연합 · 제주는 준비 중', () => {
   const now = at('2026-11-10T12:00:00+09:00');
   assert.deepEqual(campPublicStatus(winter, now), { key: 'paused', ko: '신청 일시 마감', en: 'Closed for now' });
-  assert.deepEqual(campPublicStatus(unity, now), { key: 'upcoming', ko: '준비 중', en: 'Upcoming' });
+  assert.deepEqual(campPublicStatus(unityBeforeOpen, now), { key: 'upcoming', ko: '준비 중', en: 'Upcoming' });
   assert.deepEqual(campPublicStatus(jeju, now), { key: 'upcoming', ko: '준비 중', en: 'Upcoming' });
 });
 
