@@ -731,6 +731,7 @@
       var body = await res.json().catch(function () { return {}; });
       if (!res.ok) throw new Error(body.error || t('loginFail'));
       sessionStorage.setItem(TOKEN_KEY, body.hubToken); $('loginPassword').value = '';
+      clearCache();   // 로그인이 끝났던 동안의 '불러오지 못함' 표시와 옛 숫자를 지우고 새로 불러온다
       show('loading'); await load(initMonth);
     } catch (error) { $('loginError').textContent = error.message; }
   });
