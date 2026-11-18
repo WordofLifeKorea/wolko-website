@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { runInNewContext } from 'node:vm';
 import { UNITY_CAMP_POLICY, WINTER_CAMP_POLICY as policy, isUnionGroupCamp, unityCampQuote, usesUnityCampPolicy, usesWinterCampPolicy, winterCampQuote } from '../functions/lib/winterCampPolicy.js';
 import { onRequestPost } from '../functions/api/register.js';
+import { fakeAssets } from './helpers/campSchedulesAssets.mjs';
 
 const beforeDeadline = '2026-11-04T23:59:59.999+09:00';
 
@@ -87,7 +88,7 @@ test('no more than two categories, including deferred rewards', () => {
 
 async function register(overrides = {}) {
   const store = new Map(Object.entries(overrides.__seed || {}));
-  const env = { CAMP_KV: {
+  const env = { ASSETS: fakeAssets(), CAMP_KV: {
     get: async key => store.get(key) || null,
     put: async (key, value) => store.set(key, value),
   } };

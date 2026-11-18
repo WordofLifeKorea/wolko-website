@@ -18,6 +18,7 @@ import { sendApplicantNotice } from '../lib/applicantNotice.js';
 import { GENDER_CAPACITY, WINTER_CAMP_POLICY, birthYearCheck, isUnionGroupCamp, registrationState, unityCampQuote, usesUnityCampPolicy, usesWinterCampPolicy, winterCampQuote, winterCamperScholarships } from '../lib/winterCampPolicy.js';
 import { normalizePhone } from '../lib/phone.js';
 import { personDupeKey } from '../lib/personDupe.js';
+import { campCapacityFor } from '../lib/campCapacity.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -490,6 +491,14 @@ export async function onRequestPost(context) {
     if (!campId || !name?.trim() || !phone?.trim()) {
       return Response.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400, headers: CORS });
     }
+    // 정원은 서버가 캠프 일정(camp_schedules)에서 정한다 — 요청 본문의 capacity 는 쓰지 않는다(lib/campCapacity.js)
+    const capacityLookup = await campCapacityFor(env, request, campId);
+    if (!capacityLookup.ok) {
+      return capacityLookup.reason === 'unknown-camp'
+        ? Response.json({ error: '신청할 수 없는 캠프입니다. 캠프 일정을 다시 확인해 주세요.', code: 'unknown-camp' }, { status: 400, headers: CORS })
+        : Response.json({ error: '잠시 후 다시 시도해 주세요.', code: 'capacity-unavailable' }, { status: 503, headers: CORS });
+    }
+    const campCapacity = capacityLookup.capacity;
     const refundBankNorm = String(refundBank ?? '').trim();
     const refundAccountNorm = String(refundAccount ?? '').trim();
     const refundHolderNorm = String(refundHolder ?? '').trim();
@@ -592,8 +601,7 @@ export async function onRequestPost(context) {
       return Response.json({ error: '같은 이름과 전화번호로 이미 신청되어 있습니다. 수정이 필요하면 문의해 주세요.' }, { status: 409, headers: CORS });
     }
 
-    // 정원 및 예비 인원 체크
-    const campCapacity = Math.max(parseInt(data.capacity) || 40, 1);
+    // 정원 및 예비 인원 체크 (campCapacity 는 위에서 캠프 일정으로 정했다)
     const subKey  = `camp:${campId}:submissions`;
     const subKeyM = `camp:${campId}:submissions:male`;
     const subKeyF = `camp:${campId}:submissions:female`;

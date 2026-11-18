@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { normalizePhone } from '../functions/lib/phone.js';
 import { onRequestPost as campRegister } from '../functions/api/register.js';
+import { fakeAssets } from './helpers/campSchedulesAssets.mjs';
 import * as staffRegister from '../functions/api/staff-register.js';
 
 test('흔한 번호 실수는 자동으로 고친다: 빠뜨린 0 · 맨 앞 0 없음 · 전각 숫자', () => {
@@ -22,7 +23,7 @@ test('고칠 근거가 없는 번호는 그대로 둔다', () => {
 
 async function campPost(overrides) {
   const store = new Map();
-  const env = { CAMP_KV: { get: async k => store.get(k) || null, put: async (k, v) => store.set(k, v) } };
+  const env = { ASSETS: fakeAssets(), CAMP_KV: { get: async k => store.get(k) || null, put: async (k, v) => store.set(k, v) } };
   const background = [];
   const payload = { campId: '2027-wolko-winter', name: 'Test Camper', phone: '01000000000', email: 'test@example.com', grade: '6', gender: 'male', birthDate: '2013-05-05', refundBank: 'test', refundAccount: '123', refundHolder: 'Test', mediaConsent: 'yes', ...overrides };
   const realNow = Date.now;
