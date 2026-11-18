@@ -54,7 +54,9 @@ Read the repo's `AGENTS.md` first. Its design and workflow rules are binding. Th
 5. **Async UI in portal pages.** One shared pending promise per resource. Drop stale results after `clearCache()` by checking a generation counter. Never re-fetch in a loop after a 401. Clear failure flags after logging in again. All of these were real bugs.
 6. **Narrow slots.** The portal's 7-day desktop grids give slots only about 110–130px, and English labels are longer. Use container queries (`container: x / inline-size`) and test both languages.
 7. **`npm run build` / `astro build` fails in the cloud sandbox** because the native rollup module is missing. Preview with the harnesses below instead.
-8. **`functions/api/register.js` trusted a `capacity` sent by the client.** If that is still open, don't rely on it.
+8. **Camp capacity is decided on the server.** `functions/api/register.js` ignores any `capacity` in the request. It reads the camp's capacity through `functions/lib/campCapacity.js` from the build-time `/camp-schedules.json` (built from the camp JSON, default 40) via `env.ASSETS`.
+   - An unknown `campId` gets 400. If the file can't be read, the request gets 503.
+   - Tests that call `register.js` need a fake `env.ASSETS`: use `tests/helpers/campSchedulesAssets.mjs`.
 
 ## Previewing pages without a build
 
