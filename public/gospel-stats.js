@@ -94,17 +94,21 @@
   async function fetchYear(year) {
     var hit = cache['y' + year];
     if (hit && Date.now() - hit.at < CLIENT_TTL) return hit.body;       // 5분 안에 같은 해를 다시 열면 바로
+    var gen = cacheGen;
     var res = await fetch(API + '?view=year' + (year ? '&year=' + encodeURIComponent(year) : ''), { headers: headers() });
     var body = await res.json().catch(function () { return {}; });
     if (res.status === 401) { sessionStorage.removeItem(TOKEN_KEY); var e = new Error(t('sessionEnd')); e.auth = true; throw e; }
     if (!res.ok) throw new Error(body.error || t('denied'));
-    cache['y' + body.year] = { at: Date.now(), body: body };
-    if (!year) cache['y'] = { at: Date.now(), body: body };
+    if (gen === cacheGen) {   // 요청을 보낸 뒤 저장 · 삭제로 캐시를 비웠다면, 그 전 숫자는 기억하지 않는다
+      cache['y' + body.year] = { at: Date.now(), body: body };
+      if (!year) cache['y'] = { at: Date.now(), body: body };
+    }
     return body;
   }
   /** 지금 보기의 기준(연간이면 해, 월별이면 달) — 저장·삭제 뒤 다시 불러올 때 쓴다 */
   function viewKey() { return view === 'year' ? data.year : data.month; }
-  function clearCache() { Object.keys(cache).forEach(function (k) { delete cache[k]; }); goalFailed = {}; }
+  var cacheGen = 0;   // clearCache 때마다 올린다 — 그 전에 보낸 요청의 결과는 버린다
+  function clearCache() { Object.keys(cache).forEach(function (k) { delete cache[k]; }); cacheGen++; goalFailed = {}; goalPending = {}; }
 
   var qs = new URLSearchParams(location.search), initMonth = /^\d{4}-\d{2}$/.test(qs.get('month') || '') ? qs.get('month') : '', pendingWrite = qs.get('write') === '1';
   if (initMonth) view = 'month';   // 메일의 보고 링크(?month=…)는 그 달 월별 보기로 연다
@@ -225,15 +229,19 @@
     if (view === 'year') { draw(data.summary); return; }
     var hit = cache['y' + year];
     if (hit) { draw(hit.body.summary); return; }
+    if (goalFailed[year] === 'auth') return;   // 로그인이 끝났다 — 로그인 화면이 떠 있으니 다시 부르지 않는다
     if (goalFailed[year]) { window.GospelGoals.render(el, { reach: data.reach, summary: null, failed: true, year: year, tab: tab, lang: lang }); return; }
     draw(null);
-    // 이미 불러오는 중이면 같은 요청을 기다린다(탭·언어를 바꿀 때마다 새 연간 요청을 보내지 않는다)
+    // 이미 불러오는 중이면 같은 요청을 기다린다(탭·언어를 바꿀 때마다 새 연간 요청을 보내지 않는다).
+    // 저장 · 삭제로 캐시를 비운 뒤(cacheGen 이 바뀜)에 끝난 옛 요청은 결과도, 다시 그리기도 하지 않는다
+    var gen = cacheGen;
     if (!goalPending[year]) {
-      goalPending[year] = fetchYear(year)
-        .catch(function (error) { if (error && error.auth) { show('login'); } else { goalFailed[year] = true; } return null; })
-        .then(function (body) { delete goalPending[year]; return body; });
+      var pending = fetchYear(year)
+        .catch(function (error) { if (gen === cacheGen) goalFailed[year] = error && error.auth ? 'auth' : true; if (error && error.auth) show('login'); return null; })
+        .then(function (body) { if (goalPending[year] === pending) delete goalPending[year]; return body; });
+      goalPending[year] = pending;
     }
-    goalPending[year].then(function () { if (view !== 'year' && String(data.month).slice(0, 4) === year) renderGoal(); });
+    goalPending[year].then(function () { if (gen === cacheGen && view !== 'year' && String(data.month).slice(0, 4) === year) renderGoal(); });
   }
   var goalPending = {}, goalFailed = {};
 
