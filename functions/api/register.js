@@ -488,7 +488,8 @@ export async function onRequestPost(context) {
     const unityCamp = usesUnityCampPolicy(campId);
     if (unityCamp) { scholarshipDiscounts = {}; scholarshipDiscountDetails = {}; }
 
-    if (!campId || !name?.trim() || !phone?.trim()) {
+    // campId 는 문자열만 받는다(배열 등을 보내 캠프별 정책 검사를 피하지 못하게)
+    if (typeof campId !== 'string' || !campId || !name?.trim() || !phone?.trim()) {
       return Response.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400, headers: CORS });
     }
     // 정원은 서버가 캠프 일정(camp_schedules)에서 정한다 — 요청 본문의 capacity 는 쓰지 않는다(lib/campCapacity.js)

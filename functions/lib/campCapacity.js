@@ -39,10 +39,11 @@ async function loadCapacities(env, request) {
  *    잘못 예비가 되고 정원 14 인 캠프는 넘치게 받으므로, 짐작하지 않고 잠시 후 다시 시도하게 한다.
  */
 export async function campCapacityFor(env, request, campId) {
+  if (typeof campId !== 'string' || !campId) return { ok: false, reason: 'unknown-camp' };
   const map = await loadCapacities(env, request);
   if (!map) return { ok: false, reason: 'unavailable' };
-  if (!map.has(String(campId))) return { ok: false, reason: 'unknown-camp' };
-  return { ok: true, capacity: map.get(String(campId)) };
+  if (!map.has(campId)) return { ok: false, reason: 'unknown-camp' };
+  return { ok: true, capacity: map.get(campId) };
 }
 
 export const resetCampCapacityCache = () => { cache = { at: 0, map: null }; };

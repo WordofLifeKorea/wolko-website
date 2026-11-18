@@ -86,3 +86,32 @@ test('캠프 일정을 읽지 못하면 정원을 짐작하지 않고 503 으로
   const noAssets = await register({}, { assets: null });   // ASSETS 가 아예 없을 때
   assert.equal(noAssets.response.status, 503);
 });
+
+test('단체 신청도 capacity 를 부풀려 잔여 정원 검사를 건너뛸 수 없다 (2027-jeju-english 정원 60)', async () => {
+  const campId = '2027-jeju-english';
+  const participants = [{ name: '학생1', gender: 'male' }, { name: '학생2', gender: 'female' }, { name: '학생3', gender: 'male' }];
+  const over = await register({ campId, registrationType: 'group', groupCount: 3, participants, capacity: 100000 }, { seed: { [`camp:${campId}:submissions`]: '58' } });
+  assert.equal(over.response.status, 409);
+  assert.match(over.body.error, /잔여 정원은 2명/);
+  assert.equal(over.regs.length, 0);
+  const fits = await register({ campId, registrationType: 'group', groupCount: 2, participants: participants.slice(0, 2), capacity: 1 }, { seed: { [`camp:${campId}:submissions`]: '58' } });
+  assert.equal(fits.response.status, 200, JSON.stringify(fits.body));
+  assert.equal(fits.body.isWaitlist, false);
+});
+
+test('문자열이 아닌 campId(배열 등)는 거절한다', async () => {
+  const { response, store } = await register({ campId: ['2027-wolko-winter'] });
+  assert.equal(response.status, 400);
+  assert.equal(store.size, 0);
+  assert.deepEqual(await campCapacityFor({ ASSETS: fakeAssets() }, new Request('https://example.com/'), ['2027-unity-winter']), { ok: false, reason: 'unknown-camp' });
+});
+
+test('일정 읽기 실패는 캐시하지 않는다 — 다음 요청에서 다시 읽는다', async () => {
+  resetCampCapacityCache();
+  const req = new Request('https://example.com/api/register');
+  assert.deepEqual(await campCapacityFor({ ASSETS: fakeAssets({ fail: true }) }, req, UNITY), { ok: false, reason: 'unavailable' });
+  const assets = fakeAssets();
+  assert.deepEqual(await campCapacityFor({ ASSETS: assets }, req, UNITY), { ok: true, capacity: 70 });
+  await campCapacityFor({ ASSETS: assets }, req, UNITY);
+  assert.equal(assets.calls.length, 1, '성공한 목록은 캐시해서 다시 읽지 않는다');
+});
