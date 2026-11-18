@@ -392,7 +392,7 @@
   function mountSeason() {
     if (window.__wolkoSeason || document.querySelector('script[data-wolko-season]')) return;
     var script = document.createElement('script');
-    script.src = '/wolko-season.js?v=1'; script.async = true; script.setAttribute('data-wolko-season', '');
+    script.src = '/wolko-season.js?v=2'; script.async = true; script.setAttribute('data-wolko-season', '');
     document.head.appendChild(script);
   }
 

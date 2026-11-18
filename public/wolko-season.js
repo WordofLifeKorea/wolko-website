@@ -24,8 +24,9 @@
     return { y: +p[0], m: +p[1], d: +p[2] };
   }
   var today = kstToday(), mode = preview();
-  var on = mode === 'christmas' || (mode !== 'off' && today.m === 12 && today.d <= 26);
-  if (!on) return;
+  function inSeason() { return mode === 'christmas' || (mode !== 'off' && today.m === 12 && today.d <= 26); }
+  if (!inSeason()) return;
+  var alive = true;   // 기간이 끝나면(포탈을 며칠씩 켜 두는 경우) false — 장식을 모두 걷는다
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ───────── 스타일 (이 파일 하나로 끝나게 직접 넣는다) ───────── */
@@ -35,7 +36,7 @@
     + '.ws-holly{position:absolute;pointer-events:none;width:22px;height:18px;z-index:2;filter:drop-shadow(0 1px 1px rgba(0,0,0,.18));animation:ws-pop .7s .3s cubic-bezier(.2,.9,.3,1.3) both}'
     + '.ws-holly svg{display:block;width:100%;height:100%}'
     + '@keyframes ws-pop{from{opacity:0;transform:scale(.5) rotate(-20deg)}}'
-    + '.ws-xmas{display:inline-flex;align-items:center;gap:7px;margin:2px 0 10px;padding:5px 12px 5px 9px;border-radius:var(--ws-radius-sm,8px);background:rgba(255,255,255,.2);color:#fff;font-weight:800;font-size:14px;letter-spacing:-.01em;text-shadow:0 1px 6px rgba(10,30,60,.35);backdrop-filter:blur(2px)}'
+    + '.ws-xmas{display:inline-flex;align-items:center;gap:7px;margin:2px 0 10px;padding:5px 12px 5px 9px;border-radius:var(--ws-radius-sm,8px);background:rgba(8,36,76,.55);color:#fff;font-weight:800;font-size:14px;letter-spacing:-.01em;text-shadow:0 1px 3px rgba(4,18,40,.55);backdrop-filter:blur(3px)}'
     + '.ws-xmas svg{flex:none;width:15px;height:15px;filter:drop-shadow(0 0 4px rgba(255,214,90,.8))}'
     + '@media (max-width:640px){.ws-xmas{font-size:13px;margin-bottom:8px}}'
     + '@media (prefers-reduced-motion:reduce){.ws-holly{animation:none}}';
@@ -57,18 +58,19 @@
   var STAR = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2.5l2.6 6.1 6.6.6-5 4.4 1.5 6.5L12 16.7 6.3 20.1l1.5-6.5-5-4.4 6.6-.6z" fill="#ffd65a" stroke="#c99a12" stroke-width="1" stroke-linejoin="round"/></svg>';
 
   /* 장식을 붙일 로고 — 장식은 로고 그림(img)의 왼쪽 위 모서리에 걸친다. 그림 위치로 계산하므로 메뉴 칸의 여백과 상관없다 */
-  var LOGOS = [
-    '.nav-logo',               // 홈페이지 머리글(가로형 로고)
-    '.wolko-rail-logo-link',   // 포탈 왼쪽 메뉴(컴퓨터)
-    '.hub-sidebar-brand',      // 포탈 첫 화면 메뉴 · 폰 위 가로 바
-    '.car-header-logo',        // 포탈 도구 페이지 머리글
-  ];
+  var MENU_LOGOS = ['.nav-logo', '.wolko-rail-logo-link', '.hub-sidebar-brand'];   // 홈페이지 머리글 · 포탈 왼쪽 메뉴 · 포탈 첫 화면 메뉴(폰은 위 가로 바)
+  var HEADER_LOGOS = ['.car-header-logo', '.sc-logo', '.ex-title', '.app-brand', '.portal-brand'];   // 포탈 도구 페이지 머리글(페이지마다 이름이 다르다)
+  var LOGOS = MENU_LOGOS.concat(HEADER_LOGOS);
+  /** 지금 보이는 메뉴 로고가 있으면(컴퓨터) 머리글 로고는 꾸미지 않는다 — 한 화면에 장식 하나 */
+  function menuLogoShown() {
+    return MENU_LOGOS.some(function (sel) { var img = document.querySelector(sel + ' img'); return img && img.offsetWidth > 0; });
+  }
   var hollies = [];
   function placeHolly(item) {
     var img = item.img, s = item.el;
-    // 숨겨진 로고(다른 화면 크기용)는 장식도 숨긴다. 도구 페이지 머리글 로고는 왼쪽 메뉴 로고가 보이면(컴퓨터) 하나만 꾸미도록 숨긴다
-    var rail = item.host.matches('.car-header-logo') && document.querySelector('.wolko-rail-logo');
-    if (!img.offsetWidth || (rail && rail.offsetWidth)) { s.style.display = 'none'; return; }
+    // 숨겨진 로고(다른 화면 크기용)는 장식도 숨긴다. 머리글 로고는 메뉴 로고가 보이면 숨긴다
+    var header = HEADER_LOGOS.some(function (sel) { return item.host.matches(sel); });
+    if (!img.offsetWidth || (header && menuLogoShown())) { s.style.display = 'none'; return; }
     s.style.display = '';
     var size = Math.max(16, Math.min(24, img.offsetHeight * 0.62));
     s.style.width = size + 'px'; s.style.height = Math.round(size * 0.82) + 'px';
@@ -79,7 +81,7 @@
     LOGOS.forEach(function (sel) {
       document.querySelectorAll(sel).forEach(function (host) {
         var img = host.querySelector('img');
-        if (!img || host.querySelector('.ws-holly')) return;
+        if (!alive || !img || host.querySelector('.ws-holly')) return;
         host.classList.add('ws-holly-host');
         var s = document.createElement('span');
         s.className = 'ws-holly'; s.setAttribute('aria-hidden', 'true'); s.innerHTML = HOLLY;
@@ -120,12 +122,16 @@
       var r = Math.random() * 2.6 + 1.4;   // 반지름(px) — 부드러운 가장자리까지 포함
       return { x: Math.random() * w, y: anywhere ? Math.random() * h : -8, r: r, v: 0.2 + r * 0.12 + Math.random() * 0.15, a: 0.55 + Math.random() * 0.4, p: Math.random() * 6.28, s: 0.25 + Math.random() * 0.5 };
     }
+    var idle = 0;
     function frame(t) {
       raf = 0;
+      if (!alive) { c.remove(); return; }
       if (!visible || document.hidden) return;
       var dt = last ? Math.min(3, (t - last) / 16.7) : 1; last = t;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
-      if (!opt.skip || !opt.skip()) {
+      // 쉬는 동안(날씨 카드가 이미 눈을 그릴 때)은 매 프레임 돌지 않고 1초마다 다시 본다
+      if (opt.skip && opt.skip()) { idle = setTimeout(function () { idle = 0; last = 0; start(); }, 1000); return; }
+      {
         for (var i = 0; i < flakes.length; i++) {
           var f = flakes[i];
           f.y += f.v * dt; f.p += 0.012 * dt; f.x += Math.sin(f.p) * f.s * 0.35 * dt;
@@ -136,10 +142,10 @@
       }
       raf = requestAnimationFrame(frame);
     }
-    function start() { if (!raf && visible && !document.hidden) { last = 0; raf = requestAnimationFrame(frame); } }
+    function start() { if (alive && !raf && !idle && visible && !document.hidden) { last = 0; raf = requestAnimationFrame(frame); } }
     size();
     if ('ResizeObserver' in window) new ResizeObserver(size).observe(host); else window.addEventListener('resize', size);
-    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { visible = es[0].isIntersecting; start(); }).observe(host);
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { visible = es[es.length - 1].isIntersecting; start(); }).observe(host);
     document.addEventListener('visibilitychange', start);
     start();
   }
@@ -165,11 +171,25 @@
       // 화면 언어를 바꾸면(문서 lang 이 바뀌면) 글도 바꾼다
       new MutationObserver(function () { paint(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
     }
-    function paint() { line.innerHTML = STAR + '<span>' + xmasText() + '</span>'; }
+    function paint() { if (alive) line.innerHTML = STAR + '<span>' + xmasText() + '</span>'; }
+    repaintLine = paint;
     paint();
     // 날씨가 '눈'이면 카드가 이미 눈을 그리므로 겹쳐 그리지 않는다
     snow(sky, { below: '.hub-sky-content', max: 55, density: 6000, skip: function () { return sky.dataset.kind === 'snow'; } });
   }
+
+  /** 날짜를 다시 본다 — 탭으로 돌아올 때와 한 시간마다. 'N일' 글을 고치고, 기간이 끝났으면 장식을 걷는다 */
+  var repaintLine = null;
+  function recheck() {
+    if (!alive) return;
+    today = kstToday();
+    if (inSeason()) { if (repaintLine) repaintLine(); return; }
+    alive = false;   // 눈 캔버스는 다음 프레임에 스스로 지운다
+    document.querySelectorAll('.ws-holly, #wsXmasLine, .ws-snow').forEach(function (el) { el.remove(); });
+    style.remove();
+  }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) recheck(); });
+  setInterval(recheck, 60 * 60 * 1000);
 
   function run() {
     decorateLogos();
