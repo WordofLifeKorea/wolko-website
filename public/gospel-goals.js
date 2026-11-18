@@ -12,7 +12,7 @@
     ko: {
       title: function (y) { return y + '년 복음 도달 목표'; }, mainland: '평택', jeju: '제주', all: '평택 · 제주 전체', total: '합계',
       of: function (n, g) { return n + ' / ' + g + '명'; }, left: function (n) { return '목표까지 ' + n + '명'; }, done: '목표 달성', over: function (n) { return '목표보다 ' + n + '명 더'; },
-      noGoal: '이 해의 목표는 정하지 않았어요', reached: function (n) { return '지금까지 ' + n + '명'; }, loading: '불러오는 중…',
+      noGoal: '이 해의 목표는 정하지 않았어요', reached: function (n) { return '지금까지 ' + n + '명'; }, loading: '불러오는 중…', failed: '올해 누적 숫자를 불러오지 못했어요. 새로고침해 주세요.',
       parts: ['복음 대화', '캠프', '행사', '전도지', 'SNS'],
       def: '도달 인원 = 개인 전도로 복음을 들은 인원 + 캠프 참석 + 월코·교회 행사 참석 + 전도지 + SNS 도달',
       partial: function (y) { return y + '년은 포탈 보고를 연중에 시작해 그 전 기록이 빠져 있어요. 달성률은 참고로만 봐 주세요.'; },
@@ -21,7 +21,7 @@
     en: {
       title: function (y) { return y + ' Gospel Reach Goal'; }, mainland: 'Pyeongtaek', jeju: 'Jeju', all: 'Pyeongtaek + Jeju', total: 'Total',
       of: function (n, g) { return n + ' / ' + g; }, left: function (n) { return n + ' to go'; }, done: 'Goal reached', over: function (n) { return n + ' over goal'; },
-      noGoal: 'No goal set for this year', reached: function (n) { return n + ' reached so far'; }, loading: 'Loading…',
+      noGoal: 'No goal set for this year', reached: function (n) { return n + ' reached so far'; }, loading: 'Loading…', failed: 'Couldn’t load this year’s totals. Please refresh.',
       parts: ['Gospel conversations', 'Camps', 'Events', 'Literature', 'Social media'],
       def: 'Reach = heard through personal evangelism + camp attendance + WOLKO and church event attendance + literature + social media reach',
       partial: function (y) { return 'Portal reporting began partway through ' + y + ', so earlier records are missing. Treat the percentage as a rough guide.'; },
@@ -42,7 +42,7 @@
   function ring(loc, ctx, s) {
     var lang = ctx.lang, goal = goalOf(ctx.reach.goals, loc, ctx.year), name = s[loc], color = COLOR;
     var head = '<h3 class="gg-name">' + esc(name) + '</h3>';
-    if (!ctx.summary) return '<div class="gg-ring">' + head + '<p class="gg-wait">' + esc(s.loading) + '</p></div>';
+    if (!ctx.summary) return '<div class="gg-ring">' + head + '<p class="gg-wait">' + esc(ctx.failed ? s.failed : s.loading) + '</p></div>';
     var totals = ctx.summary[loc] || {}, n = reachOf(totals, ctx.reach.fields);
     var parts = '<ul class="gg-parts">' + ctx.reach.fields.map(function (id, i) { return '<li><span>' + esc(s.parts[i]) + '</span><b>' + fmt(totals[id], lang) + '</b></li>'; }).join('') + '</ul>';
     if (!goal) return '<div class="gg-ring gg-nogoal">' + head + '<div class="gg-body"><div class="gg-text"><strong>' + esc(s.reached(fmt(n, lang))) + '</strong><span>' + esc(s.noGoal) + '</span></div></div>' + parts + '</div>';

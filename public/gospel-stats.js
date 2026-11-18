@@ -104,7 +104,7 @@
   }
   /** 지금 보기의 기준(연간이면 해, 월별이면 달) — 저장·삭제 뒤 다시 불러올 때 쓴다 */
   function viewKey() { return view === 'year' ? data.year : data.month; }
-  function clearCache() { Object.keys(cache).forEach(function (k) { delete cache[k]; }); }
+  function clearCache() { Object.keys(cache).forEach(function (k) { delete cache[k]; }); goalFailed = {}; }
 
   var qs = new URLSearchParams(location.search), initMonth = /^\d{4}-\d{2}$/.test(qs.get('month') || '') ? qs.get('month') : '', pendingWrite = qs.get('write') === '1';
   if (initMonth) view = 'month';   // 메일의 보고 링크(?month=…)는 그 달 월별 보기로 연다
@@ -224,10 +224,18 @@
     var draw = function (summary) { window.GospelGoals.render(el, { reach: data.reach, summary: summary, year: year, tab: tab, lang: lang }); };
     if (view === 'year') { draw(data.summary); return; }
     var hit = cache['y' + year];
-    draw(hit ? hit.body.summary : null);
-    if (hit) return;
-    fetchYear(year).then(function (body) { if (view !== 'year' && String(data.month).slice(0, 4) === year) draw(body.summary); }).catch(function () { /* 누적을 못 불러오면 '불러오는 중' 그대로 둔다 */ });
+    if (hit) { draw(hit.body.summary); return; }
+    if (goalFailed[year]) { window.GospelGoals.render(el, { reach: data.reach, summary: null, failed: true, year: year, tab: tab, lang: lang }); return; }
+    draw(null);
+    // 이미 불러오는 중이면 같은 요청을 기다린다(탭·언어를 바꿀 때마다 새 연간 요청을 보내지 않는다)
+    if (!goalPending[year]) {
+      goalPending[year] = fetchYear(year)
+        .catch(function (error) { if (error && error.auth) { show('login'); } else { goalFailed[year] = true; } return null; })
+        .then(function (body) { delete goalPending[year]; return body; });
+    }
+    goalPending[year].then(function () { if (view !== 'year' && String(data.month).slice(0, 4) === year) renderGoal(); });
   }
+  var goalPending = {}, goalFailed = {};
 
   function renderTabs() {
     // 탭의 숫자 = 그 지역에서 복음을 들은 인원(첫 번째 숫자 카드와 같은 값) — 제출된 보고 건수가 아니다
