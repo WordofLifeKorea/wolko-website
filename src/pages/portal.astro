@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/hub.css?v=93">
-  <link rel="stylesheet" href="/hub-sky.css?v=13">
+  <link rel="stylesheet" href="/hub-sky.css?v=14">
   <script src="/hub-sky.js?v=6" defer></script>
   <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
   <script src="/wolko-datepicker.js?v=4" defer></script>
@@ -943,12 +943,25 @@
       panel.innerHTML = '<div class="hub-bell-head">' + esc(t('bellTitle')) + (items.length ? ' <b>' + items.length + '</b>' : '') + '</div>'
         + (items.length ? '<ul>' + items.map(i => '<li><a class="is-' + i.kind + '" href="' + esc(i.href) + '"><span>' + esc(i.text) + '</span>' + (i.go ? '<em>' + esc(i.go) + '</em>' : '') + '</a></li>').join('') + '</ul>' : '<p>' + esc(t('bellNone')) + '</p>');
     }
+    /* 폰: 위 가로 바 바로 아래에 화면 폭(양옆 12px)으로 붙인다. 컴퓨터·태블릿: 종 오른쪽 끝에 맞춘 드롭다운.
+       어느 쪽이든 작은 꼭지(--caret-x)가 종을 가리킨다 */
     function placeBellPanel() {
       const btn = $('hubBell'), panel = bellPanel(); if (!btn) return;
-      const r = btn.getBoundingClientRect(), w = Math.min(340, window.innerWidth - 24);
-      panel.style.width = w + 'px';
-      panel.style.top = Math.round(r.bottom + 10) + 'px';
-      panel.style.left = Math.round(Math.min(Math.max(12, r.left + r.width / 2 - 28), window.innerWidth - w - 12)) + 'px';
+      const r = btn.getBoundingClientRect(), vw = document.documentElement.clientWidth;
+      let w, left, top;
+      if (bellWide.matches) {
+        w = Math.min(340, vw - 24);
+        left = Math.min(Math.max(12, r.right + 6 - w), vw - w - 12);
+        top = r.bottom + 12;
+      } else {
+        const bar = btn.closest('.hub-sidebar');
+        w = vw - 24; left = 12;
+        top = (bar ? bar.getBoundingClientRect().bottom : r.bottom) + 10;
+      }
+      panel.style.width = Math.round(w) + 'px';
+      panel.style.left = Math.round(left) + 'px';
+      panel.style.top = Math.round(Math.max(8, top)) + 'px';
+      panel.style.setProperty('--caret-x', Math.round(Math.min(Math.max(18, r.left + r.width / 2 - left), w - 18)) + 'px');
     }
     function setBell(open) {
       const btn = $('hubBell'), panel = bellPanel(); if (!btn) { panel.hidden = true; return; }

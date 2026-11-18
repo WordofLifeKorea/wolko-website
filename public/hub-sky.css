@@ -118,9 +118,15 @@
 @keyframes bell-ring { 0%, 22%, 100% { transform: rotate(0); } 3% { transform: rotate(16deg); } 6% { transform: rotate(-14deg); } 9% { transform: rotate(10deg); } 12% { transform: rotate(-7deg); } 15% { transform: rotate(4deg); } 18% { transform: rotate(-2deg); } }
 .hub-bell-badge { position: absolute; top: -4px; right: -5px; min-width: 17px; height: 17px; padding: 0 4px; box-sizing: border-box; border: 2px solid #fff; border-radius: var(--ws-radius-sm, 8px); background: #f0456a; color: #fff; font: 800 10px/13px var(--f-body); text-align: center; box-shadow: none; }
 
-.hub-bell-panel { position: fixed; z-index: 9500; max-height: min(70vh, 420px); overflow: auto; padding: 8px; border: 1px solid #dbe6ec; border-radius: var(--ws-radius-sm, 8px); background: #fff; color: #102a38; box-shadow: none; animation: bell-pop .18s ease-out; }
+.hub-bell-panel { position: fixed; z-index: 9500; max-height: min(70vh, 420px); overflow: auto; padding: 8px; border: 1px solid #dbe6ec; border-radius: var(--ws-radius-sm, 8px); background: #fff; color: #102a38; box-shadow: 0 14px 36px -14px rgba(16, 42, 56, .32); animation: bell-pop .18s ease-out; }
 .hub-bell-panel[hidden] { display: none; }
-@keyframes bell-pop { from { opacity: 0; transform: translateY(-6px) scale(.98); } to { opacity: 1; transform: none; } }
+/* 종을 가리키는 작은 꼭지 — 테두리 색 한 겹 + 흰 속 한 겹 */
+.hub-bell-panel { overflow: visible; }
+.hub-bell-panel > ul, .hub-bell-panel > p { max-height: calc(min(70vh, 420px) - 52px); overflow: auto; }
+.hub-bell-panel::before, .hub-bell-panel::after { content: ''; position: absolute; left: var(--caret-x, 28px); width: 0; height: 0; margin-left: -8px; border: 8px solid transparent; border-top: 0; pointer-events: none; }
+.hub-bell-panel::before { top: -8px; border-bottom-color: #dbe6ec; }
+.hub-bell-panel::after { top: -7px; border-bottom-color: #fff; }
+@keyframes bell-pop { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 .hub-bell-head { padding: 8px 10px 6px; color: #5f7681; font: 800 12.5px/1.2 var(--f-body); letter-spacing: .04em; }
 .hub-bell-head b { margin-left: 4px; color: #f0456a; }
 .hub-bell-panel ul { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
