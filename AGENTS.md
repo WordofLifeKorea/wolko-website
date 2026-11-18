@@ -10,3 +10,7 @@
 
 - Work as a two-person team (the user asked for this on 2026-11-18; the full procedure is the `two-person-review` skill in `.claude/skills/`): after the change is finished and tests pass, and before pushing to `main`, hand the diff to a separate reviewer agent with a fresh context. Give it the diff, the files and this AGENTS.md, but not your own conclusions. Ask it for correctness bugs, regressions in other pages that share the touched files, mobile and desktop layout problems, and breaks of the design rules above. Fix what it confirms, re-run tests, and in the report to the user say what the review found and what was fixed or left. Pure content or number edits (a capacity, a date, a sentence) can skip the review.
 - When a change is finished, reviewed and its tests pass, push it straight to `main` as well as the working branch (the user asked for this on 2026-11-17: "다음부턴 자동으로 올려줘"). Fetch `origin/main` first and only fast-forward; if `main` has moved, merge or rebase onto it before pushing, and never force-push `main`.
+
+# Repo guide
+
+- Where things live, past gotchas (camp capacity lives in three places, `?v=` cache-busting, tests that read live camp JSON), and how to preview pages without a build: the `wolko-dev-guide` skill in `.claude/skills/` (scripts in its `scripts/` folder).
