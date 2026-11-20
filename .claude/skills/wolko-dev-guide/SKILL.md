@@ -36,6 +36,7 @@ Read the repo's `AGENTS.md` first. Its design and workflow rules are binding. Th
 | Applicant admin list | `src/pages/portal/wolkoadmin.astro`. Group vs individual detail panels are built separately. |
 | Gospel stats | `functions/lib/gospelStats.js` (fields), `functions/api/portal/gospel-stats.js` (API), `public/gospel-stats.js` (page), `public/gospel-charts.js` (charts), `functions/lib/gospelGoals.js` and `public/gospel-goals.js` (yearly reach goals). |
 | Kitchen duty | `public/kitchen.js` and `public/kitchen.css`, on top of `public/car-drive.css`. API in `functions/api/kitchen/*`. |
+| Extra Google calendars on the portal calendar | `functions/lib/extraCalendars.js` (`EXTRA_CALENDARS`, view-only). To connect one, share it with the service account (the `…@….iam.gserviceaccount.com` address, which you can copy from the WOLKO calendar's "Share with specific people" list) with "See all event details". Workspace calendars may need external sharing allowed by the domain admin. Then add a line with the calendar ID. There's no cache, so it shows on the next refresh, and a failed calendar shows "(불러오지 못함)" next to its name. |
 | Season decoration | `public/wolko-season.js`. Christmas runs Dec 1–26 KST. Preview with `?season=christmas`, turn off with `?season=off`. Add new seasons here. |
 
 ## Gotchas that bit before
