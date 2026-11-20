@@ -163,11 +163,11 @@
     if (work != null) { if (lastRemaining != null && lastRemaining > 0 && work === 0) confetti(); lastRemaining = work; }
   }
 
-  // ── 계절 효과: 가을(9~11월)은 단풍나무와 바람에 떨어지는 단풍잎, 겨울(12~2월)은 눈 — 화면 전체 배경 ──
+  // ── 계절 효과: 가을(9월~11월 19일)은 단풍나무와 바람에 떨어지는 단풍잎, 겨울(11월 20일~2월)은 눈 — 화면 전체 배경 (한국에 첫눈이 올 즈음부터 겨울) ──
   var snow = { cv: null, ctx: null, flakes: [], on: false, run: false, W: 0, H: 0, boost: false, last: 0 };
   var leaf = { cv: null, ctx: null, list: [], run: false, W: 0, H: 0, last: 0, t: 0 };
   var mode = 'winter';
-  function season() { var m = kstNow().getMonth() + 1; return m >= 9 && m <= 11 ? 'autumn' : (m === 12 || m <= 2) ? 'winter' : ''; }
+  function season() { var d = kstNow(), m = d.getMonth() + 1, day = d.getDate(); return (m === 11 && day >= 20) || m === 12 || m <= 2 ? 'winter' : m >= 9 && m <= 11 ? 'autumn' : ''; }
   function fxWanted() { var v = ls.get('ct-fx'); return v === 'on' ? true : v === 'off' ? false : season() !== ''; }
   function fit(cv, ctx, o) { var dpr = Math.min(2, window.devicePixelRatio || 1); o.W = window.innerWidth; o.H = window.innerHeight; cv.width = Math.round(o.W * dpr); cv.height = Math.round(o.H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
   function mkCanvas(id, z) { var c = document.createElement('canvas'); c.id = id; c.setAttribute('aria-hidden', 'true'); document.body.appendChild(c); return c; }

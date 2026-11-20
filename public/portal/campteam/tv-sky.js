@@ -4,7 +4,7 @@
   var S = { cv: null, ctx: null, W: 0, H: 0, mode: 'none', parts: [], last: 0, timer: 0 };
   var LEAF = ['#c0392b', '#d9462f', '#e8742a', '#f0a030', '#a82a1e'];
   var rnd = function (a, b) { return a + Math.random() * (b - a); };
-  function season() { var m = Number(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul', month: 'numeric' })) || 1; return m >= 9 && m <= 11 ? 'autumn' : (m === 12 || m <= 2) ? 'winter' : ''; }
+  function season() { var d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' })), m = d.getMonth() + 1, day = d.getDate(); return (m === 11 && day >= 20) || m === 12 || m <= 2 ? 'winter' : m >= 9 && m <= 11 ? 'autumn' : ''; } // 가을 9월~11월 19일 · 겨울 11월 20일~2월 (홈 화면과 같은 기준)
   function modeOf(info) {
     var k = info.kind || '';
     if (k === 'rain' || k === 'storm') return 'rain';
