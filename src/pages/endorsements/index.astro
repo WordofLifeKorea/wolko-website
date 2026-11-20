@@ -98,6 +98,34 @@ import PageHero from '../../components/PageHero.astro';
   color: var(--wr-text); line-height: 1.55;
 }
 
+/* ── 특별 추천사(이혁재 목사): 목록 안에서 옅은 바탕 칸 하나 — 그림자 · 왼쪽 색 줄 없이, 금색은 따옴표와 머리말 선에만 ── */
+.wr-card-feature {
+  --wr-gold: #b8892f;
+  grid-template-columns: minmax(0, 1fr);
+  margin: 40px 0 8px; padding: 64px 72px 60px;
+  border-bottom: 0; border-radius: var(--ws-radius-sm, 8px);
+  background: linear-gradient(160deg, #f3f7f9 0%, #f8f6f0 100%);
+}
+.wr-feature-kicker {
+  display: flex; align-items: center; gap: 12px; margin: 0 0 26px;
+  color: var(--wr-deep); font-size: 13px; font-weight: 700; letter-spacing: .1em; line-height: 1.4;
+}
+.wr-feature-kicker::before { content: ''; width: 28px; height: 1px; background: var(--wr-gold); flex: none; }
+.wr-card-feature .wr-quote-icon { grid-column: 1; grid-row: auto; margin-bottom: 18px; }
+.wr-card-feature .wr-quote-icon svg { width: 34px; height: 26px; }
+.wr-card-feature .wr-quote-icon svg path { fill: var(--wr-gold); }
+.wr-card-feature .wr-quote-text { grid-column: 1; grid-row: auto; max-width: 880px; font-size: 22px; line-height: 1.8; }
+/* 추천인은 인용문 아래 서명처럼: 가는 선 위에 사진 · 이름 · 직함(직함마다 한 줄) */
+.wr-card-feature .wr-person {
+  grid-column: 1; grid-row: auto; margin-top: 40px; padding-top: 28px; gap: 22px;
+  border-top: 1px solid rgba(11, 36, 48, .12);
+}
+.wr-card-feature .wr-avatar { width: 88px; height: 88px; box-shadow: 0 0 0 4px #fff; }
+.wr-card-feature .wr-person-name { font-size: 21px; }
+.wr-card-feature .wr-person-title { margin-top: 8px; }
+.wr-title-line { display: block; }
+.wr-title-role, .wr-title-org { white-space: nowrap; }
+
 /* ── 마무리 — 남색 띠: 왼쪽 제목 · 설명, 오른쪽 교회 협력 단추 (/ministry · /churches 마무리와 같은 구조) ── */
 .wr-closing { padding: 104px 0; background: var(--wr-navy); color: #fff; }
 .wr-closing-inner {
@@ -134,6 +162,7 @@ import PageHero from '../../components/PageHero.astro';
   .wr-quote-text { grid-column: 1; grid-row: 2; max-width: none; }
   .wr-person { grid-column: 1; grid-row: 3; margin-top: 28px; }
   .wr-closing-inner { flex-direction: column; align-items: flex-start; gap: 32px; }
+  .wr-card-feature { padding: 52px 48px 48px; }
 }
 /* ── 모바일 ── */
 @media (max-width: 740px) {
@@ -148,6 +177,18 @@ import PageHero from '../../components/PageHero.astro';
   .wr-avatar { width: 52px; height: 52px; }
   .wr-person-name { font-size: 17px; }
   .wr-person-title { margin-top: 4px; font-size: 13.5px; }
+  .wr-card-feature { margin-top: 28px; padding: 36px 24px 32px; }
+  .wr-feature-kicker { margin-bottom: 20px; font-size: 12.5px; }
+  .wr-card-feature .wr-quote-text { font-size: 18px; line-height: 1.75; }
+  .wr-card-feature .wr-person { margin-top: 28px; padding-top: 22px; gap: 16px; }
+  .wr-card-feature .wr-avatar { width: 68px; height: 68px; box-shadow: 0 0 0 3px #fff; }
+  .wr-card-feature .wr-person-name { font-size: 18px; }
+  /* 좁은 화면: 영어 직함은 '역할' 줄과 '기관' 줄로 나눠 긴 이름이 중간에서 끊기지 않게, 기관 이름은 두 줄로 고르게 */
+  .wr-card-feature .wl-en .wr-title-line { margin-top: 6px; }
+  .wr-card-feature .wl-en .wr-title-line:first-child { margin-top: 0; }
+  .wr-card-feature .wl-en .wr-title-role { display: block; }
+  .wr-card-feature .wr-title-sep { display: none; }
+  .wr-card-feature .wl-en .wr-title-org { display: block; white-space: normal; text-wrap: balance; }
   .wr-closing { padding: 72px 0; }
   .wr-closing-inner { width: calc(100% - 40px); }
   .wr-closing-desc { font-size: 15px; }
@@ -187,8 +228,9 @@ import PageHero from '../../components/PageHero.astro';
 
     <div class="wr-grid">
 
-      <!-- 카드 1 — 이혁재 목사 (와이드, 2026-11 받음) -->
-      <div class="wr-card wr-card-wide">
+      <!-- 카드 1 — 이혁재 목사 (특별 카드, 2026-11 받음): 옅은 바탕 칸 · 가는 선 머리말 · 금색 따옴표 · 인용문 아래 서명처럼 추천인 -->
+      <div class="wr-card wr-card-wide wr-card-feature">
+        <p class="wr-feature-kicker"><span class="wl-ko">30년 동역의 고백</span><span class="wl-en">Thirty Years of Partnership</span></p>
         <div class="wr-quote-icon">
           <svg width="18" height="14" viewBox="0 0 18 14" fill="none" aria-hidden="true">
             <path d="M0 14V8.4C0 6.13333 0.6 4.06667 1.8 2.2C3 0.333333 4.73333 0 7 0L7.8 1.4C6.33333 1.8 5.13333 2.53333 4.2 3.6C3.26667 4.66667 2.8 5.86667 2.8 7.2H5.6V14H0ZM10.4 14V8.4C10.4 6.13333 11 4.06667 12.2 2.2C13.4 0.333333 15.1333 0 17.4 0L18 1.4C16.5333 1.8 15.3333 2.53333 14.4 3.6C13.4667 4.66667 13 5.86667 13 7.2H16V14H10.4Z" fill="white" fill-opacity="0.9"/>
@@ -197,12 +239,12 @@ import PageHero from '../../components/PageHero.astro';
         <p class="wr-quote-text wl-ko">생명의 말씀협회(wolko)를 알고 동역한 지 30년이 넘어갑니다. 이 땅의 청소년을 향한 선교회의 복음 열정과 헌신의 순수함은 많은 비전의 씨앗을 뿌려왔습니다. 기쁨의 열매를 가져올 내일을 기대하는 이유입니다. 우리에게 월코(wolko)를 보내주신 하나님께 영광을, 헌신하는 분들께 감사를 드립니다.</p>
         <p class="wr-quote-text wl-en">It has been more than thirty years since I came to know Word of Life Korea (WOLKO) and began serving alongside it. The mission's passion for the gospel and its pure devotion to the young people of this land have sown many seeds of vision. That is why I look forward to a tomorrow that will bring a harvest of joy. Glory to God, who sent WOLKO to us, and thanks to all who serve with such devotion.</p>
         <div class="wr-person">
-          <img class="wr-avatar" src="/images/endorsements/lee-hyukjae.jpg" alt="" width="64" height="64" loading="lazy">
+          <img class="wr-avatar" src="/images/endorsements/lee-hyukjae.jpg" alt="" width="88" height="88" loading="lazy">
           <div class="wr-person-info">
             <div class="wr-person-name wl-ko">이혁재 목사</div>
             <div class="wr-person-name wl-en">Rev. Hyuk-jae Lee</div>
-            <div class="wr-person-title wl-ko">은혜의동산기독교학교 교장<br>(사)한국대안교육기관연합회 전 이사장</div>
-            <div class="wr-person-title wl-en">Principal, Grace Garden Christian School<br>Former Chair, Korean Association of Alternative Education Institutions</div>
+            <div class="wr-person-title wl-ko"><span class="wr-title-line"><span class="wr-title-org">은혜의동산기독교학교</span> <span class="wr-title-role">교장</span></span><span class="wr-title-line"><span class="wr-title-org">(사)한국대안교육기관연합회</span> <span class="wr-title-role">전 이사장</span></span></div>
+            <div class="wr-person-title wl-en"><span class="wr-title-line"><span class="wr-title-role">Principal<span class="wr-title-sep">,</span></span> <span class="wr-title-org">Grace Garden Christian School</span></span><span class="wr-title-line"><span class="wr-title-role">Former Chair<span class="wr-title-sep">,</span></span> <span class="wr-title-org">Korean Association of Alternative Education Institutions</span></span></div>
           </div>
         </div>
       </div>
