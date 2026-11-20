@@ -4,14 +4,18 @@
   var S = { cv: null, ctx: null, W: 0, H: 0, mode: 'none', parts: [], last: 0, timer: 0 };
   var LEAF = ['#c0392b', '#d9462f', '#e8742a', '#f0a030', '#a82a1e'];
   var rnd = function (a, b) { return a + Math.random() * (b - a); };
-  function season() { var d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' })), m = d.getMonth() + 1, day = d.getDate(); return (m === 11 && day >= 20) || m === 12 || m <= 2 ? 'winter' : m >= 9 && m <= 11 ? 'autumn' : ''; } // 가을 9월~11월 19일 · 겨울 11월 20일~2월 (홈 화면과 같은 기준)
+  function season() { var d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' })), m = d.getMonth() + 1, day = d.getDate(); return (m === 11 && day >= 20) || m === 12 || m <= 2 ? 'winter' : m >= 3 && m <= 5 ? 'spring' : m >= 6 && m <= 8 ? 'summer' : 'autumn'; } // 가을 9월~11월 19일 · 겨울 11월 20일~2월 · 봄 3~5월 · 여름 6~8월 (홈 화면과 같은 기준)
+  var FORCE = { rain: 'rain', winter: 'snow', autumn: 'leaves', spring: 'petals', summer: 'sun', none: 'none' };
   function modeOf(info) {
     var k = info.kind || '';
+    if (info.force) return FORCE[info.force] || 'none'; // 관리자가 설정에서 정한 모양이 날씨보다 먼저
     if (k === 'rain' || k === 'storm') return 'rain';
     if (k === 'snow') return 'snow';
     if (info.season === 'autumn') return 'leaves';
     if (info.season === 'winter') return 'snow';
+    if (info.season === 'spring') return 'petals';
     if (!info.isDay && (k === 'clear' || k === 'partly' || !k)) return 'stars';
+    if (info.season === 'summer' && info.isDay && (k === 'clear' || k === 'partly' || !k)) return 'sun';
     return 'none';
   }
   function build() {
@@ -20,6 +24,8 @@
     else if (S.mode === 'snow') { n = Math.max(30, Math.min(90, Math.round(W * H / 14000))); for (i = 0; i < n; i++) S.parts.push({ x: rnd(0, W), y: rnd(-H, H), r: rnd(1.5, 4), vy: rnd(18, 44), ph: rnd(0, 6.28), sw: rnd(8, 24) }); }
     else if (S.mode === 'leaves') { n = Math.max(14, Math.min(34, Math.round(W * H / 40000))); for (i = 0; i < n; i++) S.parts.push({ x: rnd(0, W), y: rnd(-H, H), r: rnd(7, 13), vy: rnd(26, 52), ph: rnd(0, 6.28), sp: rnd(-2.5, 2.5), a: rnd(0, 6.28), c: LEAF[i % LEAF.length], fl: rnd(0, 6.28) }); }
     else if (S.mode === 'stars') { n = Math.max(30, Math.min(80, Math.round(W * H / 22000))); for (i = 0; i < n; i++) S.parts.push({ x: rnd(0, W), y: rnd(0, H * .75), r: rnd(.7, 1.8), ph: rnd(0, 6.28), sp: rnd(.8, 2.2) }); }
+    else if (S.mode === 'petals') { n = Math.max(14, Math.min(34, Math.round(W * H / 40000))); for (i = 0; i < n; i++) S.parts.push({ x: rnd(0, W), y: rnd(-H, H), r: rnd(4, 8), vy: rnd(22, 46), ph: rnd(0, 6.28), sp: rnd(-2.5, 2.5), a: rnd(0, 6.28), c: ['#f8c8d8', '#fbd5e0', '#f4b3c8', '#fde4ec'][Math.floor(rnd(0, 4))] }); }
+    else if (S.mode === 'sun') { n = Math.max(20, Math.min(50, Math.round(W * H / 30000))); for (i = 0; i < n; i++) S.parts.push({ x: rnd(0, W), y: rnd(0, H), r: rnd(1.6, 4), vy: -rnd(8, 18), ph: rnd(0, 6.28), sp: rnd(1, 2.4) }); }
   }
   function size() { if (!S.cv) return; var p = S.cv.parentNode; var W = Math.max(1, p.clientWidth), H = Math.max(1, p.clientHeight); if (W === S.W && H === S.H) return; S.W = W; S.H = H; S.cv.width = W; S.cv.height = H; build(); }
   function leaf(c, p) {   // 단풍잎 하나(5갈래 별 모양을 납작하게 돌려 가며 그린다)
@@ -35,6 +41,8 @@
     else if (S.mode === 'snow') { c.fillStyle = '#fff'; for (i = 0; i < S.parts.length; i++) { p = S.parts[i]; p.ph += dt; p.y += p.vy * dt; p.x += Math.sin(p.ph) * p.sw * dt; if (p.y > H + 8) { p.y = -8; p.x = rnd(0, W); } c.globalAlpha = .55 + p.r / 9; c.beginPath(); c.arc(p.x, p.y, p.r, 0, 6.283); c.fill(); } c.globalAlpha = 1; }
     else if (S.mode === 'leaves') { var gust = 30 + 45 * (.5 + .5 * Math.sin(now / 2800)); for (i = 0; i < S.parts.length; i++) { p = S.parts[i]; p.ph += dt * 1.4; p.a += p.sp * dt; p.fl += dt * 2.2; p.x -= (gust + Math.sin(p.ph) * 16) * dt; p.y += (p.vy + Math.abs(Math.cos(p.ph)) * 10) * dt; if (p.y > H + 20 || p.x < -20) { p.y = rnd(-60, -10); p.x = rnd(W * .3, W + 40); } c.globalAlpha = .9; leaf(c, p); } c.globalAlpha = 1; }
     else if (S.mode === 'stars') { c.fillStyle = '#fff'; for (i = 0; i < S.parts.length; i++) { p = S.parts[i]; c.globalAlpha = .35 + .65 * Math.abs(Math.sin(now / 1000 * p.sp + p.ph)); c.beginPath(); c.arc(p.x, p.y, p.r, 0, 6.283); c.fill(); } c.globalAlpha = 1; }
+    else if (S.mode === 'petals') { for (i = 0; i < S.parts.length; i++) { p = S.parts[i]; p.ph += dt * 1.3; p.a += p.sp * dt; p.x += (30 + Math.sin(p.ph) * 18) * dt; p.y += p.vy * dt; if (p.y > H + 14 || p.x > W + 20) { p.y = -12; p.x = rnd(-20, W * .9); } c.save(); c.translate(p.x, p.y); c.rotate(p.a); c.scale(1, .6 + .4 * Math.abs(Math.sin(p.ph * 2))); c.globalAlpha = .9; c.fillStyle = p.c; c.beginPath(); c.arc(0, 0, p.r, 0, 6.283); c.fill(); c.restore(); } c.globalAlpha = 1; }
+    else if (S.mode === 'sun') { c.fillStyle = '#ffd66b'; for (i = 0; i < S.parts.length; i++) { p = S.parts[i]; p.ph += dt * .8; p.y += p.vy * dt; p.x += Math.sin(p.ph) * 10 * dt; if (p.y < -10) { p.y = H + 10; p.x = rnd(0, W); } c.globalAlpha = .25 + .45 * Math.abs(Math.sin(now / 1000 * p.sp + p.ph)); c.beginPath(); c.arc(p.x, p.y, p.r, 0, 6.283); c.fill(); } c.globalAlpha = 1; }
     if (S.mode !== 'none') S.timer = setTimeout(frame, 33);
   }
   function layer(canvas, info) {
