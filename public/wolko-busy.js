@@ -1,9 +1,12 @@
 /**
- * 불러오는 중 · 처리 중 화면 — 사이트 전체 공용.
- * 사람이 누르거나 페이지를 처음 열면서 보낸 요청이 0.3초 넘게 걸리면, 화면을 회색으로 흐리게 덮고 가운데에 도는 표시를 띄운다.
- *   - 저장 · 전송 · 삭제(POST · PUT · PATCH · DELETE): "처리 중…"  — 덮는 동안 다른 곳을 누를 수 없어 두 번 저장되지 않는다
- *   - 불러오기(GET): "불러오는 중…"
- *   - 같은 사이트 안의 다른 페이지로 넘어갈 때 0.4초 넘게 걸리면: "불러오는 중…"
+ * 불러오는 중 · 처리 중 표시 — 사이트 전체 공용.
+ * 사람이 누르거나 페이지를 처음 열면서 보낸 요청이 0.3초 넘게 걸리면, 화면 가운데에 작은 도는 동그라미만 띄운다.
+ * 화면을 흐리게 덮거나 글자 상자를 띄우지 않는다 — 읽던 화면(PDF 등)을 가리지 않게.
+ *   - 불러오기(GET) · 다른 페이지로 넘어가기: 동그라미만 돌고, 그동안에도 화면의 다른 곳을 누를 수 있다
+ *   - 저장 · 전송 · 삭제(POST · PUT · PATCH · DELETE): 같은 동그라미를 띄우되, 끝날 때까지 투명한 막으로 다른 곳을 못 누르게 한다
+ *     (두 번 눌러 두 번 저장되는 일을 막는다. 화면은 흐려지지 않는다)
+ *   - 같은 사이트 안의 다른 페이지로 넘어갈 때 0.4초 넘게 걸리면 띄운다
+ * 화면 읽기 도구에는 "불러오는 중…" / "처리 중…"을 소리 내어 알린다(글자는 화면에 보이지 않는다).
  * 뒤에서 조용히 도는 요청에는 띄우지 않는다: 누른 지 오래된 요청(자동 임시 저장 · 주기적 새로 고침), 아래 QUIET 주소(자체 진행 표시가 있는 것),
  *   다른 사이트로 가는 요청, fetch 옵션에 wlQuiet: true 를 준 요청.
  * 직접 쓰기: const done = WolkoBusy.start('save'); … done();  /  await WolkoBusy.wrap(promise, 'load')
@@ -12,7 +15,7 @@
 (function () {
   if (window.WolkoBusy) return;
   var SHOW_AFTER = 300, NAV_AFTER = 400, MIN_SHOWN = 250, ACT_WINDOW = 1500;
-  // 혹시 끝나지 않는 일이 있어도 덮개가 영영 남지 않게: 페이지 이동은 8초, 요청은 60초 뒤에 스스로 걷는다
+  // 혹시 끝나지 않는 일이 있어도 표시가 영영 남지 않게: 페이지 이동은 8초, 요청은 60초 뒤에 스스로 걷는다
   var NAV_MAX = 8000, JOB_MAX = 60000;
   // 링크라도 파일 내려받기 · 서버 주소는 페이지가 바뀌지 않으므로 이동으로 보지 않는다
   var FILE_LINK = /^\/api\/|\.(pdf|csv|xlsx?|docx?|pptx?|zip|ics|jpe?g|png|gif|webp|heic|mp3|mp4|mov|txt|json)$/i;
@@ -35,14 +38,15 @@
   function ensure() {
     if (el || !document.body) return el;
     style = document.createElement('style');
+    // 덮개(.wl-busy)는 늘 투명하고 기본으로 클릭이 지나간다. 저장 중(.is-save)일 때만 투명한 채로 클릭을 막는다.
     style.textContent =
-      '.wl-busy{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:rgba(36,48,56,.26);' +
-      '-webkit-backdrop-filter:blur(4px) grayscale(.55);backdrop-filter:blur(4px) grayscale(.55);opacity:0;visibility:hidden;' +
-      'transition:opacity .2s ease,visibility 0s linear .2s;pointer-events:none}' +
-      '.wl-busy.is-on{opacity:1;visibility:visible;transition:opacity .2s ease;pointer-events:auto;cursor:progress}' +
-      '.wl-busy-box{display:grid;justify-items:center;gap:12px;min-width:132px;padding:20px 24px 18px;border-radius:14px;background:rgba(255,255,255,.94);' +
-      'box-shadow:0 12px 32px rgba(10,30,40,.16);color:#173542;font:600 13.5px/1.4 "Noto Sans KR","Apple SD Gothic Neo",sans-serif;letter-spacing:-.01em}' +
-      '.wl-busy-spin{width:34px;height:34px;border-radius:50%;border:3px solid #dbe8ed;border-top-color:#004f68;border-right-color:#008e92;animation:wl-busy-spin .75s linear infinite}' +
+      '.wl-busy{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:transparent;' +
+      'opacity:0;visibility:hidden;transition:opacity .15s ease,visibility 0s linear .15s;pointer-events:none}' +
+      '.wl-busy.is-on{opacity:1;visibility:visible;transition:opacity .15s ease}' +
+      '.wl-busy.is-on.is-save{pointer-events:auto;cursor:progress}' +
+      '.wl-busy-spin{box-sizing:border-box;width:32px;height:32px;border-radius:50%;border:3px solid rgba(219,232,237,.9);border-top-color:#004f68;border-right-color:#008e92;' +
+      'background:rgba(255,255,255,.6);box-shadow:0 0 0 4px rgba(255,255,255,.6);animation:wl-busy-spin .75s linear infinite;pointer-events:none}' +
+      '.wl-busy-text{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}' +
       '@keyframes wl-busy-spin{to{transform:rotate(360deg)}}' +
       '@media (prefers-reduced-motion:reduce){.wl-busy-spin{animation-duration:2.4s}.wl-busy,.wl-busy.is-on{transition:none}}' +
       '@media print{.wl-busy{display:none!important}}';
@@ -51,30 +55,38 @@
     el.className = 'wl-busy';
     el.setAttribute('role', 'status');
     el.setAttribute('aria-live', 'polite');
-    el.innerHTML = '<div class="wl-busy-box"><span class="wl-busy-spin" aria-hidden="true"></span><span class="wl-busy-text"></span></div>';
+    el.innerHTML = '<span class="wl-busy-spin" aria-hidden="true"></span><span class="wl-busy-text"></span>';
     document.body.appendChild(el);
     return el;
+  }
+  // 지금 도는 일 가운데 저장이 하나라도 있으면 'save', 아니면 'load'
+  function currentKind() {
+    var kind = 'load';
+    jobs.forEach(function (k) { if (k === 'save') kind = 'save'; });
+    return kind;
+  }
+  function apply(kind) {
+    el.querySelector('.wl-busy-text').textContent = label(kind);
+    el.classList.toggle('is-save', kind === 'save');
   }
   function paint() {
     if (!jobs.size) {
       clearTimeout(showTimer); showTimer = 0;
       if (!el || !el.classList.contains('is-on')) return;
       var wait = Math.max(0, MIN_SHOWN - (Date.now() - shownAt));
-      setTimeout(function () { if (!jobs.size && el) { el.classList.remove('is-on'); document.documentElement.removeAttribute('aria-busy'); } }, wait);
+      setTimeout(function () {
+        if (!jobs.size && el) { el.classList.remove('is-on', 'is-save'); document.documentElement.removeAttribute('aria-busy'); }
+      }, wait);
       return;
     }
-    var kind = 'load';
-    jobs.forEach(function (k) { if (k === 'save') kind = 'save'; });
-    if (el && el.classList.contains('is-on')) { el.querySelector('.wl-busy-text').textContent = label(kind); return; }
+    if (el && el.classList.contains('is-on')) { apply(currentKind()); return; }
     if (showTimer) return;
     var delay = Infinity;
     jobs.forEach(function (k) { delay = Math.min(delay, k === 'nav' ? NAV_AFTER : SHOW_AFTER); });
     showTimer = setTimeout(function () {
       showTimer = 0;
       if (!jobs.size || !ensure()) return;
-      var k2 = 'load';
-      jobs.forEach(function (k) { if (k === 'save') k2 = 'save'; });
-      el.querySelector('.wl-busy-text').textContent = label(k2);
+      apply(currentKind());
       el.classList.add('is-on'); shownAt = Date.now();
       document.documentElement.setAttribute('aria-busy', 'true');
     }, delay);
@@ -126,8 +138,8 @@
     var f = e.target;
     setTimeout(function () { if (!e.defaultPrevented && f && (!f.target || f.target === '_self')) start('nav'); }, 0);
   });
-  // 뒤로 가기로 돌아온 페이지(bfcache)에는 덮개를 남기지 않는다
-  window.addEventListener('pageshow', function (e) { if (e.persisted) { jobs.clear(); paint(); if (el) el.classList.remove('is-on'); } });
+  // 뒤로 가기로 돌아온 페이지(bfcache)에는 표시를 남기지 않는다
+  window.addEventListener('pageshow', function (e) { if (e.persisted) { jobs.clear(); paint(); if (el) el.classList.remove('is-on', 'is-save'); } });
 
   window.WolkoBusy = {
     start: start,
