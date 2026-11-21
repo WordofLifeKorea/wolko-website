@@ -1,0 +1,224 @@
+---
+// 개인정보처리방침 — 홈페이지(신청서 · 문의 · 광고 측정)가 실제로 받는 항목과 쓰는 서비스를 코드에서 확인해 적었다(2026-11-21).
+// 신청서 항목을 늘리거나 새 외부 서비스(메일 · 문자 · AI · 저장소)를 붙이면 이 페이지의 표도 같이 고친다.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const EFFECTIVE_KO = '2026년 11월 21일';
+const EFFECTIVE_EN = 'November 21, 2026';
+const RETAIN_KO = '정보주체가 삭제를 요청할 때까지';
+const RETAIN_EN = 'Until the data subject requests deletion';
+
+const purposes = [
+  {
+    ko: '캠프 신청 (개인)', en: 'Camp registration (individual)',
+    whyKo: '캠프 신청 접수와 안내, 참가비 · 환불 처리, 캠프 운영과 안전 관리',
+    whyEn: 'Receiving and confirming registrations, fees and refunds, running the camp safely',
+    itemsKo: '필수: 캠퍼 이름, 연락처, 성별, 생년월일, 이메일, 환불 계좌(은행 · 예금주 · 계좌번호) / 선택: 소속 교회, 학교, 비상연락처, 할인 해당 여부, 함께 참여하는 형제 · 친구 이름, 특이사항(건강 · 알레르기 · 복용약 등)',
+    itemsEn: 'Required: camper name, phone, gender, date of birth, email, refund account (bank, holder, number) / Optional: church, school, emergency contact, discount eligibility, siblings or friends attending, notes (health, allergies, medication, etc.)',
+  },
+  {
+    ko: '캠프 신청 (교회 · 단체)', en: 'Camp registration (church or group)',
+    whyKo: '단체 신청 접수와 안내', whyEn: 'Receiving and confirming group registrations',
+    itemsKo: '담당자 이름, 연락처, 이메일, 소속 교회 · 단체, 참여 인원, 참가 학생 명단, 전달 사항, 환불 계좌',
+    itemsEn: 'Contact person name, phone, email, church or group, number of participants, participant list, notes, refund account',
+  },
+  {
+    ko: '캠프 스태프 · 크루 지원', en: 'Camp staff and crew applications',
+    whyKo: '스태프 선발, 훈련, 캠프 운영', whyEn: 'Selecting, training and organising camp staff',
+    itemsKo: '이름, 생년월일, 성별, 연락처, 이메일, 자기소개, 신앙 간증, 출석 교회(교회명 · 홈페이지 · 담임목사 성함 · 연락처), 이단 단체 참여 여부, 영어 · 미디어 · 악기 역량, 봉사 경험, 선호 팀, 가능한 캠프 / 크루(미성년자): 보호자 이름 · 관계 · 연락처 · 이메일, 알게 된 경로 / 선택: 건강 · 알레르기 · 복용약',
+    itemsEn: 'Name, date of birth, gender, phone, email, self-introduction, faith story, church (name, website, pastor name and contact), involvement with heretical groups, English / media / instrument skills, service experience, team preference, available camps / Crew (minors): guardian name, relationship, phone, email, how they heard of us / Optional: health, allergies, medication',
+  },
+  {
+    ko: '섬김(사역자 · 스태프) 지원', en: 'Ministry staff applications',
+    whyKo: '사역자 · 스태프 선발과 추천서 요청', whyEn: 'Selecting ministry staff and requesting references',
+    itemsKo: '지원서에 적은 인적 사항 · 경력 · 신앙 이력, 추천인 이름 · 이메일 · 추천서 내용. 건강 등 민감정보는 따로 동의를 받고 분리 · 암호화해 저장합니다.',
+    itemsEn: 'Personal details, background and faith history written in the application, referee names, emails and reference answers. Sensitive information such as health is collected only with separate consent and stored separately and encrypted.',
+  },
+  {
+    ko: '이벤트 참석 신청', en: 'Event RSVP',
+    whyKo: '행사 인원 파악과 안내', whyEn: 'Planning numbers and sending event information',
+    itemsKo: '이름, 연락처, 이메일, 참석 인원, 전달 사항', itemsEn: 'Name, phone, email, party size, notes',
+  },
+  {
+    ko: '문의', en: 'Contact form',
+    whyKo: '문의 답변', whyEn: 'Answering your enquiry',
+    itemsKo: '이름, 이메일, 문의 종류, 문의 내용 / 선택: 연락처', itemsEn: 'Name, email, enquiry type, message / Optional: phone',
+  },
+];
+
+const processors = [
+  { name: 'Cloudflare, Inc.', jobKo: '홈페이지 운영, 신청 자료 저장', jobEn: 'Website hosting and storing submissions', where: '미국 등 / USA and others', itemsKo: '위 표의 신청 · 지원 · 문의 정보', itemsEn: 'Information in the table above' },
+  { name: 'Google LLC', jobKo: '신청 자료 관리(구글 스프레드시트), 광고 효과 측정(구글 광고)', jobEn: 'Managing submissions (Google Sheets), measuring ad results (Google Ads)', where: '미국 / USA', itemsKo: '신청 · 지원 정보 / 쿠키 · 접속 기록', itemsEn: 'Registration and application details / cookies and visit logs' },
+  { name: 'Resend, Inc.', jobKo: '접수 확인 · 안내 이메일 발송', jobEn: 'Sending confirmation and notice emails', where: '미국 / USA', itemsKo: '이름, 이메일, 안내 내용', itemsEn: 'Name, email, message content' },
+  { name: 'Anthropic PBC', jobKo: '신청서에 글로 쓴 답의 한 · 영 번역, 캠프 운영 업무 보조', jobEn: 'Korean–English translation of written answers, camp-team work assistance', where: '미국 / USA', itemsKo: '신청 · 지원서의 글로 쓴 답(메모 · 교회 · 학교 · 자기소개 등)', itemsEn: 'Written answers in forms (notes, church, school, self-introduction, etc.)' },
+  { name: '(주)솔라피 SOLAPI', jobKo: '알림톡 · 문자 발송', jobEn: 'Sending KakaoTalk notices and text messages', where: '대한민국 / Korea', itemsKo: '이름, 연락처, 안내 내용', itemsEn: 'Name, phone, message content' },
+];
+---
+
+<BaseLayout title="개인정보처리방침 — Word of Life Korea" description="월코(Word of Life Korea) 홈페이지 개인정보처리방침" whiteNav>
+
+<style>
+  .pv {
+    --pv-deep:#004f68; --pv-navy:#0b2430; --pv-ink:#10252e; --pv-body:#33474f;
+    --pv-label:#5a7380; --pv-line:#d6dee2; --pv-rule:#e3e9ec; --pv-soft:#f6f9fb;
+    padding: 140px 20px 110px; background: #fff; color: var(--pv-ink);
+    font-family: var(--ff-sans); word-break: keep-all; overflow-wrap: anywhere;
+  }
+  .pv-shell { width: min(860px, 100%); margin: 0 auto; }
+  .pv-kicker { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; color: var(--pv-deep); font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  .pv-kicker::before { content: ''; width: 28px; height: 1px; background: currentColor; }
+  .pv h1 { margin: 0 0 18px; font-family: var(--ff-serif); font-size: clamp(28px, 4vw, 40px); line-height: 1.25; letter-spacing: -.03em; color: var(--pv-navy); }
+  .pv-lead { margin: 0 0 12px; font-size: 16px; line-height: 1.85; color: var(--pv-body); }
+  .pv-date { margin: 0 0 40px; font-size: 14px; color: var(--pv-label); }
+  .pv h2 { margin: 52px 0 16px; padding-top: 28px; border-top: 1px solid var(--pv-line); font-size: 20px; line-height: 1.4; color: var(--pv-navy); letter-spacing: -.02em; }
+  .pv p, .pv li { font-size: 15.5px; line-height: 1.85; color: var(--pv-body); }
+  .pv p { margin: 0 0 12px; }
+  .pv ul { margin: 0 0 12px; padding-left: 20px; }
+  .pv a { color: var(--pv-deep); text-decoration: underline; text-underline-offset: 3px; }
+  .pv strong { color: var(--pv-ink); }
+  /* 표 대신 항목 묶음 — 폰에서도 옆으로 밀리지 않게 */
+  .pv-items { display: grid; gap: 14px; margin: 0 0 12px; }
+  .pv-item { padding: 18px 20px; background: var(--pv-soft); border: 1px solid var(--pv-rule); border-radius: var(--ws-radius-sm, 8px); }
+  .pv-item h3 { margin: 0 0 10px; font-size: 16px; color: var(--pv-navy); }
+  .pv-item dl { margin: 0; display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 6px 14px; }
+  .pv-item dt { font-size: 13.5px; font-weight: 700; color: var(--pv-label); line-height: 1.85; }
+  .pv-item dd { margin: 0; font-size: 15px; line-height: 1.85; color: var(--pv-body); }
+  .pv-contact { margin: 0 0 12px; padding: 18px 20px; border: 1px solid var(--pv-line); border-radius: var(--ws-radius-sm, 8px); }
+  .pv-contact dl { margin: 0; display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 6px 14px; }
+  .pv-contact dt { font-size: 13.5px; font-weight: 700; color: var(--pv-label); line-height: 1.85; }
+  .pv-contact dd { margin: 0; font-size: 15.5px; color: var(--pv-ink); line-height: 1.85; }
+  @media (max-width: 640px) {
+    .pv { padding: 104px 16px 80px; }
+    .pv-item, .pv-contact { padding: 16px; }
+    .pv-item dl, .pv-contact dl { grid-template-columns: 1fr; gap: 0; }
+    .pv-item dd + dt, .pv-contact dd + dt { margin-top: 8px; }
+  }
+</style>
+
+<main class="pv">
+  <div class="pv-shell">
+    <p class="pv-kicker">Privacy Policy</p>
+    <h1><span class="wl-ko">개인정보처리방침</span><span class="wl-en">Privacy Policy</span></h1>
+    <p class="pv-lead">
+      <span class="wl-ko">사단법인 한국생명의 말씀협회(Word of Life Korea, 이하 “월코”)는 「개인정보 보호법」에 따라 정보주체의 개인정보를 보호하고, 이와 관련한 고충을 빠르고 원활하게 처리하기 위해 다음과 같이 개인정보처리방침을 두고 공개합니다.</span>
+      <span class="wl-en">Word of Life Korea (“WOLKO”) protects your personal information under Korea’s Personal Information Protection Act and publishes this policy so that questions and concerns can be handled quickly.</span>
+    </p>
+    <p class="pv-date"><span class="wl-ko">시행일: {EFFECTIVE_KO}</span><span class="wl-en">Effective: {EFFECTIVE_EN}</span></p>
+
+    <h2><span class="wl-ko">1. 처리하는 개인정보와 목적 · 보유 기간</span><span class="wl-en">1. What we collect, why, and how long we keep it</span></h2>
+    <p>
+      <span class="wl-ko">모든 항목의 보유 기간은 <strong>{RETAIN_KO}</strong>입니다. 법령에 따라 보관해야 하는 정보(예: 후원 · 회계 기록)는 그 기간 동안 보관합니다.</span>
+      <span class="wl-en">For every item below, the retention period is: <strong>{RETAIN_EN}</strong>. Information that the law requires us to keep (for example, donation and accounting records) is kept for the required period.</span>
+    </p>
+    <div class="pv-items">
+      {purposes.map((p) => (
+        <section class="pv-item">
+          <h3><span class="wl-ko">{p.ko}</span><span class="wl-en">{p.en}</span></h3>
+          <dl>
+            <dt><span class="wl-ko">목적</span><span class="wl-en">Purpose</span></dt>
+            <dd><span class="wl-ko">{p.whyKo}</span><span class="wl-en">{p.whyEn}</span></dd>
+            <dt><span class="wl-ko">항목</span><span class="wl-en">Items</span></dt>
+            <dd><span class="wl-ko">{p.itemsKo}</span><span class="wl-en">{p.itemsEn}</span></dd>
+          </dl>
+        </section>
+      ))}
+      <section class="pv-item">
+        <h3><span class="wl-ko">홈페이지 이용 기록 (자동 수집)</span><span class="wl-en">Website usage (collected automatically)</span></h3>
+        <dl>
+          <dt><span class="wl-ko">목적</span><span class="wl-en">Purpose</span></dt>
+          <dd><span class="wl-ko">구글 광고 효과 측정</span><span class="wl-en">Measuring Google Ads results</span></dd>
+          <dt><span class="wl-ko">항목</span><span class="wl-en">Items</span></dt>
+          <dd><span class="wl-ko">쿠키, 방문한 페이지, 광고 클릭 식별자, 기기 · 브라우저 정보</span><span class="wl-en">Cookies, pages visited, ad click identifier, device and browser information</span></dd>
+          <dt><span class="wl-ko">보유</span><span class="wl-en">Retention</span></dt>
+          <dd><span class="wl-ko">구글 정책에 따름 (광고 클릭 후 최대 90일 동안 전환을 측정)</span><span class="wl-en">According to Google’s policy (conversions are measured for up to 90 days after an ad click)</span></dd>
+        </dl>
+      </section>
+    </div>
+
+    <h2><span class="wl-ko">2. 미성년자의 개인정보</span><span class="wl-en">2. Children and minors</span></h2>
+    <p>
+      <span class="wl-ko">월코는 만 14세 미만 아동을 포함한 미성년자가 캠프 · 행사에 참여할 때 법정대리인(부모 등 보호자)의 동의를 받습니다. 법정대리인은 아동의 개인정보에 대해 열람 · 정정 · 삭제 · 처리정지를 요청할 수 있습니다.</span>
+      <span class="wl-en">When minors, including children under 14, take part in a camp or event, WOLKO obtains the consent of a parent or legal guardian. Guardians may ask to see, correct, delete or stop the processing of their child’s information.</span>
+    </p>
+
+    <h2><span class="wl-ko">3. 제3자 제공</span><span class="wl-en">3. Sharing with third parties</span></h2>
+    <p>
+      <span class="wl-ko">월코는 정보주체의 동의가 있거나 법률에 특별한 규정이 있는 경우를 빼고는 개인정보를 제3자에게 제공하지 않습니다.</span>
+      <span class="wl-en">WOLKO does not give your personal information to third parties unless you consent or the law specifically requires it.</span>
+    </p>
+
+    <h2><span class="wl-ko">4. 처리 위탁과 국외 이전</span><span class="wl-en">4. Service providers and transfers abroad</span></h2>
+    <p>
+      <span class="wl-ko">홈페이지 운영과 안내 발송을 위해 아래 업체에 업무를 맡기고 있습니다. 국외 업체에는 신청 · 방문 시 네트워크로 정보가 전송되어 그 나라의 서버에 저장 · 처리됩니다. 국외 이전을 원하지 않으시면 아래 보호책임자에게 알려 주십시오. 다만 이 경우 온라인 신청이 어려울 수 있습니다.</span>
+      <span class="wl-en">We use the providers below to run the website and send notices. For providers outside Korea, information is sent over the network when you submit a form or visit, and is stored and processed on their servers. If you do not want your information transferred abroad, please tell the privacy officer below; online registration may then not be possible.</span>
+    </p>
+    <div class="pv-items">
+      {processors.map((x) => (
+        <section class="pv-item">
+          <h3>{x.name}</h3>
+          <dl>
+            <dt><span class="wl-ko">맡기는 일</span><span class="wl-en">Service</span></dt>
+            <dd><span class="wl-ko">{x.jobKo}</span><span class="wl-en">{x.jobEn}</span></dd>
+            <dt><span class="wl-ko">국가</span><span class="wl-en">Country</span></dt>
+            <dd>{x.where}</dd>
+            <dt><span class="wl-ko">항목</span><span class="wl-en">Items</span></dt>
+            <dd><span class="wl-ko">{x.itemsKo}</span><span class="wl-en">{x.itemsEn}</span></dd>
+          </dl>
+        </section>
+      ))}
+    </div>
+
+    <h2><span class="wl-ko">5. 쿠키와 광고 효과 측정</span><span class="wl-en">5. Cookies and ad measurement</span></h2>
+    <ul>
+      <li><span class="wl-ko">구글 광고를 보고 들어온 방문자가 캠프 신청 · 스태프 지원 · 문의 · 후원 버튼 클릭을 했는지 알기 위해 구글 광고 태그(쿠키)를 사용합니다.</span><span class="wl-en">We use the Google Ads tag (cookies) to learn whether visitors who came from a Google ad went on to register for camp, apply as staff, send an enquiry or click a donation button.</span></li>
+      <li><span class="wl-ko">구글에는 “어떤 종류의 완료가 있었다”는 사실만 보내며, 이름 · 이메일 · 연락처 같은 입력 내용은 보내지 않습니다. 방문자를 맞춤 광고(리마케팅) 대상에 넣지 않습니다.</span><span class="wl-en">We send Google only the fact that a completion of a certain type happened. We do not send what you type, such as your name, email or phone number, and we do not add visitors to remarketing audiences.</span></li>
+      <li><span class="wl-ko">직원용 포탈과 보호자 동의 페이지에는 광고 태그를 사용하지 않습니다.</span><span class="wl-en">The ad tag is not used on the staff portal or on guardian consent pages.</span></li>
+      <li><span class="wl-ko">브라우저 설정에서 쿠키 저장을 거부할 수 있고, <a href="https://adssettings.google.com" target="_blank" rel="noopener">구글 광고 설정</a>에서 광고 개인 맞춤설정을 끌 수 있습니다. 쿠키를 거부해도 홈페이지 이용과 신청에는 지장이 없습니다.</span><span class="wl-en">You can block cookies in your browser settings and turn off ad personalisation in <a href="https://adssettings.google.com" target="_blank" rel="noopener">Google Ad Settings</a>. Blocking cookies does not affect using the website or registering.</span></li>
+    </ul>
+
+    <h2><span class="wl-ko">6. 개인정보의 파기</span><span class="wl-en">6. Deletion</span></h2>
+    <p>
+      <span class="wl-ko">삭제 요청을 받거나 처리 목적이 없어지면 지체 없이 파기합니다. 전자 파일은 복구할 수 없는 방법으로 삭제하고, 종이 문서는 분쇄하거나 소각합니다.</span>
+      <span class="wl-en">When you ask us to delete your information, or when we no longer need it, we delete it without delay. Electronic files are deleted so they cannot be recovered, and paper documents are shredded or burned.</span>
+    </p>
+
+    <h2><span class="wl-ko">7. 정보주체의 권리</span><span class="wl-en">7. Your rights</span></h2>
+    <p>
+      <span class="wl-ko">정보주체(만 14세 미만은 법정대리인)는 언제든지 자신의 개인정보 열람 · 정정 · 삭제 · 처리정지를 요청할 수 있습니다. 아래 보호책임자에게 이메일로 요청하시면 지체 없이 처리합니다.</span>
+      <span class="wl-en">You (or, for children under 14, a legal guardian) may ask at any time to see, correct, delete or stop the processing of your information. Email the privacy officer below and we will act without delay.</span>
+    </p>
+
+    <h2><span class="wl-ko">8. 안전성 확보 조치</span><span class="wl-en">8. How we keep it safe</span></h2>
+    <ul>
+      <li><span class="wl-ko">신청 자료는 암호화된 연결(HTTPS)로 전송합니다.</span><span class="wl-en">Submissions are sent over an encrypted connection (HTTPS).</span></li>
+      <li><span class="wl-ko">신청 자료는 권한을 받은 직원만 로그인해 볼 수 있습니다.</span><span class="wl-en">Only authorised staff can sign in to see submissions.</span></li>
+      <li><span class="wl-ko">민감정보와 추천서는 분리해 암호화 저장합니다.</span><span class="wl-en">Sensitive information and references are stored separately and encrypted.</span></li>
+    </ul>
+
+    <h2><span class="wl-ko">9. 개인정보 보호책임자</span><span class="wl-en">9. Privacy officer</span></h2>
+    <div class="pv-contact">
+      <dl>
+        <dt><span class="wl-ko">성명</span><span class="wl-en">Name</span></dt>
+        <dd>김환규</dd>
+        <dt><span class="wl-ko">직책</span><span class="wl-en">Role</span></dt>
+        <dd><span class="wl-ko">선교사</span><span class="wl-en">Missionary</span></dd>
+        <dt><span class="wl-ko">이메일</span><span class="wl-en">Email</span></dt>
+        <dd><a href="mailto:hkim@wolko.org">hkim@wolko.org</a></dd>
+        <dt><span class="wl-ko">주소</span><span class="wl-en">Address</span></dt>
+        <dd><span class="wl-ko">경기도 평택시 경기대로 1407, 2층 월코센터</span><span class="wl-en">WOLKO Center, 2F, 1407 Gyeonggi-daero, Pyeongtaek-si, Gyeonggi-do</span></dd>
+      </dl>
+    </div>
+    <p>
+      <span class="wl-ko">개인정보 침해에 대한 신고나 상담은 개인정보침해신고센터(국번 없이 118, <a href="https://privacy.kisa.or.kr" target="_blank" rel="noopener">privacy.kisa.or.kr</a>), 개인정보분쟁조정위원회(1833-6972, <a href="https://www.kopico.go.kr" target="_blank" rel="noopener">kopico.go.kr</a>)에도 할 수 있습니다.</span>
+      <span class="wl-en">You can also contact the Korea Internet & Security Agency privacy center (118, <a href="https://privacy.kisa.or.kr" target="_blank" rel="noopener">privacy.kisa.or.kr</a>) or the Personal Information Dispute Mediation Committee (1833-6972, <a href="https://www.kopico.go.kr" target="_blank" rel="noopener">kopico.go.kr</a>).</span>
+    </p>
+
+    <h2><span class="wl-ko">10. 처리방침의 변경</span><span class="wl-en">10. Changes to this policy</span></h2>
+    <p>
+      <span class="wl-ko">이 처리방침은 {EFFECTIVE_KO}부터 적용합니다. 내용이 바뀌면 이 페이지에서 알립니다.</span>
+      <span class="wl-en">This policy applies from {EFFECTIVE_EN}. If it changes, we will post the update on this page.</span>
+    </p>
+  </div>
+</main>
+
+</BaseLayout>
