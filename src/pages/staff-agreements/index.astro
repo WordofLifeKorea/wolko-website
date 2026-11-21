@@ -353,7 +353,8 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
         return;
       }
       submit.disabled = true;
-      var png = pad.toPng();
+      var png;
+      try { png = pad.toPng(); } catch (err) { submit.disabled = false; showErr('form', T('서명 그림을 만들지 못했어요. 다시 서명해 주세요.', 'Could not prepare your signature. Please sign again.')); return; }
       var body = { doc: doc.id, version: doc.version, role: roleVal(), name: val('name').trim(), email: val('email').trim(), phone: val('phone').trim(), agree: true, consent: true, signature: png, lang: isEn() ? 'en' : 'ko', website: val('website') };
       try {
         var res = await fetch('/api/agreements/sign', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });

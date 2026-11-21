@@ -69,7 +69,7 @@ export async function docHash(doc) {
 /* ── 서명 기록 검사 도구 ── */
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const PNG_PREFIX = 'data:image/png;base64,';
-const MIN_SIGNATURE_BYTES = 600;   // 아무것도 안 그린 PNG 는 이보다 훨씬 작다
+const MIN_SIGNATURE_BYTES = 600;   // 너무 작은 그림(깨진 값)은 거른다. 아무것도 안 그린 흰 PNG 도 몇 KB 라 크기로는 못 가른다 — 서명을 그렸는지는 화면의 서명판이 확인한다
 
 export const newAgreementCode = () => 'AG-' + Array.from(crypto.getRandomValues(new Uint8Array(6)), (b) => CODE_ALPHABET[b % CODE_ALPHABET.length]).join('');
 
@@ -78,8 +78,16 @@ export function checkSignature(value) {
   if (typeof value !== 'string' || !value.startsWith(PNG_PREFIX)) return 0;
   const b64 = value.slice(PNG_PREFIX.length);
   if (!/^[A-Za-z0-9+/]+={0,2}$/.test(b64)) return 0;
+  if (b64.length % 4 !== 0) return 0;
   const bytes = Math.floor((b64.length * 3) / 4) - (b64.endsWith('==') ? 2 : b64.endsWith('=') ? 1 : 0);
   if (bytes < MIN_SIGNATURE_BYTES || bytes > MAX_SIGNATURE_BYTES) return 0;
-  try { if (atob(b64.slice(0, 16)).slice(1, 4) !== 'PNG') return 0; } catch { return 0; }
+  // PNG 머리글 8바이트 + 첫 덩어리가 IHDR(가로 · 세로 크기가 상식적인 범위)인지 — 앞부분 24바이트(base64 32글자)만 풀어 본다
+  try {
+    const head = atob(b64.slice(0, 32));
+    if (head.slice(0, 8) !== '\x89PNG\r\n\x1a\n' || head.slice(12, 16) !== 'IHDR') return 0;
+    const u32 = (i) => ((head.charCodeAt(i) << 24) | (head.charCodeAt(i + 1) << 16) | (head.charCodeAt(i + 2) << 8) | head.charCodeAt(i + 3)) >>> 0;
+    const w = u32(16), h = u32(20);
+    if (w < 100 || w > 3000 || h < 40 || h > 1500) return 0;
+  } catch { return 0; }
   return bytes;
 }

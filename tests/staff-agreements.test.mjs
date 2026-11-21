@@ -23,8 +23,9 @@ function fakeKV() {
     },
   };
 }
-// 아무것도 안 그린 것보다 큰, 진짜 PNG 모양(머리글 + 채움)의 서명 그림
-const bigPng = () => 'data:image/png;base64,' + Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(3000, 7)]).toString('base64');
+// 진짜 PNG 머리글(8바이트 서명 + IHDR 가로 600 · 세로 180) 뒤에 채움을 붙인 서명 그림 — 서버는 머리글 모양과 크기를 본다
+const pngWith = (w, h, fill = 3000) => { const ihdr = Buffer.alloc(25); ihdr.writeUInt32BE(13, 0); ihdr.write('IHDR', 4); ihdr.writeUInt32BE(w, 8); ihdr.writeUInt32BE(h, 12); return 'data:image/png;base64,' + Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), ihdr, Buffer.alloc(fill, 7)]).toString('base64'); };
+const bigPng = () => pngWith(600, 180);
 const good = () => ({ doc: 'faith', version: DOCS.faith.version, role: 'staff', name: '김섬김', email: 'Serve@Example.com', phone: '010-1234-5678', agree: true, consent: true, signature: bigPng(), lang: 'ko' });
 
 async function setup() {
@@ -85,7 +86,9 @@ test('서명 제출 검사: 문서 · 버전 · 구분 · 이름 · 이메일 ·
   assert.equal((await post({ signature: '' })).field, 'signature');
   assert.equal((await post({ signature: 'data:image/png;base64,iVBORw0KGgo=' })).field, 'signature', '아무것도 안 그린 작은 그림');
   assert.equal((await post({ signature: 'data:image/jpeg;base64,' + 'A'.repeat(4000) })).field, 'signature', 'PNG 가 아닌 것');
-  assert.equal((await post({ signature: 'data:image/png;base64,' + Buffer.alloc(3000, 1).toString('base64') })).field, 'signature', 'PNG 머리글이 없는 것');
+  assert.equal((await post({ signature: 'data:image/png;base64,' + Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47]), Buffer.alloc(3000, 1)]).toString('base64') })).field, 'signature', 'PNG 머리글이 온전하지 않은 것');
+  assert.equal((await post({ signature: pngWith(10, 10) })).field, 'signature', '가로 · 세로 크기가 이상한 것');
+  assert.equal((await post({ signature: bigPng() + 'A' })).field, 'signature', 'base64 길이가 4의 배수가 아닌 것');
   assert.equal((await post({ signature: 'data:image/png;base64,' + Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47]), Buffer.alloc(300 * 1024, 1)]).toString('base64') })).field, 'signature', '너무 큰 것');
   assert.equal((await post({ website: 'http://spam' })).field, 'website');
   assert.ok(checkSignature(bigPng()) > 600);
@@ -95,7 +98,7 @@ test('서명 제출 검사: 문서 · 버전 · 구분 · 이름 · 이메일 ·
 test('서명 제출: 짧은 시간에 너무 많이 하면 429', async () => {
   const t = await setup();
   let last;
-  for (let i = 0; i < 21; i++) last = await t.call(signApi, 'POST', '/api/agreements/sign', { body: good(), ip: '9.9.9.9' });
+  for (let i = 0; i < 61; i++) last = await t.call(signApi, 'POST', '/api/agreements/sign', { body: good(), ip: '9.9.9.9' });
   assert.equal(last.status, 429);
   assert.equal((await t.call(signApi, 'POST', '/api/agreements/sign', { body: good(), ip: '8.8.8.8' })).status, 200, '다른 곳은 영향 없다');
 });
@@ -117,6 +120,11 @@ test('관리자 보기: 관리자만 · 목록(그림 없음) · 한 건(그림+
   const csv = await t.call(adminApi, 'GET', '/api/portal/agreements?format=csv', { token: t.admin });
   const text = await csv.text();
   assert.ok(text.includes('serve@example.com') && text.includes('신앙고백서') && !text.includes('data:image'));
+  assert.ok(text.includes('"=""010-1234-5678"""'), '휴대폰은 엑셀에서 앞의 0이 지워지지 않게 글자 그대로');
+  // 문구만 고치고 버전을 안 올렸다면(글 해시가 다르면) 서명한 글로 보여 주지 않는다
+  const [[k]] = [...t.kv.store.entries()].filter(([key]) => key.includes(a.code));
+  const rec = JSON.parse(t.kv.store.get(k).value); rec.textHash = 'x'.repeat(64); t.kv.store.set(k, { value: JSON.stringify(rec), metadata: t.kv.store.get(k).metadata });
+  assert.equal((await (await t.call(adminApi, 'GET', `/api/portal/agreements?code=${a.code}`, { token: t.admin })).json()).doc, null);
   assert.equal((await t.call(adminApi, 'DELETE', `/api/portal/agreements?code=${a.code}`, { token: t.member })).status, 403);
   assert.equal((await (await t.call(adminApi, 'DELETE', `/api/portal/agreements?code=${a.code}`, { token: t.admin })).json()).removed, 1);
   assert.equal((await (await t.call(adminApi, 'GET', '/api/portal/agreements', { token: t.admin })).json()).items.length, 1);

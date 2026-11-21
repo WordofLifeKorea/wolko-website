@@ -33,7 +33,7 @@ export async function onRequestPost({ env, request }) {
   if (!checkSignature(body?.signature)) return fail('서명을 그려 주세요.', 'Please draw your signature.', 400, { field: 'signature' });
 
   const hash = await ipHash(request, env);
-  if (await rateLimited(env, hash, Date.now(), { prefix: 'agree:rl', perHour: 20, perDay: 60 })) return fail('짧은 시간에 너무 많이 시도하셨어요. 잠시 뒤 다시 해 주세요.', 'Too many attempts. Please try again a little later.', 429);
+  if (await rateLimited(env, hash, Date.now(), { prefix: 'agree:rl', perHour: 60, perDay: 200 })) return fail('짧은 시간에 너무 많이 시도하셨어요. 잠시 뒤 다시 해 주세요.', 'Too many attempts. Please try again a little later.', 429);
 
   const now = Date.now();
   const code = newAgreementCode();

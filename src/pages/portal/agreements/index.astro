@@ -112,7 +112,7 @@
         $('count').textContent = '총 ' + items.length + '건' + (data.truncated ? ' (일부만 보여요 — 엑셀에는 전체가 들어 있어요)' : '');
         $('empty').hidden = items.length > 0;
         $('rows').innerHTML = items.map(function (i) {
-          return '<tr><td>' + esc(when(i.t)) + '</td><td>' + esc(docTitle(i.doc)) + '</td><td><span class="tag ' + esc(i.role) + '">' + esc(ROLE[i.role] || i.role) + '</span></td><td>' + esc(i.name) + '</td><td>' + esc(i.email) + '</td><td>' + esc(i.code) + '</td><td><button type="button" data-view="' + esc(i.code) + '">보기</button></td></tr>';
+          return '<tr data-view="' + esc(i.code) + '" style="cursor:pointer"><td>' + esc(when(i.t)) + '</td><td>' + esc(docTitle(i.doc)) + '</td><td><span class="tag ' + esc(i.role) + '">' + esc(ROLE[i.role] || i.role) + '</span></td><td>' + esc(i.name) + '</td><td>' + esc(i.email) + '</td><td>' + esc(i.code) + '</td><td><button type="button" data-view="' + esc(i.code) + '">보기</button></td></tr>';
         }).join('');
       }
       async function load() {
