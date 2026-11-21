@@ -10,9 +10,9 @@ import { campEndDate } from '../../../functions/lib/campDates.js';
 
 // 초안(draft) 문서는 공개 페이지에 넣지 않는다. WOLKO_SHOW_DRAFTS=1 로 만든 로컬 미리보기에서만 보인다.
 const docs = docList({ includeDrafts: process.env.WOLKO_SHOW_DRAFTS === '1' });
-// 캠프마다 쓰는 서약서(아동보호 서약서)에서 고를 캠프 — 스태프 지원 목록에 나오는 캠프. 끝난 캠프는 화면에서(오늘 날짜로) 걸러낸다
+// 캠프마다 쓰는 서약서(아동보호 서약서)에서 고를 캠프. 끝난 캠프는 화면에서(오늘 날짜로) 걸러낸다
 const camps = (await getCollection('camp_schedules'))
-  .filter(({ id, data }) => !/test/i.test(id) && !data.staff_application_hidden)
+  .filter(({ id }) => !/test/i.test(id))   // 지원 목록에서 숨긴 캠프(제주 문의 등)도 서약은 해야 하므로 끝나지 않은 캠프는 모두 고를 수 있다
   .map(({ id, data }) => ({ id, ko: data.title_ko, en: data.title_en, start: String(data.start_date || '').slice(0, 10), end: campEndDate(String(data.start_date || ''), data.date_ko || '') }))
   .sort((a, b) => (a.start || '9999').localeCompare(b.start || '9999'));
 const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version: d.version, perCamp: !!d.perCamp, ko: d.ko, en: d.en, sections: docSections(d), declaration: d.declaration || null })) }).replace(/</g, '\\u003c');
@@ -202,6 +202,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
               <label for={`sa-camp-${doc.id}`}><span class="wl-ko">참여하는 캠프</span><span class="wl-en">Camp you are taking part in</span><span class="sa-req" aria-hidden="true"> *</span></label>
               <select class="wl-tall" id={`sa-camp-${doc.id}`} name="campId" data-camp-select><option value=""></option></select>
               <p class="sa-note"><span class="wl-ko">이 서약서는 참여하는 캠프마다 새로 작성합니다.</span><span class="wl-en">This agreement is signed again for every camp you take part in.</span></p>
+              <p class="sa-err" data-camp-none hidden><span class="wl-ko">지금 서명할 수 있는 캠프가 없어요. 월코에 문의해 주세요.</span><span class="wl-en">There is no camp open for signing right now. Please contact WOLKO.</span></p>
               <p class="sa-err" data-err="campId" hidden></p>
             </div>
           )}
@@ -438,12 +439,16 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
   function todayKstStr() { try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date()); } catch (e) { return new Date().toISOString().slice(0, 10); } }
   function openCamps() { var t = todayKstStr(); return CAMPS.filter(function (c) { return !c.end || c.end >= t; }); }
   function campLabel(c) { return isEn() ? (c.en || c.ko) : (c.ko || c.en); }
+  var campLangEn = null;   // 마지막으로 그린 언어 — 스크롤마다 바뀌는 class(is-scrolling)에는 다시 그리지 않는다
   function fillCampSelects() {
+    if (campLangEn === isEn() && document.querySelector('[data-camp-select] option[value]:not([value=""])')) return;
+    campLangEn = isEn();
     var list = openCamps();
     Array.prototype.forEach.call(document.querySelectorAll('[data-camp-select]'), function (sel) {
       var keep = sel.value;
       sel.innerHTML = '<option value="">' + esc(T('캠프를 선택해 주세요', 'Choose a camp')) + '</option>' + list.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(campLabel(c)) + '</option>'; }).join('');
       if (keep && list.some(function (c) { return c.id === keep; })) sel.value = keep;
+      var none = sel.parentNode.querySelector('[data-camp-none]'); if (none) none.hidden = list.length > 0;
     });
   }
   fillCampSelects();

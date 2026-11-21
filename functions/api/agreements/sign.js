@@ -12,7 +12,7 @@ const HEADERS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Orig
 const EMAIL_RE = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
 const fail = (error, errorEn, status, extra = {}) => Response.json({ error, errorEn, ...extra }, { status, headers: HEADERS });
 
-export async function onRequestPost({ env, request }) { 
+export async function onRequestPost({ env, request }) {
   if (!env.CAMP_KV) return fail('서버 설정이 필요합니다.', 'Server is not configured.', 500);
   let body;
   try { body = await request.json(); } catch { return fail('잘못된 요청입니다.', 'Invalid request.', 400); }

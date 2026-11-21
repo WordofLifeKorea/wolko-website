@@ -2130,7 +2130,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
       return `<span class="staff-status-chip" style="display:inline-block;padding:2px 10px;border-radius:100px;background:${bg};color:${fg};font-size:11px;font-weight:700;white-space:nowrap;">${esc(label)}</span>`;
     }
     // 서약서(신앙고백서 · 필수 규칙 · 아동보호 서약서)는 캠프 트레이닝 위크에 작성한다 — 누가 얼마나 썼는지 보여 주기만 한다(수락 조건이 아니다). 공개된 문서만 센다
-    let agreementStatus = null;   // { required: [{ id, title }], signed: { 이메일: [문서 id] } }
+    let agreementStatus = null;   // { required: [{ id, title }], signed: { 이메일: [문서 id 또는 '문서@캠프id'] } }
     async function loadAgreementStatus() {
       try {
         const res = await fetch('/api/admin/staff-agreements', { headers: authHeaders() });

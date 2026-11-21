@@ -332,6 +332,7 @@ test('아동보호 서약서는 참여하는 캠프마다 작성: 캠프 필수 
   // 캠프 일정을 읽을 수 있을 때는 목록에 없는 캠프를 거절한다
   t.env.ASSETS = { fetch: async () => new Response(JSON.stringify([{ id: '2027-wolko-winter', titleKo: '2027 겨울 월코 영어 캠프', titleEn: 'Winter', startDate: '2027-01-11', endDate: '2027-01-16' }])) };
   const { resetScheduleCache } = await import('../functions/lib/gospelCamps.js'); resetScheduleCache();
+  try {
   assert.equal((await post({ campId: 'no-such-camp' })).field, 'campId', '일정에 없는 캠프는 거절');
   const ok = await post({ campId: '2027-wolko-winter' });
   assert.equal(ok.status, 200);
@@ -347,14 +348,14 @@ test('아동보호 서약서는 참여하는 캠프마다 작성: 캠프 필수 
   assert.ok(list.items.some((i) => i.doc === 'childprotection' && i.camp === '2027-wolko-winter'));
   const csv = await (await t.call(adminApi, 'GET', '/api/portal/agreements?format=csv', { token: t.admin })).text();
   assert.ok(csv.split('\r\n')[0].includes('캠프') && csv.includes('2027-wolko-winter'));
-  resetScheduleCache();
+  } finally { resetScheduleCache(); }
 });
 
 test('서명 페이지: 캠프 선택(아동보호 서약서) · 다른 캠프로 다시 작성 · 서약서가 열릴 때 초점 · 한·영 캠프 이름', () => {
   const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
   assert.match(page, /data-camp-select/); assert.match(page, /name="campId"/); assert.match(page, /function fillCampSelects\(/);
   assert.match(page, /data-again/); assert.match(page, /\?camp=|QS\.get\('camp'\)/);
-  assert.match(page, /hashchange/); assert.match(page, /h\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(page, /campLangEn/, '스크롤마다 캠프 선택칸을 다시 그리지 않는다'); assert.match(page, /data-camp-none/); assert.doesNotMatch(page, /staff_application_hidden/, '지원 목록에서 숨긴 캠프도 서약은 할 수 있다'); assert.match(page, /hashchange/); assert.match(page, /h\.focus\(\{ preventScroll: true \}\)/);
   assert.match(page, /\.sa-need \{ scroll-margin-top: 96px; \}/);
   const fix = readFileSync(new URL('../functions/lib/agreementDocsExtra.js', import.meta.url), 'utf8');
   assert.ok(!fix.includes('어긋저는') && fix.includes('어긋나는'), '"나는"→"저는" 치환이 낱말 안(어긋나는)을 건드리지 않았다');
