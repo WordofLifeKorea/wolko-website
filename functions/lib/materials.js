@@ -168,12 +168,17 @@ export async function writeDownloadLog(env, recIn, now = Date.now()) {
   return key;
 }
 
-/** 기록 읽기. month('YYYY-MM')를 주면 그 달만. 최대 max 줄 */
+/**
+ * 기록 읽기. month('YYYY-MM')를 주면 그 달만. 가장 최근 max 줄을 돌려준다.
+ * KV 목록은 키 순서(오래된 달부터)라 끝까지 읽은 뒤 최근 것을 고른다. 끝까지 못 읽었거나 max 보다 많으면 truncated = true.
+ */
+const MAX_LIST_PAGES = 300;   // 한 번에 1000개씩 — 30만 줄까지
 export async function readDownloadLogs(env, { month = '', max = 20000 } = {}) {
   const prefix = month ? `${LOG_PREFIX}${String(month).replace('-', '')}:` : LOG_PREFIX;
   const rows = [];
   let cursor;
-  for (let page = 0; page < 40; page++) {
+  let complete = false;
+  for (let page = 0; page < MAX_LIST_PAGES; page++) {
     const res = await env.CAMP_KV.list({ prefix, cursor, limit: 1000 });
     for (const k of res.keys || []) {
       const m = k.metadata || {};
@@ -182,11 +187,11 @@ export async function readDownloadLogs(env, { month = '', max = 20000 } = {}) {
         kind: m.k || '', name: m.n || '', church: m.c || '', email: m.e || '', lang: m.l || 'ko', stamp: m.w || '',
       });
     }
-    if (res.list_complete || !res.cursor || rows.length >= max) break;
+    if (res.list_complete || !res.cursor) { complete = true; break; }
     cursor = res.cursor;
   }
   rows.sort((a, b) => b.t - a.t);
-  return { rows: rows.slice(0, max), truncated: rows.length > max };
+  return { rows: rows.slice(0, max), truncated: !complete || rows.length > max };
 }
 
 const churchKey = (s) => String(s || '').replace(/\s+/g, '').toLowerCase();
@@ -208,7 +213,8 @@ export function summarizeLogs(rows, titles = {}) {
     mat.last = Math.max(mat.last, r.t);
     if (!mat.title) mat.title = r.title || titles[mk] || '';
     byMaterial.set(mk, mat);
-    const mo = kstDate(r.t).slice(0, 7);
+    // 달은 기록 키의 달(YYYYMM)을 따른다 — 월 필터와 같은 기준이라 달이 바뀌는 자정 무렵 기록도 표와 어긋나지 않는다
+    const mo = /^\d{6}$/.test(String(r.key || '').split(':')[2] || '') ? `${r.key.split(':')[2].slice(0, 4)}-${r.key.split(':')[2].slice(4)}` : kstDate(r.t).slice(0, 7);
     const m = byMonth.get(mo) || { month: mo, total: 0, individual: 0, church: 0, group: 0 };
     m.total += 1; if (m[r.kind] !== undefined) m[r.kind] += 1;
     byMonth.set(mo, m);
@@ -248,7 +254,7 @@ export function logsToCsv(rows, titles = {}) {
 export async function deleteLogsByCode(env, code) {
   const target = clean(code, 20).toUpperCase();
   if (!/^WL-[A-Z0-9]{6}$/.test(target)) return 0;
-  const { rows } = await readDownloadLogs(env, { max: 100000 });
+  const { rows } = await readDownloadLogs(env, { max: 1_000_000 });
   let n = 0;
   for (const r of rows) if (r.code === target) { await env.CAMP_KV.delete(r.key); n += 1; }
   return n;
@@ -258,7 +264,7 @@ export async function deleteLogsByCode(env, code) {
 export async function deleteLogsByEmail(env, email) {
   const target = clean(email, 100).toLowerCase();
   if (!target) return 0;
-  const { rows } = await readDownloadLogs(env, { max: 100000 });
+  const { rows } = await readDownloadLogs(env, { max: 1_000_000 });
   let n = 0;
   for (const r of rows) if (r.email === target) { await env.CAMP_KV.delete(r.key); n += 1; }
   return n;

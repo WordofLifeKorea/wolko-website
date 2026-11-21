@@ -17,6 +17,7 @@ export const STAMP_FONT_URL = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfon
 export const MAX_STAMP_BYTES = 12 * 1024 * 1024;   // 이보다 큰 PDF 는 원본 그대로(Workers 처리 시간 보호)
 export const MAX_STAMP_PAGES = 400;
 const STAMP_SIZE = 7.5;                              // pt
+const MIN_STAMP_SIZE = 4.5;                          // 이보다 작게는 줄이지 않는다(그래도 폭에 안 들어가면 이름을 줄인다)
 const STAMP_BOTTOM = 14;                             // 쪽 아래 끝에서 글줄까지 pt
 const FONT_RETRY_MS = 60_000;                        // 글꼴 읽기에 실패하면 이 시간 동안은 다시 시도하지 않는다
 
@@ -99,38 +100,68 @@ export async function stampPdf(bytes, { label, code, date, font = null, maxBytes
     const pages = doc.getPages();
     if (!pages.length || pages.length > maxPages) return { bytes, status: 'skipped-size', pages: pages.length };
 
-    // 쪽 하나짜리 작은 PDF 에 글줄을 그려 두고, 모든 쪽에 그 그림을 올린다
+    // 쪽 하나짜리 작은 PDF 에 글줄을 그려 두고, 쪽마다 그 그림을 올린다.
+    // 쪽 폭이 글줄보다 좁은 쪽(작은 책자 등)은 폭에 맞춘 그림을 따로 만든다(폭마다 한 번씩만, 너무 많으면 가장 좁은 폭 하나로).
     const stampDoc = await PDFDocument.create();
-    let line = stampLineOf({ label, code, date });
-    let status = 'applied';
-    let sw, sh, draw;
-    if (font) {
-      let size = STAMP_SIZE;
-      let laid = layoutLine(font, line, size);
-      const widest = Math.min(...pages.map(visibleWidth)) * 0.9;
-      if (laid.width > widest) { size = Math.max(4.5, (size * widest) / laid.width); laid = layoutLine(font, line, size); }
-      const pad = size * 0.25;
-      sw = laid.width + 4; sh = laid.top + laid.bottom + pad * 2;
-      const sp = stampDoc.addPage([sw, sh]);
-      // 기준선을 (아래 여백 + 글자가 기준선 아래로 내려가는 높이) 위에 둔다 → 글자 위 · 아래가 상자 안에 모두 들어간다
-      sp.drawSvgPath(laid.d, { x: 2, y: pad + laid.bottom, color: rgb(0.34, 0.34, 0.34), opacity: 0.9, borderWidth: 0 });
-      draw = sp;
-    } else {
-      status = 'applied-ascii';
-      line = stampLineOf({ label: asciiOnly(label), code, date });
-      const helv = await stampDoc.embedFont(StandardFonts.Helvetica);
-      let size = STAMP_SIZE;
-      let w = helv.widthOfTextAtSize(line, size);
-      const widest = Math.min(...pages.map(visibleWidth)) * 0.9;
-      if (w > widest) { size = Math.max(4.5, (size * widest) / w); w = helv.widthOfTextAtSize(line, size); }
-      sw = w + 4; sh = size * 1.7;
-      const sp = stampDoc.addPage([sw, sh]);
-      sp.drawText(line, { x: 2, y: size * 0.45, size, font: helv, color: rgb(0.34, 0.34, 0.34), opacity: 0.9 });
-      draw = sp;
+    const status = font ? 'applied' : 'applied-ascii';
+    const helv = font ? null : await stampDoc.embedFont(StandardFonts.Helvetica);
+    if (helv) await helv.embed();   // 저장하지 않는 stampDoc 의 글꼴도 실제 개체로 만들어 둔다(안 그러면 쪽에 붙은 그림이 없는 개체를 가리킨다)
+    const baseLabel = font ? String(label || '').trim() : asciiOnly(label);
+
+    const build = async (avail) => {
+      // 폭(avail)에 들어갈 때까지 글자 크기를 줄이고, 그래도 안 들어가면 이름을 줄인다(확인번호 · 날짜는 끝까지 남긴다)
+      let text = baseLabel;
+      for (let guard = 0; guard < 80; guard++) {
+        const line = stampLineOf({ label: text, code, date });
+        let size = STAMP_SIZE;
+        let laid = font ? layoutLine(font, line, size) : null;
+        let w = font ? laid.width : helv.widthOfTextAtSize(line, size);
+        if (w > avail) {
+          size = Math.max(MIN_STAMP_SIZE, (size * avail) / w);
+          if (font) { laid = layoutLine(font, line, size); w = laid.width; } else w = helv.widthOfTextAtSize(line, size);
+        }
+        if (w <= avail || !text) {
+          if (font) {
+            const pad = size * 0.25;
+            const sw = laid.width + 4, sh = laid.top + laid.bottom + pad * 2;
+            const sp = stampDoc.addPage([sw, sh]);
+            // 기준선을 (아래 여백 + 글자가 기준선 아래로 내려가는 높이) 위에 둔다 → 글자 위 · 아래가 상자 안에 모두 들어간다
+            sp.drawSvgPath(laid.d, { x: 2, y: pad + laid.bottom, color: rgb(0.34, 0.34, 0.34), opacity: 0.9, borderWidth: 0 });
+            return { page: sp, sw, sh };
+          }
+          const sw = w + 4, sh = size * 1.7;
+          const sp = stampDoc.addPage([sw, sh]);
+          sp.drawText(line, { x: 2, y: size * 0.45, size, font: helv, color: rgb(0.34, 0.34, 0.34), opacity: 0.9 });
+          return { page: sp, sw, sh };
+        }
+        text = text.length > 3 ? text.slice(0, Math.max(1, text.length - Math.ceil(text.length / 8))).trim() : '';   // 이름을 조금씩 줄인다
+      }
+      return null;
+    };
+
+    // 쪽 폭(눈으로 보이는 폭의 90%)별로 필요한 그림을 모은다. 기본 크기로 들어가는 폭은 모두 같은 그림 하나
+    const FULL = 'full';
+    const probeLine = stampLineOf({ label: baseLabel, code, date });
+    const fullWidth = font ? layoutLine(font, probeLine, STAMP_SIZE).width : helv.widthOfTextAtSize(probeLine, STAMP_SIZE);
+    const availOf = (p) => Math.floor(visibleWidth(p) * 0.9);
+    const widths = [...new Set(pages.map(availOf).filter((a) => a < fullWidth))].sort((x, y) => x - y);
+    const useWidths = widths.length > 6 ? [widths[0]] : widths;   // 좁은 폭이 너무 여러 가지면 가장 좁은 폭 하나로 모두 맞춘다
+    const keyOf = (p) => {
+      const a = availOf(p);
+      if (a >= fullWidth) return FULL;
+      return useWidths.length === 1 && widths.length > 6 ? useWidths[0] : a;
+    };
+    const variants = new Map();
+    const keys = [...new Set(pages.map(keyOf))];
+    for (const k of keys) {
+      const built = await build(k === FULL ? Infinity : k);
+      if (!built) return { bytes, status: 'failed', pages: 0 };
+      const [embedded] = await doc.embedPages([built.page]);
+      variants.set(k, { embedded, sw: built.sw, sh: built.sh });
     }
-    const [embedded] = await doc.embedPages([draw]);
 
     for (const page of pages) {
+      const { embedded, sw, sh } = variants.get(keyOf(page));
       const box = page.getCropBox ? page.getCropBox() : page.getMediaBox();
       const rot = (((page.getRotation().angle % 360) + 360) % 360);
       let x, y;

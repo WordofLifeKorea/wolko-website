@@ -427,3 +427,59 @@ test('워터마크 상자: 글자 위 · 아래가 상자 안에 모두 들어�
   o2.context.enumerateIndirectObjects().forEach(([, obj]) => { const bb = obj?.dict?.lookup?.(o2.context.obj('BBox')); if (bb?.asArray) f2.push(bb.asArray().map((n) => n.asNumber())); });
   assert.ok(f2[0][2] - f2[0][0] <= 200, `돌아간 쪽에서도 그림 폭 ${f2[0][2] - f2[0][0]} 이 보이는 폭(200) 안`);
 });
+
+
+/* ── 재검토 반영 ── */
+const fontFor = (w) => ({
+  unitsPerEm: 1000,
+  charToGlyph: () => ({ index: 1, advanceWidth: w, getPath: (x, y, size) => ({ getBoundingBox: () => ({ x1: x, x2: x + size * 0.6, y1: y - size * 0.85, y2: y }), toPathData: () => `M${x} ${y}h${size * 0.5}v${-size * 0.85}h${-size * 0.5}z` }) }),
+});
+const formBoxes = (doc) => { const out = []; doc.context.enumerateIndirectObjects().forEach(([, o]) => { const bb = o?.dict?.lookup?.(doc.context.obj('BBox')); if (bb?.asArray) out.push(bb.asArray().map((n) => n.asNumber())); }); return out; };
+
+test('워터마크(글꼴 없이 영문): 쪽에 붙은 글꼴 참조가 실제 개체를 가리킨다(손상된 PDF 가 아니다)', async () => {
+  const src = await PDFDocument.create(); src.addPage([595, 842]);
+  const r = await stampPdf(new Uint8Array(await src.save()), { label: 'Grace Church', code: 'WL-ABC234', date: '2026-11-21', font: null });
+  assert.equal(r.status, 'applied-ascii');
+  const doc = await PDFDocument.load(r.bytes);
+  let checked = 0;
+  doc.context.enumerateIndirectObjects().forEach(([, o]) => {
+    const res = o?.dict?.lookup?.(doc.context.obj('Resources'));
+    const fonts = res?.lookup?.(doc.context.obj('Font'));
+    for (const [, ref] of fonts?.entries?.() || []) { checked += 1; assert.ok(doc.context.lookup(ref), '글꼴 참조가 비어 있다'); }
+  });
+  assert.ok(checked >= 1, '글꼴 참조를 하나 이상 확인했다');
+});
+
+test('워터마크: 좁은 쪽(작은 책자)은 폭에 맞춰 이름을 줄여 확인번호를 지키고, 같은 문서의 넓은 쪽은 기본 크기를 유지한다', async () => {
+  const font = fontFor(600);   // 글자당 0.6em
+  const src = await PDFDocument.create();
+  src.addPage([595, 842]); src.addPage([150, 200]);
+  const r = await stampPdf(new Uint8Array(await src.save()), { label: '아주 긴 교회 이름 '.repeat(5), code: 'WL-ABC234', date: '2026-11-21', font });
+  assert.equal(r.status, 'applied');
+  const boxes = formBoxes(await PDFDocument.load(r.bytes)).map(([a, , b]) => b - a).sort((x, y) => x - y);
+  assert.equal(boxes.length, 2, '넓은 쪽 · 좁은 쪽 그림이 각각 하나');
+  assert.ok(boxes[0] <= 150 * 0.9 + 4.5, `좁은 쪽 그림 폭 ${boxes[0]} 이 쪽 폭 안`);
+  // 확인번호는 끝까지 남는다: 좁은 그림도 '날짜 · 확인번호' 글줄(가짜 글꼴로 21자 이상)이 들어 있다
+  const narrowLay = layoutLine(font, stampLineOf({ label: '', code: 'WL-ABC234', date: '2026-11-21' }), 4.5);
+  assert.ok(boxes[0] >= narrowLay.width * 0.9, '이름을 줄여도 날짜 · 확인번호는 남는다');
+  assert.ok(boxes[1] > boxes[0], '넓은 쪽은 더 큰 그림');
+});
+
+test('기록 읽기: 아주 많아도 최근 것을 남기고, 잘렸으면 truncated 로 알린다', async () => {
+  const kv = fakeKV();
+  const env = { CAMP_KV: kv };
+  const mk = (month, i) => [`matdl:log:${month}:WL-${String(i).padStart(6, '0')}`, { value: '{}', metadata: { t: Number(month) * 1e6 + i, i: 'a', f: 'b', k: 'church', n: 'x', c: 'y' } }];
+  for (let i = 0; i < 2500; i++) kv.store.set(...mk('202610', i));
+  for (let i = 0; i < 500; i++) kv.store.set(...mk('202611', i));
+  const { readDownloadLogs } = await import('../functions/lib/materials.js');
+  const all = await readDownloadLogs(env, { max: 100000 });
+  assert.equal(all.rows.length, 3000); assert.equal(all.truncated, false);
+  const cut = await readDownloadLogs(env, { max: 400 });
+  assert.equal(cut.rows.length, 400); assert.equal(cut.truncated, true, '잘렸으면 알린다');
+  assert.ok(cut.rows.every((r) => r.key.includes(':202611:')) , '자를 때도 최근 달이 남는다');
+});
+
+test('집계: 월 표는 기록 키의 달을 따른다(월 필터와 같은 기준)', () => {
+  const rows = [{ t: Date.UTC(2026, 11, 1, 0, 2) - 9 * 3600e3, key: 'matdl:log:202611:WL-AAAAAA', itemId: 'a', fileId: 'b', kind: 'church', name: '김', church: '소망교회', email: '' }];
+  assert.deepEqual(summarizeLogs(rows).byMonth.map((m) => m.month), ['2026-11']);
+});

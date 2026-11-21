@@ -52,7 +52,7 @@ export async function onRequestDelete({ env, request }) {
   const params = new URL(request.url).searchParams;
   const code = params.get('code') || '';
   if (code) {
-    if (!/^WL-[A-Za-z0-9]{6}$/.test(code)) return error('확인번호를 확인해 주세요(WL-로 시작하는 8글자).', 400);
+    if (!/^WL-[A-Za-z0-9]{6}$/.test(code)) return error('확인번호를 확인해 주세요(WL- 뒤에 영문·숫자 6글자).', 400);
     return Response.json({ removed: await deleteLogsByCode(env, code) }, { headers: CORS });
   }
   const email = params.get('email') || '';
