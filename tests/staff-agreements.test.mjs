@@ -223,3 +223,10 @@ test('결정 반영(2): 본국 서류는 필요할 때만 · 담당자 연락처
   assert.ok(rKo.includes('절도 등 범죄 행위') && rKo.includes('허위 서류'), '즉시 하차: 범죄 행위 · 허위 서류');
   assert.ok(!OPEN_QUESTIONS.some((q) => q.includes('연락처') || q.includes('보호자(법정대리인) 서명')), '해결된 질문은 목록에서 뺐다');
 });
+
+test('지각은 경고에 넣지 않는다(경미한 실수) · 허락 없이 자리를 비우는 것은 규칙 위반', () => {
+  const time = docSections(DOCS.rules).find((s) => s.ko === '시간').items[0];
+  assert.ok(time.ko.includes('지각은 경미한 실수로 보고 경고에 넣지 않습니다') && /Being late is treated as a minor mistake and is not counted as a warning/.test(time.en));
+  assert.ok(time.ko.includes('허락 없이 자리를 비우는 것은 규칙을 어긴 것'), '허락 없이 자리를 비우는 것은 그대로 규칙 위반');
+  assert.ok(!OPEN_QUESTIONS.some((q) => q.includes('지각')), '지각 기준 질문은 해결돼 뺐다');
+});

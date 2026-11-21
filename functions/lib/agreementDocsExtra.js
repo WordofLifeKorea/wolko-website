@@ -7,6 +7,7 @@
  *  - 아동보호 담당자: 캠프팀 디렉터 Jason Anderson · 부담당자: 코디네이터 Aiden Park.
  *  - 크루(미성년자)의 보호자 동의는 지원서 단계에서 받는다(이 문서들에서 따로 받지 않는다). 아동보호 담당자의 연락처는 포탈 회원 정보에서 찾는다.
  *  - 경고·중도 하차는 디렉터·코디네이터·풀타임 선교사에게 적용하지 않는다. 즉시 하차에 절도 등 범죄 행위와 허위 서류 제출도 넣는다. 본국 범죄경력 서류는 월코가 필요하다고 한 경우에만.
+ *  - 지각은 경미한 실수라 경고에 넣지 않는다(허락 없이 자리를 비우는 것은 규칙 위반으로 둔다).
  *  - 미성년 크루의 역할 범위는 나중에 정한다(그동안은 '어른 지도자의 지도에 따라 활동한다'는 원칙만 둔다).
  *  - 캠퍼와 개인 SNS 를 서로 공유하지 않는다 · 사역에 방해될 내용을 SNS 에 올리지 않는다.
  *  - 경고는 캠프 디렉터와 코디네이터가 준다(2026-11-21). 즉시 하차: 아동보호 서약 위반, 성적 학대·폭력, 잘못된 신학·교리 전파, 술·약물.
@@ -202,8 +203,8 @@ export const CAMP_RULES = {
     {
       ko: '시간', en: 'Schedule',
       items: [
-        { ko: '나는 캠프 일정표(기상, 모임, 사역, 팀 미팅, 소등)를 지킵니다. 정해진 시간에 늦거나 허락 없이 자리를 비우면 규칙을 어긴 것으로 봅니다.',
-          en: 'I keep the camp schedule (wake-up, meetings, ministry, team meetings, lights-out). Being late or leaving without permission counts as breaking the rules.' },
+        { ko: '나는 캠프 일정표(기상, 모임, 사역, 팀 미팅, 소등)를 지키려고 노력합니다. 지각은 경미한 실수로 보고 경고에 넣지 않습니다. 다만 허락 없이 자리를 비우는 것은 규칙을 어긴 것으로 봅니다.',
+          en: 'I do my best to keep the camp schedule (wake-up, meetings, ministry, team meetings, lights-out). Being late is treated as a minor mistake and is not counted as a warning. Leaving without permission, however, counts as breaking the rules.' },
       ],
     },
     {
@@ -256,7 +257,6 @@ export const CAMP_RULES = {
 export const OPEN_QUESTIONS = [
   '미성년 크루의 구체적인 역할 범위(차후 결정)',
   '범죄경력 서류를 볼 수 있는 사람(열람자) — 제안: 아동보호 담당자 두 분만(보관은 캠프 기간 동안만, 끝나면 폐기로 정했다)',
-  '지각을 몇 분부터 · 몇 번부터 경고로 볼지(지금은 "늦거나 허락 없이 자리를 비우면"만 적고 디렉터와 코디네이터가 판단)',
   '미성년 크루의 귀가: 보호자 동의를 확인하는 방법과 귀가 후 도착 확인(제안 — 지금은 디렉터가 보호자에게 직접 연락해 확인)',
   '잘못된 신학 · 교리 전파의 판단 방법(지금은 디렉터와 코디네이터가 함께 판단)',
   '디렉터 · 코디네이터 · 풀타임 선교사의 적용 제외 범위 확인(지금은 필수 규칙의 경고·중도 하차만 제외하고, 아동보호 서약서와 법에 따른 조치는 모두에게 적용)',
