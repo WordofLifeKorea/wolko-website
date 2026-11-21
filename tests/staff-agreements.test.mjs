@@ -192,7 +192,7 @@ test('아동보호 서약서 내용: 디렉터가 정한 것들이 들어 있다
   assert.ok(all.every((i) => i.ko && i.en), '모든 항목에 한국어와 영어가 있다');
   assert.ok(ko.includes('범죄경력') && ko.includes('지체 없이'), '월코가 요구하면 범죄경력 서류를 지체 없이 제공');
   assert.ok(/without delay/.test(en));
-  assert.ok(ko.includes('캠프 기간 동안만 보관하고, 캠프가 끝나면 폐기') && /destroyed when the camp ends/.test(en), '제출한 범죄경력 서류는 캠프 기간 동안만 보관 후 폐기');
+  assert.ok(ko.includes('캠프 기간 동안만 보관하고, 캠프가 끝나면 원본 문서를 반환합니다') && /original documents are returned when the camp ends/.test(en), '제출한 범죄경력 서류는 캠프 기간 동안만 보관 후 원본 반환');
   assert.ok(ko.includes('Jason Anderson') && ko.includes('캠프팀 디렉터') && ko.includes('Aiden Park') && ko.includes('코디네이터'), '아동보호 담당자 · 부담당자');
   assert.ok(en.includes('Jason Anderson') && en.includes('Aiden Park'));
   assert.ok(/개인 SNS/.test(ko) && /personal social media/.test(en), '캠퍼와 개인 SNS 를 공유하지 않는다');
@@ -258,10 +258,10 @@ test('캠프 필수 규칙 초안(결정 반영): 1번은 한 문장 · 즉시 �
   assert.ok(docSections(d).every((s) => s.items.every((i) => i.ko && i.en)), '한·영이 짝을 이룬다');
 });
 
-test('결정 반영(2): 본국 서류는 필요할 때만 · 담당자 연락처는 포탈 회원 정보 · 경고 절차 · 적용 제외는 문서에서 뺐다 · 즉시 제명에 범죄·허위 서류', () => {
+test('결정 반영(2): 범죄경력 서류 문구 · 담당자 연락처는 포탈 회원 정보 · 경고 절차 · 적용 제외는 문서에서 뺐다 · 즉시 제명에 범죄·허위 서류', () => {
   const cp = docSections(DOCS.childprotection).flatMap((s) => s.items), rules = docSections(DOCS.rules).flatMap((s) => s.items);
   const cpKo = cp.map((i) => i.ko).join('\n'), cpEn = cp.map((i) => i.en).join('\n'), rKo = rules.map((i) => i.ko).join('\n'), rEn = rules.map((i) => i.en).join('\n');
-  assert.ok(cpKo.includes('월코가 필요하다고 알려 준 경우에는 본국') && /only if WOLKO tells me it is needed/.test(cpEn), '본국 서류는 월코가 필요하다고 한 경우에만');
+  assert.ok(cpKo.includes('성범죄경력 및 아동학대 범죄전력회신서, 외국인의 경우 본국 등 해당 나라에서 발급받은 범죄경력 증명서') && /for foreign nationals/.test(cpEn), '범죄경력 서류: 성범죄경력 · 아동학대 범죄전력회신서, 외국인은 본국 증명서');
   assert.ok(!cpKo.includes('해외에서 지낸 적이 있으면'), '해외 거주자 모두에게 요구하지 않는다');
   assert.ok(cpKo.includes('월코 포탈의 회원 정보에서 확인') && /WOLKO Portal member information/.test(cpEn), '담당자 연락처는 포탈 회원 정보');
   assert.ok(!rKo.includes('풀타임 선교사') && !/full-time missionaries/.test(rEn), '경고·제명 절차의 적용 제외 설명은 문서에 넣지 않는다(운영 지침으로 따로)');

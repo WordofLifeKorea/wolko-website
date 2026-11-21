@@ -20,7 +20,7 @@
 
 export const CHILD_PROTECTION = {
   id: 'childprotection',
-  version: '2026-11-v6',   // v6: 모든 항목을 1인칭('저는')으로 · 2번 문장을 '캠프가 진행되는 국가의 법이나 규정'으로 · v4: '캠프마다 새로 작성' 문장을 뺐다(한 번만 작성) · v5: 맺음말을 '월코 캠프에 참여하는 캠퍼를 지키기 위해'로 고쳤다
+  version: '2026-11-v6',   // v6: 모든 항목을 1인칭('저는')으로 · 2번 문장을 '캠프가 진행되는 국가의 법이나 규정'으로 · 범죄경력 서류 문구(성범죄경력 및 아동학대 범죄전력회신서 · 원본 반환) · v4: '캠프마다 새로 작성' 문장을 뺐다(한 번만 작성) · v5: 맺음말을 '월코 캠프에 참여하는 캠퍼를 지키기 위해'로 고쳤다
   perCamp: false,   // 2026-11-21: 캠프 선택 없이 한 번만 작성한다(처음에는 캠프마다였으나 사용자가 '캠프 선택은 필요 없다'고 정했다). true 로 돌리면 서명할 때 캠프를 고르는 방식이 다시 켜진다
   draft: false,   // 2026-11-21 '초안이지만 일단 공개' — 문구를 바꾸면 version 을 올려 예전 서명과 구분한다
   ko: {
@@ -49,8 +49,8 @@ export const CHILD_PROTECTION = {
       items: [
         { ko: '저는 아동·청소년과 함께하는 역할을 맡기 전에 지원서, 추천인 확인, 면접을 거치는 데 동의합니다. 지원서에 허위로 적거나 빠뜨린 것이 있으면 선발에서 제외되거나 해임될 수 있음을 이해합니다.',
           en: 'Before serving in any role with children, I agree to the application, reference checks and interview. I understand that false or missing information can lead to rejection or dismissal.' },
-        { ko: '월코가 요구하면, 저는 범죄경력 확인에 필요한 서류(한국에서 발급받는 범죄경력회보서, 그리고 월코가 필요하다고 알려 준 경우에는 본국 등 해당 나라에서 발급받은 범죄경력 증명서)를 지체 없이 제공하겠습니다. 제출한 서류는 캠프 기간 동안만 보관하고, 캠프가 끝나면 폐기합니다.',
-          en: 'Whenever WOLKO asks, I will provide without delay the documents needed for a criminal record check (a criminal record certificate issued in Korea and, only if WOLKO tells me it is needed, one issued by my home country or the relevant country). The documents I submit are kept only for the duration of the camp and are destroyed when the camp ends.' },
+        { ko: '월코가 요구하면, 저는 성범죄, 아동학대 범죄경력 확인에 필요한 서류(성범죄경력 및 아동학대 범죄전력회신서, 외국인의 경우 본국 등 해당 나라에서 발급받은 범죄경력 증명서)를 지체 없이 제공하겠습니다. 제출한 서류는 캠프 기간 동안만 보관하고, 캠프가 끝나면 원본 문서를 반환합니다.',
+          en: 'Whenever WOLKO asks, I will provide without delay the documents needed to check for sex-crime and child-abuse criminal records (the reply certificate on sex-crime records and child-abuse crime history and, for foreign nationals, a criminal record certificate issued by my home country or the relevant country). The documents I submit are kept only for the duration of the camp, and the original documents are returned when the camp ends.' },
       ],
     },
     {
