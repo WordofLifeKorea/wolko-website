@@ -517,7 +517,7 @@ test('아동보호 서약서는 캠프 선택 없이 한 번만 작성: 캠프 �
   assert.match(DOCS.childprotection.version, /v13$/, '문구를 고쳤으니 문서 버전을 올렸다');
   const cpKo2 = docSections(DOCS.childprotection).flatMap((x) => x.items).map((i) => i.ko).join('\n');
   for (const d of [DOCS.childprotection, DOCS.rules]) assert.ok(!/퇴출|해임|하차/.test(JSON.stringify(d)), d.id + ': 서약서는 "제명"으로 통일');
-  assert.ok(cpKo2.includes('"우리 문화에서는 괜찮다"거나 "캠퍼가 먼저 원했다"는 이유로 신체 접촉을 하지 않으며, 신체 접촉에 관한 월코의 기준을 따릅니다.'), '신체 접촉 문구');
+  assert.ok(cpKo2.includes('"우리 문화에서는 괜찮다"거나 "캠퍼가 먼저 원했다"는 이유로 신체 접촉을 하지 않으며, 신체 접촉에 관한 월코의 기준을 따르겠습니다.'), '신체 접촉 문구');
   const bare = cpKo2.split(/(?<=\.)\s+/).filter((x) => /(않습니다|합니다|킵니다|릅니다|립니다|룹니다)\.$/.test(x) && !/(이해합니다|동의합니다|믿습니다|확인했습니다)\.$/.test(x));
   assert.deepEqual(bare, [], '약속하는 문장은 "~하겠습니다" 형태(단정형 "~합니다"는 군대 말투 같다)');
   assert.ok(cpKo2.includes('안전벨트 착용을 확인하고 정원을 지키겠습니다.') && cpKo2.includes('캠프 차량을 운전하겠습니다.'), '이동과 안전은 미래형(~하겠습니다)');
