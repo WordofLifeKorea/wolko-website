@@ -137,8 +137,10 @@ export async function signedMap(env) {
   return Object.fromEntries(Object.entries(map).map(([e, set]) => [e, [...set]]));
 }
 
-/** 이름 · 이메일 비교용 정리: 앞뒤 공백 · 겹친 공백을 줄이고 소문자로, 기록에 남는 길이(40자)까지만 */
-export const normName = (s) => String(s || '').normalize('NFC').replace(/\s+/g, ' ').trim().toLowerCase().slice(0, 40);
+/** 이름 · 이메일 비교용 정리: 앞뒤 공백 · 겹친 공백을 줄이고 소문자로(유니코드 NFC) */
+export const normName = (s) => String(s || '').normalize('NFC').replace(/\s+/g, ' ').trim().toLowerCase();
+/** 기록(메타데이터)에는 이름이 앞 40자까지만 남는다 — 비교할 때도 '먼저 40자로 자른 뒤' 정리해야 긴 이름도 자기 서명과 맞는다 */
+export const nameKey = (s) => normName(String(s || '').normalize('NFC').slice(0, 40));
 export const normEmail = (s) => String(s || '').trim().toLowerCase();
 
 /**
@@ -146,7 +148,7 @@ export const normEmail = (s) => String(s || '').trim().toLowerCase();
  * 이름과 이메일을 둘 다 맞게 알아야 알려 준다(이메일만 아는 사람이 남의 서명 여부를 알아내지 못하게). 서명 그림 · 연락처는 돌려주지 않는다.
  */
 export async function signedFor(env, email, name) {
-  const e = normEmail(email), n = normName(name), out = {};
+  const e = normEmail(email), n = nameKey(name), out = {};
   if (!e || !n) return out;
   for (const doc of requiredDocs()) {
     let cursor;
@@ -154,7 +156,7 @@ export async function signedFor(env, email, name) {
       const res = await env.CAMP_KV.list({ prefix: `${AGREEMENT_PREFIX}${doc.id}:`, cursor, limit: 1000 });
       for (const k of res.keys || []) {
         const m = k.metadata || {};
-        if (m.v !== doc.version || normEmail(m.e) !== e || normName(m.n) !== n) continue;
+        if (m.v !== doc.version || normEmail(m.e) !== e || nameKey(m.n) !== n) continue;
         const at = new Date(Number(m.t) || 0).toISOString();
         if (doc.perCamp) { if (m.c) (out[doc.id] ||= {})[m.c] = { at }; }
         else if (!out[doc.id] || at > out[doc.id].at) out[doc.id] = { at };

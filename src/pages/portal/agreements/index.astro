@@ -135,7 +135,7 @@
         current = body; var r = body.record;
         $('mTitle').textContent = docTitle(r.doc) + ' · ' + r.name;
         $('mSig').src = r.signature;
-        $('mKv').innerHTML = [['구분', ROLE[r.role] || r.role], ...(r.campId ? [['캠프', (r.campName ? r.campName + ' · ' : '') + r.campId]] : []), ['이름', r.name], ['이메일', r.email], ['휴대폰', r.phone || '—'], ['서명 시각', when(Date.parse(r.signedAt)) + ' (한국 시간)'], ['확인번호', r.code], ['문서 버전', r.version], ['문서 글 해시', String(r.textHash || '').slice(0, 16) + '…']]
+        $('mKv').innerHTML = [['구분', ROLE[r.role] || r.role], ...(r.campId ? [['캠프', (r.campName ? r.campName + ' · ' : '') + r.campId]] : []), ['이름', r.name], ['이메일', r.email], ['서명 시각', when(Date.parse(r.signedAt)) + ' (한국 시간)'], ['확인번호', r.code], ['문서 버전', r.version], ['문서 글 해시', String(r.textHash || '').slice(0, 16) + '…']]
           .map(function (p) { return '<dt>' + p[0] + '</dt><dd>' + esc(p[1]) + '</dd>'; }).join('');
         $('mDoc').innerHTML = body.doc
           ? '<strong>서명한 문서 (' + esc(body.doc.version) + ')</strong><ol class="items">' + itemsHtml(body.doc) + '</ol>' + (body.record.declared && body.doc.declaration ? '<p class="meta">본인 진술 확인: ' + esc(body.doc.declaration.ko) + '</p>' : '')

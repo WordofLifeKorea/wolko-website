@@ -55,7 +55,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
   .sa-need-name { font-weight: 700; flex: 1; min-width: 0; }
   .sa-need-btn::after { content: ''; flex: none; width: 8px; height: 8px; margin: -3px 2px 0 0; border-right: 2px solid var(--sa-muted); border-bottom: 2px solid var(--sa-muted); transform: rotate(45deg); transition: transform .2s; }
   .sa-need-btn[aria-expanded="true"]::after { transform: rotate(225deg); margin-top: 3px; }
-  .sa-need-tag { display: inline-flex; align-items: center; height: 22px; margin-left: 8px; padding: 0 8px; border: 1px solid var(--sa-field); border-radius: var(--ws-radius-sm, 8px); font-size: 12px; font-weight: 800; color: var(--sa-deep); vertical-align: 2px; white-space: nowrap; }
+  .sa-need-tag { display: inline-flex; align-items: center; height: 24px; margin-left: 8px; padding: 0 10px; border: 1px solid var(--sa-field); border-radius: var(--ws-radius-sm, 8px); font-size: 12.5px; font-weight: 800; color: var(--sa-deep); vertical-align: 2px; white-space: nowrap; }
   .sa-need { scroll-margin-top: 96px; }
   .sa-need-hint { margin: 10px 0 0; font-size: 13.5px; color: var(--sa-muted); }
   .sa-doc[hidden] { display: none; }
@@ -189,7 +189,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
         <span class="sa-who-text" data-who-text></span>
         <button type="button" class="sa-btn ghost" data-who-edit style="height:36px;min-height:36px !important;padding:0 14px;font-size:13.5px"><span class="wl-ko">정보 고치기</span><span class="wl-en">Change</span></button>
       </div>
-      <p class="sa-who-status" data-who-status hidden></p>
+      <p class="sa-who-status" data-who-status role="status" aria-live="polite" hidden></p>
     </section>
     <div class="sa-need is-locked" data-need data-total={docs.length}>
       <p class="sa-need-title">
@@ -221,6 +221,15 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
           <h2><span class="wl-ko">{doc.ko.title}</span><span class="wl-en">{doc.en.title}</span></h2>
           <p><span class="wl-ko">{doc.ko.intro}</span><span class="wl-en">{doc.en.intro}</span></p>
         </div>
+        <div class="sa-already" data-already hidden>
+          <strong><span class="wl-ko">이미 작성하셨습니다</span><span class="wl-en">You have already signed this</span></strong>
+          <p data-already-at></p>
+          <div class="sa-actions">
+            <button type="button" class="sa-btn" data-next hidden><span class="wl-ko">다음 서약서 작성하기</span><span class="wl-en">Next agreement</span></button>
+            <button type="button" class="sa-btn ghost" data-back><span class="wl-ko">서약서 목록으로</span><span class="wl-en">Back to the list</span></button>
+          </div>
+        </div>
+
         <ol class="sa-items">
           {docSections(doc).map((sec) => (
             <>
@@ -232,15 +241,6 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
           ))}
         </ol>
         <p class="sa-pledge"><span class="wl-ko">{doc.ko.pledge}</span><span class="wl-en">{doc.en.pledge}</span></p>
-
-        <div class="sa-already" data-already hidden>
-          <strong><span class="wl-ko">이미 작성하셨습니다</span><span class="wl-en">You have already signed this</span></strong>
-          <p data-already-at></p>
-          <div class="sa-actions">
-            <button type="button" class="sa-btn" data-next hidden><span class="wl-ko">다음 서약서 작성하기</span><span class="wl-en">Next agreement</span></button>
-            <button type="button" class="sa-btn ghost" data-back><span class="wl-ko">서약서 목록으로</span><span class="wl-en">Back to the list</span></button>
-          </div>
-        </div>
 
         <form class="sa-form" novalidate data-form>
           <h3><span class="wl-ko">서명하기</span><span class="wl-en">Sign</span></h3>
@@ -436,9 +436,15 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
   var pendingOpen = ''; // 정보를 넣기 전에 열려던 서약서(주소의 #doc-…)
   var lastOpenerId = '';
   function whoErr(field, msg) { var el = whoEl.querySelector('[data-who-err="' + field + '"]'); if (el) { el.textContent = msg; el.hidden = !msg; } var input = whoForm.elements['who-' + field]; if (input && input.classList) input.classList.toggle('is-invalid', !!msg); }
-  function whoStatus(msg) { var el = whoEl.querySelector('[data-who-status]'); el.textContent = msg || ''; el.hidden = !msg; }
+  var whoStatusPair = null;
+  function whoStatus(ko, en) { whoStatusPair = ko ? [ko, en] : null; var el = whoEl.querySelector('[data-who-status]'); el.textContent = ko ? T(ko, en) : ''; el.hidden = !ko; }
+  function whoSummaryText() { return STATE.info ? STATE.info.name + ' · ' + STATE.info.email + ' · ' + roleLabel(STATE.info.role) : ''; }
+  function refreshLangText() {   // 한 · 영 전환 때 JS 가 쓴 문구(내 정보 요약 · 작성 시각 · 확인 실패 안내)도 바꾼다
+    if (STATE.info) whoEl.querySelector('[data-who-text]').textContent = whoSummaryText();
+    if (whoStatusPair) whoStatus(whoStatusPair[0], whoStatusPair[1]);
+    articles.forEach(function (a) { var d = DOCS[a.dataset.doc], at = !d.perCamp && STATE.signed[d.id]; if (at) a.querySelector('[data-already-at]').textContent = signedAtText(at.at); });
+  }
   function roleLabel(r) { return r === 'crew' ? T('크루', 'Crew') : T('스태프', 'Staff'); }
-  function normKey(s) { return String(s || '').replace(/\s+/g, ' ').trim().toLowerCase(); }
 
   function allDone() { return !!needEl && Object.keys(doneIds).length >= Number(needEl.dataset.total); }
   function signedCampIds(docId) { var m = STATE.signed[docId]; return m ? Object.keys(m) : []; }
@@ -477,6 +483,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
   function todayKstStr() { try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date()); } catch (e) { return new Date().toISOString().slice(0, 10); } }
   function openCamps() { var t = todayKstStr(); return CAMPS.filter(function (c) { return !c.end || c.end >= t; }); }
   function campLabel(c) { return isEn() ? (c.en || c.ko) : (c.ko || c.en); }
+  var langKey = '';
   var campRenderKey = '';   // 마지막으로 그린 언어 + 서명한 캠프 — 스크롤마다 바뀌는 class(is-scrolling)에는 다시 그리지 않는다
   function fillCampSelects(force) {
     var key = (isEn() ? 'en' : 'ko') + '|' + signedCampIds('childprotection').join(',');
@@ -491,7 +498,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
     });
   }
   fillCampSelects(true);
-  try { new MutationObserver(function () { fillCampSelects(false); }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] }); new MutationObserver(function () { fillCampSelects(false); }).observe(document.body, { attributes: true, attributeFilter: ['class'] }); } catch (e) {}   // 한 · 영 전환 때 캠프 이름도 바꾼다
+  try { new MutationObserver(function () { fillCampSelects(false); var k = isEn() ? 'en' : 'ko'; if (k !== langKey) { langKey = k; refreshLangText(); } }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] }); new MutationObserver(function () { fillCampSelects(false); var k = isEn() ? 'en' : 'ko'; if (k !== langKey) { langKey = k; refreshLangText(); } }).observe(document.body, { attributes: true, attributeFilter: ['class'] }); } catch (e) {}   // 한 · 영 전환 때 캠프 이름도 바꾼다
   function selectedCamp(form) { var sel = form.elements.campId; if (!sel || !sel.value) return null; var c = CAMPS.filter(function (x) { return x.id === sel.value; })[0]; return c ? { id: c.id, label: campLabel(c) } : null; }
 
   /* ───── 서약서 하나만 열기: 목록의 항목을 누르면 그 서약서만 보인다. 이미 서명했으면 '이미 작성하셨습니다'만 ───── */
@@ -504,6 +511,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
       return;
     }
     already.hidden = true;
+    if (done.hidden) form.hidden = false;   // 방금 쓴 완료 화면이 아니면 서명 칸을 연다(앞서 '이미 작성'으로 닫혔을 수 있다)
     if (doc.perCamp) {   // 고른 캠프를 이미 서명했으면 그 캠프만 막는다
       var sel = form.elements.campId, hit = sel && sel.value && (STATE.signed[doc.id] || {})[sel.value];
       if (campSigned) campSigned.hidden = !hit; if (submit) submit.disabled = !!hit;
@@ -524,31 +532,43 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
   }
 
   /* ───── 내 정보 확인: 서버에 이름 + 이메일을 보내 이미 서명한 서약서를 받아 온다 ───── */
+  var lookupSeq = 0;   // '정보 고치기' 뒤에 늦게 도착한 이전 사람의 조회 답은 버린다
   async function lookupSigned() {
+    var seq = ++lookupSeq, info = STATE.info;
     try {
-      var res = await fetch('/api/agreements/status', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: STATE.info.name, email: STATE.info.email }) });
+      var res = await fetch('/api/agreements/status', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: info.name, email: info.email }) });
       var d = await res.json().catch(function () { return {}; });
+      if (seq !== lookupSeq) return false;
       if (!res.ok) throw new Error(d.error || 'status');
       STATE.signed = d.signed || {};
       whoStatus('');
     } catch (e) {
+      if (seq !== lookupSeq) return false;
       STATE.signed = {};
-      whoStatus(T('서명 여부를 확인하지 못했어요. 그래도 서명할 수 있고, 이미 서명한 서약서라면 제출할 때 알려 드려요.', 'We could not check what you have signed. You can still sign; if you already signed, we will tell you when you submit.'));
+      whoStatus('서명 여부를 확인하지 못했어요. 그래도 서명할 수 있고, 이미 서명한 서약서라면 제출할 때 알려 드려요.', 'We could not check what you have signed. You can still sign; if you already signed, we will tell you when you submit.');
     }
+    return seq === lookupSeq;
   }
+  function resetArticles() { articles.forEach(function (a) { if (a.saReset) a.saReset(); }); }   // 서명 칸 · 체크 · 완료 화면을 처음 상태로(다른 사람이 쓰던 흔적을 남기지 않는다)
   async function continueWho(info) {
-    STATE.info = info;
+    var same = STATE.info && STATE.info.email === info.email && STATE.info.name === info.name;
+    if (STATE.info && !same) resetArticles();   // 처음 들어올 때는 비울 것이 없다(주소의 ?camp= 로 미리 고른 캠프를 지우지 않는다)
+    STATE.info = info; STATE.signed = same ? STATE.signed : {};
     try { sessionStorage.setItem(WHO_KEY, JSON.stringify(info)); } catch (e) {}
     whoForm.hidden = true; whoSummary.hidden = false;
-    whoEl.querySelector('[data-who-text]').textContent = info.name + ' · ' + info.email + ' · ' + roleLabel(info.role);
+    whoEl.querySelector('[data-who-text]').textContent = whoSummaryText();
     renderList();                 // 먼저 목록을 열어 두고
-    await lookupSigned();         // 서버 답이 오면 '작성 완료' 표시를 채운다
+    var fresh = await lookupSigned();   // 서버 답이 오면 '작성 완료' 표시를 채운다
+    if (!fresh) return;
     fillCampSelects(true); renderList();
     articles.forEach(function (a) { if (!a.hidden) renderDocState(a); });
+    if (!pendingOpen && !articles.some(function (a) { return !a.hidden; }) && (!document.activeElement || document.activeElement === document.body || whoEl.contains(document.activeElement))) { var nb = needEl.querySelector('[data-open-doc]'); if (nb) nb.focus({ preventScroll: true }); }   // 키보드 · 화면 읽기 사용자: 정보를 넣으면 서약서 목록으로
     if (pendingOpen) { var id = pendingOpen; pendingOpen = ''; openDoc(id, false); }
   }
   function editWho() {
+    lookupSeq++; pendingOpen = '';
     STATE.info = null; STATE.signed = {}; doneIds = {};
+    resetArticles();
     try { sessionStorage.removeItem(WHO_KEY); } catch (e) {}
     whoForm.hidden = false; whoSummary.hidden = true; whoStatus('');
     articles.forEach(function (a) { a.hidden = true; });
@@ -598,6 +618,13 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
       if (!form.elements.consent.checked) bad('consent', '서명과 개인정보 수집에 동의해 주세요.', 'Please agree to the collection of your signature and personal information.');
       return first;
     }
+    article.saReset = function () {
+      pad.clear(); ['declared', 'agree', 'consent'].forEach(function (n) { if (form.elements[n]) form.elements[n].checked = false; });
+      if (form.elements.campId) form.elements.campId.value = '';
+      clearErrs(); submit.disabled = false; done.hidden = true; form.hidden = false; last = null;
+      var al = q('[data-already]'); if (al) al.hidden = true;
+      var cs = q('[data-camp-signed]'); if (cs) cs.hidden = true;
+    };
     article.querySelector('[data-clear]').addEventListener('click', function () { pad.clear(); showErr('signature', ''); });
     form.addEventListener('change', function (e) {
       var t = e.target;
@@ -663,7 +690,9 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
 
   /* ───── 시작: 주소의 ?name&email&role · 이 탭에서 전에 넣은 정보로 미리 채우고, 다 있으면 바로 확인한다 ───── */
   (function init() {
-    var saved = null; try { saved = JSON.parse(sessionStorage.getItem(WHO_KEY) || 'null'); } catch (e) {}
+    // 주소에 이름 · 이메일이 있으면 그것만 쓴다(저장해 둔 다른 사람의 정보와 섞지 않는다)
+    var fromUrl = !!(QS.get('name') || QS.get('email'));
+    var saved = null; if (!fromUrl) { try { saved = JSON.parse(sessionStorage.getItem(WHO_KEY) || 'null'); } catch (e) {} }
     var name = (QS.get('name') || (saved && saved.name) || '').slice(0, 60), email = (QS.get('email') || (saved && saved.email) || '').slice(0, 100), role = QS.get('role') || (saved && saved.role) || '';
     whoForm.elements['who-name'].value = name; whoForm.elements['who-email'].value = email;
     if (role === 'staff' || role === 'crew') { var r = whoForm.querySelector('input[name="who-role"][value="' + role + '"]'); if (r) r.checked = true; }

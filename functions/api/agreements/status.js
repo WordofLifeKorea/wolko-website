@@ -8,12 +8,14 @@
 import { signedFor } from '../../lib/staffAgreements.js';
 import { clean, ipHash, rateLimited } from '../../lib/materials.js';
 
-const HEADERS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' };
+// 같은 사이트의 서명 페이지에서만 부른다 — CORS 를 열지 않고, JSON 으로 보낸 요청만 받는다(다른 사이트가 방문자 브라우저로 물어보지 못하게)
+const HEADERS = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };
 const fail = (error, errorEn, status) => Response.json({ error, errorEn }, { status, headers: HEADERS });
 const EMAIL_RE = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
 
 export async function onRequestPost({ env, request }) {
   if (!env.CAMP_KV) return fail('서버 설정이 필요합니다.', 'Server is not configured.', 500);
+  if (!/^application\/json/i.test(request.headers.get('Content-Type') || '')) return fail('잘못된 요청입니다.', 'Invalid request.', 415);
   let body;
   try { body = await request.json(); } catch { return fail('잘못된 요청입니다.', 'Invalid request.', 400); }
   const name = clean(body?.name, 60), email = clean(body?.email, 100).toLowerCase();

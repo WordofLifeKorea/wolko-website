@@ -26,7 +26,7 @@ function fakeKV() {
 // 진짜 PNG 머리글(8바이트 서명 + IHDR 가로 600 · 세로 180) 뒤에 채움을 붙인 서명 그림 — 서버는 머리글 모양과 크기를 본다
 const pngWith = (w, h, fill = 3000) => { const ihdr = Buffer.alloc(25); ihdr.writeUInt32BE(13, 0); ihdr.write('IHDR', 4); ihdr.writeUInt32BE(w, 8); ihdr.writeUInt32BE(h, 12); return 'data:image/png;base64,' + Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), ihdr, Buffer.alloc(fill, 7)]).toString('base64'); };
 const bigPng = () => pngWith(600, 180);
-const good = () => ({ doc: 'faith', version: DOCS.faith.version, role: 'staff', name: '김섬김', email: 'Serve@Example.com', phone: '010-1234-5678', agree: true, consent: true, signature: bigPng(), lang: 'ko' });
+const good = () => ({ doc: 'faith', version: DOCS.faith.version, role: 'staff', name: '김섬김', email: 'Serve@Example.com', agree: true, consent: true, signature: bigPng(), lang: 'ko' });
 
 async function setup() {
   const kv = fakeKV();
@@ -70,7 +70,7 @@ test('서명 제출: 저장되고(서명 그림 포함) 확인번호 · 서버 �
   assert.ok(!JSON.stringify(rec).includes('1.2.3.4'), 'IP 는 저장하지 않는다');
 });
 
-test('서명 제출 검사: 문서 · 버전 · 구분 · 이름 · 이메일 · 휴대폰 · 동의 · 서명 그림 · 함정 칸', async () => {
+test('서명 제출 검사: 문서 · 버전 · 구분 · 이름 · 이메일 · 동의 · 서명 그림 · 함정 칸', async () => {
   const t = await setup();
   const post = async (patch) => { const r = await t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), ...patch } }); return { status: r.status, ...(await r.json()) }; };
   assert.equal((await post({ doc: 'nope' })).field, 'doc');
@@ -79,8 +79,9 @@ test('서명 제출 검사: 문서 · 버전 · 구분 · 이름 · 이메일 ·
   assert.equal((await post({ name: '김' })).field, 'name');
   assert.equal((await post({ email: 'nope' })).field, 'email');
   assert.equal((await post({ email: '' })).field, 'email', '이메일 필수');
-  assert.equal((await post({ phone: 'abc' })).field, 'phone');
-  assert.equal((await post({ phone: '' })).status, 200, '휴대폰은 선택');
+  const withPhone = await post({ email: 'phone@x.org', phone: '010-1234-5678' });
+  assert.equal(withPhone.status, 200, '예전 화면이 보낸 휴대폰 값은 무시한다');
+  assert.ok(![...t.kv.store.values()].some((v) => JSON.stringify(v).includes('010-1234-5678')), '휴대폰은 저장하지 않는다');
   assert.equal((await post({ agree: 'yes' })).field, 'agree');
   assert.equal((await post({ consent: false })).field, 'consent');
   assert.equal((await post({ signature: '' })).field, 'signature');
@@ -120,7 +121,7 @@ test('관리자 보기: 관리자만 · 목록(그림 없음) · 한 건(그림+
   const csv = await t.call(adminApi, 'GET', '/api/portal/agreements?format=csv', { token: t.admin });
   const text = await csv.text();
   assert.ok(text.includes('serve@example.com') && text.includes('신앙고백서') && !text.includes('data:image'));
-  assert.ok(text.includes('"=""010-1234-5678"""'), '휴대폰은 엑셀에서 앞의 0이 지워지지 않게 글자 그대로');
+  assert.ok(!text.includes('휴대폰') && !text.includes('010-'), 'CSV 에 휴대폰 열이 없다');
   // 문구만 고치고 버전을 안 올렸다면(글 해시가 다르면) 서명한 글로 보여 주지 않는다
   const [[k]] = [...t.kv.store.entries()].filter(([key]) => key.includes(a.code));
   const rec = JSON.parse(t.kv.store.get(k).value); rec.textHash = 'x'.repeat(64); t.kv.store.set(k, { value: JSON.stringify(rec), metadata: t.kv.store.get(k).metadata });
@@ -434,4 +435,47 @@ test('서명 페이지 구조: 맨 위 내 정보(이름 · 이메일 · 구분)
   // 서명 칸 폼에는 이름 · 이메일 · 구분을 다시 묻지 않는다
   const forms = page.slice(page.indexOf('<form class="sa-form"'), page.indexOf('</form>', page.indexOf('<form class="sa-form"')));
   assert.doesNotMatch(forms, /name="name"|name="email"|name=\{`role-/);
+});
+
+import { nameKey } from '../functions/lib/staffAgreements.js';
+
+test('이름 비교(nameKey): 40자가 넘는 긴 이름 · 유니코드 분해형 · 40번째 글자 뒤 공백도 같은 사람으로 본다', async () => {
+  const long = '가'.repeat(39) + ' ' + '나'.repeat(10);   // 40번째 글자가 공백 — 기록에는 앞 40자만 남는다
+  assert.equal(nameKey(long), nameKey(long.slice(0, 40)));
+  assert.equal(nameKey('한글'.normalize('NFD')), nameKey('한글'.normalize('NFC')));
+  const nfd = '가나다라마바사아자차카타파하'.repeat(3).normalize('NFD');   // 분해형으로 오면 자르는 위치가 달라질 수 있는 긴 이름
+  assert.equal(nameKey(nfd), nameKey(nfd.normalize('NFC')));
+  const t = await setup();
+  const sign = (patch) => t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), ...patch } });
+  assert.equal((await sign({ name: long })).status, 200);
+  const again = await sign({ name: long });
+  assert.equal(again.status, 409, '긴 이름도 다시 서명하면 이미 작성하셨습니다');
+  const r = await t.call(statusApi2, 'POST', '/api/agreements/status', { body: { name: long, email: 'serve@example.com' } });
+  assert.ok((await r.json()).signed.faith, '긴 이름도 서명 여부를 찾는다');
+});
+
+test('서명 · 확인 API: JSON 으로 보낸 요청만 받고(415) 다른 사이트용 CORS 허용 머리글이 없다', async () => {
+  const t = await setup();
+  for (const [mod, url] of [[signApi, '/api/agreements/sign'], [statusApi2, '/api/agreements/status']]) {
+    const bad = await mod.onRequestPost({ env: t.env, request: new Request('https://wolko.test' + url, { method: 'POST', headers: { 'Content-Type': 'text/plain', 'CF-Connecting-IP': '5.5.5.5' }, body: JSON.stringify(good()) }) });
+    assert.equal(bad.status, 415, url + ' text/plain 은 거절');
+    assert.equal(bad.headers.get('Access-Control-Allow-Origin'), null);
+    const ok = await t.call(mod, 'POST', url, { body: good() });
+    assert.equal(ok.headers.get('Access-Control-Allow-Origin'), null, url + ' 에 CORS 허용이 없다');
+  }
+});
+
+test('서명 페이지 동작(원본 검사): 정보 고치기 · 사람이 바뀌면 서명 칸을 비운다 · 오래된 조회 답 무시 · 언어 전환 문구 · 주소 값 우선', () => {
+  const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
+  assert.match(page, /article\.saReset = function/, '문서마다 처음 상태로 되돌리는 함수가 있다');
+  assert.match(page, /function editWho\(\) \{[\s\S]*?resetArticles\(\)/, '정보 고치기는 서명 칸을 비운다');
+  assert.match(page, /async function continueWho[\s\S]*?if \(STATE\.info && !same\) resetArticles\(\)/, '다른 사람이 들어오면 비운다');
+  assert.match(page, /lookupSeq/, '늦게 온 이전 조회 답을 버린다');
+  assert.match(page, /function refreshLangText\(/, '한·영 전환 때 JS 문구도 바꾼다');
+  assert.match(page, /if \(STATE\.info && !same\) resetArticles\(\)/, '처음 들어올 때는 ?camp= 로 고른 캠프를 지우지 않는다');
+  assert.match(page, /var fromUrl = /, '주소의 값이 있으면 저장된 값과 섞지 않는다');
+  assert.match(page, /data-who-status role="status" aria-live="polite"/);
+  assert.doesNotMatch(page, /normKey/);
+  // 이미 작성 안내는 본문 목록보다 위에 있다
+  assert.ok(page.indexOf('data-already hidden') < page.indexOf('<ol class="sa-items">'), '이미 작성하셨습니다 안내가 문서 위쪽');
 });
