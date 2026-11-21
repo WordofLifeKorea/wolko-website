@@ -20,8 +20,8 @@
 
 export const CHILD_PROTECTION = {
   id: 'childprotection',
-  version: '2026-11-v3',
-  perCamp: true,   // 모든 스태프 · 크루가 '참여하는 캠프마다' 새로 작성한다(2026-11-21) — 서명할 때 캠프를 고르고, 기록에 캠프가 남는다
+  version: '2026-11-v4',   // v4: '캠프마다 새로 작성' 문장을 뺐다(한 번만 작성)
+  perCamp: false,   // 2026-11-21: 캠프 선택 없이 한 번만 작성한다(처음에는 캠프마다였으나 사용자가 '캠프 선택은 필요 없다'고 정했다). true 로 돌리면 서명할 때 캠프를 고르는 방식이 다시 켜진다
   draft: false,   // 2026-11-21 '초안이지만 일단 공개' — 문구를 바꾸면 version 을 올려 예전 서명과 구분한다
   ko: {
     title: '아동보호 서약서',
@@ -33,18 +33,13 @@ export const CHILD_PROTECTION = {
     intro: 'Everyone who serves at a WOLKO camp as staff or crew reads, is briefed on, and signs to keep the child protection standards below.',
     pledge: 'I have read this agreement from beginning to end, I have been briefed on it and had the chance to ask questions, and I understand it. I will keep these standards to protect children and young people. I understand that breaking them can lead to removal from WOLKO camps and to legal responsibility.',
   },
-  declaration: {
-    ko: '저는 아동·청소년에 대한 학대나 성범죄로 유죄 판결을 받았거나 현재 수사·재판을 받고 있지 않습니다. 사실과 다르게 진술하면 해임·퇴출되며 법적 책임을 질 수 있음을 이해합니다.',
-    en: 'I have not been convicted of, and am not currently under investigation or on trial for, any offense involving abuse of or sexual offenses against children. I understand that a false statement will lead to dismissal and may result in legal responsibility.',
-  },
+  // 본인 진술(유죄 판결 · 수사 · 재판 없음) 체크 칸은 공개 페이지에 내놓지 않기로 했다(2026-11-21). 캠프 트레이닝 위크에 서명할 때 서명 칸 아래쪽에 넣는다 — 그때 아래 CHILD_PROTECTION_DECLARATION_LATER 를 이 자리에 `declaration:` 으로 되돌리고 version 을 올린다
   sections: [
     {
       ko: '우리의 약속', en: 'Our commitment',
       items: [
         { ko: '우리는 모든 아동·청소년이 신체적·정서적·성적 해악으로부터 안전할 권리가 있다고 믿습니다. 이 서약서는 월코 캠프의 모든 스태프와 크루가 반드시 지켜야 할 최소 기준입니다.',
           en: 'We believe every child and young person has the right to be safe from physical, emotional and sexual harm. This agreement sets the minimum standard that every WOLKO staff member and crew member must follow.' },
-        { ko: '저는 참여하는 캠프마다 이 서약서를 새로 작성합니다.',
-          en: 'I sign this agreement again for every camp I take part in.' },
         { ko: '저는 캠프 기간뿐 아니라 캠프 전후에도 이 기준을 지킵니다. 법이나 월코의 지침이 이 서약서보다 더 엄격하면 더 엄격한 쪽을 따릅니다.',
           en: 'I keep these standards not only during camp but also before and after it. If the law or WOLKO guidance is stricter than this agreement, I follow the stricter one.' },
       ],
@@ -259,6 +254,12 @@ export const CAMP_RULES = {
 };
 
 /** 아직 정하지 못한 것 — 확정 전에 디렉터와 정해서 위 문서에 반영한다 */
+/** 나중에 아동보호 서약서 서명 칸 아래쪽에 넣을 본인 진술 체크 문구(지금은 문서에 붙어 있지 않다) */
+export const CHILD_PROTECTION_DECLARATION_LATER = {
+    ko: '저는 아동·청소년에 대한 학대나 성범죄로 유죄 판결을 받았거나 현재 수사·재판을 받고 있지 않습니다. 사실과 다르게 진술하면 해임·퇴출되며 법적 책임을 질 수 있음을 이해합니다.',
+    en: 'I have not been convicted of, and am not currently under investigation or on trial for, any offense involving abuse of or sexual offenses against children. I understand that a false statement will lead to dismissal and may result in legal responsibility.',
+  };
+
 export const OPEN_QUESTIONS = [
   '미성년 크루의 구체적인 역할 범위(차후 결정)',
   '범죄경력 서류를 볼 수 있는 사람(열람자) — 제안: 아동보호 담당자 두 분만(보관은 캠프 기간 동안만, 끝나면 폐기로 정했다)',
