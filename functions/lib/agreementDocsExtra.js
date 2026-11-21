@@ -8,11 +8,11 @@
  *  - 범죄경력 확인에 필요한 서류는 월코가 요구하면 지체 없이 제공한다. 제출한 서류는 캠프 기간 동안만 보관하고 캠프가 끝나면 폐기한다(2026-11-21).
  *  - 아동보호 담당자: 캠프팀 디렉터 Jason Anderson · 부담당자: 코디네이터 Aiden Park.
  *  - 크루(미성년자)의 보호자 동의는 지원서 단계에서 받는다(이 문서들에서 따로 받지 않는다). 아동보호 담당자의 연락처는 포탈 회원 정보에서 찾는다.
- *  - 경고·중도 하차는 디렉터·코디네이터·풀타임 선교사에게 적용하지 않는다. 즉시 하차에 절도 등 범죄 행위와 허위 서류 제출도 넣는다. 본국 범죄경력 서류는 월코가 필요하다고 한 경우에만.
+ *  - 경고·제명은 디렉터·코디네이터·풀타임 선교사에게 적용하지 않는다. 즉시 제명에 절도 등 범죄 행위와 허위 서류 제출도 넣는다. 본국 범죄경력 서류는 월코가 필요하다고 한 경우에만.
  *  - 지각은 경미한 실수라 경고에 넣지 않는다(허락 없이 자리를 비우는 것은 규칙 위반으로 둔다).
  *  - 미성년 크루의 역할 범위는 나중에 정한다(그동안은 '어른 지도자의 지도에 따라 활동한다'는 원칙만 둔다).
  *  - 캠퍼와 개인 SNS 를 서로 공유하지 않는다 · 사역에 방해될 내용을 SNS 에 올리지 않는다.
- *  - 경고는 캠프 디렉터와 코디네이터가 준다(2026-11-21). 즉시 하차: 아동보호 서약 위반, 성적 학대·폭력, 잘못된 신학·교리 전파, 술·약물.
+ *  - 경고는 캠프 디렉터와 코디네이터가 준다(2026-11-21). 즉시 제명: 아동보호 서약 위반, 성적 학대·폭력, 잘못된 신학·교리 전파, 술·약물.
  *    미성년 크루는 보호자가 동의하면 혼자 귀가할 수 있다. 나머지 항목은 추천안 그대로.
  *  - 문신과 얼굴 장신구(귀걸이 두 세트 이상, 코걸이, 혀 피어싱 등)는 보이지 않게 한다. 귀걸이 한 쌍(한 세트)은 괜찮다. 모든 스태프와 크루에게 적용(2026-11-21).
  * 아직 정하지 못한 것은 문서 맨 아래 '정해야 할 것'(OPEN_QUESTIONS)에 적어 두었다.
@@ -123,36 +123,28 @@ export const CHILD_PROTECTION = {
 
 export const CAMP_RULES = {
   id: 'rules',
-  version: '2026-11-v3',   // v3: 맨 앞에 '반복적으로 어기면 경고 또는 제명' 문장을 넣고, 경고 절차는 둘째 항목으로 내렸다
+  version: '2026-11-v4',   // v3: 맨 앞에 '반복적으로 어기면 경고 또는 제명' 문장 · v4: '성인 스태프 귀가' 항목을 뺐고, 경고 절차를 포함해 '경고와 제명' 설명을 1번 하나로 합치고 '중도 하차'를 모두 '제명'으로 통일
   draft: false,   // 2026-11-21 디렉터 결정으로 공개 — 스태프 · 크루가 작성해야 하는 필수 서약서
   ko: {
     title: '월코 캠프 필수 규칙',
     intro: '월코 캠프 기간 동안 스태프와 크루가 반드시 지켜야 할 규칙입니다.',
-    pledge: '저는 이 규칙을 처음부터 끝까지 읽었고 이해했으며, 캠프 기간 동안 지키겠습니다. 경고를 2회 받으면 중도에 하차해야 하고, 즉시 하차 사유에 해당하면 경고 없이 바로 하차해야 함을 이해합니다.',
+    pledge: '저는 이 규칙을 처음부터 끝까지 읽었고 이해했으며, 캠프 기간 동안 지키겠습니다. 경고를 2회 받으면 캠프에서 제명되고, 즉시 제명 사유에 해당하면 경고 없이 바로 제명됨을 이해합니다.',
   },
   en: {
     title: 'WOLKO Camp Essential Rules',
     intro: 'These are the rules that every staff member and crew member must keep during a WOLKO camp.',
-    pledge: 'I have read these rules from beginning to end, I understand them, and I will keep them during camp. I understand that after receiving two warnings I must leave the camp, and that any reason for immediate removal means I must leave without a warning.',
+    pledge: 'I have read these rules from beginning to end, I understand them, and I will keep them during camp. I understand that after receiving two warnings I will be removed from the camp, and that any reason for immediate removal means I will be removed without a warning.',
   },
   sections: [
     {
-      ko: '경고와 중도 하차', en: 'Warnings and leaving camp early',
+      ko: '경고와 제명', en: 'Warnings and removal',
       items: [
-        { ko: '아래 캠프 규칙을 반복적으로 어기면 경고를 받거나 월코 캠프에서 제명당할 수 있습니다.',
-          en: 'If I repeatedly break the camp rules below, I may receive a warning or be removed from WOLKO camps.' },
-        { ko: '캠프 디렉터와 코디네이터가 경고를 줍니다. 경고를 줄 때는 이유를 설명하고, 경고 기록지에 날짜와 내용을 적어 저에게 확인 서명을 받습니다. 이의가 있으면 24시간 안에 디렉터에게 말할 수 있습니다.',
-          en: 'The Camp Director and the Coordinator give me a warning. They explain the reason, write the date and details on a warning record, and ask me to sign to confirm it. If I disagree, I can tell the Director within 24 hours.' },
-        { ko: '경고가 2회 쌓이면 저는 캠프에서 중도 하차합니다. 경고는 한 캠프 안에서만 쌓입니다.',
-          en: 'When two warnings have been given, I leave the camp early. Warnings add up only within one camp.' },
-        { ko: '경고 기록지는 캠프가 끝나면 폐기합니다.',
-          en: 'Warning records are destroyed when the camp ends.' },
-        { ko: '이 규칙의 경고와 중도 하차 절차는 캠프 디렉터, 코디네이터, 풀타임 선교사에게는 적용하지 않습니다. 아동보호 서약서와 법에 따른 신고·조치는 모두에게 똑같이 적용됩니다.',
-          en: 'The warning and early-removal procedure in these rules does not apply to the Camp Director, the Coordinator or full-time missionaries. The Child Protection Agreement and reporting and measures required by law apply to everyone equally.' },
+        { ko: '아래 캠프 규칙을 반복적으로 어기면 경고를 받거나 월코 캠프에서 제명당할 수 있습니다. 캠프 디렉터와 코디네이터가 경고를 줍니다. 경고를 줄 때는 이유를 설명하고, 경고 기록지에 날짜와 내용을 적어 저에게 확인 서명을 받습니다. 이의가 있으면 24시간 안에 디렉터에게 말할 수 있습니다. 경고가 2회 쌓이면 저는 캠프에서 제명되며, 경고는 한 캠프 안에서만 쌓입니다. 경고 기록지는 캠프가 끝나면 폐기합니다. 이 경고와 제명 절차는 캠프 디렉터, 코디네이터, 풀타임 선교사에게는 적용하지 않습니다. 아동보호 서약서와 법에 따른 신고·조치는 모두에게 똑같이 적용됩니다.',
+          en: 'If I repeatedly break the camp rules below, I may receive a warning or be removed from WOLKO camps. The Camp Director and the Coordinator give me a warning. They explain the reason, write the date and details on a warning record, and ask me to sign to confirm it. If I disagree, I can tell the Director within 24 hours. When two warnings have been given, I am removed from the camp; warnings add up only within one camp. Warning records are destroyed when the camp ends. This warning and removal procedure does not apply to the Camp Director, the Coordinator or full-time missionaries. The Child Protection Agreement and reporting and measures required by law apply to everyone equally.' },
       ],
     },
     {
-      ko: '경고 없이 바로 하차하는 경우', en: 'Reasons for immediate removal without a warning',
+      ko: '경고 없이 바로 제명하는 경우', en: 'Reasons for immediate removal without a warning',
       items: [
         { ko: '아동·청소년에 대한 학대, 성적으로 부적절한 행동, 체벌 등 아동보호 서약서를 어긴 경우.',
           en: 'Breaking the Child Protection Agreement, including abuse of children or young people, sexually inappropriate behavior, or corporal punishment.' },
@@ -242,14 +234,12 @@ export const CAMP_RULES = {
       ],
     },
     {
-      ko: '하차한 뒤', en: 'After leaving camp',
+      ko: '제명된 뒤', en: 'After removal',
       items: [
-        { ko: '하차가 결정되면 저는 곧바로 캠프 시설을 떠납니다. 캠퍼에게는 사유를 공개하지 않고 간단히만 설명하며, 하차한 일을 SNS에 올리지 않습니다.',
+        { ko: '제명이 결정되면 저는 곧바로 캠프 시설을 떠납니다. 캠퍼에게는 사유를 공개하지 않고 간단히만 설명하며, 제명된 일을 SNS에 올리지 않습니다.',
           en: 'When I am removed from camp I leave the camp site right away. The reason is not shared with campers, only a brief explanation is given, and I do not post about it on social media.' },
-        { ko: '미성년 크루는 하차가 결정되면 디렉터가 보호자에게 직접 연락합니다. 보호자가 동의하면 혼자 귀가할 수 있고, 동의하지 않으면 보호자가 오시거나 보호자가 정한 방법으로 귀가합니다. 월코는 동의한 사람이 보호자 본인인지 직접 연락해 확인합니다.',
+        { ko: '미성년 크루는 제명이 결정되면 디렉터가 보호자에게 직접 연락합니다. 보호자가 동의하면 혼자 귀가할 수 있고, 동의하지 않으면 보호자가 오시거나 보호자가 정한 방법으로 귀가합니다. 월코는 동의한 사람이 보호자 본인인지 직접 연락해 확인합니다.',
           en: 'When a minor crew member is removed, the Director contacts the guardian directly. If the guardian agrees, the crew member may travel home alone; if not, the guardian comes to pick them up or arranges how they travel. WOLKO confirms by contacting the guardian directly that the person agreeing is the guardian.' },
-        { ko: '성인 스태프는 본인이 귀가하며, 필요하면 가까운 역이나 터미널까지 차로 태워 줍니다. 귀가 비용은 본인(미성년 크루는 보호자)이 부담합니다.',
-          en: 'Adult staff travel home themselves, and are driven to a nearby station or terminal if needed. Travel costs are paid by the person (for minor crew, by the guardian).' },
       ],
     },
   ],
@@ -267,5 +257,5 @@ export const OPEN_QUESTIONS = [
   '범죄경력 서류를 볼 수 있는 사람(열람자) — 제안: 아동보호 담당자 두 분만(보관은 캠프 기간 동안만, 끝나면 폐기로 정했다)',
   '미성년 크루의 귀가: 보호자 동의를 확인하는 방법과 귀가 후 도착 확인(제안 — 지금은 디렉터가 보호자에게 직접 연락해 확인)',
   '잘못된 신학 · 교리 전파의 판단 방법(지금은 디렉터와 코디네이터가 함께 판단)',
-  '디렉터 · 코디네이터 · 풀타임 선교사의 적용 제외 범위 확인(지금은 필수 규칙의 경고·중도 하차만 제외하고, 아동보호 서약서와 법에 따른 조치는 모두에게 적용)',
+  '디렉터 · 코디네이터 · 풀타임 선교사의 적용 제외 범위 확인(지금은 필수 규칙의 경고·제명만 제외하고, 아동보호 서약서와 법에 따른 조치는 모두에게 적용)',
 ];

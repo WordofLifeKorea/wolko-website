@@ -202,11 +202,11 @@ test('아동보호 서약서 내용: 디렉터가 정한 것들이 들어 있다
   assert.match(docText(d), /Jason Anderson/);
 });
 
-test('캠프 필수 규칙 초안: 경고 2회 중도 하차 · 문신 · 얼굴 장신구(귀걸이 한 세트까지) · 사역에 방해되는 SNS', () => {
+test('캠프 필수 규칙 초안: 경고 2회 제명 · 문신 · 얼굴 장신구(귀걸이 한 세트까지) · 사역에 방해되는 SNS', () => {
   const d = DOCS.rules;
   const all = docSections(d).flatMap((s) => s.items);
   const ko = all.map((i) => i.ko).join('\n'), en = all.map((i) => i.en).join('\n');
-  assert.ok(ko.includes('경고가 2회') && ko.includes('중도 하차'));
+  assert.ok(ko.includes('경고가 2회') && ko.includes('제명') && !ko.includes('하차'));
   assert.ok(ko.includes('문신이 보이지 않게') && /tattoo/i.test(en));
   assert.ok(ko.includes('두 세트 이상의 귀걸이') && ko.includes('코걸이') && ko.includes('혀 피어싱'), '얼굴 장신구 규칙');
   assert.ok(ko.includes('보이지 않게') && ko.includes('귀걸이는 한 쌍(한 세트)까지는 괜찮습니다') && /One pair \(one set\) of earrings is fine/.test(en), '귀걸이 한 쌍은 괜찮다(모든 스태프 · 크루 공통 — 문서가 스태프와 크루 모두의 서명용)');
@@ -220,21 +220,26 @@ test('초안 문서가 공개 페이지(빌드)에 새지 않는다 · 아직 �
   assert.ok(OPEN_QUESTIONS.length >= 4 && OPEN_QUESTIONS.some((q) => q.includes('크루')) && OPEN_QUESTIONS.some((q) => q.includes('열람자')));
 });
 
-test('캠프 필수 규칙 초안(결정 반영): 경고는 디렉터·코디네이터 · 즉시 하차 목록(성적 학대·폭력·잘못된 신학/교리) · 미성년 크루 귀가', () => {
+test('캠프 필수 규칙 초안(결정 반영): 경고는 디렉터·코디네이터 · 즉시 제명 목록(성적 학대·폭력·잘못된 신학/교리) · 미성년 크루 귀가', () => {
   const d = DOCS.rules;
   const secs = docSections(d);
   const by = (title) => secs.find((s) => s.ko === title);
   const ko = secs.flatMap((s) => s.items).map((i) => i.ko).join('\n'), en = secs.flatMap((s) => s.items).map((i) => i.en).join('\n');
-  assert.equal(docSections(DOCS.rules)[0].items[0].ko, '아래 캠프 규칙을 반복적으로 어기면 경고를 받거나 월코 캠프에서 제명당할 수 있습니다.', '1번: 반복적으로 어기면 경고 또는 제명');
-  assert.match(DOCS.rules.version, /v3$/);
+  const first = docSections(DOCS.rules)[0].items[0];
+  assert.ok(first.ko.startsWith('아래 캠프 규칙을 반복적으로 어기면 경고를 받거나 월코 캠프에서 제명당할 수 있습니다.') && first.ko.includes('경고 기록지') && first.ko.includes('24시간'), '1번 하나에 반복 위반 · 경고 절차가 합쳐져 있다');
+  assert.ok(!JSON.stringify(DOCS.rules.ko) .includes('하차') && !JSON.stringify(DOCS.rules.sections).includes('하차'), '필수 규칙 문서는 "제명"으로 통일');
+  assert.match(DOCS.rules.version, /v4$/);
+  assert.equal(docSections(DOCS.rules).find((x) => x.ko === '경고와 제명').items.length, 1, '경고와 제명은 1번 하나로 설명한다');
+  const after = docSections(DOCS.rules).find((x) => x.ko === '제명된 뒤').items.map((i) => i.ko).join('\n');
+  assert.ok(after.includes('미성년 크루') && !after.includes('터미널') && !after.includes('귀가 비용'), '성인 스태프 귀가 · 비용 문구는 넣지 않는다');
   assert.ok(ko.includes('캠프 디렉터와 코디네이터가 경고를 줍니다') && /Camp Director and the Coordinator give me a warning/.test(en), '경고는 디렉터와 코디네이터');
-  const immediate = by('경고 없이 바로 하차하는 경우').items.map((i) => i.ko).join('\n');
+  const immediate = by('경고 없이 바로 제명하는 경우').items.map((i) => i.ko).join('\n');
   for (const must of ['성적 학대', '폭력', '잘못된 신학이나 교리', '아동보호 서약서', '술이나 불법 약물']) assert.ok(immediate.includes(must), `즉시 하차: ${must}`);
-  const imm = by('경고 없이 바로 하차하는 경우').items.map((i) => i.en).join('\n');
+  const imm = by('경고 없이 바로 제명하는 경우').items.map((i) => i.en).join('\n');
   assert.ok(/sexual abuse/i.test(imm) && /violence/i.test(imm) && /false theology or doctrine/i.test(imm));
-  for (const title of ['술, 담배, 약물', '이성 교제', '휴대폰', '외출', '시간', '숙소', '외모와 복장', '사역 태도', 'SNS', '하차한 뒤']) assert.ok(by(title), `${title} 항목이 있다`);
+  for (const title of ['술, 담배, 약물', '이성 교제', '휴대폰', '외출', '시간', '숙소', '외모와 복장', '사역 태도', 'SNS', '제명된 뒤']) assert.ok(by(title), `${title} 항목이 있다`);
   assert.ok(ko.includes('보호자가 동의하면 혼자 귀가할 수 있고'), '크루 부모님이 동의하면 혼자 귀가 가능');
-  assert.ok(ko.includes('디렉터가 보호자에게 직접 연락'), '하차 시 보호자 연락');
+  assert.ok(ko.includes('디렉터가 보호자에게 직접 연락'), '제명 시 보호자 연락');
   assert.ok(ko.includes('경고 기록지는 캠프가 끝나면 폐기'), '경고 기록은 캠프가 끝나면 폐기');
   assert.ok(docSections(d).every((s) => s.items.every((i) => i.ko && i.en)), '한·영이 짝을 이룬다');
 });
@@ -247,7 +252,7 @@ test('결정 반영(2): 본국 서류는 필요할 때만 · 담당자 연락처
   assert.ok(cpKo.includes('월코 포탈의 회원 정보에서 확인') && /WOLKO Portal member information/.test(cpEn), '담당자 연락처는 포탈 회원 정보');
   assert.ok(rKo.includes('캠프 디렉터, 코디네이터, 풀타임 선교사에게는 적용하지 않습니다') && /full-time missionaries/.test(rEn), '경고·하차는 디렉터·코디네이터·풀타임 선교사 제외');
   assert.ok(rKo.includes('아동보호 서약서와 법에 따른 신고·조치는 모두에게'), '아동보호와 법에 따른 조치는 모두에게');
-  assert.ok(rKo.includes('절도 등 범죄 행위') && rKo.includes('허위 서류'), '즉시 하차: 범죄 행위 · 허위 서류');
+  assert.ok(rKo.includes('절도 등 범죄 행위') && rKo.includes('허위 서류'), '즉시 제명: 범죄 행위 · 허위 서류');
   assert.ok(!OPEN_QUESTIONS.some((q) => q.includes('연락처') || q.includes('보호자(법정대리인) 서명')), '해결된 질문은 목록에서 뺐다');
 });
 
