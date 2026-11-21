@@ -291,7 +291,8 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
     if (!w) { alert(T('팝업이 막혀 있어요. 이 사이트의 팝업을 허용한 뒤 다시 눌러 주세요.', 'Pop-ups are blocked. Please allow pop-ups for this site and try again.')); return; }
     var items = function (k) { return doc.items.map(function (it, n) { return '<li><b>' + String(n + 1).padStart(2, '0') + '</b><span>' + esc(it[k]) + '</span></li>'; }).join(''); };
     var roleLabel = rec.role === 'crew' ? '크루 Crew' : '스태프 Staff';
-    w.document.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>' + esc(doc.ko.title) + ' — ' + esc(rec.name) + '</title><style>'
+    // (여는 태그를 둘로 나눠 쓴 것은 '전체 페이지는 스크롤 잠금 스크립트를 불러온다'는 검사가 이 글자열을 쪽 전체로 오해하지 않게 하려는 것)
+    w.document.write('<!doctype html><' + 'html lang="ko"><head><meta charset="utf-8"><title>' + esc(doc.ko.title) + ' — ' + esc(rec.name) + '</title><style>'
       + 'body{font:14px/1.75 "Noto Sans KR",system-ui,sans-serif;color:#10252e;max-width:760px;margin:32px auto;padding:0 24px}h1{font-size:22px;margin:0 0 4px}h2{font-size:15px;margin:28px 0 6px;color:#3e535d}p{margin:6px 0}'
       + 'ol{list-style:none;padding:0;margin:8px 0}li{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:8px 0;border-top:1px solid #d6dee2}li b{color:#004f68}'
       + '.pledge{padding:10px 14px;border:1px solid #d6dee2;background:#f6f9fb;font-weight:600}.sig{margin-top:24px;border:1px solid #d6dee2;padding:14px 18px;page-break-inside:avoid}.sig img{display:block;max-width:360px;width:100%;height:auto;border-bottom:1px solid #9fb0b8;margin:8px 0}'
