@@ -31,7 +31,8 @@ export async function onRequestGet({ env, request }) {
   if (g.res) return g.res;
   const url = new URL(request.url);
   const month = /^\d{4}-\d{2}$/.test(url.searchParams.get('month') || '') ? url.searchParams.get('month') : '';
-  const { rows, truncated } = await readDownloadLogs(env, { month });
+  const wantsCsv = url.searchParams.get('format') === 'csv';
+  const { rows, truncated } = await readDownloadLogs(env, { month, max: wantsCsv ? 1_000_000 : 20000 });   // 엑셀(CSV)에는 전체를 담는다
   const titles = await titlesOf(env);
   if (url.searchParams.get('format') === 'csv') {
     return new Response(logsToCsv(rows, titles), { headers: {

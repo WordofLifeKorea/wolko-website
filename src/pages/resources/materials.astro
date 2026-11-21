@@ -240,14 +240,14 @@ import PageHero from '../../components/PageHero.astro';
     state.hidden = true;
     box.innerHTML = items.map(function (g, gi) {
       var thumb = g.hasThumb ? '<img class="mt-thumb" src="/api/materials?thumb=' + encodeURIComponent(g.id) + '" alt="" loading="lazy">' : '';
-      var titleEn = g.titleEn || g.title;
+      var titleEn = g.title;   // 공개 목록은 제목만 낸다(포탈의 내부 메모는 내지 않는다)
       var files = g.files.map(function (f, fi) {
         var meta = [f.ext ? '<span class="mt-tag">' + esc(f.ext.toUpperCase()) + '</span>' : '', sizeText(f.size), dateText(f.updatedAt)].filter(Boolean).join(' ');
         return '<li class="mt-file"><span class="mt-file-info"><span class="mt-file-name">' + esc(f.fileName) + '</span><span class="mt-file-meta">' + meta + '</span></span>'
           + '<button type="button" class="mt-btn" data-g="' + gi + '" data-f="' + fi + '"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 7 8 10.5 11.5 7M3 13h10"/></svg><span class="wl-ko">내려받기</span><span class="wl-en">Download</span></button></li>';
       }).join('');
       return '<section class="mt-group' + (thumb ? '' : ' no-thumb') + '">' + thumb + '<div><h2 class="mt-title"><span class="wl-ko">' + esc(g.title) + '</span><span class="wl-en">' + esc(titleEn) + '</span></h2>'
-        + (g.desc ? '<p class="mt-desc">' + esc(g.desc) + '</p>' : '') + '<ul class="mt-files">' + files + '</ul></div></section>';
+        + '<ul class="mt-files">' + files + '</ul></div></section>';
     }).join('');
   }
 
@@ -289,7 +289,7 @@ import PageHero from '../../components/PageHero.astro';
     clearErrors();
     var s = saved();
     $('mtFormWrap').hidden = false; $('mtDoneWrap').hidden = true;
-    $('mtCardTitle').innerHTML = '<span class="wl-ko">' + esc(g.title) + ' · ' + esc(f.fileName) + '</span><span class="wl-en">' + esc(g.titleEn || g.title) + ' · ' + esc(f.fileName) + '</span>';
+    $('mtCardTitle').innerHTML = '<span class="wl-ko">' + esc(g.title) + ' · ' + esc(f.fileName) + '</span><span class="wl-en">' + esc(g.title) + ' · ' + esc(f.fileName) + '</span>';
     var radios = document.querySelectorAll('#mtForm input[name="kind"]');
     for (var i = 0; i < radios.length; i++) radios[i].checked = !!s.kind && radios[i].value === s.kind;
     $('mtName').value = s.name || ''; $('mtChurch').value = s.church || ''; $('mtEmail').value = s.email || '';
