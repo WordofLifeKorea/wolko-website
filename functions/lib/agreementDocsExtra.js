@@ -20,7 +20,7 @@
 
 export const CHILD_PROTECTION = {
   id: 'childprotection',
-  version: '2026-11-v7',   // v7: 소제목 '단독행위와 제3자 규칙' · v6: 모든 항목을 1인칭('저는')으로 · 2번 문장을 '캠프가 진행되는 국가의 법이나 규정'으로 · 범죄경력 서류 문구(성범죄경력 및 아동학대 범죄전력회신서 · 원본 반환) · v4: '캠프마다 새로 작성' 문장을 뺐다(한 번만 작성) · v5: 맺음말을 '월코 캠프에 참여하는 캠퍼를 지키기 위해'로 고쳤다
+  version: '2026-11-v8',   // v8: '캠퍼 배정과 감독 배치' 항목을 '차량 운행을 이유로 1명의 캠퍼와 단독 운행 금지'로 바꾸고 이동 항목의 같은 문구는 뺐다 · v7: 소제목 '단독행위와 제3자 규칙' · v6: 모든 항목을 1인칭('저는')으로 · 2번 문장을 '캠프가 진행되는 국가의 법이나 규정'으로 · 범죄경력 서류 문구(성범죄경력 및 아동학대 범죄전력회신서 · 원본 반환) · v4: '캠프마다 새로 작성' 문장을 뺐다(한 번만 작성) · v5: 맺음말을 '월코 캠프에 참여하는 캠퍼를 지키기 위해'로 고쳤다
   perCamp: false,   // 2026-11-21: 캠프 선택 없이 한 번만 작성한다(처음에는 캠프마다였으나 사용자가 '캠프 선택은 필요 없다'고 정했다). true 로 돌리면 서명할 때 캠프를 고르는 방식이 다시 켜진다
   draft: false,   // 2026-11-21 '초안이지만 일단 공개' — 문구를 바꾸면 version 을 올려 예전 서명과 구분한다
   ko: {
@@ -60,8 +60,8 @@ export const CHILD_PROTECTION = {
           en: 'I will not be alone with a child in a private space. Any one-to-one conversation takes place in an open area visible to another adult.' },
         { ko: '저는 캠퍼의 숙소, 화장실, 샤워실, 탈의 공간에 혼자 들어가지 않습니다. 확인이 필요할 때는 다른 어른과 함께 입구에서 확인하고, 캠퍼가 사적인 공간을 지킬 수 있게 합니다.',
           en: 'I will not enter campers’ cabins, toilets, showers or changing areas alone. When a check is needed, I do it from the entrance together with another adult, and I let campers keep their privacy.' },
-        { ko: '저는 월코가 정한 캠퍼 배정과 감독 배치를 따르고, 제가 맡은 캠퍼가 누구와 어디에서 무엇을 하는지 늘 알고 있습니다.',
-          en: 'I follow the camper assignments and supervision plan set by WOLKO, and I always know who my campers are with, where they are and what they are doing.' },
+        { ko: '저는 차량 운행을 이유로 1명의 캠퍼와 단독으로 차량 운행을 하지 않겠습니다.',
+          en: 'I will not drive alone with a single camper, whatever the reason for the trip.' },
       ],
     },
     {
@@ -85,8 +85,8 @@ export const CHILD_PROTECTION = {
     {
       ko: '이동과 안전', en: 'Transport and safety',
       items: [
-        { ko: '저는 월코가 승인한 운전자일 때만 캠프 차량을 운전합니다. 모든 이동에서 안전벨트를 확인하고 정원을 지키며, 혼자서 캠퍼 한 명만 태우고 이동하지 않습니다.',
-          en: 'I drive camp vehicles only if I am a driver approved by WOLKO. I check seat belts on every trip, never exceed capacity, and never drive a single camper alone.' },
+        { ko: '저는 월코가 승인한 운전자일 때만 캠프 차량을 운전합니다. 모든 이동에서 안전벨트를 확인하고 정원을 지킵니다.',
+          en: 'I drive camp vehicles only if I am a driver approved by WOLKO. I check seat belts on every trip and never exceed capacity.' },
       ],
     },
     {
