@@ -58,9 +58,9 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     [data-context-file], [data-context-folder] { -webkit-touch-callout:none; }
     /* 교재 배포: '배포 중' 표시 · 현황 창 */
     .mat-head-btns { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .mat-report-btn { background:#fff !important; color:var(--navy,#003f55) !important; border:1px solid #b9c7ce !important; }
-    .mat-report-btn:hover { background:#eef6f8 !important; }
-    .file-tile-pub { position:absolute; top:6px; right:6px; z-index:1; padding:0 6px; height:17px; display:flex; align-items:center; border-radius:var(--ws-radius-sm,8px); background:#e6f6f6; color:#00696c; font-size:10.5px; font-weight:800; letter-spacing:.02em; }
+    .mat-head-btns .mat-report-btn, .mat-head-btns .add-resource { padding:0 16px; }
+    @media (max-width:620px) { .section-head { flex-wrap:wrap; gap:12px; } .mat-head-btns { width:100%; } .mat-head-btns > button { flex:1; } }
+    .file-tile-pub { padding:0 6px; height:17px; display:flex; align-items:center; border-radius:var(--ws-radius-sm,8px); background:#e6f6f6; color:#00696c; font-size:10.5px; font-weight:800; letter-spacing:.02em; }
     .file-details-pub { display:inline-block; margin-left:8px; padding:0 6px; height:18px; line-height:18px; border-radius:var(--ws-radius-sm,8px); background:#e6f6f6; color:#00696c; font-size:11px; font-weight:800; vertical-align:middle; }
     .mat-overlay { position:fixed; inset:0; z-index:9500; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(16,41,54,.55); }
     .mat-overlay[hidden] { display:none; }
@@ -155,7 +155,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     <section class="summary-grid" id="summaryGrid"></section>
 
     <section class="report-section">
-      <div class="section-head"><div><h2 data-t="sectionTitle">작업 중인 자료</h2></div><div class="mat-head-btns"><button class="add-resource mat-report-btn" id="matReportBtn" type="button" hidden onclick="openMatReport()"><span data-mt="reportBtn">교재 배포 현황</span></button><button class="add-resource" id="addResourceBtn" type="button" hidden onclick="openEditor()"><span>+</span> <span data-t="addResourceBtn">항목 추가</span></button></div></div>
+      <div class="section-head"><div><h2 data-t="sectionTitle">작업 중인 자료</h2></div><div class="mat-head-btns"><button class="log-secondary mat-report-btn" id="matReportBtn" type="button" hidden onclick="openMatReport()"><span data-mt="reportBtn">교재 배포 현황</span></button><button class="add-resource" id="addResourceBtn" type="button" hidden onclick="openEditor()"><span>+</span> <span data-t="addResourceBtn">항목 추가</span></button></div></div>
       <p class="report-updated" id="updatedAt"></p>
       <div class="rr-filters" id="resourceFilters" role="group"></div>
       <div class="resource-grid" id="resourceGrid"></div>
@@ -674,9 +674,10 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       return `<div class="file-tile" data-context-file="${meta.id}">
         <button type="button" class="file-tile-newtab" onclick="event.stopPropagation();openInNewTab('${meta.id}')" title="${esc(t('openInNewTab'))}" aria-label="${esc(t('openInNewTab'))}">↗</button>
         <button type="button" class="file-tile-preview" onclick="previewFile('${meta.id}')" title="${esc(t('previewFile'))}">
-          ${noteBadge}${matBadgeHtml(meta.id)}
+          ${noteBadge}
           ${fileIconHtml(meta.fileName)}
           <span class="file-tile-name" title="${esc(meta.fileName)}">${esc(meta.fileName)}</span>
+          ${matBadgeHtml(meta.id)}
           <span class="file-tile-meta">${metaLine}</span>
         </button>
       </div>`;
@@ -2748,8 +2749,8 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         colMaterial: '교재', colTotal: '횟수', colKind: '구분', colWho: '이름', colChurch: '교회·단체', colEmail: '이메일', colTime: '시각', colStamp: '워터마크', colCode: '확인번호', colLast: '마지막', colContacts: '받은 사람',
         colInd: '개인', colCh: '교회', colGr: '단체', colChCount: '교회 수',
         empty: '아직 내려받은 기록이 없어요.', truncated: '기록이 많아 일부만 보여요. 엑셀(CSV)에는 전체가 들어 있어요.',
-        sub: (n, m) => m ? `${m} 한 달 기록` : '전체 기간 기록 · 한국 시간 기준', delPh: '삭제를 요청한 분의 이메일', delBtn: '기록 지우기',
-        delConfirm: email => `${email} 의 내려받기 기록을 모두 지울까요? 되돌릴 수 없어요.`, deleted: n => `${n}건을 지웠어요.`, delBad: '이메일 주소를 확인해 주세요.',
+        sub: (n, m) => m ? `${m} 한 달 기록` : '전체 기간 기록 · 한국 시간 기준', delPh: '삭제를 요청한 분의 이메일 또는 확인번호(WL-…)', delBtn: '기록 지우기',
+        delConfirm: who => `${who} 의 내려받기 기록을 지울까요? 되돌릴 수 없어요.`, deleted: n => `${n}건을 지웠어요.`, delBad: '이메일 주소나 확인번호(WL-로 시작하는 8글자)를 확인해 주세요.',
         kind: { individual: '개인', church: '교회', group: '단체' },
         stamp: { a: '찍음', A: '번호만', s: '크기 초과(원본)', e: '암호 PDF(원본)', f: '실패(원본)', '-': 'PDF 아님' },
       },
@@ -2764,8 +2765,8 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         colMaterial: 'Material', colTotal: 'Downloads', colKind: 'Type', colWho: 'Name', colChurch: 'Church / Org.', colEmail: 'Email', colTime: 'Time', colStamp: 'Watermark', colCode: 'Code', colLast: 'Last', colContacts: 'People',
         colInd: 'Indiv.', colCh: 'Church', colGr: 'Org.', colChCount: 'Churches',
         empty: 'No downloads yet.', truncated: 'Only part of the records is shown. The CSV has everything.',
-        sub: (n, m) => m ? `Records for ${m}` : 'All time · Korea time', delPh: 'Email of the person who asked for deletion', delBtn: 'Delete records',
-        delConfirm: email => `Delete all download records for ${email}? This cannot be undone.`, deleted: n => `Deleted ${n} record(s).`, delBad: 'Please check the email address.',
+        sub: (n, m) => m ? `Records for ${m}` : 'All time · Korea time', delPh: 'Email or code (WL-…) of the person who asked for deletion', delBtn: 'Delete records',
+        delConfirm: who => `Delete the download records for ${who}? This cannot be undone.`, deleted: n => `Deleted ${n} record(s).`, delBad: 'Please check the email address or the code (WL- plus 6 characters).',
         kind: { individual: 'Individual', church: 'Church', group: 'Org.' },
         stamp: { a: 'Applied', A: 'Code only', s: 'Too large (original)', e: 'Encrypted (original)', f: 'Failed (original)', '-': 'Not a PDF' },
       },
@@ -2842,14 +2843,16 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       return cards + mats + churches + recent + matDeleteHtml();
     }
     function matDeleteHtml() {
-      return `<h3 class="mat-sec">${esc(mt('secDelete'))}</h3><div class="mat-del"><input type="email" id="matDelEmail" placeholder="${esc(mt('delPh'))}" autocomplete="off"><button type="button" onclick="deleteMatByEmail()">${esc(mt('delBtn'))}</button></div>`;
+      return `<h3 class="mat-sec">${esc(mt('secDelete'))}</h3><div class="mat-del"><input type="text" id="matDelEmail" placeholder="${esc(mt('delPh'))}" autocomplete="off" spellcheck="false"><button type="button" onclick="deleteMatByEmail()">${esc(mt('delBtn'))}</button></div>`;
     }
     async function deleteMatByEmail() {
-      const email = ($('matDelEmail').value || '').trim().toLowerCase();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast(mt('delBad'), true); return; }
-      if (!confirm(mt('delConfirm')(email))) return;
+      const who = ($('matDelEmail').value || '').trim();
+      const isCode = /^WL-[A-Za-z0-9]{6}$/i.test(who);   // 이메일을 적지 않은 개인은 PDF 아래에 찍힌 확인번호로
+      if (!isCode && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(who)) { toast(mt('delBad'), true); return; }
+      if (!confirm(mt('delConfirm')(who))) return;
       try {
-        const res = await fetch('/api/portal/material-downloads?email=' + encodeURIComponent(email), { method: 'DELETE', headers: authHeaders() });
+        const query = isCode ? 'code=' + encodeURIComponent(who.toUpperCase()) : 'email=' + encodeURIComponent(who.toLowerCase());
+        const res = await fetch('/api/portal/material-downloads?' + query, { method: 'DELETE', headers: authHeaders() });
         const d = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(d.error || mt('loadFail'));
         toast(mt('deleted')(d.removed || 0)); loadMatReport();

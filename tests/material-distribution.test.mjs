@@ -8,8 +8,8 @@ import * as requestApi from '../functions/api/materials/request.js';
 import * as getApi from '../functions/api/materials/get.js';
 import * as publishApi from '../functions/api/portal/material-publish.js';
 import * as reportApi from '../functions/api/portal/material-downloads.js';
-import { cleanRegistrant, newCode, summarizeLogs, logsToCsv, kstDateTime, RATE_PER_HOUR } from '../functions/lib/materials.js';
-import { stampPdf, loadStampFont, resetStampFontCache, stampLineOf } from '../functions/lib/pdfStamp.js';
+import { cleanRegistrant, newCode, summarizeLogs, logsToCsv, kstDateTime, RATE_PER_HOUR, rateLimited, publishedGroups } from '../functions/lib/materials.js';
+import { stampPdf, loadStampFont, resetStampFontCache, stampLineOf, layoutLine } from '../functions/lib/pdfStamp.js';
 import { createHubSessionToken } from '../functions/lib/hubAccounts.js';
 
 /* ── 가짜 KV: 값 · 메타데이터 · 목록 ── */
@@ -113,7 +113,8 @@ test('공개 목록: 배포 표시한 파일만, 자료별로 묶어서 — 표�
     const body = await (await t.call(listApi, 'GET', '/api/materials')).json();
     assert.equal(body.items.length, 1);
     assert.equal(body.items[0].title, '큐티 교재 1권');
-    assert.equal(body.items[0].titleEn, 'QT Book 1');
+    assert.ok(!('titleEn' in body.items[0]) && !('desc' in body.items[0]), '포탈의 내부 메모(진행 메모 · 번역/제작 내용)는 공개 목록에 내지 않는다');
+    assert.ok(!JSON.stringify(body).includes('1과~12과') && !JSON.stringify(body).includes('QT Book 1'));
     assert.deepEqual(body.items[0].files.map((f) => [f.id, f.ext, f.stamp]), [['f1', 'pdf', true], ['f2', 'docx', false]]);
     assert.ok(!JSON.stringify(body).includes('secret-draft'), '표시 안 한 파일 이름이 새어 나가지 않는다');
     assert.ok(!JSON.stringify(body).includes('wip.pdf'));
@@ -167,7 +168,7 @@ test('내려받기: 신청 → 일회용 주소 → 받으면 한 줄 기록, �
     assert.equal(logs.length, 1, '한 번만 센다');
     const meta = logs[0][1].metadata;
     assert.equal(meta.k, 'church'); assert.equal(meta.c, '은혜제일교회'); assert.equal(meta.n, '김목사'); assert.equal(meta.e, 'grace@example.com');
-    assert.equal(meta.w, 'A'); assert.match(meta.h, /^[0-9a-f]{10}$/, 'IP 는 해시 앞 10자만');
+    assert.equal(meta.w, 'A'); assert.ok(!('h' in meta) && !('ip' in logs[0][1]), '내려받은 기록에는 IP 정보를 넣지 않는다');
     assert.ok(!JSON.stringify(logs[0][1]).includes('1.2.3.4'), 'IP 원문은 저장하지 않는다');
     assert.ok(logs[0][0].endsWith(':' + code));
 
@@ -317,4 +318,112 @@ test('워터마크(한글): 글꼴 파일이 있으면 한글 이름을 윤곽�
   assert.ok(performance.now() - t0 < 3000);
   assert.ok(r.bytes.length < src.length + 100 * 400, '쪽마다 그림을 새로 그리지 않아 용량이 조금만 늘어난다');
   resetStampFontCache();
+});
+
+
+/* ── 검토 반영: 주소 수명 · 기록 실패 · HEAD · 횟수 제한 · 삭제 · 집계 ── */
+test('일회용 주소: 처음 받아도 10분이 늘어나지 않고, 기록이 실패하면 다시 열 때 다시 기록한다', async () => {
+  const t = await setup();
+  try {
+    await t.publish('item1', 'f1');
+    const r = await (await t.call(requestApi, 'POST', '/api/materials/request', { body: church })).json();
+    const tokenKey = 'matdl:tok:' + new URL('https://x' + r.url).searchParams.get('t');
+    const before = t.kv.store.get(tokenKey).value;
+    // 기록 쓰기가 한 번 실패 → 파일은 받고, 기록은 비어 있다
+    const realPut = t.kv.put; let failOnce = true;
+    t.kv.put = async (k, v, o) => { if (failOnce && k.startsWith('matdl:log:')) { failOnce = false; throw new Error('kv down'); } return realPut(k, v, o); };
+    assert.equal((await t.call(getApi, 'GET', r.url)).status, 200, '기록이 실패해도 받는 사람에게는 파일을 준다');
+    assert.equal([...t.kv.store.keys()].filter((k) => k.startsWith('matdl:log:')).length, 0);
+    // 다시 열면 그때 기록된다(한 줄)
+    assert.equal((await t.call(getApi, 'GET', r.url)).status, 200);
+    assert.equal((await t.call(getApi, 'GET', r.url)).status, 200);
+    assert.equal([...t.kv.store.keys()].filter((k) => k.startsWith('matdl:log:')).length, 1);
+    assert.equal(t.kv.store.get(tokenKey).value, before, '주소 자체는 다시 쓰지 않는다(10분이 늘어나지 않게)');
+  } finally { t.restore(); }
+});
+
+test('HEAD 요청은 PDF 를 통째로 읽지 않고, 세지도 않는다', async () => {
+  const t = await setup();
+  try {
+    await t.publish('item1', 'f1');
+    const r = await (await t.call(requestApi, 'POST', '/api/materials/request', { body: church })).json();
+    const realGet = t.kv.get; let wholeReads = 0;
+    t.kv.get = async (k, o) => { if (k.startsWith('portal:resource-file:') && (o === 'arrayBuffer' || o?.type === 'arrayBuffer')) wholeReads += 1; return realGet(k, o); };
+    const head = await t.call(getApi, 'HEAD', r.url);
+    assert.equal(head.status, 200);
+    assert.equal(wholeReads, 0);
+    assert.equal([...t.kv.store.keys()].filter((k) => k.startsWith('matdl:log:')).length, 0);
+  } finally { t.restore(); }
+});
+
+test('횟수 제한: 저장소가 오류를 내도 신청은 막지 않고(어림잡은 방어), 한 곳에서 교재 여러 개를 받아도 걸리지 않는다', async () => {
+  const env = { CAMP_KV: { get: async () => { throw new Error('kv limit'); }, put: async () => { throw new Error('kv limit'); } } };
+  assert.equal(await rateLimited(env, 'abc'), false, '오류가 나도 막지 않는다');
+  assert.ok(RATE_PER_HOUR >= 30, '교회 한 곳에서 교재 여러 권을 연달아 받아도 429 가 나지 않을 만큼');
+});
+
+test('삭제 요청: 이메일을 적지 않은 개인도 확인번호로 지울 수 있다 · 잘못된 번호는 400', async () => {
+  const t = await setup();
+  try {
+    await t.publish('item1', 'f1');
+    const person = { itemId: 'item1', fileId: 'f1', kind: 'individual', name: '홍길동', email: '', agree: true };
+    const r = await (await t.call(requestApi, 'POST', '/api/materials/request', { body: person })).json();
+    await t.call(getApi, 'GET', r.url);
+    const other = await (await t.call(requestApi, 'POST', '/api/materials/request', { body: church })).json();
+    await t.call(getApi, 'GET', other.url);
+    const logKeys = () => [...t.kv.store.keys()].filter((k) => k.startsWith('matdl:log:'));
+    assert.equal(logKeys().length, 2);
+    const bad = await t.call(reportApi, 'DELETE', '/api/portal/material-downloads?code=nope', { token: t.admin });
+    assert.equal(bad.status, 400);
+    assert.equal((await t.call(reportApi, 'DELETE', '/api/portal/material-downloads?code=' + r.code, { token: t.admin })).status, 200);
+    assert.deepEqual(logKeys().map((k) => k.split(':').pop()), [other.code], '그 한 줄만 지워진다');
+    assert.equal((await t.call(reportApi, 'DELETE', '/api/portal/material-downloads?code=' + other.code, { token: t.member })).status, 403, '관리자만');
+  } finally { t.restore(); }
+});
+
+test('집계: 개인이 적은 교회 이름은 교회 수에 넣지 않는다', () => {
+  const rows = [
+    { t: 1, itemId: 'a', fileId: 'b', kind: 'individual', name: '홍', church: '은혜교회', email: '' },
+    { t: 2, itemId: 'a', fileId: 'b', kind: 'church', name: '김', church: '소망교회', email: 'k@x.org' },
+  ];
+  const sum = summarizeLogs(rows);
+  assert.equal(sum.totals.churches, 1);
+  assert.equal(sum.byMaterial[0].churches, 1, '교재별 교회 수도 같은 기준');
+});
+
+test('워터마크 상자: 글자 위 · 아래가 상자 안에 모두 들어가고(윗부분이 잘리지 않는다), 돌아간 쪽 · 좁은 쪽에서도 폭을 넘지 않는다', async () => {
+  // 대문자 높이 0.85em · 글줄 아래로 0.2em 내려가는 가짜 글꼴
+  const fakeFont = {
+    unitsPerEm: 1000,
+    charToGlyph: (ch) => ({ index: 1, advanceWidth: 600, getPath: (x, y, size) => ({
+      getBoundingBox: () => ({ x1: x, x2: x + size * 0.6, y1: y - size * 0.85, y2: y + (ch === 'g' ? size * 0.2 : 0) }),
+      toPathData: () => `M${x} ${y}h${size * 0.5}v${-size * 0.85}h${-size * 0.5}z`,
+    }) }),
+  };
+  const lay = layoutLine(fakeFont, 'WOLKO g', 7.5);
+  assert.ok(Math.abs(lay.top - 7.5 * 0.85) < 1e-9 && Math.abs(lay.bottom - 7.5 * 0.2) < 1e-9, '글자의 실제 위 · 아래 높이를 잰다');
+  const src = await PDFDocument.create();
+  src.addPage([595, 842]);
+  const r = await stampPdf(new Uint8Array(await src.save()), { label: '은혜제일교회', code: 'WL-ABC234', date: '2026-11-21', font: fakeFont });
+  assert.equal(r.status, 'applied');
+  // 찍힌 그림(Form XObject)의 상자 높이가 (글자 위 + 아래 + 여백) 이상이어야 한다
+  const out = await PDFDocument.load(r.bytes);
+  const forms = [];
+  out.context.enumerateIndirectObjects().forEach(([, obj]) => {
+    const dict = obj?.dict;
+    const bbox = dict?.lookup?.(out.context.obj('BBox'));
+    if (bbox?.asArray) forms.push(bbox.asArray().map((n) => n.asNumber()));
+  });
+  assert.ok(forms.length >= 1, '쪽마다 다시 쓰는 그림이 하나 들어 있다');
+  const [x0, y0, x1, y1] = forms[0];
+  assert.ok(y1 - y0 >= lay.top + lay.bottom, `상자 높이 ${y1 - y0} 가 글자 높이 ${lay.top + lay.bottom} 이상`);
+  // 좁은 쪽(90도 돌아간 쪽): 눈으로 보이는 가로 폭 안에 들어간다
+  const narrow = await PDFDocument.create();
+  const np = narrow.addPage([842, 200]); np.setRotation({ type: 'degrees', angle: 90 });   // 보이는 가로 = 200
+  const rr = await stampPdf(new Uint8Array(await narrow.save()), { label: '아주아주 긴 교회 이름 아주아주 긴 교회 이름 아주아주', code: 'WL-ABC234', date: '2026-11-21', font: fakeFont });
+  assert.equal(rr.status, 'applied');
+  const o2 = await PDFDocument.load(rr.bytes);
+  const f2 = [];
+  o2.context.enumerateIndirectObjects().forEach(([, obj]) => { const bb = obj?.dict?.lookup?.(o2.context.obj('BBox')); if (bb?.asArray) f2.push(bb.asArray().map((n) => n.asNumber())); });
+  assert.ok(f2[0][2] - f2[0][0] <= 200, `돌아간 쪽에서도 그림 폭 ${f2[0][2] - f2[0][0]} 이 보이는 폭(200) 안`);
 });

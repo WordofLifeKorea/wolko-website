@@ -3,9 +3,10 @@
  * GET    /api/portal/material-downloads[?month=YYYY-MM]   집계 + 최근 기록 (JSON)
  * GET    /api/portal/material-downloads?format=csv[&month=] 전체 기록을 엑셀(CSV)로
  * DELETE /api/portal/material-downloads?email=…           그 이메일의 기록을 모두 지움(삭제 요청용)
+ * DELETE /api/portal/material-downloads?code=WL-XXXXXX      확인번호 한 줄을 지움(이메일을 적지 않은 개인의 삭제 요청용)
  */
 import { sessionFor, canWrite, readData, filesOf, error } from '../../lib/portalResources.js';
-import { readDownloadLogs, summarizeLogs, logsToCsv, deleteLogsByEmail, pubKey } from '../../lib/materials.js';
+import { readDownloadLogs, summarizeLogs, logsToCsv, deleteLogsByEmail, deleteLogsByCode, pubKey } from '../../lib/materials.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' };
 const RECENT = 300;
@@ -48,7 +49,13 @@ export async function onRequestGet({ env, request }) {
 export async function onRequestDelete({ env, request }) {
   const g = await guard(env, request);
   if (g.res) return g.res;
-  const email = new URL(request.url).searchParams.get('email') || '';
+  const params = new URL(request.url).searchParams;
+  const code = params.get('code') || '';
+  if (code) {
+    if (!/^WL-[A-Za-z0-9]{6}$/.test(code)) return error('확인번호를 확인해 주세요(WL-로 시작하는 8글자).', 400);
+    return Response.json({ removed: await deleteLogsByCode(env, code) }, { headers: CORS });
+  }
+  const email = params.get('email') || '';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return error('이메일 주소를 확인해 주세요.', 400);
   const removed = await deleteLogsByEmail(env, email);
   return Response.json({ removed }, { headers: CORS });

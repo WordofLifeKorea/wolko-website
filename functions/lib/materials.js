@@ -11,7 +11,7 @@
  *   matdl:tok:{토큰}                   일회용 주소(10분) — 신청 내용 + 확인번호
  *   matdl:log:{YYYYMM(KST)}:{확인번호}  내려받은 기록. 값 = 전체, 메타데이터 = 목록에 필요한 칸(KV 목록 한 번으로 표를 만들 수 있게)
  *   matdl:rl:{ip해시}:{시간}            남용 방지 횟수
- * IP 는 원문을 저장하지 않고 해시 앞 10자만 남긴다.
+ * IP 는 원문을 저장하지 않는다. 남용 방지 횟수(matdl:rl:*)에만 해시 앞 10자를 쓰고 하루 남짓 뒤 저절로 사라진다 — 내려받은 기록에는 IP 정보를 넣지 않는다.
  */
 import { filesOf } from './portalResources.js';
 
@@ -26,8 +26,8 @@ export const KIND_LABEL = {
   group: { ko: '단체', en: 'Organization' },
 };
 export const STAMP_STATUS_CODE = { applied: 'a', 'applied-ascii': 'A', 'skipped-size': 's', 'skipped-encrypted': 'e', failed: 'f', none: '-' };
-export const RATE_PER_HOUR = 12;
-export const RATE_PER_DAY = 40;
+export const RATE_PER_HOUR = 30;   // 교회 한 곳(같은 인터넷 주소)에서 여러 교재를 연달아 받아도 걸리지 않을 만큼
+export const RATE_PER_DAY = 100;
 
 const EMAIL_RE = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';   // 헷갈리는 0 O 1 I L 뺌
@@ -83,8 +83,15 @@ export const kstMonthKey = (ms) => kstParts(ms).slice(0, 7).replace('-', '');   
 export const kstDate = (ms) => kstParts(ms).slice(0, 10);
 export const kstDateTime = (ms) => kstParts(ms).slice(0, 16).replace('T', ' ');
 
-/** 한 시간 · 하루 신청 횟수 제한. 넘으면 true */
+/**
+ * 한 시간 · 하루 신청 횟수 제한. 넘으면 true.
+ * KV 에는 '읽고 더하기'를 한 번에 하는 기능이 없어 동시에 몰리면 조금 더 통과할 수 있다(어림잡은 방어 — 함정 칸과 함께 쓴다).
+ * 횟수를 읽거나 쓰지 못해도(KV 쓰기 제한 등) 신청 자체는 막지 않는다.
+ */
 export async function rateLimited(env, hash, now = Date.now()) {
+  try { return await rateLimitedUnsafe(env, hash, now); } catch { return false; }
+}
+async function rateLimitedUnsafe(env, hash, now) {
   const hourKey = `matdl:rl:${hash}:h${kstParts(now).slice(0, 13)}`;
   const dayKey = `matdl:rl:${hash}:d${kstParts(now).slice(0, 10)}`;
   const [h, d] = await Promise.all([env.CAMP_KV.get(hourKey), env.CAMP_KV.get(dayKey)]);
@@ -118,8 +125,7 @@ export function publishedGroups(items, pub) {
     out.push({
       id: item.id,
       title: clean(item.title, 120) || '(제목 없음)',
-      titleEn: clean(item.translation, 120),
-      desc: clean(item.detail, 260),
+      // 제목만 공개한다. 포탈 자료의 '진행 메모(detail)' · '번역/제작 내용(translation)'은 내부 메모라 공개 화면에 내지 않는다.
       hasThumb: /^data:image\//i.test(item.thumbnailData || ''),
       files: files.map((f) => ({
         id: f.id,
@@ -144,16 +150,20 @@ export function findPublished(items, pub, itemId, fileId) {
 /* ───────────── 내려받은 기록 ───────────── */
 const utf8Len = (s) => new TextEncoder().encode(s).length;
 
-/** 기록 한 줄 저장. 메타데이터(1KB 한도)에는 표에 필요한 칸만 넣는다 */
-export async function writeDownloadLog(env, rec, now = Date.now()) {
+/** 기록 키: 달은 '신청한 때(rec.at)' 기준 — 주소를 달이 바뀐 뒤에 열어도 같은 키라 한 줄이다 */
+export const logKeyOf = (rec, now = Date.now()) => `${LOG_PREFIX}${kstMonthKey(Number(rec.at) || now)}:${rec.code}`;
+
+/** 기록 한 줄 저장. 메타데이터(1KB 한도)에는 표에 필요한 칸만 넣는다. IP 정보는 기록에 넣지 않는다 */
+export async function writeDownloadLog(env, recIn, now = Date.now()) {
+  const { ip: _ip, ...rec } = recIn;
   const meta = {
     t: now, i: rec.itemId, f: rec.fileId, ti: clean(rec.title, 40), k: rec.kind, n: clean(rec.name, 30), c: clean(rec.church, 50),
-    e: rec.email || '', l: rec.lang, w: rec.stamp, h: rec.ip || '',
+    e: rec.email || '', l: rec.lang, w: rec.stamp,
   };
   let metadata = meta;
   if (utf8Len(JSON.stringify(metadata)) > 1000) metadata = { ...meta, ti: '' };
   if (utf8Len(JSON.stringify(metadata)) > 1000) metadata = { ...metadata, e: meta.e.slice(0, 60) };
-  const key = `${LOG_PREFIX}${kstMonthKey(now)}:${rec.code}`;   // 확인번호가 키라 같은 신청이 두 번 기록되어도 한 줄로 덮어쓴다
+  const key = logKeyOf(rec, now);   // 확인번호가 키라 같은 신청이 두 번 기록되어도 한 줄로 덮어쓴다
   await env.CAMP_KV.put(key, JSON.stringify({ ...rec, t: now }), { metadata });
   return key;
 }
@@ -169,7 +179,7 @@ export async function readDownloadLogs(env, { month = '', max = 20000 } = {}) {
       const m = k.metadata || {};
       rows.push({
         code: k.name.slice(k.name.lastIndexOf(':') + 1), key: k.name, t: Number(m.t) || 0, itemId: m.i || '', fileId: m.f || '', title: m.ti || '',
-        kind: m.k || '', name: m.n || '', church: m.c || '', email: m.e || '', lang: m.l || 'ko', stamp: m.w || '', ip: m.h || '',
+        kind: m.k || '', name: m.n || '', church: m.c || '', email: m.e || '', lang: m.l || 'ko', stamp: m.w || '',
       });
     }
     if (res.list_complete || !res.cursor || rows.length >= max) break;
@@ -194,7 +204,7 @@ export function summarizeLogs(rows, titles = {}) {
     const mk = `${r.itemId}:${r.fileId}`;
     const mat = byMaterial.get(mk) || { key: mk, itemId: r.itemId, fileId: r.fileId, title: r.title || titles[mk] || '', total: 0, individual: 0, church: 0, group: 0, churches: new Set(), last: 0 };
     mat.total += 1; if (mat[r.kind] !== undefined) mat[r.kind] += 1;
-    if (r.church) mat.churches.add(churchKey(r.church));
+    if (r.kind !== 'individual' && r.church) mat.churches.add(churchKey(r.church));
     mat.last = Math.max(mat.last, r.t);
     if (!mat.title) mat.title = r.title || titles[mk] || '';
     byMaterial.set(mk, mat);
@@ -232,6 +242,16 @@ export function logsToCsv(rows, titles = {}) {
     lines.push([kstDateTime(r.t), r.title || titles[`${r.itemId}:${r.fileId}`] || '', `${r.itemId}:${r.fileId}`, KIND_LABEL[r.kind]?.ko || r.kind, r.name, r.church, r.email, r.lang, stampWord[r.stamp] || r.stamp, r.code].map(csvCell).join(','));
   }
   return '﻿' + lines.join('\r\n') + '\r\n';
+}
+
+/** 확인번호(WL-XXXXXX)로 기록 한 줄 지우기 — 이메일을 적지 않은 개인의 삭제 요청용. 지운 줄 수 */
+export async function deleteLogsByCode(env, code) {
+  const target = clean(code, 20).toUpperCase();
+  if (!/^WL-[A-Z0-9]{6}$/.test(target)) return 0;
+  const { rows } = await readDownloadLogs(env, { max: 100000 });
+  let n = 0;
+  for (const r of rows) if (r.code === target) { await env.CAMP_KV.delete(r.key); n += 1; }
+  return n;
 }
 
 /** 이메일로 기록 지우기(삭제 요청용). 지운 줄 수 */

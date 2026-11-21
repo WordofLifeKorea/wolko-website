@@ -31,9 +31,9 @@ export async function onRequestPost({ env, request }) {
   const code = newCode();
   const token = newToken();
   const record = {
-    itemId, fileId, code, ip: hash, at: Date.now(),
+    itemId, fileId, code, at: Date.now(),
     title: clean(found.item.title, 120), fileName: clean(found.file.fileName, 200), pdf: isPdfFile(found.file),
-    ...checked.value, logged: false,
+    ...checked.value,
   };
   await env.CAMP_KV.put(`${TOKEN_PREFIX}${token}`, JSON.stringify(record), { expirationTtl: TOKEN_TTL });
   return Response.json({ ok: true, url: `/api/materials/get?t=${token}`, code, fileName: record.fileName, stamp: record.pdf }, { headers: HEADERS });

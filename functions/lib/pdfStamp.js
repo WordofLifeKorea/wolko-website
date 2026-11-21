@@ -45,19 +45,35 @@ export async function loadStampFont({ fetchImpl = fetch, url = STAMP_FONT_URL, f
 }
 export function resetStampFontCache() { fontState = null; fontLoading = null; }
 
-/** 글꼴에 없는 글자는 건너뛴다. 공백은 이 글꼴에 글자가 없어 직접 간격을 준다. */
-function layoutLine(font, text, size) {
+/**
+ * 글꼴에 없는 글자는 건너뛴다. 공백은 이 글꼴에 글자가 없어 직접 간격을 준다.
+ * 실제로 그려지는 글자의 위(ascent) · 아래(descent) 높이도 재서 돌려준다 — 그림 상자를 이 높이에 맞춰야 글자 윗부분이 잘리지 않는다.
+ * (윤곽선 좌표는 SVG 처럼 y 가 아래쪽으로 커진다: 글줄 기준선이 0, 위쪽 글자는 음수)
+ */
+export function layoutLine(font, text, size) {
   const space = size * 0.3;
-  let x = 0;
+  let x = 0, top = 0, bottom = 0;
   const parts = [];
   for (const ch of Array.from(text)) {
     if (/\s/.test(ch)) { x += space; continue; }
     const g = font.charToGlyph(ch);
     if (!g || g.index === 0) continue;
-    parts.push(g.getPath(x, 0, size).toPathData(2));
+    const path = g.getPath(x, 0, size);
+    const bb = path.getBoundingBox?.();
+    if (bb && Number.isFinite(bb.y1) && Number.isFinite(bb.y2)) { top = Math.max(top, -bb.y1); bottom = Math.max(bottom, bb.y2); }
+    parts.push(path.toPathData(2));
     x += (g.advanceWidth * size) / font.unitsPerEm;
   }
-  return { d: parts.join(''), width: x };
+  // 윤곽을 못 쟀거나 글자가 하나도 없으면 글자 크기에 맞춘 넉넉한 값으로
+  if (!top && !bottom) { top = size * 1.0; bottom = size * 0.3; }
+  return { d: parts.join(''), width: x, top, bottom };
+}
+
+/** 쪽을 눈으로 볼 때의 가로 폭(쪽이 90 · 270도 돌아가 있으면 가로 · 세로가 바뀐다) */
+function visibleWidth(page) {
+  const box = page.getCropBox ? page.getCropBox() : page.getMediaBox();
+  const rot = (((page.getRotation().angle % 360) + 360) % 360);
+  return rot === 90 || rot === 270 ? box.height : box.width;
 }
 
 const asciiOnly = (s) => String(s || '').replace(/[^\x20-\x7e]/g, '').replace(/\s+/g, ' ').trim();
@@ -91,11 +107,13 @@ export async function stampPdf(bytes, { label, code, date, font = null, maxBytes
     if (font) {
       let size = STAMP_SIZE;
       let laid = layoutLine(font, line, size);
-      const widest = Math.min(...pages.map((p) => p.getSize().width)) * 0.9;
+      const widest = Math.min(...pages.map(visibleWidth)) * 0.9;
       if (laid.width > widest) { size = Math.max(4.5, (size * widest) / laid.width); laid = layoutLine(font, line, size); }
-      sw = laid.width + 4; sh = size * 1.7;
+      const pad = size * 0.25;
+      sw = laid.width + 4; sh = laid.top + laid.bottom + pad * 2;
       const sp = stampDoc.addPage([sw, sh]);
-      sp.drawSvgPath(laid.d, { x: 2, y: size * 1.25, color: rgb(0.34, 0.34, 0.34), opacity: 0.9, borderWidth: 0 });
+      // 기준선을 (아래 여백 + 글자가 기준선 아래로 내려가는 높이) 위에 둔다 → 글자 위 · 아래가 상자 안에 모두 들어간다
+      sp.drawSvgPath(laid.d, { x: 2, y: pad + laid.bottom, color: rgb(0.34, 0.34, 0.34), opacity: 0.9, borderWidth: 0 });
       draw = sp;
     } else {
       status = 'applied-ascii';
@@ -103,7 +121,7 @@ export async function stampPdf(bytes, { label, code, date, font = null, maxBytes
       const helv = await stampDoc.embedFont(StandardFonts.Helvetica);
       let size = STAMP_SIZE;
       let w = helv.widthOfTextAtSize(line, size);
-      const widest = Math.min(...pages.map((p) => p.getSize().width)) * 0.9;
+      const widest = Math.min(...pages.map(visibleWidth)) * 0.9;
       if (w > widest) { size = Math.max(4.5, (size * widest) / w); w = helv.widthOfTextAtSize(line, size); }
       sw = w + 4; sh = size * 1.7;
       const sp = stampDoc.addPage([sw, sh]);

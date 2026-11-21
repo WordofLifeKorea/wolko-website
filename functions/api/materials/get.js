@@ -8,7 +8,7 @@ import { readData } from '../../lib/portalResources.js';
 import { readStoredResourceFile, resourceFileKey } from '../../lib/portalResourceVersions.js';
 import { fileKV } from '../../lib/nasFileKV.js';
 import { stampPdf, loadStampFont, MAX_STAMP_BYTES } from '../../lib/pdfStamp.js';
-import { readPublished, findPublished, writeDownloadLog, stampLabelOf, kstDate, TOKEN_PREFIX, STAMP_STATUS_CODE, clean } from '../../lib/materials.js';
+import { readPublished, findPublished, writeDownloadLog, logKeyOf, stampLabelOf, kstDate, TOKEN_PREFIX, STAMP_STATUS_CODE, clean } from '../../lib/materials.js';
 
 const errorPage = (message, status) => new Response(`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WOLKO</title><body style="font:16px/1.7 system-ui,sans-serif;max-width:32rem;margin:15vh auto;padding:0 20px;color:#10252e"><p>${message}</p><p><a href="/resources/materials" style="color:#004f68">교재 목록으로 · Back to materials</a></p>`,
   { status, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });
@@ -46,7 +46,7 @@ async function handle({ env, request }, headOnly) {
   const declaredSize = Number(found.file.fileSize) || 0;
   const pdfByName = rec.pdf || /\.pdf$/i.test(found.file.fileName || '') || /pdf/i.test(found.file.fileType || '');
   const wantStamp = pdfByName && declaredSize > 0 && declaredSize <= MAX_STAMP_BYTES;
-  const stored = await openStored(env, rec, found, wantStamp);
+  const stored = await openStored(env, rec, found, wantStamp && !headOnly);   // HEAD 는 파일을 통째로 읽지 않는다
   if (!stored) return errorPage('파일을 찾을 수 없어요. 월코에 알려 주세요.<br>File not found. Please let WOLKO know.', 404);
 
   const fileName = stored.metadata?.fileName || rec.fileName || 'material';
@@ -68,13 +68,12 @@ async function handle({ env, request }, headOnly) {
     bytes = r.bytes; status = r.status;
   }
 
-  // 처음 받을 때만 기록(주소를 다시 열어도 한 줄). 기록이 실패해도 받는 사람에게는 파일을 준다
-  if (!rec.logged) {
-    try {
-      await env.CAMP_KV.put(tokenKey, JSON.stringify({ ...rec, logged: true }), { expirationTtl: 600 });
-      await writeDownloadLog(env, { ...rec, stamp: STAMP_STATUS_CODE[status] || status });
-    } catch { /* 기록 실패는 내려받기를 막지 않는다 */ }
-  }
+  // 처음 받을 때만 기록한다. 기록 키가 확인번호라 주소를 다시 열어도 같은 한 줄이다.
+  // (주소 자체는 건드리지 않는다 — 다시 써서 10분을 늘리지 않고, 기록이 실패하면 다음에 다시 열 때 다시 기록한다)
+  // 기록이 실패해도 받는 사람에게는 파일을 준다
+  try {
+    if (!(await env.CAMP_KV.get(logKeyOf(rec)))) await writeDownloadLog(env, { ...rec, stamp: STAMP_STATUS_CODE[status] || status });
+  } catch { /* 기록 실패는 내려받기를 막지 않는다 */ }
   if (stored.stream) return new Response(stored.stream, { headers: { ...baseHeaders, ...(declaredSize ? { 'Content-Length': String(declaredSize) } : {}), 'X-Wolko-Stamp': status } });
   return new Response(bytes, { headers: { ...baseHeaders, 'Content-Length': String(bytes.byteLength), 'X-Wolko-Stamp': status } });
 }
