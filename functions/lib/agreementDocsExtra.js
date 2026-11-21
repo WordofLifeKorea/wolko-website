@@ -123,7 +123,7 @@ export const CHILD_PROTECTION = {
 
 export const CAMP_RULES = {
   id: 'rules',
-  version: '2026-11-v4',   // v3: 맨 앞에 '반복적으로 어기면 경고 또는 제명' 문장 · v4: '성인 스태프 귀가' 항목을 뺐고, 경고 절차를 포함해 '경고와 제명' 설명을 1번 하나로 합치고 '중도 하차'를 모두 '제명'으로 통일
+  version: '2026-11-v5',   // v5: 항목에서 '저는'을 빼고 '~에 동의합니다' 투로 · 장신구 문구 교체 · v3: 맨 앞에 '반복적으로 어기면 경고 또는 제명' 문장 · v4: '성인 스태프 귀가' 항목을 뺐고, 경고 절차를 포함해 '경고와 제명' 설명을 1번 하나로 합치고 '중도 하차'를 모두 '제명'으로 통일
   draft: false,   // 2026-11-21 디렉터 결정으로 공개 — 스태프 · 크루가 작성해야 하는 필수 서약서
   ko: {
     title: '월코 캠프 필수 규칙',
@@ -139,8 +139,8 @@ export const CAMP_RULES = {
     {
       ko: '경고와 제명', en: 'Warnings and removal',
       items: [
-        { ko: '아래 캠프 규칙을 반복적으로 어기면 경고를 받거나 월코 캠프에서 제명당할 수 있습니다. 캠프 디렉터와 코디네이터가 경고를 줍니다. 경고를 줄 때는 이유를 설명하고, 경고 기록지에 날짜와 내용을 적어 저에게 확인 서명을 받습니다. 이의가 있으면 24시간 안에 디렉터에게 말할 수 있습니다. 경고가 2회 쌓이면 저는 캠프에서 제명되며, 경고는 한 캠프 안에서만 쌓입니다. 경고 기록지는 캠프가 끝나면 폐기합니다. 이 경고와 제명 절차는 캠프 디렉터, 코디네이터, 풀타임 선교사에게는 적용하지 않습니다. 아동보호 서약서와 법에 따른 신고·조치는 모두에게 똑같이 적용됩니다.',
-          en: 'If I repeatedly break the camp rules below, I may receive a warning or be removed from WOLKO camps. The Camp Director and the Coordinator give me a warning. They explain the reason, write the date and details on a warning record, and ask me to sign to confirm it. If I disagree, I can tell the Director within 24 hours. When two warnings have been given, I am removed from the camp; warnings add up only within one camp. Warning records are destroyed when the camp ends. This warning and removal procedure does not apply to the Camp Director, the Coordinator or full-time missionaries. The Child Protection Agreement and reporting and measures required by law apply to everyone equally.' },
+        { ko: '아래 캠프 규칙을 반복적으로 어기면 경고를 받거나 월코 캠프에서 제명당할 수 있습니다. 캠프 디렉터와 코디네이터가 경고를 줍니다. 경고를 줄 때는 이유를 설명하고, 경고 기록지에 날짜와 내용을 적어 확인 서명을 받습니다. 이의가 있으면 24시간 안에 디렉터에게 말할 수 있습니다. 경고가 2회 쌓이면 캠프에서 제명되며, 경고는 한 캠프 안에서만 쌓입니다. 경고 기록지는 캠프가 끝나면 폐기합니다. 이 경고와 제명 절차는 캠프 디렉터, 코디네이터, 풀타임 선교사에게는 적용하지 않습니다. 아동보호 서약서와 법에 따른 신고·조치는 모두에게 똑같이 적용됩니다.',
+          en: 'If I repeatedly break the camp rules below, I may receive a warning or be removed from WOLKO camps. The Camp Director and the Coordinator give me a warning. They explain the reason, write the date and details on a warning record, and ask for a confirming signature. If I disagree, I can tell the Director within 24 hours. When two warnings have been given, I am removed from the camp; warnings add up only within one camp. Warning records are destroyed when the camp ends. This warning and removal procedure does not apply to the Camp Director, the Coordinator or full-time missionaries. The Child Protection Agreement and reporting and measures required by law apply to everyone equally.' },
       ],
     },
     {
@@ -167,77 +167,77 @@ export const CAMP_RULES = {
     {
       ko: '술, 담배, 약물', en: 'Alcohol, tobacco and drugs',
       items: [
-        { ko: '저는 캠프 장소에 도착한 때부터 해산 후 귀가할 때까지 술, 담배·전자담배, 불법 약물을 어디서든(캠프장 밖, 쉬는 시간 포함) 하지 않습니다.',
-          en: 'From the time I arrive at the camp site until I travel home after the camp is dismissed, I do not use alcohol, tobacco or e-cigarettes, or illegal drugs anywhere, including outside the camp site and during breaks.' },
+        { ko: '캠프 장소에 도착한 때부터 해산 후 귀가할 때까지 술, 담배·전자담배, 불법 약물을 어디서든(캠프장 밖, 쉬는 시간 포함) 하지 않는 것에 동의합니다.',
+          en: 'I agree not to use alcohol, tobacco or e-cigarettes, or illegal drugs anywhere (including outside the camp site and during breaks) from the time I arrive at the camp site until I travel home after the camp is dismissed.' },
       ],
     },
     {
       ko: '이성 교제', en: 'Dating and romantic relationships',
       items: [
-        { ko: '저는 캠퍼와 교제하지 않습니다. 이는 어떤 경우에도 해당합니다.',
-          en: 'I do not date campers, under any circumstances.' },
-        { ko: '저는 캠프 기간에 스태프·크루 사이에서도 연인 같은 행동(손잡기, 포옹, 단둘이 있기)을 하지 않습니다. 부부와 가족은 예외입니다.',
-          en: 'During camp I do not show romantic behavior (holding hands, hugging, being alone together) even with other staff or crew. Married couples and family members are the exception.' },
+        { ko: '캠퍼와 교제하지 않는 것에 동의합니다. 이는 어떤 경우에도 해당합니다.',
+          en: 'I agree not to date campers, under any circumstances.' },
+        { ko: '캠프 기간에 스태프·크루 사이에서도 연인 같은 행동(손잡기, 포옹, 단둘이 있기)을 하지 않는 것에 동의합니다. 부부와 가족은 예외입니다.',
+          en: 'I agree not to show romantic behavior (holding hands, hugging, being alone together) during camp, even with other staff or crew. Married couples and family members are the exception.' },
       ],
     },
     {
       ko: '휴대폰', en: 'Mobile phones',
       items: [
-        { ko: '저는 사역 시간에 개인 통화, SNS, 게임을 하지 않습니다. 사역에 필요한 연락과 공식 방법의 촬영은 예외입니다.',
-          en: 'During ministry time I do not make personal calls or use social media or games. Contact needed for the ministry and photos taken in the official way are the exception.' },
+        { ko: '사역 시간에 개인 통화, SNS, 게임을 하지 않는 것에 동의합니다. 사역에 필요한 연락과 공식 방법의 촬영은 예외입니다.',
+          en: 'I agree not to make personal calls or use social media or games during ministry time. Contact needed for the ministry and photos taken in the official way are the exception.' },
       ],
     },
     {
       ko: '외출', en: 'Going out',
       items: [
-        { ko: '저는 캠프장 밖으로 나갈 때 캠프 디렉터의 허락을 먼저 받고, 혼자 나가지 않고 2명 이상 함께 갑니다. 밤에는 외출하지 않습니다.',
-          en: 'Before leaving the camp site I get the Camp Director’s permission, I do not go out alone but with at least two people, and I do not go out at night.' },
+        { ko: '캠프장 밖으로 나갈 때 캠프 디렉터의 허락을 먼저 받고, 혼자 나가지 않고 2명 이상 함께 가며, 밤에는 외출하지 않는 것에 동의합니다.',
+          en: 'I agree to get the Camp Director’s permission before leaving the camp site, to go out with at least two people and never alone, and not to go out at night.' },
       ],
     },
     {
       ko: '시간', en: 'Schedule',
       items: [
-        { ko: '저는 캠프 일정표(기상, 모임, 사역, 팀 미팅, 소등)를 지키려고 노력합니다. 지각은 경미한 실수로 보고 경고에 넣지 않습니다. 다만 허락 없이 자리를 비우는 것은 규칙을 어긴 것으로 봅니다.',
-          en: 'I do my best to keep the camp schedule (wake-up, meetings, ministry, team meetings, lights-out). Being late is treated as a minor mistake and is not counted as a warning. Leaving without permission, however, counts as breaking the rules.' },
+        { ko: '캠프 일정표(기상, 모임, 사역, 팀 미팅, 소등)를 지키려고 노력하는 것에 동의합니다. 지각은 경미한 실수로 보고 경고에 넣지 않습니다. 다만 허락 없이 자리를 비우는 것은 규칙을 어긴 것으로 봅니다.',
+          en: 'I agree to do my best to keep the camp schedule (wake-up, meetings, ministry, team meetings, lights-out). Being late is treated as a minor mistake and is not counted as a warning. Leaving without permission, however, counts as breaking the rules.' },
       ],
     },
     {
       ko: '숙소', en: 'Lodging',
       items: [
-        { ko: '숙소는 성별로 나뉩니다. 저는 이성의 숙소에 들어가지 않습니다. 캠퍼는 스태프 숙소에, 스태프는 캠퍼 숙소에 혼자 들어가지 않으며, 외부인과 가족은 숙소에 들이지 않습니다. 소등과 정숙 시간을 지키고 제가 쓰는 방을 정리합니다.',
-          en: 'Lodging is separated by gender. I do not enter lodging of the opposite sex. Campers do not enter staff lodging and staff do not enter campers’ lodging alone, and I do not bring outside visitors or family into lodging. I keep lights-out and quiet hours and keep my room tidy.' },
+        { ko: '숙소는 성별로 나뉩니다. 이성의 숙소에 들어가지 않고, 캠퍼는 스태프 숙소에, 스태프는 캠퍼 숙소에 혼자 들어가지 않으며, 외부인과 가족을 숙소에 들이지 않고, 소등과 정숙 시간을 지키며 쓰는 방을 정리하는 것에 동의합니다.',
+          en: 'Lodging is separated by gender. I agree not to enter lodging of the opposite sex; campers do not enter staff lodging and staff do not enter campers’ lodging alone; I agree not to bring outside visitors or family into lodging, to keep lights-out and quiet hours, and to keep my room tidy.' },
       ],
     },
     {
       ko: '외모와 복장', en: 'Appearance and dress',
       items: [
-        { ko: '저는 문신이 보이지 않게 합니다.',
-          en: 'I keep any tattoos covered and not visible.' },
-        { ko: '저는 얼굴 장신구(두 세트 이상의 귀걸이, 코걸이, 혀 피어싱 등)가 보이지 않게 합니다. 귀걸이는 한 쌍(한 세트)까지는 괜찮습니다.',
-          en: 'I keep facial jewelry (two or more sets of earrings, nose rings, tongue piercings, etc.) out of sight. One pair (one set) of earrings is fine.' },
-        { ko: '저는 단정한 복장으로 지내고 팀 티셔츠를 입습니다.',
-          en: 'I dress modestly and wear the team T-shirt.' },
+        { ko: '문신이 보이지 않게 하는 것에 동의합니다.',
+          en: 'I agree to keep any tattoos covered and not visible.' },
+        { ko: '불필요한 과도한 장신구(두 세트 이상의 귀걸이, 코걸이, 혓바닥 피어싱 등)로 인해서 생길 수 있는 문제를 미연에 방지하고자 과도한 액세서리를 착용하지 않는 것에 동의합니다. (귀걸이는 한 쌍(한 세트)까지는 괜찮습니다.)',
+          en: 'To prevent problems that can come from unnecessary, excessive jewelry (two or more sets of earrings, nose rings, tongue piercings, etc.), I agree not to wear excessive accessories. (One pair (one set) of earrings is fine.)' },
+        { ko: '단정한 복장으로 지내고 팀 티셔츠를 입는 것에 동의합니다.',
+          en: 'I agree to dress modestly and wear the team T-shirt.' },
       ],
     },
     {
       ko: '사역 태도', en: 'Ministry attitude',
       items: [
-        { ko: '저는 맡은 일에 책임을 지고 캠프팀의 지시를 따릅니다. 험담하거나 분란을 일으키지 않습니다.',
-          en: 'I take responsibility for the work given to me and follow the camp team’s direction. I do not gossip or cause division.' },
+        { ko: '맡은 일에 책임을 지고 캠프팀의 지시를 따르며, 험담하거나 분란을 일으키지 않는 것에 동의합니다.',
+          en: 'I agree to take responsibility for the work given to me, to follow the camp team’s direction, and not to gossip or cause division.' },
       ],
     },
     {
       ko: 'SNS', en: 'Social media',
       items: [
-        { ko: '저는 사역에 방해가 될 만한 내용을 SNS에 올리지 않습니다.',
-          en: 'I do not post anything on social media that could get in the way of the ministry.' },
+        { ko: '사역에 방해가 될 만한 내용을 SNS에 올리지 않는 것에 동의합니다.',
+          en: 'I agree not to post anything on social media that could get in the way of the ministry.' },
       ],
     },
     {
       ko: '제명된 뒤', en: 'After removal',
       items: [
-        { ko: '제명이 결정되면 저는 곧바로 캠프 시설을 떠납니다. 캠퍼에게는 사유를 공개하지 않고 간단히만 설명하며, 제명된 일을 SNS에 올리지 않습니다.',
-          en: 'When I am removed from camp I leave the camp site right away. The reason is not shared with campers, only a brief explanation is given, and I do not post about it on social media.' },
+        { ko: '제명이 결정되면 곧바로 캠프 시설을 떠나고 제명된 일을 SNS에 올리지 않는 것에 동의합니다. 캠퍼에게는 사유를 공개하지 않고 간단히만 설명합니다.',
+          en: 'I agree to leave the camp site right away when I am removed from camp and not to post about it on social media. The reason is not shared with campers; only a brief explanation is given.' },
         { ko: '미성년 크루는 제명이 결정되면 디렉터가 보호자에게 직접 연락합니다. 보호자가 동의하면 혼자 귀가할 수 있고, 동의하지 않으면 보호자가 오시거나 보호자가 정한 방법으로 귀가합니다. 월코는 동의한 사람이 보호자 본인인지 직접 연락해 확인합니다.',
           en: 'When a minor crew member is removed, the Director contacts the guardian directly. If the guardian agrees, the crew member may travel home alone; if not, the guardian comes to pick them up or arranges how they travel. WOLKO confirms by contacting the guardian directly that the person agreeing is the guardian.' },
       ],

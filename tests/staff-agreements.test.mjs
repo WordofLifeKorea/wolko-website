@@ -208,9 +208,9 @@ test('캠프 필수 규칙 초안: 경고 2회 제명 · 문신 · 얼굴 장신
   const ko = all.map((i) => i.ko).join('\n'), en = all.map((i) => i.en).join('\n');
   assert.ok(ko.includes('경고가 2회') && ko.includes('제명') && !ko.includes('하차'));
   assert.ok(ko.includes('문신이 보이지 않게') && /tattoo/i.test(en));
-  assert.ok(ko.includes('두 세트 이상의 귀걸이') && ko.includes('코걸이') && ko.includes('혀 피어싱'), '얼굴 장신구 규칙');
-  assert.ok(ko.includes('보이지 않게') && ko.includes('귀걸이는 한 쌍(한 세트)까지는 괜찮습니다') && /One pair \(one set\) of earrings is fine/.test(en), '귀걸이 한 쌍은 괜찮다(모든 스태프 · 크루 공통 — 문서가 스태프와 크루 모두의 서명용)');
-  assert.ok(ko.includes('사역에 방해가 될 만한 내용을 SNS에 올리지 않습니다'));
+  assert.ok(ko.includes('두 세트 이상의 귀걸이') && ko.includes('코걸이') && ko.includes('혓바닥 피어싱') && ko.includes('과도한 액세서리를 착용하지 않는 것에 동의합니다'), '장신구 규칙(동의합니다 투)');
+  assert.ok(ko.includes('귀걸이는 한 쌍(한 세트)까지는 괜찮습니다') && /One pair \(one set\) of earrings is fine/.test(en), '귀걸이 한 쌍은 괜찮다(모든 스태프 · 크루 공통 — 문서가 스태프와 크루 모두의 서명용)');
+  assert.ok(ko.includes('사역에 방해가 될 만한 내용을 SNS에 올리지 않는 것에 동의합니다'));
   assert.ok(all.every((i) => i.ko && i.en));
 });
 
@@ -228,7 +228,11 @@ test('캠프 필수 규칙 초안(결정 반영): 경고는 디렉터·코디네
   const first = docSections(DOCS.rules)[0].items[0];
   assert.ok(first.ko.startsWith('아래 캠프 규칙을 반복적으로 어기면 경고를 받거나 월코 캠프에서 제명당할 수 있습니다.') && first.ko.includes('경고 기록지') && first.ko.includes('24시간'), '1번 하나에 반복 위반 · 경고 절차가 합쳐져 있다');
   assert.ok(!JSON.stringify(DOCS.rules.ko) .includes('하차') && !JSON.stringify(DOCS.rules.sections).includes('하차'), '필수 규칙 문서는 "제명"으로 통일');
-  assert.match(DOCS.rules.version, /v4$/);
+  assert.match(DOCS.rules.version, /v5$/);
+  // 규칙 항목은 '저는'을 빼고 '~에 동의합니다' 투(맺음말 · 경고 안내 제외)
+  const ruleItems = docSections(DOCS.rules).flatMap((x) => x.items.map((i) => ({ sec: x.ko, ko: i.ko })));
+  assert.ok(!ruleItems.some((i) => /저는|제가|저에게/.test(i.ko)), '규칙 항목에는 "저는"이 없다');
+  for (const sec of ['술, 담배, 약물', '이성 교제', '휴대폰', '외출', '시간', '숙소', '외모와 복장', '사역 태도', 'SNS']) assert.ok(ruleItems.filter((i) => i.sec === sec).every((i) => i.ko.includes('동의합니다')), sec + ': 동의합니다 투');
   assert.equal(docSections(DOCS.rules).find((x) => x.ko === '경고와 제명').items.length, 1, '경고와 제명은 1번 하나로 설명한다');
   const after = docSections(DOCS.rules).find((x) => x.ko === '제명된 뒤').items.map((i) => i.ko).join('\n');
   assert.ok(after.includes('미성년 크루') && !after.includes('터미널') && !after.includes('귀가 비용'), '성인 스태프 귀가 · 비용 문구는 넣지 않는다');
