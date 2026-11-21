@@ -192,7 +192,7 @@ test('아동보호 서약서 내용: 디렉터가 정한 것들이 들어 있다
   assert.ok(all.every((i) => i.ko && i.en), '모든 항목에 한국어와 영어가 있다');
   assert.ok(ko.includes('범죄경력') && ko.includes('지체 없이'), '월코가 요구하면 범죄경력 서류를 지체 없이 제공');
   assert.ok(/without delay/.test(en));
-  assert.ok(ko.includes('캠프 기간 동안만 보관하고, 캠프가 끝나면 원본 문서를 반환합니다') && /original documents are returned when the camp ends/.test(en), '제출한 범죄경력 서류는 캠프 기간 동안만 보관 후 원본 반환');
+  assert.ok(ko.includes('월코가 캠프 기간 동안만 보관하고, 캠프가 끝나면 원본을 반환함을 이해합니다') && /returns the originals when the camp ends/.test(en), '제출한 범죄경력 서류는 캠프 기간 동안만 보관 후 원본 반환');
   assert.ok(ko.includes('Jason Anderson') && ko.includes('캠프팀 디렉터') && ko.includes('Aiden Park') && ko.includes('코디네이터'), '아동보호 담당자 · 부담당자');
   assert.ok(en.includes('Jason Anderson') && en.includes('Aiden Park'));
   assert.ok(/개인 SNS/.test(ko) && /personal social media/.test(en), '캠퍼와 개인 SNS 를 공유하지 않는다');
@@ -261,7 +261,7 @@ test('캠프 필수 규칙 초안(결정 반영): 1번은 한 문장 · 즉시 �
 test('결정 반영(2): 범죄경력 서류 문구 · 담당자 연락처는 포탈 회원 정보 · 경고 절차 · 적용 제외는 문서에서 뺐다 · 즉시 제명에 범죄·허위 서류', () => {
   const cp = docSections(DOCS.childprotection).flatMap((s) => s.items), rules = docSections(DOCS.rules).flatMap((s) => s.items);
   const cpKo = cp.map((i) => i.ko).join('\n'), cpEn = cp.map((i) => i.en).join('\n'), rKo = rules.map((i) => i.ko).join('\n'), rEn = rules.map((i) => i.en).join('\n');
-  assert.ok(cpKo.includes('성범죄경력 및 아동학대 범죄전력회신서, 외국인의 경우 본국 등 해당 나라에서 발급받은 범죄경력 증명서') && /for foreign nationals/.test(cpEn), '범죄경력 서류: 성범죄경력 · 아동학대 범죄전력회신서, 외국인은 본국 증명서');
+  assert.ok(cpKo.includes('성범죄경력 조회 회신서와 아동학대관련범죄전력 조회 회신서, 외국인의 경우 본국 등 해당 나라에서 발급받은 범죄경력 증명서') && /for foreign nationals/.test(cpEn), '범죄경력 서류: 성범죄경력 · 아동학대 범죄전력회신서, 외국인은 본국 증명서');
   assert.ok(!cpKo.includes('해외에서 지낸 적이 있으면'), '해외 거주자 모두에게 요구하지 않는다');
   assert.ok(cpKo.includes('월코 포탈의 회원 정보에서 확인') && /WOLKO Portal member information/.test(cpEn), '담당자 연락처는 포탈 회원 정보');
   assert.ok(!rKo.includes('풀타임 선교사') && !/full-time missionaries/.test(rEn), '경고·제명 절차의 적용 제외 설명은 문서에 넣지 않는다(운영 지침으로 따로)');
@@ -514,11 +514,11 @@ test('서명 페이지 동작(원본 검사): 정보 고치기 · 사람이 바�
 test('아동보호 서약서는 캠프 선택 없이 한 번만 작성: 캠프 칸이 없고 · 문서에 "캠프마다" 문장이 없고 · 같은 사람이 다시 쓰면 409', async () => {
   assert.equal(DOCS.childprotection.perCamp, false);
   assert.ok(!JSON.stringify(DOCS.childprotection.sections).includes('캠프마다 이 서약서를 새로'), '캠프마다 새로 작성한다는 문장을 뺐다');
-  assert.match(DOCS.childprotection.version, /v11$/, '문구를 고쳤으니 문서 버전을 올렸다');
+  assert.match(DOCS.childprotection.version, /v12$/, '문구를 고쳤으니 문서 버전을 올렸다');
   const cpKo2 = docSections(DOCS.childprotection).flatMap((x) => x.items).map((i) => i.ko).join('\n');
   for (const d of [DOCS.childprotection, DOCS.rules]) assert.ok(!/퇴출|해임|하차/.test(JSON.stringify(d)), d.id + ': 서약서는 "제명"으로 통일');
-  assert.ok(cpKo2.includes('저는 "우리 문화에서는 괜찮다" 또는 "캠퍼가 먼저 원해서"라는 이유로 신체 접촉을 하지 않고, 월코의 기준을 따르겠습니다.'), '신체 접촉 문구');
-  assert.ok(cpKo2.includes('저는 차량 운행을 이유로 1명의 캠퍼와 단독으로 차량 운행을 하지 않겠습니다.') && !cpKo2.includes('캠퍼 배정과 감독 배치') && !cpKo2.includes('혼자서 캠퍼 한 명만'), '차량 단독 운행 금지 문구(중복 없이)');
+  assert.ok(cpKo2.includes('"우리 문화에서는 괜찮다"거나 "캠퍼가 먼저 원했다"는 이유로 신체 접촉을 하지 않으며, 신체 접촉에 관한 월코의 기준을 따릅니다.'), '신체 접촉 문구');
+  assert.ok(cpKo2.includes('저는 어떤 이유로도 캠퍼 한 명과 단둘이 차량으로 이동하지 않습니다.') && !cpKo2.includes('캠퍼 배정과 감독 배치') && !cpKo2.includes('혼자서 캠퍼 한 명만'), '차량 단둘이 이동 금지 문구(중복 없이)');
   assert.ok(cpKo2.includes('캠프가 진행되는 국가의 법이나 규정이 이 서약서보다 더 엄격하면 더 엄격한 쪽을 따릅니다.'), '캠프 국가의 법이나 규정이 더 엄격하면 그쪽');
   assert.ok(docSections(DOCS.childprotection).flatMap((x) => x.items).every((i) => /저는|제가/.test(i.ko)), '아동보호 서약서 항목은 모두 서약하는 사람의 목소리(저는)');
   assert.ok(docSections(DOCS.childprotection).flatMap((x) => x.items).every((i) => /\bI\b/.test(i.en)), '영어도 모두 "I"로 시작하는 1인칭');
@@ -552,4 +552,19 @@ test('서명 페이지 위쪽 설명도 문장마다 한 줄(블록)로 나눈�
   const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
   assert.match(page, /<span class="sa-ln">캠프에서 섬기는 모든 분이 읽고 동의하며 서명하는 문서예요\.<\/span><span class="sa-ln">폰에서는/);
   assert.match(page, /\.sa-ln \{ display: block; \}/);
+});
+
+test('아동보호 서약서는 한 사람(서약하는 사람)의 목소리: 소제목 · 용어 · 112 신고가 서로 어긋나지 않는다', () => {
+  const secs = docSections(DOCS.childprotection);
+  assert.ok(secs.some((x) => x.ko === '저의 약속' && x.en === 'My commitment') && secs.some((x) => x.ko === '서약을 어긴 경우' && x.en === 'If I break this agreement'));
+  assert.ok(!secs.some((x) => /우리의|미성년자/.test(x.ko)), '소제목에 "우리의" · "미성년자"가 없다');
+  const items = secs.flatMap((x) => x.items), ko = items.map((i) => i.ko).join('\n'), en = items.map((i) => i.en).join('\n');
+  assert.ok(!/다른 어른/.test(ko) && ko.includes('어른 스태프'), '"다른 어른"(서명자가 어른이라는 전제) 대신 "어른 스태프"');
+  assert.ok(!/반환합니다\.|보관하고 반환/.test(ko.replace('월코가 캠프 기간 동안만 보관하고, 캠프가 끝나면 원본을 반환함을 이해합니다.', '')), '서류 반환 문장의 주어가 월코임을 이해한다는 형태');
+  // 신고 · 대응 항목은 모두 112 신고를 빠뜨리지 않는다(담당자만 알리면 되는 것처럼 읽히지 않게)
+  const report = secs.find((x) => x.ko === '신고와 대응').items;
+  for (const i of [report[0], report[1], report[2]]) assert.ok(i.ko.includes('112') && i.en.includes('112'), '112 신고 문구가 있다: ' + i.ko.slice(0, 20));
+  assert.ok(!/[Cc]opy|참조합니다/.test(ko + en), '"참조(CC)" 같은 번역투가 없다');
+  assert.ok(/removed from WOLKO camps/.test(en) && !/dismiss|expel|fired/i.test(en), '영어의 제명은 removal 로 통일');
+  assert.ok(items.every((i) => /\b(I|I’ve)\b|\bI\b/.test(i.en)), '영어도 모두 1인칭');
 });
