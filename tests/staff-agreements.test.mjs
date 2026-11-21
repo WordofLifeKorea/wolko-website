@@ -225,6 +225,8 @@ test('캠프 필수 규칙 초안(결정 반영): 경고는 디렉터·코디네
   const secs = docSections(d);
   const by = (title) => secs.find((s) => s.ko === title);
   const ko = secs.flatMap((s) => s.items).map((i) => i.ko).join('\n'), en = secs.flatMap((s) => s.items).map((i) => i.en).join('\n');
+  assert.equal(docSections(DOCS.rules)[0].items[0].ko, '아래 캠프 규칙을 반복적으로 어기면 경고를 받거나 월코 캠프에서 제명당할 수 있습니다.', '1번: 반복적으로 어기면 경고 또는 제명');
+  assert.match(DOCS.rules.version, /v3$/);
   assert.ok(ko.includes('캠프 디렉터와 코디네이터가 경고를 줍니다') && /Camp Director and the Coordinator give me a warning/.test(en), '경고는 디렉터와 코디네이터');
   const immediate = by('경고 없이 바로 하차하는 경우').items.map((i) => i.ko).join('\n');
   for (const must of ['성적 학대', '폭력', '잘못된 신학이나 교리', '아동보호 서약서', '술이나 불법 약물']) assert.ok(immediate.includes(must), `즉시 하차: ${must}`);

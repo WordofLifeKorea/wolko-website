@@ -123,7 +123,7 @@ export const CHILD_PROTECTION = {
 
 export const CAMP_RULES = {
   id: 'rules',
-  version: '2026-11-v2',
+  version: '2026-11-v3',   // v3: 맨 앞에 '반복적으로 어기면 경고 또는 제명' 문장을 넣고, 경고 절차는 둘째 항목으로 내렸다
   draft: false,   // 2026-11-21 디렉터 결정으로 공개 — 스태프 · 크루가 작성해야 하는 필수 서약서
   ko: {
     title: '월코 캠프 필수 규칙',
@@ -139,8 +139,10 @@ export const CAMP_RULES = {
     {
       ko: '경고와 중도 하차', en: 'Warnings and leaving camp early',
       items: [
-        { ko: '이 규칙을 어기면 캠프 디렉터와 코디네이터가 경고를 줍니다. 경고를 줄 때는 이유를 설명하고, 경고 기록지에 날짜와 내용을 적어 저에게 확인 서명을 받습니다. 이의가 있으면 24시간 안에 디렉터에게 말할 수 있습니다.',
-          en: 'If I break these rules, the Camp Director and the Coordinator give me a warning. They explain the reason, write the date and details on a warning record, and ask me to sign to confirm it. If I disagree, I can tell the Director within 24 hours.' },
+        { ko: '아래 캠프 규칙을 반복적으로 어기면 경고를 받거나 월코 캠프에서 제명당할 수 있습니다.',
+          en: 'If I repeatedly break the camp rules below, I may receive a warning or be removed from WOLKO camps.' },
+        { ko: '캠프 디렉터와 코디네이터가 경고를 줍니다. 경고를 줄 때는 이유를 설명하고, 경고 기록지에 날짜와 내용을 적어 저에게 확인 서명을 받습니다. 이의가 있으면 24시간 안에 디렉터에게 말할 수 있습니다.',
+          en: 'The Camp Director and the Coordinator give me a warning. They explain the reason, write the date and details on a warning record, and ask me to sign to confirm it. If I disagree, I can tell the Director within 24 hours.' },
         { ko: '경고가 2회 쌓이면 저는 캠프에서 중도 하차합니다. 경고는 한 캠프 안에서만 쌓입니다.',
           en: 'When two warnings have been given, I leave the camp early. Warnings add up only within one camp.' },
         { ko: '경고 기록지는 캠프가 끝나면 폐기합니다.',
