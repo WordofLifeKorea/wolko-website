@@ -1,0 +1,364 @@
+---
+// 교재 내려받기 — 포탈에서 '배포 표시'된 교재를 교회 · 개인이 신청해서 받는다. 받을 때 한 번만 세고, PDF 에는 이름과 확인번호가 찍힌다.
+// 서버: functions/api/materials/ (목록 · 신청 · 일회용 주소로 받기), 관리자 현황은 포탈 Resource & Media 의 '교재 배포 현황'.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+---
+
+<BaseLayout
+  title="교재 내려받기 | WOLKO"
+  description="월코가 만든 교재를 교회와 개인이 내려받을 수 있습니다. Download WOLKO teaching materials for your church or personal use."
+  activeNav="resources"
+>
+  <PageHero variant="plain">
+    <Fragment slot="eyebrow"><a href="/resources"><span class="wl-ko">자료실</span><span class="wl-en">Resources</span></a></Fragment>
+    <Fragment slot="title">
+      <span class="wl-ko"><em>교재 내려받기</em></span>
+      <span class="wl-en"><em>Download Materials</em></span>
+    </Fragment>
+    <Fragment slot="desc">
+      <span class="wl-ko">월코가 만든 교재를 교회와 개인이 사용할 수 있도록 나눕니다. 받으시기 전에 간단한 정보를 적어 주세요.</span>
+      <span class="wl-en">We share the teaching materials WOLKO has made for churches and individuals. Please tell us a little about yourself before downloading.</span>
+    </Fragment>
+  </PageHero>
+
+<!-- 목록과 신청 창은 스크립트가 만들어서 Astro 의 쪽 안 스타일(is:scoped)이 닿지 않는다 — 전역으로 두되 이름은 모두 mt- 로 시작 -->
+<style is:global>
+  .mt, .mt-overlay {
+    --mt-deep:#004f68; --mt-deep-dk:#003d52; --mt-navy:#0b2430; --mt-ink:#10252e; --mt-body:#3e535d; --mt-muted:#587383;
+    --mt-line:#d6dee2; --mt-field:#cdd7dc; --mt-soft:#f6f9fb; --mt-error:#a3262f;
+    font-family: var(--ff-sans); word-break: keep-all;
+  }
+  .mt {
+    padding: 56px 0 96px; background: #fff; color: var(--mt-ink); font-family: var(--ff-sans); word-break: keep-all;
+  }
+  .mt-shell { width: min(960px, calc(100% - 48px)); margin: 0 auto; }
+  .mt-note { margin: 0 0 32px; padding: 16px 20px; background: var(--mt-soft); border: 1px solid var(--mt-line); border-radius: var(--ws-radius-sm, 8px); font-size: 14.5px; line-height: 1.8; color: var(--mt-body); }
+  .mt-note strong { color: var(--mt-navy); }
+  .mt-state { padding: 48px 0; text-align: center; font-size: 15px; color: var(--mt-muted); }
+  .mt-groups { display: grid; gap: 20px; }
+  .mt-group { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 24px; padding: 24px; border: 1px solid var(--mt-line); border-radius: var(--ws-radius-sm, 8px); background: #fff; }
+  .mt-group.no-thumb { grid-template-columns: minmax(0, 1fr); }
+  .mt-thumb { width: 132px; aspect-ratio: 3 / 4; object-fit: cover; border: 1px solid var(--mt-line); background: var(--mt-soft); display: block; }
+  .mt-title { margin: 0; font-family: var(--ff-serif); font-size: 21px; line-height: 1.35; letter-spacing: -.02em; color: var(--mt-navy); }
+  .mt-desc { margin: 6px 0 0; font-size: 14.5px; line-height: 1.7; color: var(--mt-muted); }
+  .mt-files { list-style: none; margin: 16px 0 0; padding: 0; border-top: 1px solid var(--mt-line); }
+  .mt-file { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--mt-line); }
+  .mt-file-info { flex: 1; min-width: 0; }
+  .mt-file-name { display: block; font-size: 15px; font-weight: 600; color: var(--mt-ink); overflow-wrap: anywhere; }
+  .mt-file-meta { display: block; margin-top: 2px; font-size: 13px; color: var(--mt-muted); }
+  .mt-tag { display: inline-block; padding: 0 6px; margin-right: 6px; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; color: var(--mt-deep); border: 1px solid var(--mt-deep); border-radius: 4px; line-height: 18px; }
+  .mt-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; min-height: 44px !important; padding: 0 20px; flex: none;
+    border: 1px solid var(--mt-deep); border-radius: var(--ws-radius-sm, 8px); background: var(--mt-deep); color: #fff; font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; white-space: nowrap;
+    transition: background-color .2s;
+  }
+  .mt-btn:hover { background: var(--mt-deep-dk); }
+  .mt-btn:focus-visible { outline: 2px solid var(--mt-deep); outline-offset: 2px; }
+  .mt-btn.ghost { background: #fff; color: var(--mt-navy); border-color: #b9c7ce; }
+  .mt-btn.ghost:hover { background: var(--mt-soft); }
+  .mt-btn[disabled] { opacity: .6; cursor: default; }
+  .mt-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* 신청 창 */
+  .mt-overlay { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(11,36,48,.62); }
+  .mt-overlay[hidden] { display: none; }
+  .mt-card { position: relative; width: min(560px, 100%); max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; background: #fff; border-radius: var(--ws-radius-sm, 8px); box-shadow: 0 16px 40px rgba(11,36,48,.22); }
+  .mt-card-head { padding: 22px 64px 14px 24px; border-bottom: 2px solid var(--mt-navy); }
+  .mt-card-kicker { margin: 0 0 4px; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--mt-muted); }
+  .mt-card-title { margin: 0; font-family: var(--ff-serif); font-size: 19px; line-height: 1.4; color: var(--mt-navy); overflow-wrap: anywhere; }
+  .mt-close { position: absolute; top: 12px; right: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--mt-field); border-radius: var(--ws-radius-sm, 8px); background: #fff; color: var(--mt-navy); cursor: pointer; padding: 0; }
+  .mt-close:hover { background: var(--mt-soft); }
+  .mt-close:focus-visible { outline: 2px solid var(--mt-deep); outline-offset: 2px; }
+  .mt-close svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+  .mt-body { padding: 18px 24px 24px; }
+  .mt-field { display: grid; gap: 6px; margin-bottom: 14px; }
+  .mt-field[hidden] { display: none; }
+  .mt-field > label, .mt-legend { font-size: 14px; font-weight: 600; color: var(--mt-ink); }
+  .mt-req { color: var(--mt-deep); margin-left: 2px; }
+  .mt-field input[type="text"], .mt-field input[type="email"] {
+    width: 100%; height: 48px; min-height: 48px !important; padding: 0 14px; border: 1px solid var(--mt-field); border-radius: var(--ws-radius-sm, 8px);
+    font: 500 16px var(--ff-sans); color: var(--mt-ink); background: #fff; outline: none; box-sizing: border-box;
+  }
+  .mt-field input:focus { border-color: var(--mt-deep); box-shadow: 0 0 0 1px var(--mt-deep); }
+  .mt-field input.is-invalid { border-color: var(--mt-error); box-shadow: 0 0 0 1px var(--mt-error); }
+  .mt-kinds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; border: 0; padding: 0; margin: 0 0 14px; min-width: 0; }
+  .mt-kind { position: relative; }
+  .mt-kind input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .mt-kind > span { display: flex; align-items: center; justify-content: center; height: 48px; border: 1px solid var(--mt-field); border-radius: var(--ws-radius-sm, 8px); background: #fff; font-size: 15px; font-weight: 700; color: var(--mt-body); }
+  .mt-kind input:checked + span { background: var(--mt-deep); border-color: var(--mt-deep); color: #fff; }
+  .mt-kind input:focus-visible + span { outline: 2px solid var(--mt-deep); outline-offset: 2px; }
+  .mt-kinds.is-invalid .mt-kind > span { border-color: var(--mt-error); }
+  .mt-err { margin: 0; font-size: 13.5px; font-weight: 600; line-height: 1.55; color: var(--mt-error); }
+  .mt-err[hidden] { display: none; }
+  .mt-terms { margin: 4px 0 14px; padding: 14px 16px; background: var(--mt-soft); border: 1px solid var(--mt-line); border-radius: var(--ws-radius-sm, 8px); font-size: 13.5px; line-height: 1.75; color: var(--mt-body); }
+  .mt-terms strong { color: var(--mt-navy); }
+  .mt-agree { display: flex; align-items: flex-start; gap: 12px; margin: 0 0 6px; cursor: pointer; font-size: 14px; line-height: 1.65; color: var(--mt-body); }
+  .mt-agree input { width: 20px; height: 20px; margin: 2px 0 0; flex: none; accent-color: var(--mt-deep); }
+  .mt-agree a { color: var(--mt-deep); text-decoration: underline; text-underline-offset: 3px; }
+  .mt-actions { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; margin-top: 16px; }
+  .mt-actions .mt-btn { height: 52px; min-height: 52px !important; width: 100%; font-size: 15.5px; }
+  .mt-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .mt-done { text-align: center; padding: 8px 0 0; }
+  .mt-done-icon { width: 52px; height: 52px; margin: 0 auto 14px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--mt-deep); border-radius: 50%; color: var(--mt-deep); }
+  .mt-done-icon svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .mt-done h3 { margin: 0 0 8px; font-family: var(--ff-serif); font-size: 20px; color: var(--mt-navy); }
+  .mt-done p { margin: 0 0 10px; font-size: 14.5px; line-height: 1.75; color: var(--mt-body); }
+  .mt-code { display: inline-block; padding: 6px 14px; margin: 2px 0 12px; border: 1px solid var(--mt-line); border-radius: var(--ws-radius-sm, 8px); background: var(--mt-soft); font: 700 18px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; color: var(--mt-navy); }
+  .mt-done a { color: var(--mt-deep); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+
+  @media (max-width: 640px) {
+    .mt { padding: 36px 0 72px; }
+    .mt-shell { width: calc(100% - 32px); }
+    .mt-group { grid-template-columns: minmax(0, 1fr); padding: 18px; gap: 16px; }
+    .mt-thumb { width: 96px; }
+    .mt-file { flex-wrap: wrap; }
+    .mt-file .mt-btn { width: 100%; }
+    .mt-card-head { padding: 18px 60px 12px 18px; }
+    .mt-body { padding: 16px 18px 20px; }
+    .mt-overlay { padding: 0; align-items: flex-end; }
+    .mt-card { width: 100%; max-height: 94dvh; border-radius: 12px 12px 0 0; }
+    .mt-actions { grid-template-columns: 96px minmax(0, 1fr); }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .mt-card { animation: mtUp .22s ease; }
+    @keyframes mtUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  }
+</style>
+
+<main class="mt" id="mt">
+  <div class="mt-shell">
+    <p class="mt-note">
+      <span class="wl-ko"><strong>교회 · 단체 · 개인</strong> 누구나 받을 수 있어요. 교회와 단체는 이름과 이메일을 꼭 적어 주세요(교재 소식과 문의 연락용). 받으신 파일은 <strong>교회·단체 안에서 비영리로</strong> 사용해 주세요. 판매하거나 인터넷에 다시 올리는 것은 안 돼요.</span>
+      <span class="wl-en"><strong>Churches, organizations and individuals</strong> are all welcome. Churches and organizations, please give your name and email (for updates and questions). Please use the files <strong>non-commercially within your church or organization</strong>; selling or re-posting them online is not allowed.</span>
+    </p>
+    <div id="mtState" class="mt-state" role="status"><span class="wl-ko">교재를 불러오는 중이에요…</span><span class="wl-en">Loading materials…</span></div>
+    <div id="mtGroups" class="mt-groups"></div>
+  </div>
+</main>
+
+<div id="mtOverlay" class="mt-overlay" hidden>
+  <div class="mt-card" role="dialog" aria-modal="true" aria-labelledby="mtCardTitle" id="mtCard">
+    <div class="mt-card-head">
+      <p class="mt-card-kicker"><span class="wl-ko">교재 내려받기</span><span class="wl-en">Download</span></p>
+      <h2 class="mt-card-title" id="mtCardTitle"></h2>
+    </div>
+    <button type="button" class="mt-close" id="mtClose" aria-label="닫기 / Close"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13"/></svg></button>
+
+    <div class="mt-body" id="mtFormWrap">
+      <form id="mtForm" novalidate autocomplete="on">
+        <fieldset class="mt-kinds" id="mtKinds" aria-label="구분 / Who is downloading">
+          <label class="mt-kind"><input type="radio" name="kind" value="church"><span><span class="wl-ko">교회</span><span class="wl-en">Church</span></span></label>
+          <label class="mt-kind"><input type="radio" name="kind" value="group"><span><span class="wl-ko">단체</span><span class="wl-en">Organization</span></span></label>
+          <label class="mt-kind"><input type="radio" name="kind" value="individual"><span><span class="wl-ko">개인</span><span class="wl-en">Individual</span></span></label>
+        </fieldset>
+        <p class="mt-err" id="mtErr-kind" hidden></p>
+
+        <div class="mt-field" id="mtFieldChurch">
+          <label for="mtChurch"><span id="mtChurchLabel"></span></label>
+          <input type="text" id="mtChurch" name="church" maxlength="50" autocomplete="organization">
+          <p class="mt-err" id="mtErr-church" hidden></p>
+        </div>
+        <div class="mt-field">
+          <label for="mtName"><span class="wl-ko">신청하시는 분 이름</span><span class="wl-en">Your name</span><span class="mt-req" aria-hidden="true"> *</span></label>
+          <input type="text" id="mtName" name="name" maxlength="40" autocomplete="name">
+          <p class="mt-err" id="mtErr-name" hidden></p>
+        </div>
+        <div class="mt-field">
+          <label for="mtEmail"><span id="mtEmailLabel"></span></label>
+          <input type="email" id="mtEmail" name="email" maxlength="100" autocomplete="email" inputmode="email">
+          <p class="mt-err" id="mtErr-email" hidden></p>
+        </div>
+        <div class="mt-hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+
+        <div class="mt-terms">
+          <span class="wl-ko"><strong>사용 안내</strong> · 교회·단체 안에서 비영리로 자유롭게 사용할 수 있어요. 판매하거나 인터넷에 다시 올리는 것은 안 돼요. PDF 아래쪽에 <strong>받으신 분의 이름(교회)과 날짜, 확인번호</strong>가 작게 찍혀요.</span>
+          <span class="wl-en"><strong>Terms of use</strong> · You may use the files freely and non-commercially within your church or organization. Selling or re-posting them online is not allowed. A small line with <strong>your name (church), the date and a reference code</strong> is printed at the bottom of each PDF page.</span>
+        </div>
+        <label class="mt-agree">
+          <input type="checkbox" id="mtAgree" name="agree">
+          <span>
+            <span class="wl-ko">위 안내에 동의하고, 이름·교회·이메일을 교재 배포 기록과 연락에 쓰는 것에 동의합니다. 삭제를 요청하실 때까지 보관해요. <a href="/privacy" target="_blank" rel="noopener">개인정보처리방침</a></span>
+            <span class="wl-en">I agree to the terms above and to WOLKO using my name, church and email for distribution records and contact. Kept until you ask us to delete it. <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a></span>
+          </span>
+        </label>
+        <p class="mt-err" id="mtErr-agree" hidden></p>
+        <p class="mt-err" id="mtErr-form" role="alert" hidden></p>
+
+        <div class="mt-actions">
+          <button type="button" class="mt-btn ghost" id="mtCancel"><span class="wl-ko">취소</span><span class="wl-en">Cancel</span></button>
+          <button type="submit" class="mt-btn" id="mtSubmit">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 7 8 10.5 11.5 7M3 13h10"/></svg>
+            <span class="wl-ko">내려받기</span><span class="wl-en">Download</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="mt-body" id="mtDoneWrap" hidden>
+      <div class="mt-done">
+        <div class="mt-done-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+        <h3 id="mtDoneTitle" tabindex="-1"><span class="wl-ko">내려받기를 시작했어요</span><span class="wl-en">Your download has started</span></h3>
+        <p><span class="wl-ko">확인번호</span><span class="wl-en">Reference code</span></p>
+        <span class="mt-code" id="mtCode"></span>
+        <p id="mtStampNote"></p>
+        <p><span class="wl-ko">시작되지 않으면 </span><span class="wl-en">If it does not start, </span><a id="mtManual" href="#"><span class="wl-ko">여기를 눌러 주세요</span><span class="wl-en">click here</span></a><span class="wl-ko"> (10분 안에 쓸 수 있어요).</span><span class="wl-en"> (the link works for 10 minutes).</span></p>
+        <div class="mt-actions" style="grid-template-columns:1fr"><button type="button" class="mt-btn" id="mtDoneClose"><span class="wl-ko">닫기</span><span class="wl-en">Close</span></button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</BaseLayout>
+
+<script is:inline>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var isEn = function () {
+    var el = $('lang-root');
+    return !!((el && el.classList.contains('lang-en')) || document.body.classList.contains('lang-en') || document.documentElement.classList.contains('lang-en'));
+  };
+  var T = function (ko, en) { return isEn() ? en : ko; };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var STORE = 'wolko-materials-who';
+  var current = null, lastFocus = null, items = [];
+
+  function sizeText(n) {
+    if (!n) return '';
+    if (n < 1024 * 1024) return Math.max(1, Math.round(n / 1024)) + ' KB';
+    return (n / 1024 / 1024).toFixed(1) + ' MB';
+  }
+  function dateText(iso) { return iso ? String(iso).slice(0, 10) : ''; }
+
+  function render() {
+    var box = $('mtGroups'), state = $('mtState');
+    if (!items.length) {
+      state.hidden = false;
+      state.innerHTML = '<span class="wl-ko">아직 공개된 교재가 없어요. 곧 올라올 예정이에요.</span><span class="wl-en">No materials are available yet. Please check back soon.</span>';
+      box.innerHTML = ''; return;
+    }
+    state.hidden = true;
+    box.innerHTML = items.map(function (g, gi) {
+      var thumb = g.hasThumb ? '<img class="mt-thumb" src="/api/materials?thumb=' + encodeURIComponent(g.id) + '" alt="" loading="lazy">' : '';
+      var titleEn = g.titleEn || g.title;
+      var files = g.files.map(function (f, fi) {
+        var meta = [f.ext ? '<span class="mt-tag">' + esc(f.ext.toUpperCase()) + '</span>' : '', sizeText(f.size), dateText(f.updatedAt)].filter(Boolean).join(' ');
+        return '<li class="mt-file"><span class="mt-file-info"><span class="mt-file-name">' + esc(f.fileName) + '</span><span class="mt-file-meta">' + meta + '</span></span>'
+          + '<button type="button" class="mt-btn" data-g="' + gi + '" data-f="' + fi + '"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 7 8 10.5 11.5 7M3 13h10"/></svg><span class="wl-ko">내려받기</span><span class="wl-en">Download</span></button></li>';
+      }).join('');
+      return '<section class="mt-group' + (thumb ? '' : ' no-thumb') + '">' + thumb + '<div><h2 class="mt-title"><span class="wl-ko">' + esc(g.title) + '</span><span class="wl-en">' + esc(titleEn) + '</span></h2>'
+        + (g.desc ? '<p class="mt-desc">' + esc(g.desc) + '</p>' : '') + '<ul class="mt-files">' + files + '</ul></div></section>';
+    }).join('');
+  }
+
+  function load() {
+    fetch('/api/materials').then(function (r) { return r.json(); }).then(function (d) { items = d.items || []; render(); }).catch(function () {
+      var st = $('mtState'); st.hidden = false;
+      st.innerHTML = '<span class="wl-ko">교재 목록을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</span><span class="wl-en">We could not load the list. Please try again in a moment.</span>';
+    });
+  }
+
+  /* ── 신청 창 ── */
+  function kindValue() { var r = document.querySelector('#mtForm input[name="kind"]:checked'); return r ? r.value : ''; }
+  function syncKind() {
+    var k = kindValue(), church = k === 'church', group = k === 'group', person = !church && !group;
+    $('mtFieldChurch').hidden = !k;
+    $('mtChurchLabel').innerHTML = church ? '<span class="wl-ko">교회 이름<span class="mt-req"> *</span></span><span class="wl-en">Church name<span class="mt-req"> *</span></span>'
+      : group ? '<span class="wl-ko">단체 이름<span class="mt-req"> *</span></span><span class="wl-en">Organization name<span class="mt-req"> *</span></span>'
+      : '<span class="wl-ko">소속 교회 (선택)</span><span class="wl-en">Your church (optional)</span>';
+    $('mtEmailLabel').innerHTML = person ? '<span class="wl-ko">이메일 (선택)</span><span class="wl-en">Email (optional)</span>'
+      : '<span class="wl-ko">이메일<span class="mt-req"> *</span></span><span class="wl-en">Email<span class="mt-req"> *</span></span>';
+  }
+  function clearErrors() {
+    ['kind', 'church', 'name', 'email', 'agree', 'form'].forEach(function (f) { var e = $('mtErr-' + f); e.hidden = true; e.textContent = ''; });
+    ['mtChurch', 'mtName', 'mtEmail'].forEach(function (id) { $(id).classList.remove('is-invalid'); $(id).removeAttribute('aria-invalid'); });
+    $('mtKinds').classList.remove('is-invalid');
+  }
+  function showError(field, msg) {
+    var slot = $('mtErr-' + (field && $('mtErr-' + field) ? field : 'form'));
+    slot.textContent = msg; slot.hidden = false;
+    var map = { church: 'mtChurch', name: 'mtName', email: 'mtEmail' };
+    if (map[field]) { var el = $(map[field]); el.classList.add('is-invalid'); el.setAttribute('aria-invalid', 'true'); el.focus(); }
+    if (field === 'kind') $('mtKinds').classList.add('is-invalid');
+  }
+  function saved() { try { return JSON.parse(localStorage.getItem(STORE) || 'null') || {}; } catch (e) { return {}; } }
+  function save(v) { try { localStorage.setItem(STORE, JSON.stringify({ kind: v.kind, name: v.name, church: v.church, email: v.email })); } catch (e) { /* 저장은 편의일 뿐 */ } }
+
+  function open(g, f, opener) {
+    current = { g: g, f: f }; lastFocus = opener || null;
+    clearErrors();
+    var s = saved();
+    $('mtFormWrap').hidden = false; $('mtDoneWrap').hidden = true;
+    $('mtCardTitle').innerHTML = '<span class="wl-ko">' + esc(g.title) + ' · ' + esc(f.fileName) + '</span><span class="wl-en">' + esc(g.titleEn || g.title) + ' · ' + esc(f.fileName) + '</span>';
+    var radios = document.querySelectorAll('#mtForm input[name="kind"]');
+    for (var i = 0; i < radios.length; i++) radios[i].checked = !!s.kind && radios[i].value === s.kind;
+    $('mtName').value = s.name || ''; $('mtChurch').value = s.church || ''; $('mtEmail').value = s.email || '';
+    $('mtAgree').checked = false; $('mtSubmit').disabled = false;
+    syncKind();
+    $('mtOverlay').hidden = false; document.body.style.overflow = 'hidden';
+    setTimeout(function () { (kindValue() ? $('mtName') : document.querySelector('#mtForm input[name="kind"]')).focus(); }, 30);
+  }
+  function close() {
+    $('mtOverlay').hidden = true; document.body.style.overflow = '';
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  /** 서버와 같은 규칙으로 먼저 검사해서, 서버까지 다녀오지 않고 바로 알려 준다(서버가 최종 판단) */
+  function validate(b) {
+    var k = b.kind, need = k === 'church' || k === 'group';
+    var name = b.name.replace(/\s+/g, ' ').trim(), church = b.church.replace(/\s+/g, ' ').trim(), email = b.email.trim();
+    if (!k) return { field: 'kind', msg: T('개인 · 교회 · 단체 중 하나를 골라 주세요.', 'Please choose individual, church or organization.') };
+    if (need && church.length < 2) return { field: 'church', msg: k === 'church' ? T('교회 이름을 적어 주세요.', 'Please enter your church name.') : T('단체 이름을 적어 주세요.', 'Please enter your organization name.') };
+    if (name.length < 2) return { field: 'name', msg: T('이름을 적어 주세요(2글자 이상).', 'Please enter your name (at least 2 characters).') };
+    if (need && !email) return { field: 'email', msg: T('이메일을 적어 주세요(교재 소식과 문의 연락용).', 'Please enter your email (for updates and questions about the materials).') };
+    if (email && !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email)) return { field: 'email', msg: T('이메일 주소 모양이 맞지 않아요.', 'That email address does not look right.') };
+    if (!b.agree) return { field: 'agree', msg: T('사용 안내와 개인정보 수집에 동의해 주세요.', 'Please agree to the usage terms and the collection of your information.') };
+    return null;
+  }
+
+  function submit(e) {
+    e.preventDefault(); clearErrors();
+    var form = $('mtForm');
+    var body = { itemId: current.g.id, fileId: current.f.id, kind: kindValue(), name: $('mtName').value, church: $('mtChurch').value, email: $('mtEmail').value, agree: $('mtAgree').checked, lang: isEn() ? 'en' : 'ko', website: form.elements.website.value };
+    var bad = validate(body);
+    if (bad) { showError(bad.field, bad.msg); return; }
+    $('mtSubmit').disabled = true;
+    fetch('/api/materials/request', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (res) {
+        if (!res.ok) { $('mtSubmit').disabled = false; showError(res.d.field, isEn() ? (res.d.errorEn || res.d.error) : res.d.error); return; }
+        save(body);
+        $('mtCode').textContent = res.d.code;
+        $('mtManual').setAttribute('href', res.d.url);
+        $('mtStampNote').innerHTML = res.d.stamp
+          ? '<span class="wl-ko">PDF 아래쪽에 ' + esc(body.kind === 'individual' ? body.name : body.church) + ' · 날짜 · 확인번호가 작게 찍혀 있어요.</span><span class="wl-en">Your name (church), the date and this code are printed small at the bottom of each PDF page.</span>'
+          : '<span class="wl-ko">이 파일은 PDF가 아니라 이름이 찍히지 않아요. 확인번호는 월코 기록에 남아요.</span><span class="wl-en">This file is not a PDF, so nothing is printed on it. The code is kept in WOLKO\'s records.</span>';
+        $('mtFormWrap').hidden = true; $('mtDoneWrap').hidden = false;
+        $('mtDoneTitle').focus();
+        window.location.href = res.d.url;   // 첨부 파일(attachment)이라 이 화면은 그대로 두고 내려받기만 시작된다
+      })
+      .catch(function () { $('mtSubmit').disabled = false; showError('form', T('연결에 문제가 있어요. 잠시 뒤 다시 해 주세요.', 'Connection problem. Please try again in a moment.')); });
+  }
+
+  $('mtGroups').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-g]'); if (!b) return;
+    var g = items[+b.getAttribute('data-g')], f = g && g.files[+b.getAttribute('data-f')];
+    if (g && f) open(g, f, b);
+  });
+  $('mtForm').addEventListener('submit', submit);
+  $('mtForm').addEventListener('change', function (e) { if (e.target.name === 'kind') { $('mtKinds').classList.remove('is-invalid'); syncKind(); } });
+  $('mtClose').addEventListener('click', close); $('mtCancel').addEventListener('click', close); $('mtDoneClose').addEventListener('click', close);
+  $('mtOverlay').addEventListener('mousedown', function (e) { if (e.target === $('mtOverlay')) close(); });
+  document.addEventListener('keydown', function (e) {
+    if ($('mtOverlay').hidden) return;
+    if (e.key === 'Escape') { close(); return; }
+    if (e.key !== 'Tab') return;   // 창 밖으로 초점이 나가지 않게
+    var els = [].filter.call($('mtCard').querySelectorAll('button, input, a[href]'), function (el) { return !el.disabled && el.offsetParent !== null && el.tabIndex !== -1; });
+    if (!els.length) return;
+    var first = els[0], last = els[els.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+  load();
+})();
+</script>

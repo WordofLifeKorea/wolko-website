@@ -56,6 +56,41 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     .file-context-menu button:hover,.file-context-menu button:focus-visible { background:#eef6f8; outline:2px solid #b7d8e0; }
     .file-context-menu select { width:100%; min-height:42px; }
     [data-context-file], [data-context-folder] { -webkit-touch-callout:none; }
+    /* 교재 배포: '배포 중' 표시 · 현황 창 */
+    .mat-head-btns { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .mat-report-btn { background:#fff !important; color:var(--navy,#003f55) !important; border:1px solid #b9c7ce !important; }
+    .mat-report-btn:hover { background:#eef6f8 !important; }
+    .file-tile-pub { position:absolute; top:6px; right:6px; z-index:1; padding:0 6px; height:17px; display:flex; align-items:center; border-radius:var(--ws-radius-sm,8px); background:#e6f6f6; color:#00696c; font-size:10.5px; font-weight:800; letter-spacing:.02em; }
+    .file-details-pub { display:inline-block; margin-left:8px; padding:0 6px; height:18px; line-height:18px; border-radius:var(--ws-radius-sm,8px); background:#e6f6f6; color:#00696c; font-size:11px; font-weight:800; vertical-align:middle; }
+    .mat-overlay { position:fixed; inset:0; z-index:9500; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(16,41,54,.55); }
+    .mat-overlay[hidden] { display:none; }
+    .mat-card { position:relative; width:min(1080px,100%); max-height:calc(100dvh - 40px); overflow-y:auto; overscroll-behavior:contain; background:#fff; border-radius:var(--ws-radius-sm,8px); box-shadow:0 18px 44px rgba(16,41,54,.28); padding:26px 28px 30px; }
+    .mat-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:16px; }
+    .mat-head h2 { margin:0; font-size:21px; }
+    .mat-x { width:42px; height:42px; flex:none; border:1px solid var(--line); border-radius:var(--ws-radius-sm,8px); background:#fff; color:var(--ink); font-size:18px; cursor:pointer; }
+    .mat-tools { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 18px; }
+    .mat-tools select, .mat-tools input, .mat-tools button, .mat-del input { min-height:40px; padding:0 12px; border:1px solid #b9c7ce; border-radius:var(--ws-radius-sm,8px); background:#fff; color:var(--ink); font:inherit; font-size:14px; }
+    .mat-tools button, .mat-del button { font-weight:700; cursor:pointer; }
+    .mat-tools button:hover, .mat-del button:hover { background:#eef6f8; }
+    .mat-link { flex:1; min-width:220px; color:var(--muted); font-size:13px; overflow-wrap:anywhere; }
+    .mat-cards { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:22px; }
+    .mat-stat { padding:14px 16px; border:1px solid var(--line); border-radius:var(--ws-radius-sm,8px); background:#fff; }
+    .mat-stat b { display:block; font-size:28px; line-height:1.1; color:var(--navy,#003f55); font-variant-numeric:tabular-nums; }
+    .mat-stat span { display:block; margin-top:4px; font-size:12.5px; color:var(--muted); }
+    .mat-sec { margin:22px 0 8px; font-size:15px; }
+    .mat-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:var(--ws-radius-sm,8px); }
+    .mat-table { width:100%; border-collapse:collapse; font-size:13.5px; min-width:560px; }
+    .mat-table th, .mat-table td { padding:9px 12px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top; overflow-wrap:anywhere; }
+    .mat-table th { background:#f5f8fa; color:var(--muted); font-size:12px; font-weight:700; white-space:nowrap; }
+    .mat-table tr:last-child td { border-bottom:0; }
+    .mat-table td.num, .mat-table th.num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+    .mat-kind { display:inline-block; padding:0 7px; height:20px; line-height:20px; border-radius:var(--ws-radius-sm,8px); font-size:11.5px; font-weight:800; background:#eef2f4; color:#3e535d; white-space:nowrap; }
+    .mat-kind.church { background:#e6f6f6; color:#00696c; } .mat-kind.group { background:#f1ecfd; color:#5a44ad; }
+    .mat-empty { padding:26px; text-align:center; color:var(--muted); }
+    .mat-note { margin:10px 0 0; font-size:13px; color:var(--muted); }
+    .mat-del { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:8px; }
+    .mat-del input { flex:1; min-width:220px; }
+    @media (max-width:760px) { .mat-card { padding:18px 16px 24px; } .mat-cards { grid-template-columns:repeat(2,minmax(0,1fr)); } }
     .stage-pct-auto { display:block; width:100%; margin-top:2px; padding:4px 6px; border:1px dashed #d7e4e8; border-radius: var(--ws-radius-sm, 8px); background:#fff; color:#102936; font-size:11px; font-weight:700; line-height:1.3; }
     .stage-pct-auto-note { color:inherit; font-size:10px; font-weight:600; opacity:.8; }
     .password-dialog { width:min(360px,calc(100vw - 32px)); padding:22px; border:0; border-radius: var(--ws-radius-sm, 8px); box-shadow:0 24px 70px rgba(0,0,0,.3); color:#102936; font-family:inherit; }
@@ -120,7 +155,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     <section class="summary-grid" id="summaryGrid"></section>
 
     <section class="report-section">
-      <div class="section-head"><div><h2 data-t="sectionTitle">작업 중인 자료</h2></div><button class="add-resource" id="addResourceBtn" type="button" hidden onclick="openEditor()"><span>+</span> <span data-t="addResourceBtn">항목 추가</span></button></div>
+      <div class="section-head"><div><h2 data-t="sectionTitle">작업 중인 자료</h2></div><div class="mat-head-btns"><button class="add-resource mat-report-btn" id="matReportBtn" type="button" hidden onclick="openMatReport()"><span data-mt="reportBtn">교재 배포 현황</span></button><button class="add-resource" id="addResourceBtn" type="button" hidden onclick="openEditor()"><span>+</span> <span data-t="addResourceBtn">항목 추가</span></button></div></div>
       <p class="report-updated" id="updatedAt"></p>
       <div class="rr-filters" id="resourceFilters" role="group"></div>
       <div class="resource-grid" id="resourceGrid"></div>
@@ -261,6 +296,19 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     </div>
     <div class="docx-version-list" id="docxVersionList"></div>
   </dialog>
+
+  <div class="mat-overlay" id="matOverlay" hidden>
+    <div class="mat-card" role="dialog" aria-modal="true" aria-labelledby="matTitle">
+      <div class="mat-head"><div><h2 id="matTitle" data-mt="reportTitle">교재 배포 현황</h2><p class="mat-note" id="matSub"></p></div><button type="button" class="mat-x" onclick="closeMatReport()" aria-label="닫기 / Close">✕</button></div>
+      <div class="mat-tools">
+        <select id="matMonth" onchange="loadMatReport()" aria-label="기간"></select>
+        <button type="button" onclick="loadMatReport()" data-mt="refresh">새로고침</button>
+        <button type="button" onclick="downloadMatCsv()" data-mt="csv">엑셀(CSV)로 받기</button>
+        <span class="mat-link"><span data-mt="publicLink">공개 자료실 주소</span>: <b>wolko.org/resources/materials</b> <button type="button" onclick="copyMatLink()" data-mt="copy">주소 복사</button></span>
+      </div>
+      <div id="matBody"></div>
+    </div>
+  </div>
 
   <div class="toast" id="toast"></div>
 
@@ -570,6 +618,8 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       }).join('') + (shown.length ? '' : `<div class="rr-empty"><span>${esc(t('filterEmpty'))}</span></div>`)
         : `<div class="rr-empty"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg><strong>${esc(t('emptyTitle'))}</strong><span>${esc(canWrite ? t('emptyHintWrite') : t('emptyHintRead'))}</span></div>`;
       $('addResourceBtn').hidden = !canWrite;
+      $('matReportBtn').hidden = !canWrite;
+      document.querySelectorAll('[data-mt]').forEach(el => { el.textContent = mt(el.dataset.mt); });
       rrReveal();
     }
 
@@ -578,7 +628,9 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       const data = await res.json().catch(() => ({}));
       if (res.status === 401) return logout();
       if (!res.ok) throw new Error(data.error || t('loadFailed'));
-      resources = Array.isArray(data.items) ? data.items : []; canWrite = !!data.canWrite; canUpload = !!data.canUpload; lastUpdatedAt = data.updatedAt || ''; render();
+      resources = Array.isArray(data.items) ? data.items : []; canWrite = !!data.canWrite; canUpload = !!data.canUpload; lastUpdatedAt = data.updatedAt || '';
+      await loadMatPub();   // 어느 파일이 교회에 배포 중인지(표시만 — 못 불러와도 자료 화면은 그대로)
+      render();
     }
 
     /* ── 첨부 파일 (레슨 폴더 안에 원본/수정본으로 정리) ── */
@@ -622,7 +674,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       return `<div class="file-tile" data-context-file="${meta.id}">
         <button type="button" class="file-tile-newtab" onclick="event.stopPropagation();openInNewTab('${meta.id}')" title="${esc(t('openInNewTab'))}" aria-label="${esc(t('openInNewTab'))}">↗</button>
         <button type="button" class="file-tile-preview" onclick="previewFile('${meta.id}')" title="${esc(t('previewFile'))}">
-          ${noteBadge}
+          ${noteBadge}${matBadgeHtml(meta.id)}
           ${fileIconHtml(meta.fileName)}
           <span class="file-tile-name" title="${esc(meta.fileName)}">${esc(meta.fileName)}</span>
           <span class="file-tile-meta">${metaLine}</span>
@@ -659,7 +711,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
           time = new Intl.DateTimeFormat(locale, { hour:'2-digit', minute:'2-digit' }).format(uploadedAt);
         } catch {}
         return `<tr data-context-file="${esc(meta.id)}" onclick="previewFile('${meta.id}')">
-          <td><button type="button" class="file-details-name" title="${esc(meta.fileName)}">${fileIconHtml(meta.fileName)}<span>${esc(meta.fileName)}</span></button></td>
+          <td><button type="button" class="file-details-name" title="${esc(meta.fileName)}">${fileIconHtml(meta.fileName)}<span>${esc(meta.fileName)}</span>${matBadgeHtml(meta.id, true)}</button></td>
           <td class="file-details-size">${humanFileSize(meta.fileSize)}</td>
           <td class="file-details-kind">${esc(kind)}</td>
           <td class="file-details-date" title="${esc(meta.uploadedByName || meta.uploadedBy || '')}"><span>${esc(date)}</span> <span class="file-details-time">${esc(time)}</span></td>
@@ -2436,6 +2488,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       return { label: meta.fileName, items: [
         [t('downloadFile'), () => { closeFileMenu(); downloadFile(meta.id); }],
         [t('renameFile'), () => { closeFileMenu(); renameFile(meta.id); }],
+        [matIsPublished(meta.id) ? mt('unpublish') : mt('publish'), () => { closeFileMenu(); toggleMatPublish(meta); }],
         [t('moveFile'), () => {
           fileMenu.innerHTML = moveOptionsHtml(meta);
           fileMenu.querySelector('select')?.focus();
@@ -2682,9 +2735,147 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     function logout() { sessionStorage.removeItem('wolko-hub-token'); sessionStorage.removeItem('wolko-hub-email'); sessionStorage.removeItem('wolko-hub-role'); location.href = '/portal'; }
     $('editorForm').addEventListener('submit', saveResource); $('editorOverlay').addEventListener('click', event => { if (event.target === $('editorOverlay')) closeEditor(); });
 
+    /* ── 교재 배포: 교회·개인에게 공개 자료실로 내려받게 할 파일 표시 + 내려받기 현황(관리자) ── */
+    const MT = {
+      ko: {
+        publish: '교회에 배포 켜기', unpublish: '교회 배포 끄기', badge: '배포 중',
+        toastOn: '공개 자료실에 올렸어요. 이제 교회와 개인이 내려받을 수 있어요.', toastOff: '배포를 껐어요. 공개 자료실에서 사라졌어요.',
+        toastNonPdf: 'PDF가 아니어서 워터마크(이름·확인번호)가 찍히지 않아요.', failed: '배포 표시를 바꾸지 못했어요.',
+        reportBtn: '교재 배포 현황', reportTitle: '교재 배포 현황', refresh: '새로고침', csv: '엑셀(CSV)로 받기', publicLink: '공개 자료실 주소', copy: '주소 복사', copied: '주소를 복사했어요.',
+        allTime: '전체 기간', loading: '불러오는 중…', loadFail: '현황을 불러오지 못했어요.',
+        cDownloads: '총 내려받기', cChurches: '서로 다른 교회·단체', cPeople: '서로 다른 사람', cKinds: '개인 / 교회 / 단체',
+        secMaterials: '교재별', secChurches: '교회·단체별', secRecent: '최근 기록', secDelete: '삭제 요청 처리',
+        colMaterial: '교재', colTotal: '횟수', colKind: '구분', colWho: '이름', colChurch: '교회·단체', colEmail: '이메일', colTime: '시각', colStamp: '워터마크', colCode: '확인번호', colLast: '마지막', colContacts: '받은 사람',
+        colInd: '개인', colCh: '교회', colGr: '단체', colChCount: '교회 수',
+        empty: '아직 내려받은 기록이 없어요.', truncated: '기록이 많아 일부만 보여요. 엑셀(CSV)에는 전체가 들어 있어요.',
+        sub: (n, m) => m ? `${m} 한 달 기록` : '전체 기간 기록 · 한국 시간 기준', delPh: '삭제를 요청한 분의 이메일', delBtn: '기록 지우기',
+        delConfirm: email => `${email} 의 내려받기 기록을 모두 지울까요? 되돌릴 수 없어요.`, deleted: n => `${n}건을 지웠어요.`, delBad: '이메일 주소를 확인해 주세요.',
+        kind: { individual: '개인', church: '교회', group: '단체' },
+        stamp: { a: '찍음', A: '번호만', s: '크기 초과(원본)', e: '암호 PDF(원본)', f: '실패(원본)', '-': 'PDF 아님' },
+      },
+      en: {
+        publish: 'Share with churches', unpublish: 'Stop sharing', badge: 'Shared',
+        toastOn: 'Added to the public library. Churches and individuals can now download it.', toastOff: 'Sharing turned off. It is no longer in the public library.',
+        toastNonPdf: 'This is not a PDF, so no watermark (name and code) will be added.', failed: 'Could not change the sharing setting.',
+        reportBtn: 'Download report', reportTitle: 'Materials download report', refresh: 'Refresh', csv: 'Download CSV', publicLink: 'Public library address', copy: 'Copy address', copied: 'Address copied.',
+        allTime: 'All time', loading: 'Loading…', loadFail: 'Could not load the report.',
+        cDownloads: 'Total downloads', cChurches: 'Distinct churches / groups', cPeople: 'Distinct people', cKinds: 'Individual / Church / Org.',
+        secMaterials: 'By material', secChurches: 'By church / organization', secRecent: 'Recent downloads', secDelete: 'Deletion requests',
+        colMaterial: 'Material', colTotal: 'Downloads', colKind: 'Type', colWho: 'Name', colChurch: 'Church / Org.', colEmail: 'Email', colTime: 'Time', colStamp: 'Watermark', colCode: 'Code', colLast: 'Last', colContacts: 'People',
+        colInd: 'Indiv.', colCh: 'Church', colGr: 'Org.', colChCount: 'Churches',
+        empty: 'No downloads yet.', truncated: 'Only part of the records is shown. The CSV has everything.',
+        sub: (n, m) => m ? `Records for ${m}` : 'All time · Korea time', delPh: 'Email of the person who asked for deletion', delBtn: 'Delete records',
+        delConfirm: email => `Delete all download records for ${email}? This cannot be undone.`, deleted: n => `Deleted ${n} record(s).`, delBad: 'Please check the email address.',
+        kind: { individual: 'Individual', church: 'Church', group: 'Org.' },
+        stamp: { a: 'Applied', A: 'Code only', s: 'Too large (original)', e: 'Encrypted (original)', f: 'Failed (original)', '-': 'Not a PDF' },
+      },
+    };
+    const mt = key => MT[lang]?.[key] ?? MT.ko[key] ?? key;
+    let matPub = {};
+    const matKey = fileId => `${currentItem?.id}:${fileId}`;
+    const matIsPublished = fileId => !!matPub[matKey(fileId)]?.on;
+    function matBadgeHtml(fileId, inline) {
+      if (!matIsPublished(fileId)) return '';
+      return inline ? `<span class="file-details-pub">${esc(mt('badge'))}</span>` : `<span class="file-tile-pub">${esc(mt('badge'))}</span>`;
+    }
+    async function loadMatPub() {
+      try {
+        const res = await fetch('/api/portal/material-publish', { headers: authHeaders() });
+        if (res.ok) matPub = (await res.json()).files || {};
+      } catch { /* 표시를 못 불러와도 자료 화면은 그대로 */ }
+    }
+    async function toggleMatPublish(meta) {
+      if (!canWrite || !currentItem) return;
+      const on = !matIsPublished(meta.id);
+      try {
+        const res = await fetch('/api/portal/material-publish', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ itemId: currentItem.id, fileId: meta.id, on }) });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || mt('failed'));
+        if (data.entry) matPub[matKey(meta.id)] = data.entry; else delete matPub[matKey(meta.id)];
+        renderFilesAndFolders();
+        toast(on ? (data.pdf ? mt('toastOn') : mt('toastOn') + ' ' + mt('toastNonPdf')) : mt('toastOff'));
+      } catch (error) { toast(error.message || mt('failed'), true); }
+    }
+
+    let matMonths = [];
+    const matTime = ms => { try { return new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(ms)); } catch { return ''; } };
+    function openMatReport() {
+      if (!canWrite) return;
+      $('matOverlay').hidden = false; document.body.style.overflow = 'hidden';
+      document.querySelectorAll('#matOverlay [data-mt]').forEach(el => { el.textContent = mt(el.dataset.mt); });
+      matMonths = []; $('matMonth').innerHTML = `<option value="">${esc(mt('allTime'))}</option>`;
+      loadMatReport();
+    }
+    function closeMatReport() { $('matOverlay').hidden = true; document.body.style.overflow = ''; }
+    async function loadMatReport() {
+      const month = $('matMonth').value;
+      $('matBody').innerHTML = `<p class="mat-empty">${esc(mt('loading'))}</p>`;
+      try {
+        const res = await fetch('/api/portal/material-downloads' + (month ? `?month=${encodeURIComponent(month)}` : ''), { headers: authHeaders() });
+        const d = await res.json().catch(() => ({}));
+        if (res.status === 401) return logout();
+        if (!res.ok) throw new Error(d.error || mt('loadFail'));
+        if (!month) {   // 처음(전체 기간)일 때만 월 목록을 만든다
+          matMonths = (d.byMonth || []).map(m => m.month);
+          $('matMonth').innerHTML = `<option value="">${esc(mt('allTime'))}</option>` + matMonths.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+        }
+        $('matSub').textContent = mt('sub')(d.totals?.downloads || 0, month);
+        $('matBody').innerHTML = matReportHtml(d);
+      } catch (error) { $('matBody').innerHTML = `<p class="mat-empty">${esc(error.message || mt('loadFail'))}</p>`; }
+    }
+    function matReportHtml(d) {
+      const tt = d.totals || {};
+      const kindTag = k => `<span class="mat-kind ${esc(k)}">${esc(mt('kind')[k] || k)}</span>`;
+      if (!tt.downloads) return `<p class="mat-empty">${esc(mt('empty'))}</p>${matDeleteHtml()}`;
+      const cards = `<div class="mat-cards">
+        <div class="mat-stat"><b>${tt.downloads}</b><span>${esc(mt('cDownloads'))}</span></div>
+        <div class="mat-stat"><b>${tt.churches}</b><span>${esc(mt('cChurches'))}</span></div>
+        <div class="mat-stat"><b>${tt.people}</b><span>${esc(mt('cPeople'))}</span></div>
+        <div class="mat-stat"><b>${tt.individual} / ${tt.church} / ${tt.group}</b><span>${esc(mt('cKinds'))}</span></div></div>`;
+      const mats = `<h3 class="mat-sec">${esc(mt('secMaterials'))}</h3><div class="mat-wrap"><table class="mat-table"><thead><tr><th>${esc(mt('colMaterial'))}</th><th class="num">${esc(mt('colTotal'))}</th><th class="num">${esc(mt('colChCount'))}</th><th class="num">${esc(mt('colInd'))}</th><th class="num">${esc(mt('colCh'))}</th><th class="num">${esc(mt('colGr'))}</th><th>${esc(mt('colLast'))}</th></tr></thead><tbody>`
+        + (d.byMaterial || []).map(m => `<tr><td>${esc(m.title || m.key)}</td><td class="num">${m.total}</td><td class="num">${m.churches}</td><td class="num">${m.individual}</td><td class="num">${m.church}</td><td class="num">${m.group}</td><td>${esc(matTime(m.last))}</td></tr>`).join('') + '</tbody></table></div>';
+      const churches = (d.churches || []).length ? `<h3 class="mat-sec">${esc(mt('secChurches'))}</h3><div class="mat-wrap"><table class="mat-table"><thead><tr><th>${esc(mt('colChurch'))}</th><th>${esc(mt('colKind'))}</th><th class="num">${esc(mt('colTotal'))}</th><th>${esc(mt('colLast'))}</th><th>${esc(mt('colContacts'))}</th></tr></thead><tbody>`
+        + d.churches.map(c => `<tr><td>${esc(c.church)}</td><td>${kindTag(c.kind)}</td><td class="num">${c.downloads}</td><td>${esc(matTime(c.last))}</td><td>${esc((c.people || []).join(', '))}${(c.emails || []).length ? '<br><small>' + esc(c.emails.join(', ')) + '</small>' : ''}</td></tr>`).join('') + '</tbody></table></div>' : '';
+      const recent = `<h3 class="mat-sec">${esc(mt('secRecent'))}</h3><div class="mat-wrap"><table class="mat-table"><thead><tr><th>${esc(mt('colTime'))}</th><th>${esc(mt('colMaterial'))}</th><th>${esc(mt('colKind'))}</th><th>${esc(mt('colWho'))}</th><th>${esc(mt('colChurch'))}</th><th>${esc(mt('colEmail'))}</th><th>${esc(mt('colStamp'))}</th><th>${esc(mt('colCode'))}</th></tr></thead><tbody>`
+        + (d.recent || []).map(r => `<tr><td>${esc(matTime(r.t))}</td><td>${esc(r.title)}</td><td>${kindTag(r.kind)}</td><td>${esc(r.name)}</td><td>${esc(r.church)}</td><td>${esc(r.email)}</td><td>${esc(mt('stamp')[r.stamp] || r.stamp)}</td><td>${esc(r.code)}</td></tr>`).join('') + '</tbody></table></div>'
+        + (d.truncated ? `<p class="mat-note">${esc(mt('truncated'))}</p>` : '');
+      return cards + mats + churches + recent + matDeleteHtml();
+    }
+    function matDeleteHtml() {
+      return `<h3 class="mat-sec">${esc(mt('secDelete'))}</h3><div class="mat-del"><input type="email" id="matDelEmail" placeholder="${esc(mt('delPh'))}" autocomplete="off"><button type="button" onclick="deleteMatByEmail()">${esc(mt('delBtn'))}</button></div>`;
+    }
+    async function deleteMatByEmail() {
+      const email = ($('matDelEmail').value || '').trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast(mt('delBad'), true); return; }
+      if (!confirm(mt('delConfirm')(email))) return;
+      try {
+        const res = await fetch('/api/portal/material-downloads?email=' + encodeURIComponent(email), { method: 'DELETE', headers: authHeaders() });
+        const d = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(d.error || mt('loadFail'));
+        toast(mt('deleted')(d.removed || 0)); loadMatReport();
+      } catch (error) { toast(error.message, true); }
+    }
+    async function downloadMatCsv() {
+      try {
+        const month = $('matMonth').value;
+        const res = await fetch('/api/portal/material-downloads?format=csv' + (month ? `&month=${encodeURIComponent(month)}` : ''), { headers: authHeaders() });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || mt('loadFail'));
+        const blob = await res.blob();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = `wolko-material-downloads${month ? '-' + month : ''}.csv`; document.body.append(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      } catch (error) { toast(error.message, true); }
+    }
+    async function copyMatLink() {
+      try { await navigator.clipboard.writeText('https://wolko.org/resources/materials'); toast(mt('copied')); } catch { toast('wolko.org/resources/materials'); }
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('matOverlay').hidden) closeMatReport(); });
+    $('matOverlay').addEventListener('mousedown', e => { if (e.target === $('matOverlay')) closeMatReport(); });
+
     applyStaticLang();
     const session = parseSession();
     if (session) { $('loginScreen').hidden = true; $('portalMain').hidden = false; $('viewerLabel').textContent = session.email; loadResources().catch(error => toast(error.message, true)); }
+
   </script>
 </body>
 </html>

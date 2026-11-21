@@ -19,6 +19,7 @@ function fakeKV() {
   const convert = (v, type) => {
     if (v == null) return null;
     if (type === 'json') return JSON.parse(typeof v === 'string' ? v : new TextDecoder().decode(toBytes(v)));
+    if (type === 'stream') return new Response(toBytes(v)).body;
     if (type === 'arrayBuffer') { const b = toBytes(v); return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength); }
     return typeof v === 'string' ? v : new TextDecoder().decode(toBytes(v));
   };
@@ -203,6 +204,22 @@ test('내려받기: PDF 가 아닌 파일은 그대로(워터마크 없음), 표
     // 잘못된 신청
     const bad = await t.call(requestApi, 'POST', '/api/materials/request', { body: { ...church, agree: false } });
     assert.equal(bad.status, 400); assert.equal((await bad.json()).field, 'agree');
+  } finally { t.restore(); }
+});
+
+test('큰 PDF(12MB 초과로 기록된 파일)는 메모리에 올리지 않고 그대로 내려주며, 워터마크 대신 기록에 크기 초과로 남는다', async () => {
+  const t = await setup();
+  try {
+    const data = JSON.parse(t.kv.store.get('portal:resources:v1').value);
+    data.items[0].files.find((f) => f.id === 'f1').fileSize = 50 * 1024 * 1024;   // NAS 에 있는 큰 파일처럼
+    t.kv.store.set('portal:resources:v1', { value: JSON.stringify(data) });
+    await t.publish('item1', 'f1');
+    const r = await (await t.call(requestApi, 'POST', '/api/materials/request', { body: church })).json();
+    const got = await t.call(getApi, 'GET', r.url);
+    assert.equal(got.status, 200);
+    assert.equal(got.headers.get('x-wolko-stamp'), 'skipped-size');
+    assert.deepEqual([...new Uint8Array(await got.arrayBuffer())], [...t.pdf], '원본 그대로');
+    assert.equal([...t.kv.store.values()].find((v) => v.metadata?.w === 's') ? 1 : 0, 1, '기록에는 크기 초과(원본)로');
   } finally { t.restore(); }
 });
 
