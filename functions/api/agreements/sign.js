@@ -4,7 +4,7 @@
  *   → { ok, code: 'AG-XXXXXX', signedAt, doc, version }
  * 서명 시각은 서버 시각이 기준이다. 문서의 버전과 글 해시를 같이 남겨서, 나중에 문구가 바뀌어도 '무엇에 서명했는지'가 남는다.
  */
-import { DOCS, docHash, ROLES, AGREEMENT_PREFIX, newAgreementCode, checkSignature } from '../../lib/staffAgreements.js';
+import { DOCS, docHash, ROLES, AGREEMENT_PREFIX, newAgreementCode, checkSignature, signedFor } from '../../lib/staffAgreements.js';
 import { clean, ipHash, rateLimited, kstMonthKey } from '../../lib/materials.js';
 import { loadSchedules, CAMP_ID_RE } from '../../lib/gospelCamps.js';
 
@@ -49,6 +49,11 @@ export async function onRequestPost({ env, request }) {
 
   const hash = await ipHash(request, env);
   if (await rateLimited(env, hash, Date.now(), { prefix: 'agree:rl', perHour: 60, perDay: 200 })) return fail('짧은 시간에 너무 많이 시도하셨어요. 잠시 뒤 다시 해 주세요.', 'Too many attempts. Please try again a little later.', 429);
+
+  // 같은 이름 + 이메일이 이미 이 서약서(캠프마다 쓰는 서약서는 이 캠프)에 서명했으면 새로 받지 않고 '이미 작성하셨습니다'로 알린다
+  const prior = (await signedFor(env, email, name))[doc.id];
+  const dup = doc.perCamp ? prior?.[campId] : prior;
+  if (dup) return fail('이미 작성하셨습니다.', 'You have already signed this.', 409, { field: 'duplicate', signedAt: dup.at });
 
   const now = Date.now();
   const code = newAgreementCode();

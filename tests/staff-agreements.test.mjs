@@ -98,7 +98,7 @@ test('서명 제출 검사: 문서 · 버전 · 구분 · 이름 · 이메일 ·
 test('서명 제출: 짧은 시간에 너무 많이 하면 429', async () => {
   const t = await setup();
   let last;
-  for (let i = 0; i < 61; i++) last = await t.call(signApi, 'POST', '/api/agreements/sign', { body: good(), ip: '9.9.9.9' });
+  for (let i = 0; i < 61; i++) last = await t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), email: `p${i}@x.org` }, ip: '9.9.9.9' });
   assert.equal(last.status, 429);
   assert.equal((await t.call(signApi, 'POST', '/api/agreements/sign', { body: good(), ip: '8.8.8.8' })).status, 200, '다른 곳은 영향 없다');
 });
@@ -300,7 +300,7 @@ test('연결: 서명 페이지의 필수 목록(트레이닝 위크 안내) · �
   const camp = readFileSync(new URL('../src/pages/camp-register/index.astro', import.meta.url), 'utf8');
   assert.doesNotMatch(camp, /staffAgreeLink|staff-agreements/, '서약서는 지원할 때가 아니라 캠프 트레이닝 위크에 작성한다');
   const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
-  assert.match(page, /data-need/); assert.match(page, /캠프 트레이닝 위크/); assert.match(page, /function prefill\(/); assert.match(page, /function shareWho\(/);
+  assert.match(page, /data-need/); assert.match(page, /캠프 트레이닝 위크/); assert.match(page, /function continueWho\(/); assert.match(page, /\?name&email&role|QS\.get\('name'\)/);
   const admin = readFileSync(new URL('../src/pages/portal/wolkoadmin.astro', import.meta.url), 'utf8');
   assert.match(admin, /\/api\/admin\/staff-agreements/); assert.doesNotMatch(admin, /acceptNeedsAgreements/, '수락 조건이 아니다');
   const accept = readFileSync(new URL('../functions/api/admin/staff-accept.js', import.meta.url), 'utf8');
@@ -355,7 +355,7 @@ test('서명 페이지: 캠프 선택(아동보호 서약서) · 다른 캠프�
   const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
   assert.match(page, /data-camp-select/); assert.match(page, /name="campId"/); assert.match(page, /function fillCampSelects\(/);
   assert.match(page, /data-again/); assert.match(page, /\?camp=|QS\.get\('camp'\)/);
-  assert.match(page, /campLangEn/, '스크롤마다 캠프 선택칸을 다시 그리지 않는다'); assert.match(page, /data-camp-none/); assert.doesNotMatch(page, /staff_application_hidden/, '지원 목록에서 숨긴 캠프도 서약은 할 수 있다'); assert.match(page, /hashchange/); assert.match(page, /h\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(page, /campRenderKey/, '스크롤마다 캠프 선택칸을 다시 그리지 않는다'); assert.match(page, /data-camp-none/); assert.doesNotMatch(page, /staff_application_hidden/, '지원 목록에서 숨긴 캠프도 서약은 할 수 있다'); assert.match(page, /hashchange/); assert.match(page, /h\.focus\(\{ preventScroll: true \}\)/);
   assert.match(page, /\.sa-need \{ scroll-margin-top: 96px; \}/);
   const fix = readFileSync(new URL('../functions/lib/agreementDocsExtra.js', import.meta.url), 'utf8');
   assert.ok(!fix.includes('어긋저는') && fix.includes('어긋나는'), '"나는"→"저는" 치환이 낱말 안(어긋나는)을 건드리지 않았다');
@@ -376,4 +376,62 @@ test('서약서 페이지는 검색으로 찾을 수 없다: 페이지 noindex �
   const hits = execSync("grep -rl 'staff-agreements' src public --include=*.astro --include=*.html --include=*.xml --include=*.txt --include=*.json || true", { cwd: new URL('..', import.meta.url).pathname }).toString().split('\n').filter(Boolean);
   assert.deepEqual(hits.sort(), ['public/_headers', 'src/pages/portal/agreements/index.astro', 'src/pages/portal/wolkoadmin.astro', 'src/pages/staff-agreements/index.astro'].filter((f) => hits.includes(f)).sort(), '공개 페이지에서 걸린 링크 없음');
   assert.ok(!hits.some((f) => /^src\/(pages\/(index|about|camp|camp-register|team|people|contact|give)|layouts|components)/.test(f)), '메뉴 · 본문 · 레이아웃에 링크가 없다');
+});
+
+/* ── 이름 + 이메일로 '이미 작성하셨습니다' ── */
+import * as statusApi2 from '../functions/api/agreements/status.js';
+import { signedFor, normName } from '../functions/lib/staffAgreements.js';
+
+test('서명 현황 확인(status): 이름 + 이메일이 둘 다 맞아야 알려 준다 · 대소문자 · 공백 무시 · 캠프별 · 서명 그림은 없다', async () => {
+  const t = await setup();
+  const sign = (doc, patch = {}) => t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), doc, version: DOCS[doc].version, declared: true, campId: 'camp-a', ...patch } });
+  assert.equal((await sign('faith')).status, 200);
+  assert.equal((await sign('childprotection', { campId: 'camp-a' })).status, 200);
+  assert.equal((await sign('childprotection', { campId: 'camp-b' })).status, 200);
+  const ask = async (body, ip) => { const r = await t.call(statusApi2, 'POST', '/api/agreements/status', { body, ip }); return { status: r.status, ...(await r.json()) }; };
+  const r = await ask({ name: '  김섬김 ', email: ' SERVE@example.com ' });
+  assert.equal(r.status, 200);
+  assert.ok(r.signed.faith.at && !r.signed.rules, '신앙고백서만 서명했다');
+  assert.deepEqual(Object.keys(r.signed.childprotection).sort(), ['camp-a', 'camp-b'], '아동보호 서약서는 캠프별');
+  assert.ok(!JSON.stringify(r).includes('data:image') && !JSON.stringify(r).includes('AG-'), '서명 그림 · 확인번호는 돌려주지 않는다');
+  // 이메일만 맞고 이름이 다르면 '서명 없음'(남의 서명 여부를 알아내지 못하게)
+  assert.deepEqual((await ask({ name: '박다른', email: 'serve@example.com' })).signed, {});
+  assert.deepEqual((await ask({ name: '김섬김', email: 'other@example.com' })).signed, {});
+  // 잘못된 값 · 횟수 제한
+  assert.equal((await ask({ name: '김', email: 'serve@example.com' })).status, 400);
+  assert.equal((await ask({ name: '김섬김', email: 'nope' })).status, 400);
+  let last; for (let i = 0; i < 61; i++) last = await ask({ name: `이름${i}번`, email: 'serve@example.com' }, '9.9.9.9');
+  assert.equal(last.status, 429, '이름을 바꿔 가며 알아내려는 시도는 횟수 제한에 걸린다');
+  // 문서 버전이 바뀌면 예전 서명은 '서명함'으로 세지 않는다
+  const [[key]] = [...t.kv.store.entries()].filter(([k]) => k.includes(':faith:'));
+  const old = t.kv.store.get(key); t.kv.store.set(key, { value: old.value, metadata: { ...old.metadata, v: '1999-01-v1' } });
+  assert.ok(!(await signedFor(t.env, 'serve@example.com', '김섬김')).faith);
+  assert.equal(normName('  Kim   섬김 '), 'kim 섬김');
+});
+
+test('중복 서명 막기: 같은 이름 + 이메일이 같은 서약서에 다시 서명하면 409 이미 작성하셨습니다(캠프마다 쓰는 서약서는 같은 캠프만)', async () => {
+  const t = await setup();
+  const post = async (doc, patch = {}) => { const r = await t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), doc, version: DOCS[doc].version, declared: true, campId: 'camp-a', ...patch } }); return { status: r.status, ...(await r.json()) }; };
+  assert.equal((await post('rules')).status, 200);
+  const dup = await post('rules', { name: ' 김섬김 ', email: 'SERVE@example.com' });
+  assert.equal(dup.status, 409); assert.equal(dup.field, 'duplicate'); assert.ok(dup.signedAt); assert.match(dup.error, /이미 작성하셨습니다/);
+  assert.equal((await post('rules', { name: '박다른' })).status, 200, '다른 사람(이름이 다름)은 같은 이메일이어도 새로 쓴다');
+  assert.equal((await post('rules', { email: 'second@x.org' })).status, 200, '다른 이메일은 새로 쓴다');
+  // 아동보호 서약서: 같은 캠프는 막고 다른 캠프는 새로 받는다
+  assert.equal((await post('childprotection', { campId: 'camp-a' })).status, 200);
+  assert.equal((await post('childprotection', { campId: 'camp-a' })).status, 409, '같은 캠프는 이미 작성');
+  assert.equal((await post('childprotection', { campId: 'camp-b' })).status, 200, '다른 캠프는 새로');
+  assert.equal([...t.kv.store.keys()].filter((k) => k.startsWith('agree:v1:rules:')).length, 3, '중복은 저장되지 않았다');
+});
+
+test('서명 페이지 구조: 맨 위 내 정보(이름 · 이메일 · 구분) → 확인 → 이미 작성한 것은 안내 · "작성 전" 표시와 휴대폰 칸은 없다', () => {
+  const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
+  assert.match(page, /data-who-form/); assert.match(page, /name="who-email"/); assert.match(page, /name="who-name"/); assert.match(page, /who-role/);
+  assert.match(page, /\/api\/agreements\/status/); assert.match(page, /async function lookupSigned\(/); assert.match(page, /data-already/);
+  assert.match(page, /이미 작성하셨습니다/); assert.match(page, /This agreement is signed again|You have already signed/);
+  assert.doesNotMatch(page, /작성 전|Not yet/, '"작성 전(Not yet)" 표시를 없앴다');
+  assert.doesNotMatch(page, /name="phone"|type="tel"|휴대폰|Mobile/, '휴대폰 칸이 없다');
+  // 서명 칸 폼에는 이름 · 이메일 · 구분을 다시 묻지 않는다
+  const forms = page.slice(page.indexOf('<form class="sa-form"'), page.indexOf('</form>', page.indexOf('<form class="sa-form"')));
+  assert.doesNotMatch(forms, /name="name"|name="email"|name=\{`role-/);
 });
