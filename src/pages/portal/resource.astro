@@ -1231,9 +1231,12 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         ['[onclick="viewerZoomIn()"]', '<path d="M6 12h12M12 6v12"/>'],
         ['#viewerPrevBtn', '<path d="m14 7-5 5 5 5"/>'],
         ['#viewerNextBtn', '<path d="m10 7 5 5-5 5"/>'],
-        ['[aria-label="너비 맞춤 / Fit width"]', '<path d="M3 6v12M21 6v12M6 12h12m-9-3-3 3 3 3m6-6 3 3-3 3"/>'],
-        ['[aria-label="중간 배율 / Balanced zoom"]', '<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/>'],
-        ['[aria-label="한 페이지 맞춤 / Fit page"]', '<path d="M7 3H3v4m14-4h4v4M3 17v4h4m14-4v4h-4"/><rect x="8" y="6" width="8" height="12" rx="1"/>'],
+        // 배율 세 개는 같은 그림말: 연한 쪽(페이지) 그림에 무엇을 맞추는지 보이는 표시를 붙였다
+        //   너비 맞춤 = 쪽 아래로 양옆에 닿는 가로 화살표(↔) · 중간 배율 = 쪽과 돋보기 · 한 페이지 맞춤 = 쪽 옆의 세로 화살표(↕)
+        // (예전 그림은 |↔| · 문서 모양 · 모서리 괄호라, 두 번째가 무슨 뜻인지 모르겠고 세 번째는 '전체 화면'과 구분이 안 됐다)
+        ['[aria-label="너비 맞춤 / Fit width"]', '<rect x="6.5" y="2.5" width="11" height="13" rx="1.5" fill="currentColor" fill-opacity=".1" stroke-opacity=".55"/><path d="M2.5 20h19M6 16.8 2.5 20 6 23.2M18 16.8l3.5 3.2-3.5 3.2"/>'],
+        ['[aria-label="중간 배율 / Balanced zoom"]', '<rect x="3.5" y="3" width="11" height="15" rx="1.5" fill="currentColor" fill-opacity=".1" stroke-opacity=".55"/><circle cx="14.5" cy="13.5" r="4.5"/><path d="M17.8 16.8l3.7 3.7"/>'],
+        ['[aria-label="한 페이지 맞춤 / Fit page"]', '<rect x="3.5" y="3" width="11" height="18" rx="1.5" fill="currentColor" fill-opacity=".1" stroke-opacity=".55"/><path d="M19 3v18M16.5 5.5 19 3l2.5 2.5M16.5 18.5 19 21l2.5-2.5"/>'],
       ];
       controlIcons.forEach(([selector, paths]) => {
         $('viewerToolbar').querySelector(selector).innerHTML = toolbarIcon(paths);
