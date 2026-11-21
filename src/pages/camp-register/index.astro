@@ -2272,10 +2272,10 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 <div class="crp-consent">
                   <input type="checkbox" id="crpSensitiveConsent" data-crp-name-ko="민감정보 수집·이용 동의" data-crp-name-en="Sensitive information consent">
                   <label class="crp-consent-text" for="crpSensitiveConsent">
-                    <strong class="wl-ko">민감정보(건강·알레르기·복용약) 수집 및 이용에 별도로 동의합니다.</strong>
-                    <strong class="wl-en">I separately consent to the collection and use of sensitive information (health, allergies, medication).</strong>
+                    <strong class="wl-ko">특이사항에 적은 내용(건강·알레르기·복용약 등)의 수집 및 이용에 별도로 동의합니다.</strong>
+                    <strong class="wl-en">I separately consent to the collection and use of what I wrote in Special Notes (health, allergies, medication, etc.).</strong>
                     <br>
-                    <span class="wl-ko crp-note">항목: 특이사항에 적은 건강 상태 · 알레르기 · 복용약 등 &nbsp;·&nbsp; 목적: 캠프 중 안전과 건강 관리 &nbsp;·&nbsp; 보유기간: 삭제를 요청할 때까지 &nbsp;·&nbsp; 만 14세 미만 캠퍼는 보호자(법정대리인)가 작성하고 동의합니다. 동의하지 않으시면 특이사항 칸을 비워 주세요.</span>
+                    <span class="wl-ko crp-note">항목: 특이사항에 적은 내용(건강 상태 · 알레르기 · 복용약 등) &nbsp;·&nbsp; 목적: 캠프 중 안전과 건강 관리 &nbsp;·&nbsp; 보유기간: 삭제를 요청할 때까지 &nbsp;·&nbsp; 만 14세 미만 캠퍼는 보호자(법정대리인)가 작성하고 동의합니다. 동의하지 않으시면 특이사항 칸을 비워 주세요.</span>
                     <span class="wl-en crp-note">Items: health conditions, allergies and medication written in Special Notes &nbsp;·&nbsp; Purpose: safety and health care during camp &nbsp;·&nbsp; Retention: until deletion is requested &nbsp;·&nbsp; For campers under 14, a parent or legal guardian fills in this form and gives consent. If you do not consent, please leave Special Notes empty.</span>
                   </label>
                 </div>
@@ -3152,8 +3152,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
             <strong class="wl-ko">개인정보 수집 및 이용에 동의합니다.</strong>
             <strong class="wl-en">I consent to the collection and use of personal information.</strong>
             <br>
-            <span class="wl-ko crp-note">수집 항목: 이름, 생년월일, 성별, 연락처, 이메일, 자기소개, 신앙 간증, 출석 교회 정보(교회명·홈페이지·담임 목사님 성함·연락처), 이단 단체 참여 여부, 생활 영어·미디어/테크·악기 역량, 캠프 봉사 경험, 선호 팀, 섬길 수 있는 캠프, 월코 캠프를 알게 된 경로(크루), 참고 사항(건강·알레르기·복용 약 등 적은 경우) &nbsp;·&nbsp; 목적: 캠프 스태프 선발 및 운영 관리 &nbsp;·&nbsp; 보유 기간: 캠프 종료 후 별도 요청 시까지</span>
-            <span class="wl-en crp-note">Items: name, date of birth, gender, phone, email, self-introduction, faith story, church info (name, website, pastor or church contact), involvement with cult groups, English/media/tech/instrument skills, camp service experience, team preferences, available camps, how you heard about WOLKO Camp (crew), additional notes (including any health, allergy or medication details you share) &nbsp;·&nbsp; Purpose: staff selection and management &nbsp;·&nbsp; Retention: until deletion is requested after camp ends</span>
+            <span class="wl-ko crp-note">수집 항목: 이름, 생년월일, 성별, 연락처, 이메일, 자기소개, 출석 교회 정보(교회명·홈페이지·담임 목사님 성함·연락처), 생활 영어·미디어/테크·악기 역량, 캠프 봉사 경험, 선호 팀, 섬길 수 있는 캠프, 월코 캠프를 알게 된 경로(크루), 참고 사항(민감정보는 아래에서 따로 동의) &nbsp;·&nbsp; 목적: 캠프 스태프 선발 및 운영 관리 &nbsp;·&nbsp; 보유 기간: 캠프 종료 후 별도 요청 시까지</span>
+            <span class="wl-en crp-note">Items: name, date of birth, gender, phone, email, self-introduction, church info (name, website, pastor or church contact), English/media/tech/instrument skills, camp service experience, team preferences, available camps, how you heard about WOLKO Camp (crew), additional notes (sensitive information is consented to separately below) &nbsp;·&nbsp; Purpose: staff selection and management &nbsp;·&nbsp; Retention: until deletion is requested after camp ends</span>
           </label>
         </div>
 
@@ -4746,7 +4746,7 @@ function crpCollectErrors() {
   if (!document.querySelector('input[name="mediaConsent"]:checked')) {
     add(byId('crpMediaYes'), '사진·영상 공유에 "동의"와 "동의 안 함" 중 하나를 골라 주세요.', 'Please choose "Agree" or "Do not agree" for photo and video sharing.', 'crpMediaErr', { mark: [byId('crpMediaYes'), byId('crpMediaNo')], name: byId('crpMediaConsent'), box: byId('crpMediaConsent') });
   }
-  if (regTypeInput.value !== 'group' && byId('crpNotes').value.trim() && !byId('crpSensitiveConsent').checked) add(byId('crpSensitiveConsent'), '특이사항에 적은 건강·알레르기·복용약 정보의 수집·이용에 별도로 동의해 주세요. 동의하지 않으시면 특이사항 칸을 비워 주세요.', 'Please separately consent to the collection and use of the health, allergy and medication details in Special Notes, or leave that box empty.', 'crpSensitiveConsentErr');
+  if (regTypeInput.value !== 'group' && byId('crpNotes').value.trim() && !byId('crpSensitiveConsent').checked) add(byId('crpSensitiveConsent'), '특이사항에 적은 내용(건강·알레르기·복용약 등)의 수집·이용에 별도로 동의해 주세요. 동의하지 않으시면 특이사항 칸을 비워 주세요.', 'Please separately consent to the collection and use of what you wrote in Special Notes (health, allergies, medication, etc.), or leave that box empty.', 'crpSensitiveConsentErr');
   if (!byId('crpConsent').checked) add(byId('crpConsent'), '개인정보 수집 및 이용에 동의해 주세요.', 'Please agree to the collection and use of personal information.', 'crpConsentErr');
   if (!byId('crpDepositConsent').checked) add(byId('crpDepositConsent'), '등록 확정 안내를 읽고 체크해 주세요.', 'Please read how registration is finalized, then check the box.', 'crpDepositConsentErr');
   if (!byId('crpRefundConsent').checked) add(byId('crpRefundConsent'), '체크해서 환불 규정 창을 열고 "동의하기"를 눌러 주세요.', 'Select the box to open the refund policy, then choose "I Agree."', 'crpRefundConsentErr');
@@ -5094,7 +5094,12 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       document.getElementById('crpSuccessTitle').focus({ preventScroll: true });
 
     } else {
-      crpShowError(errorMsg, data.error || '신청을 접수하지 못했어요. 잠시 뒤 다시 시도해 주세요.', 'We couldn\'t complete your registration. Please try again in a moment.');
+      if (data.code === 'sensitive-consent-required') {
+        // 배포 전에 열어 둔 화면이면 동의 칸이 없다 — 새로고침하면 특이사항이 되살아나고 동의 칸이 보인다
+        crpShowError(errorMsg, data.error, 'Please reload this page and tick the separate consent box for sensitive information that appears under Special Notes (your notes will be restored). If you do not consent, leave Special Notes empty.');
+      } else {
+        crpShowError(errorMsg, data.error || '신청을 접수하지 못했어요. 잠시 뒤 다시 시도해 주세요.', 'We couldn\'t complete your registration. Please try again in a moment.');
+      }
       submitBtn.disabled = false;
       submitBtn.classList.remove('loading');
     }
@@ -5711,7 +5716,12 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
             : '<strong>' + escHtml(payload.name) + '</strong>님의 스태프 지원이 접수되었습니다.<br>섬기실 분야에 대해 담당자가 개별적으로 연락드릴 예정입니다.';
         }
       } else {
-        crpShowError(staffErrorMsg, data.error || '오류가 발생했습니다. 다시 시도해 주세요.', 'An error occurred. Please try again.');
+        if (data.code === 'sensitive-consent-required') {
+          // 지원서 임시 저장은 '임시 저장' 단추로만 되므로, 새로고침하기 전에 먼저 저장하라고 알린다
+          crpShowError(staffErrorMsg, '민감정보 동의 칸이 새로 생겼어요. 먼저 "임시 저장"을 누르고 화면을 새로고침한 뒤, 불러온 내용에서 새 동의 칸을 체크해 주세요.', 'A new sensitive-information consent box was added. Please press "Save Draft", reload the page, restore your draft and tick the new box.');
+        } else {
+          crpShowError(staffErrorMsg, data.error || '오류가 발생했습니다. 다시 시도해 주세요.', 'An error occurred. Please try again.');
+        }
         staffSubmitBtn.disabled = false;
         staffSubmitBtn.classList.remove('loading');
       }

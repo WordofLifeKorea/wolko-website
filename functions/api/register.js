@@ -518,9 +518,9 @@ export async function onRequestPost(context) {
 
     // 개인 신청의 '특이사항'은 건강 상태 · 알레르기 · 복용약을 적으라고 안내하는 칸이라 민감정보다 — 글을 적었으면 별도 동의가 있어야 한다.
     // (개인정보 동의와 따로 받는다. 칸을 비우면 동의는 필요 없다.)
-    const sensitiveNotes = registrationType === 'individual' && !!String(notes ?? '').trim();
+    const sensitiveNotes = registrationType !== 'group' && !!String(notes ?? '').trim();   // 단체가 아니면 모두 개인 신청으로 저장되므로 알 수 없는 유형으로 피하지 못하게
     if (sensitiveNotes && sensitiveConsent !== true) {
-      return Response.json({ error: '특이사항에 건강·알레르기·복용약 등을 적으셨다면 민감정보 수집·이용에 별도로 동의해 주세요. 화면을 새로고침하면 동의 칸이 보입니다. 동의하지 않으시면 특이사항 칸을 비워 주세요.', code: 'sensitive-consent-required' }, { status: 400, headers: CORS });
+      return Response.json({ error: '특이사항에 적은 내용(건강·알레르기·복용약 등)의 수집·이용에 별도로 동의해 주세요. 화면을 새로고침하면 동의 칸이 보입니다. 동의하지 않으시면 특이사항 칸을 비워 주세요.', code: 'sensitive-consent-required' }, { status: 400, headers: CORS });
     }
 
     if (registrationType === 'individual') {

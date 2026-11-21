@@ -36,6 +36,14 @@ test('캠프 신청(개인): 특이사항에 글을 적으면 민감정보 별�
   assert.equal(blank.response.status, 200, '공백만 적은 것은 글을 적은 것이 아니다');
 });
 
+test('캠프 신청: 알 수 없는 신청 유형으로 보내도 동의 확인을 피할 수 없다 (단체가 아니면 개인으로 저장되므로)', async () => {
+  for (const registrationType of ['bogus', '', null, 123]) {
+    const res = await campPost({ registrationType, notes: '천식 약 복용' });
+    assert.equal(res.response.status, 400, `신청 유형 ${JSON.stringify(registrationType)}`);
+    assert.equal(res.reg, null);
+  }
+});
+
 test('캠프 신청(개인): 동의하면 저장하고 동의 시각을 남긴다', async () => {
   const ok = await campPost({ notes: '땅콩 알레르기', sensitiveConsent: true });
   assert.equal(ok.response.status, 200, JSON.stringify(ok.body));
@@ -110,4 +118,13 @@ test('신청 화면: 개인정보 동의와 따로 있는 민감정보 동의 �
   assert.ok(page.indexOf('id="staffPrivacyConsent"') < page.indexOf('id="staffSensitiveConsent"'));
   assert.match(page, /sensitiveConsent: byId\('staffSensitiveConsent'\)\.checked/);
   assert.match(page, /\[!byId\('staffSensitiveConsent'\)\.checked, 'staffSensitiveConsent'/);
+});
+
+test('오래된 화면(동의 칸이 없던 때)이 받는 안내: 영어 방문자도 새로고침을 알고, 스태프는 임시 저장을 먼저 하라고 안내한다', () => {
+  const page = readFileSync(new URL('../src/pages/camp-register/index.astro', import.meta.url), 'utf8');
+  const camp = page.slice(page.indexOf("data.code === 'sensitive-consent-required'"));
+  assert.match(camp, /Please reload this page/);
+  const staffAt = page.lastIndexOf("data.code === 'sensitive-consent-required'");
+  assert.ok(staffAt > page.indexOf("data.code === 'sensitive-consent-required'"), '두 신청서 모두 이 코드를 따로 처리한다');
+  assert.match(page.slice(staffAt, staffAt + 900), /임시 저장[\s\S]*Save Draft/);
 });
