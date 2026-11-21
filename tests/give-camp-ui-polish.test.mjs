@@ -52,11 +52,18 @@ test('캠프 신청: 남학생 · 여학생 색이 파랑 / 주황으로 서로 
 test('캠프 신청 창: 낮은 화면 · 가로 폰 · 키 작은 폰에서 창을 줄이는 규칙이 있다', () => {
   assert.match(camp, /@media \(min-width: 741px\) and \(max-height: 820px\)/, '노트북 높이');
   assert.match(camp, /@media \(max-width: 740px\) and \(max-height: 700px\)/, '키 작은 폰');
-  assert.match(camp, /@media \(max-height: 500px\) \{[\s\S]*?\.crp-reg-modal \{ padding: 0; align-items: stretch; \}/, '가로로 돌린 폰은 화면 전체');
+  assert.match(camp, /@media \(max-height: 500px\) and \(max-width: 1000px\) \{[\s\S]*?\.crp-reg-modal \{ padding: 0; align-items: stretch; \}/, '가로로 돌린 폰은 화면 전체');
   // 아래 고정 단추 줄이 낮아졌다(52 → 48px) 그래도 누르기 좋은 44px 이상
   assert.match(camp, /\.crp-cancel-btn, \.crp-form-actions \.crp-submit, \.staff-form-actions \.crp-submit, \.staff-draft-btn \{ height: 48px; min-height: 48px !important; \}/);
   // 큰 화면: 성별 | 이메일을 한 줄에
-  assert.match(camp, /#crpSectionIndividual \.crp-field--email \{ grid-column: auto; order: 1; \}/);
+  assert.match(camp, /#crpSectionIndividual \.crp-field--email \{ grid-column: auto; \}/);
+  assert.ok(camp.indexOf('crp-field--email">') < camp.indexOf('crp-field--birth" id="crpBirthField"'), '이메일이 생년월일보다 앞(Tab 순서 = 눈에 보이는 순서)');
+  assert.match(camp, /\.crp-confirm-actions \.crp-cancel-btn, \.crp-confirm-actions \.crp-submit \{ height: 48px !important; min-height: 48px !important; \}/, '닫기 확인 상자의 두 단추는 같은 높이');
+  assert.match(camp, /margin: 2px 8px -46px auto; width: 44px !important; height: 44px !important/, '가로 화면 닫기 단추 44px, 머리글 안에 들어가고 머리글이 위로 밀리지 않게 -46px');
+  assert.match(camp, /#crpModal \.crp-modal-card, #staffModal \.crp-modal-card \{ scroll-padding-block: 72px 104px; \}/, '스태프 창도 Tab 이동 때 고정 단추 줄에 안 가려진다');
+  assert.match(camp, /modalCapLegend\.hidden = !split \|\| capacity <= 0;\s*modalCapLegend\.style\.visibility = rawCount === '…' \? 'hidden' : '';/, '남·여 범례는 불러오는 동안 자리만 잡아 입력칸이 밀리지 않게');
+  assert.match(camp, /\.crp-cap-fill-m\.is-total, \.crp-modal-cap-fill-m\.is-total \{ background: var\(--c-deep\); \}/, '남녀 정원이 따로 없는 캠프의 전체 막대는 청록');
+  assert.match(camp, /\.crp-waitlist-notice \{ margin-left: 32px; margin-right: 32px; \}/, '예비 신청 안내 좌우 여백이 다른 영역과 같다');
   assert.match(camp, /crp-field--full crp-field--email/);
 });
 

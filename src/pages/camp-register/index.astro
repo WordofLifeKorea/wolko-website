@@ -243,6 +243,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
 }
 .crp-cap-fill { background: var(--c-deep); }
 .crp-cap-fill-m { background: var(--c-male); }
+.crp-cap-fill-m.is-total, .crp-modal-cap-fill-m.is-total { background: var(--c-deep); }   /* 남녀 정원이 따로 없는 캠프의 '전체' 막대 — 남학생 파랑이 아니라 기본 청록 */
 .crp-cap-fill-f { background: var(--c-female); }
 
 /* ── 성별 분리 이중 바 (hasSplit 캠프) ── */
@@ -1157,7 +1158,7 @@ body:has(#crpModal.crp-modal--unity) .crp-refund-section--deposit { display: non
 #crpScholarshipErr { margin: 10px 0 2px; }
 #crpBestCamperErr { margin: 0 0 8px; }
 /* 오류 칸으로 옮겨 갈 때 위의 닫기 단추 · 아래 단추 줄에 가리지 않게 */
-#crpModal .crp-modal-card { scroll-padding-block: 72px 104px; }
+#crpModal .crp-modal-card, #staffModal .crp-modal-card { scroll-padding-block: 72px 104px; }
 /* 스크립트가 초점만 옮기는 제목은 테두리를 그리지 않는다 */
 .crp-modal-title:focus, .crp-success-title:focus, .crp-refund-modal-title:focus { outline: none; }
 
@@ -1192,6 +1193,8 @@ body:has(#crpModal.crp-modal--unity) .crp-refund-section--deposit { display: non
 .crp-confirm-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 12px; margin-top: 20px; }
 .crp-confirm-actions .crp-cancel-btn,
 .crp-confirm-actions .crp-submit { width: 100%; }
+/* 닫기 확인 상자의 두 단추는 같은 높이(48px) — 아래 '창 크기 맞춤' 규칙이 취소 단추만 줄이지 않게 */
+.crp-confirm-actions .crp-cancel-btn, .crp-confirm-actions .crp-submit { height: 48px !important; min-height: 48px !important; }
 .crp-success-wrap { padding: 36px 40px 40px; }
 .crp-success-icon {
   width: 48px; height: 48px;
@@ -1529,10 +1532,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
   .crp-form-section { margin-top: 32px; margin-bottom: 16px; padding-bottom: 10px; }
   .crp-form-section:first-child { margin-top: 20px; }
   .crp-form-grid { gap: 16px 20px; }
-  /* 큰 화면: 성별 | 이메일을 한 줄에, 생년월일 · 경로는 한 줄씩 */
-  #crpSectionIndividual .crp-field--email { grid-column: auto; order: 1; }
-  #crpSectionIndividual .crp-field--birth { order: 2; }
-  #crpSectionIndividual .crp-field--referral { order: 3; }
+  /* 큰 화면: 성별 | 이메일을 한 줄에(글 순서도 성별 → 이메일 → 생년월일 → 경로라 Tab 순서와 눈에 보이는 순서가 같다) */
+  #crpSectionIndividual .crp-field--email { grid-column: auto; }
 }
 /* 낮은 화면(노트북 등): 바깥 여백 · 머리글 · 단추 줄을 더 줄여 입력칸이 보이는 높이를 늘린다 */
 @media (min-width: 741px) and (max-height: 820px) {
@@ -1544,6 +1545,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
   .crp-modal-summary { padding: 12px 32px 0; }
   .crp-type-tabs { margin: 12px 32px 0; }
   .crp-form-wrap { padding-left: 32px; padding-right: 32px; }
+  .crp-waitlist-notice { margin-left: 32px; margin-right: 32px; }
   .crp-form-actions, .staff-form-actions { margin: 20px -32px 0; padding: 10px 32px; }
   .crp-form-section:first-child { margin-top: 16px; }
 }
@@ -1567,17 +1569,18 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
   .crp-type-tabs { margin: 10px 20px 0; }
 }
 /* 가로로 돌린 폰 · 아주 낮은 화면(높이 500px 이하): 화면 전체를 쓰고 머리글을 한 줄로 */
-@media (max-height: 500px) {
+@media (max-height: 500px) and (max-width: 1000px) {
   .crp-reg-modal { padding: 0; align-items: stretch; }
   .crp-modal-card, #staffModal .crp-modal-card { max-width: none !important; width: 100%; height: 100%; max-height: none; border-radius: 0; box-shadow: none; }
-  .crp-modal-close { top: 6px; margin: 6px 8px -50px auto; width: 38px !important; height: 38px !important; min-width: 38px !important; min-height: 38px !important; }
-  .crp-modal-head, .crp-staff-modal-head { padding: 10px 56px 8px 20px; }
+  .crp-modal-close { top: 2px; margin: 2px 8px -46px auto; width: 44px !important; height: 44px !important; min-width: 44px !important; min-height: 44px !important; }
+  .crp-modal-head, .crp-staff-modal-head { padding: 12px 56px 10px 20px; min-height: 48px; }
   .crp-modal-badge, .crp-staff-modal-desc { display: none; }
   .crp-modal-title, #staffModal .crp-modal-title { padding-right: 0; font-size: 18px; }
   .crp-modal-summary { padding: 8px 20px 0; }
   .crp-modal-cap-info { margin-bottom: 4px; }
   .crp-type-tabs { margin: 8px 20px 0; }
-  .crp-type-tab { height: 40px; min-height: 40px !important; }
+  .crp-waitlist-notice { margin: 8px 20px 0; }
+  .crp-type-tab { height: 44px; min-height: 44px !important; }
   .crp-form-wrap { padding-left: 20px; padding-right: 20px; }
   #staffFormWrap { padding-top: 16px; }
   .crp-form-section, .crp-form-section:first-child { margin-top: 16px; margin-bottom: 12px; }
@@ -2293,6 +2296,10 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 </select>
                 <p class="crp-field-error" id="crpGenderErr" hidden></p>
               </div>
+              <div class="crp-field crp-field--full crp-field--email">
+                <label for="crpEmail"><span class="wl-ko">이메일</span><span class="wl-en">Email</span></label>
+                <input id="crpEmail" class="wl-tall" name="email" type="email" autocomplete="email" placeholder="email@example.com">
+              </div>
               <div class="crp-field crp-field--full crp-field--birth" id="crpBirthField" hidden>
                 <label for="crpBirthYear" id="crpBirthLabel"><span class="wl-ko">생년월일</span><span class="wl-en">Date of Birth</span> <span class="req">*</span></label>
                 <span class="crp-sr" id="crpBirthYearName"><span class="wl-ko">년도</span><span class="wl-en">Year</span></span>
@@ -2311,10 +2318,6 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                     <span class="wl-ko">문의 남기기</span><span class="wl-en">Leave an inquiry</span><svg class="crp-arrow" aria-hidden="true" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
                   </a>
                 </div>
-              </div>
-              <div class="crp-field crp-field--full crp-field--email">
-                <label for="crpEmail"><span class="wl-ko">이메일</span><span class="wl-en">Email</span></label>
-                <input id="crpEmail" class="wl-tall" name="email" type="email" autocomplete="email" placeholder="email@example.com">
               </div>
               <div class="crp-field crp-field--full crp-field--referral">
                 <label for="crpReferral" id="crpReferralLabel"><span class="wl-ko">어떤 경로를 통해 월코 캠프를 알게 되었나요?</span><span class="wl-en">How did you hear about WOLKO Camp?</span> <span class="req">*</span></label>
@@ -3352,7 +3355,7 @@ function updateCrpCapBar(el, data, totalCap) {
   if (countEl)  countEl.textContent  = count;
   if (countMEl) countMEl.textContent = countM;
   if (countFEl) countFEl.textContent = countF;
-  if (fillM) fillM.style.width = '0%';
+  if (fillM) { fillM.style.width = '0%'; fillM.classList.remove('is-total'); }
   if (fillF) fillF.style.width = '0%';
 
   if (capM > 0 && capF > 0) {
@@ -3361,7 +3364,7 @@ function updateCrpCapBar(el, data, totalCap) {
     if (fillF) fillF.style.width = Math.min((countF / capF) * 100, 100) + '%';
   } else if (totalCap > 0) {
     // 성별 정원 미분리 캠프: 전체 신청 현황을 단일 바로 표시
-    if (fillM) fillM.style.width = Math.min((count / totalCap) * 100, 100) + '%';
+    if (fillM) { fillM.classList.add('is-total'); fillM.style.width = Math.min((count / totalCap) * 100, 100) + '%'; }
   }
 }
 
@@ -3884,12 +3887,14 @@ function updateCrpModalCap(data, capacity) {
   var countF = (typeof data === 'object') ? (parseInt(data.countFemale, 10) || 0) : 0;
 
   modalCapLabel.textContent = countDisplay + ' / ' + capacity + (crpIsEn() ? ' spots' : '명');
-  if (modalCapFillM) modalCapFillM.style.width = '0%';
+  if (modalCapFillM) { modalCapFillM.style.width = '0%'; modalCapFillM.classList.remove('is-total'); }
   if (modalCapFillF) modalCapFillF.style.width = '0%';
   var split = currentCapMale > 0 && currentCapFemale > 0;
   if (modalCapLegend) {
     // 남학생 · 여학생 정원이 따로 있는 캠프만: 막대의 두 색이 누구인지 인원과 함께 보여 준다
-    modalCapLegend.hidden = !split || capacity <= 0 || rawCount === '…';
+    // 현황을 불러오는 동안에도 자리는 잡아 둔다(숨기기만) — 나중에 나타나 아래 입력칸이 밀려 내려가지 않게
+    modalCapLegend.hidden = !split || capacity <= 0;
+    modalCapLegend.style.visibility = rawCount === '…' ? 'hidden' : '';
     modalCapLegend.innerHTML = split
       ? '<span class="is-m">' + (crpIsEn() ? 'Male ' : '남학생 ') + countM + ' / ' + currentCapMale + '</span><span class="is-f">' + (crpIsEn() ? 'Female ' : '여학생 ') + countF + ' / ' + currentCapFemale + '</span>'
       : '';
@@ -3901,7 +3906,7 @@ function updateCrpModalCap(data, capacity) {
     if (modalCapFillM) modalCapFillM.style.width = Math.min((countM / capacity) * 100, 100) + '%';
     if (modalCapFillF) modalCapFillF.style.width = Math.min((countF / capacity) * 100, 100) + '%';
   } else {
-    if (modalCapFillM) modalCapFillM.style.width = Math.min((count / capacity) * 100, 100) + '%';
+    if (modalCapFillM) { modalCapFillM.classList.add('is-total'); modalCapFillM.style.width = Math.min((count / capacity) * 100, 100) + '%'; }
   }
 }
 
