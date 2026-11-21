@@ -88,15 +88,15 @@ export const kstDateTime = (ms) => kstParts(ms).slice(0, 16).replace('T', ' ');
  * KV 에는 '읽고 더하기'를 한 번에 하는 기능이 없어 동시에 몰리면 조금 더 통과할 수 있다(어림잡은 방어 — 함정 칸과 함께 쓴다).
  * 횟수를 읽거나 쓰지 못해도(KV 쓰기 제한 등) 신청 자체는 막지 않는다.
  */
-export async function rateLimited(env, hash, now = Date.now()) {
-  try { return await rateLimitedUnsafe(env, hash, now); } catch { return false; }
+export async function rateLimited(env, hash, now = Date.now(), { prefix = 'matdl:rl', perHour = RATE_PER_HOUR, perDay = RATE_PER_DAY } = {}) {
+  try { return await rateLimitedUnsafe(env, hash, now, prefix, perHour, perDay); } catch { return false; }
 }
-async function rateLimitedUnsafe(env, hash, now) {
-  const hourKey = `matdl:rl:${hash}:h${kstParts(now).slice(0, 13)}`;
-  const dayKey = `matdl:rl:${hash}:d${kstParts(now).slice(0, 10)}`;
+async function rateLimitedUnsafe(env, hash, now, prefix, perHour, perDay) {
+  const hourKey = `${prefix}:${hash}:h${kstParts(now).slice(0, 13)}`;
+  const dayKey = `${prefix}:${hash}:d${kstParts(now).slice(0, 10)}`;
   const [h, d] = await Promise.all([env.CAMP_KV.get(hourKey), env.CAMP_KV.get(dayKey)]);
   const hour = parseInt(h || '0', 10), day = parseInt(d || '0', 10);
-  if (hour >= RATE_PER_HOUR || day >= RATE_PER_DAY) return true;
+  if (hour >= perHour || day >= perDay) return true;
   await Promise.all([
     env.CAMP_KV.put(hourKey, String(hour + 1), { expirationTtl: 3700 }),
     env.CAMP_KV.put(dayKey, String(day + 1), { expirationTtl: 90000 }),

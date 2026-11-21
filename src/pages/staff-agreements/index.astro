@@ -1,0 +1,373 @@
+---
+// 캠프 스태프 · 크루 서약서 — 신청할 때 읽고, 동의하고, 손가락(폰)이나 마우스(컴퓨터)로 서명한다.
+// 문서 내용: functions/lib/staffAgreements.js (공개 페이지와 서버가 같은 글을 쓴다) · 저장: functions/api/agreements/sign.js
+// 관리자 보기: 포탈 /portal/agreements/. 검색에는 나오지 않게 해 두었고(noindex), 스태프 · 크루에게만 링크로 보낸다.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import { docList, ROLE_LABEL } from '../../../functions/lib/staffAgreements.js';
+
+const docs = docList();
+const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko: d.ko, en: d.en, items: d.items }))).replace(/</g, '\\u003c');
+---
+
+<BaseLayout
+  title="스태프 · 크루 서약서 | WOLKO"
+  description="월코 캠프 스태프와 크루가 읽고 동의하고 서명하는 서약 문서입니다."
+  activeNav=""
+  noindex
+>
+  <PageHero variant="plain">
+    <Fragment slot="eyebrow"><span class="wl-ko">월코 캠프 스태프 · 크루</span><span class="wl-en">WOLKO Camp Staff &amp; Crew</span></Fragment>
+    <Fragment slot="title">
+      <span class="wl-ko"><em>서약서</em></span>
+      <span class="wl-en"><em>Agreements</em></span>
+    </Fragment>
+    <Fragment slot="desc">
+      <span class="wl-ko">캠프에서 섬기는 모든 분이 읽고 동의하며 서명하는 문서예요. 폰에서는 손가락으로, 컴퓨터에서는 마우스로 서명하시면 돼요.</span>
+      <span class="wl-en">Everyone who serves at camp reads, agrees to and signs these documents. Sign with your finger on a phone, or with your mouse on a computer.</span>
+    </Fragment>
+  </PageHero>
+
+<!-- 서명판과 완료 화면은 스크립트가 다루는 부분이 많아 Astro 의 쪽 안 스타일이 닿지 않는다 — 전역으로 두되 이름은 모두 sa- 로 시작 -->
+<style is:global>
+  .sa {
+    --sa-deep:#004f68; --sa-navy:#0b2430; --sa-ink:#10252e; --sa-body:#3e535d; --sa-muted:#587383;
+    --sa-line:#d6dee2; --sa-field:#cdd7dc; --sa-soft:#f6f9fb; --sa-error:#a3262f;
+    padding: 56px 0 96px; background: #fff; color: var(--sa-ink); font-family: var(--ff-sans); word-break: keep-all;
+  }
+  .sa-shell { width: min(860px, calc(100% - 48px)); margin: 0 auto; display: grid; gap: 40px; }
+  .sa-doc { border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); background: #fff; }
+  .sa-doc-head { padding: 24px 28px 8px; }
+  .sa-doc-head h2 { margin: 0; font-family: var(--ff-serif); font-size: 26px; font-weight: 800; letter-spacing: -.02em; color: var(--sa-navy); }
+  .sa-doc-head p { margin: 10px 0 0; font-size: 15px; line-height: 1.8; color: var(--sa-body); }
+  .sa-items { margin: 0; padding: 8px 28px 8px; list-style: none; counter-reset: sa; }
+  .sa-items li { counter-increment: sa; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; padding: 16px 0; border-top: 1px solid var(--sa-line); font-size: 15px; line-height: 1.85; color: var(--sa-ink); }
+  .sa-items li::before { content: counter(sa, decimal-leading-zero); width: 40px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); background: var(--sa-soft); color: var(--sa-deep); font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .sa-pledge { margin: 8px 28px 0; padding: 16px 18px; background: var(--sa-soft); border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); font-size: 15px; line-height: 1.8; color: var(--sa-navy); font-weight: 600; }
+  .sa-form { padding: 24px 28px 28px; display: grid; gap: 16px; }
+  .sa-form h3 { margin: 0; font-size: 17px; font-weight: 800; color: var(--sa-navy); }
+  .sa-field label, .sa-legend { display: block; margin: 0 0 6px; font-size: 14px; font-weight: 700; color: var(--sa-navy); }
+  .sa-req { color: var(--sa-error); }
+  .sa-field input[type="text"], .sa-field input[type="email"], .sa-field input[type="tel"] {
+    width: 100%; height: 48px; min-height: 48px !important; padding: 0 14px; border: 1px solid var(--sa-field); border-radius: var(--ws-radius-sm, 8px);
+    font: 500 16px var(--ff-sans); color: var(--sa-ink); background: #fff; outline: none; box-sizing: border-box;
+  }
+  .sa-field input:focus { border-color: var(--sa-deep); box-shadow: 0 0 0 1px var(--sa-deep); }
+  .sa-field input.is-invalid { border-color: var(--sa-error); box-shadow: 0 0 0 1px var(--sa-error); }
+  .sa-field input[readonly] { background: var(--sa-soft); color: var(--sa-body); }
+  .sa-roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; border: 0; padding: 0; margin: 0; min-width: 0; }
+  .sa-role { position: relative; }
+  .sa-role input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .sa-role > span { display: flex; align-items: center; justify-content: center; height: 48px; border: 1px solid var(--sa-field); border-radius: var(--ws-radius-sm, 8px); background: #fff; font-size: 15px; font-weight: 700; color: var(--sa-body); }
+  .sa-role input:checked + span { border-color: var(--sa-deep); background: var(--sa-deep); color: #fff; }
+  .sa-role input:focus-visible + span { outline: 2px solid var(--sa-deep); outline-offset: 2px; }
+  .sa-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .sa-note { margin: 6px 0 0; font-size: 13px; line-height: 1.7; color: var(--sa-muted); }
+  .sa-check { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; font-size: 14px; line-height: 1.7; color: var(--sa-body); }
+  .sa-check input { width: 20px; height: 20px; margin: 2px 0 0; flex: none; accent-color: var(--sa-deep); }
+  .sa-check a { color: var(--sa-deep); text-decoration: underline; text-underline-offset: 3px; }
+  .sa-check strong { color: var(--sa-navy); }
+  .sa-sign-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .sa-pad { position: relative; border: 1px dashed var(--sa-field); border-radius: var(--ws-radius-sm, 8px); background: #fff; }
+  .sa-pad.is-invalid { border-color: var(--sa-error); box-shadow: 0 0 0 1px var(--sa-error); }
+  .sa-pad canvas { display: block; width: 100%; height: 180px; touch-action: none; cursor: crosshair; border-radius: var(--ws-radius-sm, 8px); }
+  .sa-pad-hint { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; font-size: 14px; color: var(--sa-muted); pointer-events: none; }
+  .sa-pad.has-ink .sa-pad-hint { display: none; }
+  .sa-pad-line { position: absolute; left: 16px; right: 16px; bottom: 36px; height: 1px; background: var(--sa-line); pointer-events: none; }
+  .sa-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; min-height: 44px !important; padding: 0 20px; flex: none;
+    border: 1px solid var(--sa-deep); border-radius: var(--ws-radius-sm, 8px); background: var(--sa-deep); color: #fff; font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; white-space: nowrap;
+  }
+  .sa-btn:hover { background: #003d52; border-color: #003d52; }
+  .sa-btn.ghost { background: #fff; color: var(--sa-navy); border-color: var(--sa-field); }
+  .sa-btn.ghost:hover { background: var(--sa-soft); }
+  .sa-btn:disabled { opacity: .55; cursor: default; }
+  .sa-actions { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .sa-actions .sa-btn { height: 52px; min-height: 52px !important; width: 100%; font-size: 15.5px; }
+  .sa-err { margin: 6px 0 0; font-size: 13px; line-height: 1.6; color: var(--sa-error); font-weight: 600; }
+  .sa-err[hidden] { display: none; }
+  .sa-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .sa-done { padding: 32px 28px 36px; text-align: center; display: grid; gap: 12px; justify-items: center; }
+  .sa-done[hidden], .sa-form[hidden] { display: none; }
+  .sa-done-icon { width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--sa-deep); border-radius: 50%; color: var(--sa-deep); }
+  .sa-done-icon svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .sa-done h3 { margin: 0; font-size: 20px; color: var(--sa-navy); }
+  .sa-done p { margin: 0; font-size: 14.5px; line-height: 1.8; color: var(--sa-body); }
+  .sa-code { display: inline-block; padding: 8px 16px; border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); background: var(--sa-soft); font-size: 20px; font-weight: 800; letter-spacing: .08em; color: var(--sa-navy); font-variant-numeric: tabular-nums; }
+  .sa-done .sa-actions { width: min(420px, 100%); }
+  @media (max-width: 640px) {
+    .sa { padding: 32px 0 72px; }
+    .sa-shell { width: calc(100% - 32px); gap: 28px; }
+    .sa-doc-head, .sa-form, .sa-done { padding-left: 18px; padding-right: 18px; }
+    .sa-items { padding: 4px 18px; } .sa-items li { grid-template-columns: 34px minmax(0, 1fr); gap: 10px; }
+    .sa-items li::before { width: 34px; }
+    .sa-pledge { margin: 8px 18px 0; }
+    .sa-two { grid-template-columns: minmax(0, 1fr); }
+    .sa-pad canvas { height: 160px; }
+  }
+</style>
+
+<section class="sa">
+  <div class="sa-shell">
+    {docs.map((doc) => (
+      <article class="sa-doc" data-doc={doc.id} data-version={doc.version}>
+        <div class="sa-doc-head">
+          <h2><span class="wl-ko">{doc.ko.title}</span><span class="wl-en">{doc.en.title}</span></h2>
+          <p><span class="wl-ko">{doc.ko.intro}</span><span class="wl-en">{doc.en.intro}</span></p>
+        </div>
+        <ol class="sa-items">
+          {doc.items.map((it) => (
+            <li><span><span class="wl-ko">{it.ko}</span><span class="wl-en">{it.en}</span></span></li>
+          ))}
+        </ol>
+        <p class="sa-pledge"><span class="wl-ko">{doc.ko.pledge}</span><span class="wl-en">{doc.en.pledge}</span></p>
+
+        <form class="sa-form" novalidate data-form>
+          <h3><span class="wl-ko">서명하기</span><span class="wl-en">Sign</span></h3>
+
+          <fieldset class="sa-roles" aria-label="구분 / Role">
+            {Object.entries(ROLE_LABEL).map(([value, label]) => (
+              <label class="sa-role"><input type="radio" name={`role-${doc.id}`} value={value}><span><span class="wl-ko">{label.ko}</span><span class="wl-en">{label.en}</span></span></label>
+            ))}
+          </fieldset>
+          <p class="sa-err" data-err="role" hidden></p>
+          <p class="sa-note"><span class="wl-ko">크루(미성년자)는 지원서에서 보호자 동의를 따로 받아요.</span><span class="wl-en">Crew members (minors) also need separate guardian consent, which is collected in the application.</span></p>
+
+          <div class="sa-two">
+            <div class="sa-field">
+              <label for={`sa-name-${doc.id}`}><span class="wl-ko">이름</span><span class="wl-en">Full name</span><span class="sa-req" aria-hidden="true"> *</span></label>
+              <input class="wl-tall" type="text" id={`sa-name-${doc.id}`} name="name" maxlength="60" autocomplete="name">
+              <p class="sa-err" data-err="name" hidden></p>
+            </div>
+            <div class="sa-field">
+              <label for={`sa-date-${doc.id}`}><span class="wl-ko">날짜</span><span class="wl-en">Date</span></label>
+              <input class="wl-tall" type="text" id={`sa-date-${doc.id}`} data-date readonly tabindex="-1">
+            </div>
+          </div>
+          <div class="sa-two">
+            <div class="sa-field">
+              <label for={`sa-email-${doc.id}`}><span class="wl-ko">이메일</span><span class="wl-en">Email</span><span class="sa-req" aria-hidden="true"> *</span></label>
+              <input class="wl-tall" type="email" id={`sa-email-${doc.id}`} name="email" maxlength="100" autocomplete="email" inputmode="email">
+              <p class="sa-err" data-err="email" hidden></p>
+            </div>
+            <div class="sa-field">
+              <label for={`sa-phone-${doc.id}`}><span class="wl-ko">휴대폰 (선택)</span><span class="wl-en">Mobile (optional)</span></label>
+              <input class="wl-tall" type="tel" id={`sa-phone-${doc.id}`} name="phone" maxlength="30" autocomplete="tel" inputmode="tel">
+              <p class="sa-err" data-err="phone" hidden></p>
+            </div>
+          </div>
+          <div class="sa-hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+
+          <div>
+            <div class="sa-sign-head">
+              <span class="sa-legend"><span class="wl-ko">서명</span><span class="wl-en">Signature</span><span class="sa-req" aria-hidden="true"> *</span></span>
+              <button type="button" class="sa-btn ghost" data-clear style="height:36px;min-height:36px !important;padding:0 14px;font-size:13.5px"><span class="wl-ko">다시 쓰기</span><span class="wl-en">Clear</span></button>
+            </div>
+            <div class="sa-pad" data-padbox>
+              <canvas data-pad aria-label="서명 칸 / Signature pad"></canvas>
+              <span class="sa-pad-line"></span>
+              <span class="sa-pad-hint"><span class="wl-ko">여기에 손가락이나 마우스로 서명해 주세요</span><span class="wl-en">Sign here with your finger or mouse</span></span>
+            </div>
+            <p class="sa-err" data-err="signature" hidden></p>
+          </div>
+
+          <label class="sa-check">
+            <input type="checkbox" name="agree">
+            <span><strong class="wl-ko">위 문서를 모두 읽었으며, 내용에 동의합니다.</strong><strong class="wl-en">I have read the whole document above and I agree with it.</strong></span>
+          </label>
+          <p class="sa-err" data-err="agree" hidden></p>
+          <label class="sa-check">
+            <input type="checkbox" name="consent">
+            <span>
+              <span class="wl-ko">이름 · 이메일 · 휴대폰 · 서명 그림을 서약 확인과 보관에 쓰는 것에 동의합니다. 삭제를 요청하실 때까지 보관해요. <a href="/privacy" target="_blank" rel="noopener">개인정보처리방침</a></span>
+              <span class="wl-en">I agree to my name, email, mobile number and signature image being used to confirm and keep this agreement. Kept until you ask us to delete it. <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a></span>
+            </span>
+          </label>
+          <p class="sa-err" data-err="consent" hidden></p>
+          <p class="sa-err" data-err="form" role="alert" hidden></p>
+
+          <div class="sa-actions">
+            <button type="submit" class="sa-btn" data-submit><span class="wl-ko">서명 제출</span><span class="wl-en">Submit signature</span></button>
+          </div>
+        </form>
+
+        <div class="sa-done" data-done hidden>
+          <div class="sa-done-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+          <h3 tabindex="-1" data-done-title><span class="wl-ko">서명이 완료되었어요</span><span class="wl-en">Your signature has been recorded</span></h3>
+          <p><span class="wl-ko">확인번호</span><span class="wl-en">Reference code</span></p>
+          <span class="sa-code" data-code></span>
+          <p data-signed-at></p>
+          <div class="sa-actions">
+            <button type="button" class="sa-btn" data-print><span class="wl-ko">서명본 인쇄 · PDF로 저장</span><span class="wl-en">Print or save signed copy as PDF</span></button>
+          </div>
+        </div>
+      </article>
+    ))}
+  </div>
+</section>
+
+</BaseLayout>
+
+<script is:inline type="application/json" id="sa-data" set:html={data}></script>
+
+<script is:inline>
+(function () {
+  var DOCS = {};
+  try { JSON.parse(document.getElementById('sa-data').textContent).forEach(function (d) { DOCS[d.id] = d; }); } catch (e) {}
+  var isEn = function () {
+    var el = document.getElementById('lang-root');
+    return !!((el && el.classList.contains('lang-en')) || document.body.classList.contains('lang-en') || document.documentElement.classList.contains('lang-en'));
+  };
+  var T = function (ko, en) { return isEn() ? en : ko; };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var EMAIL_RE = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
+
+  /* 오늘 날짜(한국 시간) */
+  function todayKst() {
+    try {
+      var p = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+      return p.replace(/-/g, '. ') + '.';
+    } catch (e) { var d = new Date(); return d.getFullYear() + '. ' + String(d.getMonth() + 1).padStart(2, '0') + '. ' + String(d.getDate()).padStart(2, '0') + '.'; }
+  }
+  function signedAtText(iso) {
+    try { return new Intl.DateTimeFormat(isEn() ? 'en-US' : 'ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(iso)) + ' (KST)'; } catch (e) { return iso; }
+  }
+
+  /* ───── 서명판: 손가락 · 펜 · 마우스. 획을 0~1 좌표로 기억해 두어 화면 크기가 바뀌어도(폰을 돌려도) 다시 그린다 ───── */
+  function Pad(canvas, box) {
+    var ctx = canvas.getContext('2d');
+    var strokes = [], cur = null, cssW = 0, cssH = 0, dpr = 1;
+    function size() {
+      var r = canvas.getBoundingClientRect();
+      cssW = Math.max(1, r.width); cssH = Math.max(1, r.height); dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
+      redraw();
+    }
+    function line(c, w, h, scale) {
+      c.lineCap = 'round'; c.lineJoin = 'round'; c.strokeStyle = '#0b2430'; c.lineWidth = 2.6 * scale;
+      strokes.forEach(function (s) {
+        if (!s.length) return;
+        c.beginPath();
+        c.moveTo(s[0][0] * w, s[0][1] * h);
+        if (s.length === 1) c.lineTo(s[0][0] * w + 0.1, s[0][1] * h);
+        for (var i = 1; i < s.length - 1; i++) {   // 가운데 점을 이어 부드럽게
+          c.quadraticCurveTo(s[i][0] * w, s[i][1] * h, (s[i][0] + s[i + 1][0]) / 2 * w, (s[i][1] + s[i + 1][1]) / 2 * h);
+        }
+        if (s.length > 1) c.lineTo(s[s.length - 1][0] * w, s[s.length - 1][1] * h);
+        c.stroke();
+      });
+    }
+    function redraw() { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height); line(ctx, canvas.width, canvas.height, dpr); box.classList.toggle('has-ink', strokes.length > 0); }
+    function pt(e) { var r = canvas.getBoundingClientRect(); return [Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height))]; }
+    canvas.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      e.preventDefault(); try { canvas.setPointerCapture(e.pointerId); } catch (x) {}
+      cur = [pt(e)]; strokes.push(cur); box.classList.add('has-ink'); box.classList.remove('is-invalid'); redraw();
+    });
+    canvas.addEventListener('pointermove', function (e) { if (!cur) return; e.preventDefault(); cur.push(pt(e)); redraw(); });
+    var end = function (e) { if (!cur) return; cur = null; };
+    canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end); canvas.addEventListener('lostpointercapture', end);
+    canvas.addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });   // 서명하는 동안 화면이 스크롤되지 않게
+    window.addEventListener('resize', size);
+    if (window.ResizeObserver) new ResizeObserver(size).observe(canvas);
+    size();
+    return {
+      clear: function () { strokes = []; cur = null; redraw(); },
+      /* 점이 어느 정도 이어진 획이 있어야 서명으로 본다(점 하나 톡 찍은 것은 제외) */
+      hasInk: function () { var n = 0; strokes.forEach(function (s) { n += s.length; }); return n >= 8; },
+      /* 흰 바탕에 그려 PNG 로 — 어디에 붙여도 잘 보이게 */
+      toPng: function () {
+        var w = Math.round(cssW * dpr), h = Math.round(cssH * dpr);
+        var out = document.createElement('canvas'); out.width = w; out.height = h;
+        var c = out.getContext('2d'); c.fillStyle = '#fff'; c.fillRect(0, 0, w, h); line(c, w, h, dpr);
+        return out.toDataURL('image/png');
+      },
+    };
+  }
+
+  /* ───── 서명본 인쇄(새 창에 문서 전체 + 서명 그림 + 확인번호) ───── */
+  function printCopy(doc, rec) {
+    var w = window.open('', '_blank');
+    if (!w) { alert(T('팝업이 막혀 있어요. 이 사이트의 팝업을 허용한 뒤 다시 눌러 주세요.', 'Pop-ups are blocked. Please allow pop-ups for this site and try again.')); return; }
+    var items = function (k) { return doc.items.map(function (it, n) { return '<li><b>' + String(n + 1).padStart(2, '0') + '</b><span>' + esc(it[k]) + '</span></li>'; }).join(''); };
+    var roleLabel = rec.role === 'crew' ? '크루 Crew' : '스태프 Staff';
+    w.document.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>' + esc(doc.ko.title) + ' — ' + esc(rec.name) + '</title><style>'
+      + 'body{font:14px/1.75 "Noto Sans KR",system-ui,sans-serif;color:#10252e;max-width:760px;margin:32px auto;padding:0 24px}h1{font-size:22px;margin:0 0 4px}h2{font-size:15px;margin:28px 0 6px;color:#3e535d}p{margin:6px 0}'
+      + 'ol{list-style:none;padding:0;margin:8px 0}li{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:8px 0;border-top:1px solid #d6dee2}li b{color:#004f68}'
+      + '.pledge{padding:10px 14px;border:1px solid #d6dee2;background:#f6f9fb;font-weight:600}.sig{margin-top:24px;border:1px solid #d6dee2;padding:14px 18px;page-break-inside:avoid}.sig img{display:block;max-width:360px;width:100%;height:auto;border-bottom:1px solid #9fb0b8;margin:8px 0}'
+      + '.meta{display:grid;grid-template-columns:120px 1fr;gap:4px 12px;font-size:13px}.meta dt{color:#587383}.meta dd{margin:0;font-weight:600}.en{margin-top:36px;border-top:2px solid #10252e;padding-top:8px}@media print{body{margin:0}}'
+      + '</style></head><body>'
+      + '<h1>' + esc(doc.ko.title) + '</h1><p>' + esc(doc.ko.intro) + '</p><ol>' + items('ko') + '</ol><p class="pledge">' + esc(doc.ko.pledge) + '</p>'
+      + '<div class="en"><h1>' + esc(doc.en.title) + '</h1><p>' + esc(doc.en.intro) + '</p><ol>' + items('en') + '</ol><p class="pledge">' + esc(doc.en.pledge) + '</p></div>'
+      + '<div class="sig"><img alt="signature" src="' + rec.signature + '"><dl class="meta">'
+      + '<dt>이름 / Name</dt><dd>' + esc(rec.name) + '</dd><dt>구분 / Role</dt><dd>' + roleLabel + '</dd><dt>이메일 / Email</dt><dd>' + esc(rec.email) + '</dd>'
+      + '<dt>서명 시각 / Signed</dt><dd>' + esc(signedAtText(rec.signedAt)) + '</dd><dt>확인번호 / Code</dt><dd>' + esc(rec.code) + '</dd><dt>문서 버전 / Version</dt><dd>' + esc(doc.version) + '</dd></dl></div>'
+      + '<script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>');
+    w.document.close();
+  }
+
+  /* ───── 문서마다 폼 연결 ───── */
+  Array.prototype.forEach.call(document.querySelectorAll('.sa-doc'), function (article) {
+    var doc = DOCS[article.dataset.doc]; if (!doc) return;
+    var form = article.querySelector('[data-form]'), done = article.querySelector('[data-done]');
+    var padBox = article.querySelector('[data-padbox]'), pad = Pad(article.querySelector('[data-pad]'), padBox);
+    var dateInput = article.querySelector('[data-date]'); dateInput.value = todayKst();
+    var submit = article.querySelector('[data-submit]');
+    var q = function (sel) { return article.querySelector(sel); };
+    var val = function (name) { var el = form.elements[name]; return el ? el.value : ''; };
+    var roleVal = function () { var r = form.querySelector('input[type=radio]:checked'); return r ? r.value : ''; };
+    var last = null;   // 완료 후 인쇄에 쓸 값
+
+    function showErr(field, msg) {
+      var el = q('[data-err="' + field + '"]'); if (!el) return;
+      el.textContent = msg; el.hidden = !msg;
+      var input = field === 'signature' ? padBox : form.elements[field];
+      if (input && input.classList) input.classList.toggle('is-invalid', !!msg);
+    }
+    function clearErrs() { ['role', 'name', 'email', 'phone', 'signature', 'agree', 'consent', 'form'].forEach(function (f) { showErr(f, ''); }); }
+    function validate() {
+      var first = null;
+      var bad = function (f, ko, en) { showErr(f, T(ko, en)); if (!first) first = f; };
+      if (!roleVal()) bad('role', '스태프인지 크루인지 골라 주세요.', 'Please choose staff or crew.');
+      if (val('name').trim().length < 2) bad('name', '이름을 적어 주세요(2글자 이상).', 'Please enter your name (at least 2 characters).');
+      if (!EMAIL_RE.test(val('email').trim())) bad('email', '이메일 주소를 정확히 적어 주세요.', 'Please enter a valid email address.');
+      if (val('phone').trim() && !/^[+0-9()\-\s.]{6,30}$/.test(val('phone').trim())) bad('phone', '휴대폰 번호 모양이 맞지 않아요.', 'That phone number does not look right.');
+      if (!pad.hasInk()) bad('signature', '서명을 그려 주세요.', 'Please draw your signature.');
+      if (!form.elements.agree.checked) bad('agree', '문서를 읽고 동의해 주세요.', 'Please confirm that you have read and agree.');
+      if (!form.elements.consent.checked) bad('consent', '서명과 개인정보 수집에 동의해 주세요.', 'Please agree to the collection of your signature and personal information.');
+      return first;
+    }
+    article.querySelector('[data-clear]').addEventListener('click', function () { pad.clear(); showErr('signature', ''); });
+    // 고치기 시작하면 그 칸의 오류 문구를 바로 지운다(고쳤는데도 빨갛게 남아 있지 않게)
+    form.addEventListener('input', function (e) { var n = e.target && e.target.name; if (n === 'name' || n === 'email' || n === 'phone') showErr(n, ''); });
+    form.addEventListener('change', function (e) { var t = e.target; if (t.type === 'radio') showErr('role', ''); if (t.name === 'agree' || t.name === 'consent') showErr(t.name, ''); });
+    article.querySelector('[data-pad]').addEventListener('pointerdown', function () { showErr('signature', ''); });
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault(); clearErrs();
+      var first = validate();
+      if (first) {
+        var target = first === 'signature' ? padBox : (form.elements[first] || q('[data-err="' + first + '"]'));
+        if (target && target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        if (target && target.focus && first !== 'signature') target.focus({ preventScroll: true });
+        return;
+      }
+      submit.disabled = true;
+      var png = pad.toPng();
+      var body = { doc: doc.id, version: doc.version, role: roleVal(), name: val('name').trim(), email: val('email').trim(), phone: val('phone').trim(), agree: true, consent: true, signature: png, lang: isEn() ? 'en' : 'ko', website: val('website') };
+      try {
+        var res = await fetch('/api/agreements/sign', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        var d = await res.json().catch(function () { return {}; });
+        if (!res.ok) { submit.disabled = false; showErr(d.field && d.field !== 'website' && d.field !== 'version' && d.field !== 'doc' ? d.field : 'form', isEn() ? (d.errorEn || d.error) : (d.error || '제출하지 못했어요.')); return; }
+        last = { code: d.code, signedAt: d.signedAt, name: body.name, email: body.email, role: body.role, signature: png };
+        q('[data-code]').textContent = d.code; q('[data-signed-at]').textContent = signedAtText(d.signedAt);
+        form.hidden = true; done.hidden = false;
+        var t = q('[data-done-title]'); if (t) t.focus({ preventScroll: true });
+        done.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      } catch (err) {
+        submit.disabled = false; showErr('form', T('네트워크 연결을 확인하고 다시 눌러 주세요.', 'Please check your connection and try again.'));
+      }
+    });
+    q('[data-print]').addEventListener('click', function () { if (last) printCopy(doc, { code: last.code, signedAt: last.signedAt, name: last.name, email: last.email, role: last.role, signature: last.signature }); });
+  });
+})();
+</script>
