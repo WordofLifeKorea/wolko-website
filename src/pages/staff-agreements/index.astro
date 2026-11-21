@@ -86,16 +86,25 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
   .sa-doc-head { padding: 24px 28px 8px; }
   .sa-doc-head h2 { margin: 0; font-family: var(--ff-serif); font-size: 26px; font-weight: 800; letter-spacing: -.02em; color: var(--sa-navy); }
   .sa-doc-head p { margin: 10px 0 0; font-size: 15px; line-height: 1.8; color: var(--sa-body); }
-  /* 항목 표시: 번호 대신 옅은 체크 표시(장식 — 실제 동의는 아래 체크 칸). 소제목은 가는 선 + 글자 */
+  /* 항목마다 체크박스: 읽고 하나씩 체크한다(모두 체크해야 서명 가능). 소제목은 가는 선 + 글자 */
   .sa-items { margin: 0; padding: 6px 28px 10px; list-style: none; }
-  .sa-items li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 16px; padding: 15px 0; border-top: 1px solid #e6edf0; font-size: 15px; line-height: 1.85; color: var(--sa-ink); }
+  .sa-items li { padding: 0; border-top: 1px solid #e6edf0; font-size: 15px; line-height: 1.85; color: var(--sa-ink); }
   .sa-items li .wl-ko, .sa-items li .wl-en { white-space: pre-line; }
   .sa-ln { display: block; }   /* 위쪽 큰 제목 아래 설명: 문장마다 한 줄(좁은 화면에서도 합쳐지지 않게 br 대신 블록) */
-  .sa-items li::before { content: ''; width: 26px; height: 26px; margin-top: 1px; box-sizing: border-box; border: 0; background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%2373a0b3' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 8.4l3 3 6-6.6'/%3E%3C/svg%3E") center / 20px no-repeat; }   /* 상자 없이 체크 글자만 — 이미 체크된 칸처럼 보이지 않게 */
+  .sa-item { position: relative; display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 16px; padding: 15px 0; cursor: pointer; }
+  .sa-item input { position: absolute; opacity: 0; width: 26px; height: 26px; margin: 0; left: 0; top: 15px; cursor: pointer; }
+  .sa-item-box { width: 26px; height: 26px; margin-top: 1px; box-sizing: border-box; border: 1.5px solid #8fabb8; border-radius: 8px; background: #fff; transition: background-color .15s, border-color .15s; }
+  .sa-item:hover .sa-item-box { border-color: var(--sa-deep); }
+  .sa-item input:checked + .sa-item-box { border-color: var(--sa-deep); background: var(--sa-deep) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23ffffff' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 8.4l3 3 6-6.6'/%3E%3C/svg%3E") center / 16px no-repeat; }
+  .sa-item input:focus-visible + .sa-item-box { outline: 3px solid rgba(0, 79, 104, .35); outline-offset: 2px; }
   .sa-items li.sa-sec { display: block; padding: 26px 0 6px; border-top: 0; font-size: 16.5px; font-weight: 800; letter-spacing: -.01em; color: var(--sa-navy); }
-  .sa-items li.sa-sec::before { display: none; }
   .sa-items li.sa-sec > span::before { content: ''; display: inline-block; width: 24px; height: 2px; margin: 0 12px 4px 0; background: var(--sa-deep); vertical-align: middle; }
   .sa-items li.sa-sec + li { border-top: 0; }
+  .sa-ack { margin: 4px 28px 0; font-size: 14px; font-weight: 700; color: var(--sa-body); }
+  .sa-ack b { color: var(--sa-deep); font-variant-numeric: tabular-nums; }
+  .sa-ack.is-done { color: var(--sa-deep); }
+  .sa-ack-err { margin: 6px 28px 0; }
+  .sa-doc.is-ack-error .sa-item input:not(:checked) + .sa-item-box { border-color: var(--sa-error); }   /* 서명 시도 때 아직 체크하지 않은 항목을 붉은 테두리로 */
   .sa-pledge { white-space: pre-line; margin: 8px 28px 0; padding: 16px 18px; background: var(--sa-soft); border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); font-size: 15px; line-height: 1.8; color: var(--sa-navy); font-weight: 600; }
   .sa-form { padding: 24px 28px 28px; display: grid; gap: 16px; }
   .sa-form h3 { margin: 0; font-size: 17px; font-weight: 800; color: var(--sa-navy); }
@@ -159,8 +168,9 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
     .sa-shell { width: calc(100% - 32px); gap: 28px; }
     .sa-doc-head, .sa-form, .sa-done, .sa-already { padding-left: 18px; padding-right: 18px; }
     .sa-who { padding: 18px; }
-    .sa-items { padding: 2px 18px 8px; } .sa-items li { grid-template-columns: 24px minmax(0, 1fr); gap: 12px; }
-    .sa-items li::before { width: 24px; height: 24px; }
+    .sa-items { padding: 2px 18px 8px; } .sa-item { grid-template-columns: 24px minmax(0, 1fr); gap: 12px; }
+    .sa-item input, .sa-item-box { width: 24px; height: 24px; }
+    .sa-ack { margin: 4px 18px 0; } .sa-ack-err { margin: 6px 18px 0; }
     .sa-pledge { margin: 8px 18px 0; }
     .sa-two { grid-template-columns: minmax(0, 1fr); }
     .sa-pad canvas { height: 160px; }
@@ -239,12 +249,14 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
           </div>
         </div>
 
+        <p class="sa-ack" data-ack data-total={docSections(doc).reduce((n, sec) => n + sec.items.length, 0)}><span class="wl-ko">각 항목을 읽고 하나씩 체크해 주세요 · <b data-ack-n>0</b> / {docSections(doc).reduce((n, sec) => n + sec.items.length, 0)}</span><span class="wl-en">Read each item and tick it · <b data-ack-n>0</b> / {docSections(doc).reduce((n, sec) => n + sec.items.length, 0)}</span></p>
+        <p class="sa-err sa-ack-err" data-err="items" role="alert" hidden></p>
         <ol class="sa-items">
           {docSections(doc).map((sec) => (
             <>
               {sec.ko && <li class="sa-sec"><span><span class="wl-ko">{sec.ko}</span><span class="wl-en">{sec.en}</span></span></li>}
               {sec.items.map((it) => (
-                <li><span><span class="wl-ko">{sentences(it.ko)}</span><span class="wl-en">{sentences(it.en)}</span></span></li>
+                <li><label class="sa-item"><input type="checkbox" data-item-check><span class="sa-item-box" aria-hidden="true"></span><span><span class="wl-ko">{sentences(it.ko)}</span><span class="wl-en">{sentences(it.en)}</span></span></label></li>
               ))}
             </>
           ))}
@@ -616,11 +628,26 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
       var input = field === 'signature' ? padBox : form.elements[field];
       if (input && input.classList) input.classList.toggle('is-invalid', !!msg);
     }
-    function clearErrs() { ['campId', 'signature', 'declared', 'agree', 'consent', 'form'].forEach(function (f) { showErr(f, ''); }); }
+    function clearErrs() { ['campId', 'signature', 'items', 'declared', 'agree', 'consent', 'form'].forEach(function (f) { showErr(f, ''); }); }
+    var itemChecks = Array.prototype.slice.call(article.querySelectorAll('[data-item-check]')), ackEl = q('[data-ack]');
+    var itemTotal = itemChecks.length;
+    function ackCount() { return itemChecks.filter(function (c) { return c.checked; }).length; }
+    function syncAck() {   // 체크한 항목 수를 보여 주고, 모두 체크하면 아래 '모두 읽었으며 동의' 칸을 함께 체크한다(하나라도 풀면 같이 푼다)
+      var n = ackCount();
+      Array.prototype.forEach.call(article.querySelectorAll('[data-ack-n]'), function (el) { el.textContent = String(n); });
+      if (ackEl) ackEl.classList.toggle('is-done', n === itemTotal);
+      if (form.elements.agree) form.elements.agree.checked = n === itemTotal;
+      if (n === itemTotal) { showErr('items', ''); showErr('agree', ''); article.classList.remove('is-ack-error'); }
+      else if (article.classList.contains('is-ack-error')) showErr('items', T('모든 항목을 읽고 하나씩 체크해 주세요. (' + n + '/' + itemTotal + ')', 'Please read and tick every item. (' + n + '/' + itemTotal + ')'));   // 남은 개수를 계속 맞춰 보여 준다
+    }
+    function resetItems() { itemChecks.forEach(function (c) { c.checked = false; }); article.classList.remove('is-ack-error'); syncAck(); }
+    syncAck();   // 브라우저가 되살린 체크 상태가 있어도 개수 · 동의 칸을 맞춘다
     function validate() {
       var first = null;
       var bad = function (f, ko, en) { showErr(f, T(ko, en)); if (!first) first = f; };
       if (!STATE.info) bad('form', '먼저 위에서 이름과 이메일을 입력해 주세요.', 'Please enter your name and email above first.');
+      article.classList.toggle('is-ack-error', ackCount() < itemTotal);
+      if (ackCount() < itemTotal) bad('items', '모든 항목을 읽고 하나씩 체크해 주세요. (' + ackCount() + '/' + itemTotal + ')', 'Please read and tick every item. (' + ackCount() + '/' + itemTotal + ')');
       if (doc.perCamp && !selectedCamp(form)) bad('campId', '참여하는 캠프를 골라 주세요.', 'Please choose the camp you are taking part in.');
       if (!pad.hasInk()) bad('signature', '서명을 그려 주세요.', 'Please draw your signature.');
       if (doc.declaration && !form.elements.declared.checked) bad('declared', '본인 진술을 확인해 주세요.', 'Please confirm your statement.');
@@ -630,12 +657,14 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
     }
     article.saReset = function () {
       pad.clear(); ['declared', 'agree', 'consent'].forEach(function (n) { if (form.elements[n]) form.elements[n].checked = false; });
+      resetItems();
       if (form.elements.campId) form.elements.campId.value = '';
       clearErrs(); submit.disabled = false; done.hidden = true; form.hidden = false; last = null;
       var al = q('[data-already]'); if (al) al.hidden = true;
       var cs = q('[data-camp-signed]'); if (cs) cs.hidden = true;
     };
     article.querySelector('[data-clear]').addEventListener('click', function () { pad.clear(); showErr('signature', ''); });
+    article.addEventListener('change', function (e) { if (e.target && e.target.hasAttribute && e.target.hasAttribute('data-item-check')) syncAck(); });
     form.addEventListener('change', function (e) {
       var t = e.target;
       if (t.name === 'agree' || t.name === 'consent' || t.name === 'declared') showErr(t.name, '');
@@ -646,7 +675,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
       e.preventDefault(); clearErrs();
       var first = validate();
       if (first) {
-        var target = first === 'signature' ? padBox : (form.elements[first] || q('[data-err="' + first + '"]'));
+        var target = first === 'signature' ? padBox : first === 'items' ? ackEl : (form.elements[first] || q('[data-err="' + first + '"]'));
         if (target && target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'smooth' });
         if (target && target.focus && first !== 'signature') target.focus({ preventScroll: true });
         return;
@@ -655,7 +684,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
       var png;
       try { png = pad.toPng(); } catch (err) { submit.disabled = false; showErr('form', T('서명 그림을 만들지 못했어요. 다시 서명해 주세요.', 'Could not prepare your signature. Please sign again.')); return; }
       var info = STATE.info;
-      var body = { doc: doc.id, version: doc.version, role: info.role, name: info.name, email: info.email, agree: true, consent: true, declared: doc.declaration ? true : undefined, campId: doc.perCamp ? val('campId') : undefined, signature: png, lang: isEn() ? 'en' : 'ko', website: val('website') };
+      var body = { doc: doc.id, version: doc.version, role: info.role, name: info.name, email: info.email, agree: true, consent: true, acks: itemTotal, declared: doc.declaration ? true : undefined, campId: doc.perCamp ? val('campId') : undefined, signature: png, lang: isEn() ? 'en' : 'ko', website: val('website') };
       try {
         var res = await fetch('/api/agreements/sign', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         var d = await res.json().catch(function () { return {}; });
@@ -680,6 +709,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
     q('[data-print]').addEventListener('click', function () { if (last) printCopy(doc, { code: last.code, signedAt: last.signedAt, name: last.name, email: last.email, role: last.role, signature: last.signature, camp: last.camp }); });
     q('[data-again]').addEventListener('click', function () {   // 캠프마다 작성하는 서약서: 다른 캠프로 다시 쓸 수 있게 빈 서명 칸을 연다
       pad.clear(); ['declared', 'agree', 'consent'].forEach(function (n) { if (form.elements[n]) form.elements[n].checked = false; });
+      if (article.saReset) article.saReset();
       if (form.elements.campId) form.elements.campId.value = '';
       clearErrs(); submit.disabled = false; done.hidden = true; form.hidden = false; last = null; renderDocState(article);
       form.scrollIntoView({ block: 'start', behavior: 'smooth' });

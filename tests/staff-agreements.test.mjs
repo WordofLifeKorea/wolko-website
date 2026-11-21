@@ -569,11 +569,32 @@ test('아동보호 서약서는 한 사람(서약하는 사람)의 목소리: �
   assert.ok(items.every((i) => /\b(I|I’ve)\b|\bI\b/.test(i.en)), '영어도 모두 1인칭');
 });
 
-test('서약서 항목은 번호(01, 02…) 대신 체크 표시로, 소제목은 가는 선 + 글자로 보여 준다(화면) · 인쇄본은 번호로 참조', () => {
+test('서약서 항목은 번호 대신 항목마다 체크박스: 모두 체크해야 서명 · 소제목은 가는 선 + 글자 · 인쇄본은 번호로 참조', () => {
   const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
   assert.doesNotMatch(page, /counter-reset: sa|counter\(sa/, '화면에는 항목 번호를 매기지 않는다');
-  assert.match(page, /\.sa-items li::before \{ content: ''; width: 26px/, '체크 표시');
+  assert.match(page, /<input type="checkbox" data-item-check>/, '항목마다 체크박스');
+  assert.match(page, /ackCount\(\) < itemTotal\) bad\('items'/, '모두 체크해야 서명할 수 있다');
+  assert.match(page, /acks: itemTotal/, '체크한 항목 수를 서버에 보낸다');
+  assert.match(page, /form\.elements\.agree\.checked = n === itemTotal/, '모두 체크하면 아래 동의 칸도 체크');
+  assert.match(page, /function resetItems\(\)/, '사람이 바뀌면 항목 체크도 비운다');
+  assert.match(page, /showErr\('items', ''\); showErr\('agree', ''\)/, '모두 체크하면 남아 있던 항목 · 동의 오류를 지운다');
+  assert.match(page, /    syncAck\(\);   \/\/ 브라우저가 되살린/, '불러올 때 한 번 맞춘다');
+  assert.ok(page.indexOf('data-err="items"') < page.indexOf('<ol class="sa-items">'), '항목 오류 문구는 항목 목록 위(진행 표시 아래)');
+  assert.match(page, /is-ack-error .sa-item input:not\(:checked\) \+ \.sa-item-box/, '체크하지 않은 항목을 붉은 테두리로');
+  assert.doesNotMatch(page, /class="sa-ack"[^>]*aria-live/, '진행 표시를 칠 때마다 읽어 주지 않는다');
   assert.match(page, /\.sa-items li\.sa-sec > span::before \{ content: ''; display: inline-block; width: 24px; height: 2px/, '소제목: 가는 선 + 글자');
   assert.doesNotMatch(page.slice(page.indexOf('.sa-items {'), page.indexOf('.sa-pledge {')), /border-left|box-shadow: inset|●/, '왼쪽 줄무늬 · ● 없음');
   assert.match(page, /String\(n0\)\.padStart\(2, '0'\)/, '인쇄본에는 항목 번호가 남는다');
+});
+
+test('서명 제출: 항목 체크 수(acks)를 보냈다면 문서의 항목 수와 같아야 하고 기록에 남는다(안 보낸 예전 화면은 그대로 받는다)', async () => {
+  const t = await setup();
+  const total = docSections(DOCS.faith).reduce((n, x) => n + x.items.length, 0);
+  const post = async (patch) => { const r = await t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), ...patch } }); return { status: r.status, ...(await r.json()) }; };
+  const few = await post({ acks: total - 1 }); assert.equal(few.status, 400); assert.equal(few.field, 'items');
+  assert.equal((await post({ acks: 'all' })).field, 'items');
+  const ok = await post({ acks: total, email: 'acks@x.org' }); assert.equal(ok.status, 200);
+  const rec = [...t.kv.store.values()].map((v) => JSON.parse(v.value)).find((r) => r.email === 'acks@x.org');
+  assert.equal(rec.itemsAcknowledged, total, '확인한 항목 수가 기록에 남는다');
+  assert.equal((await post({ email: 'old@x.org' })).status, 200, 'acks 를 안 보낸 예전 화면도 받는다');
 });
