@@ -123,7 +123,7 @@ export const CHILD_PROTECTION = {
 
 export const CAMP_RULES = {
   id: 'rules',
-  version: '2026-11-v6',   // v6: 1번은 '반복적으로 어기면 경고 또는 제명' 한 문장만(경고 절차 · 예외 설명은 문서에서 뺐다) · 교제 문구 '어떠한 경우에도' · 스태프·크루 사이 문구에 '준비기간' 추가 · 휴대폰 항목을 '최대한 지양' + 사역에 필요한 사용은 예외로 · 경찰 보고 문구를 '아동보호 서약과 관련된 문제를 야기할 경우 필요에 따라 보고할 수 있습니다'로 · v5: 항목에서 '저는'을 빼고 '~에 동의합니다' 투로 · 장신구 문구 교체 · v3: 맨 앞에 '반복적으로 어기면 경고 또는 제명' 문장 · v4: '성인 스태프 귀가' 항목을 뺐고, 경고 절차를 포함해 '경고와 제명' 설명을 1번 하나로 합치고 '중도 하차'를 모두 '제명'으로 통일
+  version: '2026-11-v6',   // v6: 1번은 '반복적으로 어기면 경고 또는 제명' 한 문장만(경고 절차 · 예외 설명은 문서에서 뺐다) · 교제 문구 '어떠한 경우에도' · 스태프·크루 사이 문구에 '준비기간' 추가 · 외출 · 시간 · 숙소 · 문신 · 위생과 복장 항목을 새 문구로, 휴대폰 항목을 '최대한 지양' + 사역에 필요한 사용은 예외로 · 경찰 보고 문구를 '아동보호 서약과 관련된 문제를 야기할 경우 필요에 따라 보고할 수 있습니다'로 · v5: 항목에서 '저는'을 빼고 '~에 동의합니다' 투로 · 장신구 문구 교체 · v3: 맨 앞에 '반복적으로 어기면 경고 또는 제명' 문장 · v4: '성인 스태프 귀가' 항목을 뺐고, 경고 절차를 포함해 '경고와 제명' 설명을 1번 하나로 합치고 '중도 하차'를 모두 '제명'으로 통일
   draft: false,   // 2026-11-21 디렉터 결정으로 공개 — 스태프 · 크루가 작성해야 하는 필수 서약서
   ko: {
     title: '월코 캠프 필수 규칙',
@@ -190,33 +190,33 @@ export const CAMP_RULES = {
     {
       ko: '외출', en: 'Going out',
       items: [
-        { ko: '캠프장 밖으로 나갈 때 캠프 디렉터의 허락을 먼저 받고, 혼자 나가지 않고 2명 이상 함께 가며, 밤에는 외출하지 않는 것에 동의합니다.',
-          en: 'I agree to get the Camp Director’s permission before leaving the camp site, to go out with at least two people and never alone, and not to go out at night.' },
+        { ko: '캠프 지정장소 밖으로 나갈 때는 캠프 디렉터나 코디네이터와 꼭 소통한 후, 단독행동보다는 동일 성별 1인과 함께 나가고, 이성과 나가야 할 경우에는 제3자를 포함해 3인이 동행하는 것에 동의합니다.',
+          en: 'When going outside the designated camp area, I agree to talk with the Camp Director or the Coordinator first, to go out with one person of the same gender rather than acting alone, and, if I need to go out with someone of the opposite sex, to have a third person join so that three of us go together.' },
       ],
     },
     {
       ko: '시간', en: 'Schedule',
       items: [
-        { ko: '캠프 일정표(기상, 모임, 사역, 팀 미팅, 소등)를 지키려고 노력하는 것에 동의합니다. 지각은 경미한 실수로 보고 경고에 넣지 않습니다. 다만 허락 없이 자리를 비우는 것은 규칙을 어긴 것으로 봅니다.',
-          en: 'I agree to do my best to keep the camp schedule (wake-up, meetings, ministry, team meetings, lights-out). Being late is treated as a minor mistake and is not counted as a warning. Leaving without permission, however, counts as breaking the rules.' },
+        { ko: '캠프 일정(기상, 모임, 사역, 팀 미팅, 소등)을 지키려고 노력하는 것에 동의합니다.',
+          en: 'I agree to do my best to keep the camp schedule (wake-up, meetings, ministry, team meetings, lights-out).' },
       ],
     },
     {
       ko: '숙소', en: 'Lodging',
       items: [
-        { ko: '숙소는 성별로 나뉩니다. 이성의 숙소에 들어가지 않고, 캠퍼는 스태프 숙소에, 스태프는 캠퍼 숙소에 혼자 들어가지 않으며, 외부인과 가족을 숙소에 들이지 않고, 소등과 정숙 시간을 지키며 쓰는 방을 정리하는 것에 동의합니다.',
-          en: 'Lodging is separated by gender. I agree not to enter lodging of the opposite sex; campers do not enter staff lodging and staff do not enter campers’ lodging alone; I agree not to bring outside visitors or family into lodging, to keep lights-out and quiet hours, and to keep my room tidy.' },
+        { ko: '숙소는 성별로 나뉩니다. 이성의 숙소에 들어가지 않고, 캠퍼는 스태프 방에, 스태프는 캠퍼 숙소에 혼자 들어가지 않으며, 외부인과 가족을 숙소에 들이지 않고, 소등과 정숙 시간을 지키며 숙소를 깨끗하게 사용하는 것에 동의합니다.',
+          en: 'Lodging is separated by gender. I agree not to enter lodging of the opposite sex; campers do not enter staff rooms and staff do not enter campers’ lodging alone; I agree not to bring outside visitors or family into lodging, to keep lights-out and quiet hours, and to keep the lodging clean.' },
       ],
     },
     {
       ko: '외모와 복장', en: 'Appearance and dress',
       items: [
-        { ko: '문신이 보이지 않게 하는 것에 동의합니다.',
+        { ko: '문신이 보이지 않게 가리는 것에 동의합니다.',
           en: 'I agree to keep any tattoos covered and not visible.' },
         { ko: '불필요한 과도한 장신구(두 세트 이상의 귀걸이, 코걸이, 혓바닥 피어싱 등)로 인해서 생길 수 있는 문제를 미연에 방지하고자 과도한 액세서리를 착용하지 않는 것에 동의합니다. (귀걸이는 한 쌍(한 세트)까지는 괜찮습니다.)',
           en: 'To prevent problems that can come from unnecessary, excessive jewelry (two or more sets of earrings, nose rings, tongue piercings, etc.), I agree not to wear excessive accessories. (One pair (one set) of earrings is fine.)' },
-        { ko: '단정한 복장으로 지내고 팀 티셔츠를 입는 것에 동의합니다.',
-          en: 'I agree to dress modestly and wear the team T-shirt.' },
+        { ko: '개인위생을 청결히 유지하고, 단정한 복장을 착용하는 것에 동의합니다.',
+          en: 'I agree to keep my personal hygiene clean and to wear modest clothing.' },
       ],
     },
     {

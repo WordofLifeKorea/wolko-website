@@ -230,6 +230,9 @@ test('캠프 필수 규칙 초안(결정 반영): 1번은 한 문장 · 즉시 �
   assert.ok(!JSON.stringify(DOCS.rules.ko) .includes('하차') && !JSON.stringify(DOCS.rules.sections).includes('하차'), '필수 규칙 문서는 "제명"으로 통일');
   assert.match(DOCS.rules.version, /v6$/);
   const itemsOf = (t) => docSections(DOCS.rules).find((x) => x.ko === t).items.map((i) => i.ko);
+  assert.ok(itemsOf('숙소')[0].includes('캠퍼는 스태프 방에, 스태프는 캠퍼 숙소에 혼자 들어가지 않으며') && itemsOf('숙소')[0].endsWith('숙소를 깨끗하게 사용하는 것에 동의합니다.'), '숙소 문구');
+  assert.ok(itemsOf('외모와 복장')[0] === '문신이 보이지 않게 가리는 것에 동의합니다.', '문신 문구');
+  assert.ok(itemsOf('외모와 복장')[2] === '개인위생을 청결히 유지하고, 단정한 복장을 착용하는 것에 동의합니다.', '위생 · 복장 문구');
   assert.ok(itemsOf('이성 교제')[0] === '어떠한 경우에도 캠퍼와 교제하지 않는 것에 동의합니다.', '캠퍼와 교제: 어떠한 경우에도');
   assert.ok(itemsOf('이성 교제')[1].startsWith('캠프 기간 및 준비기간에 스태프·크루 사이에서도') && itemsOf('이성 교제')[1].endsWith('부부와 가족은 예외로 합니다.'), '스태프·크루 사이: 캠프 기간 및 준비기간');
   assert.equal(itemsOf('휴대폰')[0], '캠프 기간 동안 휴대폰 사용, SNS, 게임을 최대한 지양하는 것에 동의합니다. 캠프 사역에 필요한 휴대폰 및 전자기기 사용은 예외로 간주합니다.');
@@ -264,11 +267,14 @@ test('결정 반영(2): 본국 서류는 필요할 때만 · 담당자 연락처
   assert.ok(!OPEN_QUESTIONS.some((q) => q.includes('연락처') || q.includes('보호자(법정대리인) 서명')), '해결된 질문은 목록에서 뺐다');
 });
 
-test('지각은 경고에 넣지 않는다(경미한 실수) · 허락 없이 자리를 비우는 것은 규칙 위반', () => {
-  const time = docSections(DOCS.rules).find((s) => s.ko === '시간').items[0];
-  assert.ok(time.ko.includes('지각은 경미한 실수로 보고 경고에 넣지 않습니다') && /Being late is treated as a minor mistake and is not counted as a warning/.test(time.en));
-  assert.ok(time.ko.includes('허락 없이 자리를 비우는 것은 규칙을 어긴 것'), '허락 없이 자리를 비우는 것은 그대로 규칙 위반');
-  assert.ok(!OPEN_QUESTIONS.some((q) => q.includes('지각')), '지각 기준 질문은 해결돼 뺐다');
+test('시간 · 외출 항목은 짧은 "동의합니다" 한 문장(지각 · 자리 비움 같은 세부 설명은 문서에 넣지 않는다)', () => {
+  const time = docSections(DOCS.rules).find((x) => x.ko === '시간').items;
+  assert.deepEqual(time.map((i) => i.ko), ['캠프 일정(기상, 모임, 사역, 팀 미팅, 소등)을 지키려고 노력하는 것에 동의합니다.']);
+  const out = docSections(DOCS.rules).find((x) => x.ko === '외출').items;
+  assert.equal(out.length, 1);
+  assert.ok(out[0].ko.includes('캠프 디렉터나 코디네이터와 꼭 소통') && out[0].ko.includes('동일 성별 1인') && out[0].ko.includes('제3자를 포함해 3인이 동행') && out[0].ko.endsWith('동의합니다.'));
+  assert.ok(/Camp Director or the Coordinator/.test(out[0].en) && /third person/.test(out[0].en));
+  assert.ok(!out[0].ko.includes('밤에는'), '밤 외출 금지 문구는 새 문구에 없다');
 });
 
 /* ── 스태프·크루 필수 서약: 공개된 문서를 모두 작성해야 수락 ── */
