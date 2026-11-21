@@ -514,10 +514,13 @@ test('서명 페이지 동작(원본 검사): 정보 고치기 · 사람이 바�
 test('아동보호 서약서는 캠프 선택 없이 한 번만 작성: 캠프 칸이 없고 · 문서에 "캠프마다" 문장이 없고 · 같은 사람이 다시 쓰면 409', async () => {
   assert.equal(DOCS.childprotection.perCamp, false);
   assert.ok(!JSON.stringify(DOCS.childprotection.sections).includes('캠프마다 이 서약서를 새로'), '캠프마다 새로 작성한다는 문장을 뺐다');
-  assert.match(DOCS.childprotection.version, /v12$/, '문구를 고쳤으니 문서 버전을 올렸다');
+  assert.match(DOCS.childprotection.version, /v13$/, '문구를 고쳤으니 문서 버전을 올렸다');
   const cpKo2 = docSections(DOCS.childprotection).flatMap((x) => x.items).map((i) => i.ko).join('\n');
   for (const d of [DOCS.childprotection, DOCS.rules]) assert.ok(!/퇴출|해임|하차/.test(JSON.stringify(d)), d.id + ': 서약서는 "제명"으로 통일');
   assert.ok(cpKo2.includes('"우리 문화에서는 괜찮다"거나 "캠퍼가 먼저 원했다"는 이유로 신체 접촉을 하지 않으며, 신체 접촉에 관한 월코의 기준을 따릅니다.'), '신체 접촉 문구');
+  const bare = cpKo2.split(/(?<=\.)\s+/).filter((x) => /(않습니다|합니다|킵니다|릅니다|립니다|룹니다)\.$/.test(x) && !/(이해합니다|동의합니다|믿습니다|확인했습니다)\.$/.test(x));
+  assert.deepEqual(bare, [], '약속하는 문장은 "~하겠습니다" 형태(단정형 "~합니다"는 군대 말투 같다)');
+  assert.ok(cpKo2.includes('안전벨트 착용을 확인하고 정원을 지키겠습니다.') && cpKo2.includes('캠프 차량을 운전하겠습니다.'), '이동과 안전은 미래형(~하겠습니다)');
   assert.ok(cpKo2.includes('저는 어떤 이유로도 캠퍼 한 명과 단둘이 차량으로 이동하지 않습니다.') && !cpKo2.includes('캠퍼 배정과 감독 배치') && !cpKo2.includes('혼자서 캠퍼 한 명만'), '차량 단둘이 이동 금지 문구(중복 없이)');
   assert.ok(cpKo2.includes('캠프가 진행되는 국가의 법이나 규정이 이 서약서보다 더 엄격하면 더 엄격한 쪽을 따릅니다.'), '캠프 국가의 법이나 규정이 더 엄격하면 그쪽');
   assert.ok(docSections(DOCS.childprotection).flatMap((x) => x.items).every((i) => /저는|제가/.test(i.ko)), '아동보호 서약서 항목은 모두 서약하는 사람의 목소리(저는)');
