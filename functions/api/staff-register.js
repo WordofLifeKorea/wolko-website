@@ -261,7 +261,7 @@ export async function onRequestPost(context) {
     }
 
     if (!sensitiveConsent) {
-      return Response.json({ error: '민감정보(신앙 간증·이단 단체 참여 여부·건강 정보) 수집·이용에 별도로 동의해 주세요. 동의 칸이 보이지 않으면 화면을 새로고침해 주세요.', code: 'sensitive-consent-required' }, { status: 400, headers: CORS });
+      return Response.json({ error: '민감정보(신앙 간증·이단 단체 참여 여부·건강 정보) 수집·이용에 별도로 동의해 주세요. 동의 칸이 보이지 않으면 먼저 "임시 저장"을 누르고 화면을 새로고침한 뒤, 불러온 내용에서 새 동의 칸을 체크해 주세요.', code: 'sensitive-consent-required' }, { status: 400, headers: CORS });
     }
 
     // 선택한 캠프마다 한 건씩 저장해서 캠프별 관리자 목록에 모두 보이게 한다.
