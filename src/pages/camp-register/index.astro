@@ -4965,6 +4965,7 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       }
       formWrap.hidden = true;
       successWrap.hidden = false;
+      if (window.wolkoConversion) window.wolkoConversion('camp_register'); // 구글 광고 전환(개인 정보 없이 '신청 완료'만) — public/wolko-ads.js
       crpClearDraft(payload.campId); // 신청이 끝났으니 임시 저장을 지운다(다시 열면 빈 신청서)
       document.getElementById('crpRestoreNote').hidden = true;
 
@@ -5651,6 +5652,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
         formDirty = false;
         staffFormWrap.hidden   = true;
         staffSuccessWrap.hidden = false;
+        if (window.wolkoConversion) window.wolkoConversion('staff_apply'); // 구글 광고 전환 — public/wolko-ads.js
         var isEn = crpIsEn();
         if (isCrew) {
           var sentKo = (data.consentSent || []).map(function(v) { return v === 'sms' ? '문자' : '이메일'; }).join('·');

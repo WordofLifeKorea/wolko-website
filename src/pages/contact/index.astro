@@ -597,6 +597,7 @@ async function handleSubmit(e) {
       throw new Error(errData.error || ctT('보내지 못했어요', 'Could not send'));
     }
 
+    if (window.wolkoConversion) window.wolkoConversion('contact'); // 구글 광고 전환 — public/wolko-ads.js
     // 접수 완료 — 양식 자리에 안내 문장만 남긴다(왼쪽 정렬, 굵은 윗줄)
     // 화면 읽기 프로그램이 바로 읽도록 role="status" + 초점을 주고, 고정 머리 메뉴에 가리지 않게 위 여백을 두고 화면 안으로 스크롤한다.
     var d = document.createElement('div');
