@@ -183,7 +183,7 @@ test('캠프 필수 규칙 초안: 경고 2회 중도 하차 · 문신 · 얼굴
   assert.ok(ko.includes('경고가 2회') && ko.includes('중도 하차'));
   assert.ok(ko.includes('문신이 보이지 않게') && /tattoo/i.test(en));
   assert.ok(ko.includes('두 세트 이상의 귀걸이') && ko.includes('코걸이') && ko.includes('혀 피어싱'), '얼굴 장신구 규칙');
-  assert.ok(ko.includes('보이지 않게') && !ko.includes('한 세트'), '디렉터가 말한 대로 "보이지 않게"만 — 귀걸이 한 세트 허용은 아직 정하지 않았으니 문서에 쓰지 않는다');
+  assert.ok(ko.includes('보이지 않게') && ko.includes('귀걸이는 한 쌍(한 세트)까지는 괜찮습니다') && /One pair \(one set\) of earrings is fine/.test(en), '귀걸이 한 쌍은 괜찮다(모든 스태프 · 크루 공통 — 문서가 스태프와 크루 모두의 서명용)');
   assert.ok(ko.includes('사역에 방해가 될 만한 내용을 SNS에 올리지 않습니다'));
   assert.ok(all.every((i) => i.ko && i.en));
 });
