@@ -43,7 +43,7 @@
     .sigbox { background:#fff; border:1px solid var(--line); border-radius: var(--ws-radius-sm, 8px); padding:8px; }
     .sigbox img { display:block; max-width:100%; height:auto; margin:0 auto; }
     dl.kv { display:grid; grid-template-columns:130px 1fr; gap:4px 12px; margin:0; font-size:14px; } dl.kv dt { color:var(--muted); } dl.kv dd { margin:0; font-weight:600; overflow-wrap:anywhere; }
-    ol.items { margin:0; padding:0; list-style:none; font-size:13.5px; } ol.items li { padding:7px 0; border-top:1px solid var(--line); display:grid; grid-template-columns:30px 1fr; gap:8px; }
+    ol.items { margin:0; padding:0; list-style:none; font-size:13.5px; } ol.items li { padding:7px 0; border-top:1px solid var(--line); display:grid; grid-template-columns:30px 1fr; gap:8px; } ol.items li.sec { display:block; padding-top:14px; }
     [hidden] { display:none !important; }
     @media (max-width:560px) { dl.kv { grid-template-columns:1fr; } .modal { padding:18px 16px 22px; } }
   </style>
@@ -100,6 +100,10 @@
       var data = { items: [], docs: [] }, current = null;
       function headers() { return { Authorization: 'Bearer ' + (sessionStorage.getItem(KEY) || '') }; }
       function when(ms) { try { return new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(ms)); } catch (e) { return ''; } }
+      function itemsHtml(doc) {   // 소제목이 있는 문서는 소제목 + 번호 붙은 항목
+        var n = 0;
+        return doc.sections.map(function (sec) { return (sec.ko ? '<li class="sec"><strong>' + esc(sec.ko) + '</strong></li>' : '') + sec.items.map(function (it) { n++; return '<li><b>' + String(n).padStart(2, '0') + '</b><span>' + esc(it.ko) + '</span></li>'; }).join(''); }).join('');
+      }
       function docTitle(id) { var d = data.docs.filter(function (x) { return x.id === id; })[0]; return d ? d.title : id; }
       function filtered() {
         var fd = $('fDoc').value, fr = $('fRole').value, q = $('fSearch').value.trim().toLowerCase();
@@ -134,7 +138,7 @@
         $('mKv').innerHTML = [['구분', ROLE[r.role] || r.role], ['이름', r.name], ['이메일', r.email], ['휴대폰', r.phone || '—'], ['서명 시각', when(Date.parse(r.signedAt)) + ' (한국 시간)'], ['확인번호', r.code], ['문서 버전', r.version], ['문서 글 해시', String(r.textHash || '').slice(0, 16) + '…']]
           .map(function (p) { return '<dt>' + p[0] + '</dt><dd>' + esc(p[1]) + '</dd>'; }).join('');
         $('mDoc').innerHTML = body.doc
-          ? '<strong>서명한 문서 (' + esc(body.doc.version) + ')</strong><ol class="items">' + body.doc.items.map(function (it, n) { return '<li><b>' + String(n + 1).padStart(2, '0') + '</b><span>' + esc(it.ko) + '</span></li>'; }).join('') + '</ol>'
+          ? '<strong>서명한 문서 (' + esc(body.doc.version) + ')</strong><ol class="items">' + itemsHtml(body.doc) + '</ol>' + (body.record.declared && body.doc.declaration ? '<p class="meta">본인 진술 확인: ' + esc(body.doc.declaration.ko) + '</p>' : '')
           : '<p class="meta">서명한 때의 문서 버전(' + esc(r.version) + ')과 지금 문서가 달라 글은 보여 드리지 않아요. 위의 글 해시로 서명한 글을 확인할 수 있어요.</p>';
         $('ov').hidden = false; document.body.style.overflow = 'hidden';
       }
@@ -143,8 +147,8 @@
         if (!current) return;
         var r = current.record, doc = current.doc;
         var w = window.open('', '_blank'); if (!w) { alert('팝업을 허용한 뒤 다시 눌러 주세요.'); return; }
-        var items = doc ? '<ol>' + doc.items.map(function (it, n) { return '<li><b>' + String(n + 1).padStart(2, '0') + '</b><span>' + esc(it.ko) + '</span></li>'; }).join('') + '</ol><p class="pledge">' + esc(doc.ko.pledge) + '</p>' : '<p>(문서 버전 ' + esc(r.version) + ' — 글 해시 ' + esc(r.textHash) + ')</p>';
-        w.document.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>' + esc(docTitle(r.doc)) + ' — ' + esc(r.name) + '</title><style>body{font:14px/1.75 "Noto Sans KR",system-ui,sans-serif;color:#10252e;max-width:760px;margin:32px auto;padding:0 24px}h1{font-size:22px}ol{list-style:none;padding:0}li{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:8px 0;border-top:1px solid #d6dee2}li b{color:#004f68}.pledge{padding:10px 14px;border:1px solid #d6dee2;background:#f6f9fb;font-weight:600}.sig{margin-top:24px;border:1px solid #d6dee2;padding:14px 18px}.sig img{display:block;max-width:360px;width:100%;border-bottom:1px solid #9fb0b8;margin:8px 0}dl{display:grid;grid-template-columns:130px 1fr;gap:4px 12px;font-size:13px}dt{color:#587383}dd{margin:0;font-weight:600}</style></head><body><h1>' + esc(docTitle(r.doc)) + '</h1>' + items
+        var items = doc ? '<ol>' + itemsHtml(doc) + '</ol>' + (r.declared && doc.declaration ? '<p class="pledge">' + esc(doc.declaration.ko) + '</p>' : '') + '<p class="pledge">' + esc(doc.ko.pledge) + '</p>' : '<p>(문서 버전 ' + esc(r.version) + ' — 글 해시 ' + esc(r.textHash) + ')</p>';
+        w.document.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>' + esc(docTitle(r.doc)) + ' — ' + esc(r.name) + '</title><style>body{font:14px/1.75 "Noto Sans KR",system-ui,sans-serif;color:#10252e;max-width:760px;margin:32px auto;padding:0 24px}h1{font-size:22px}ol{list-style:none;padding:0}li{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:8px 0;border-top:1px solid #d6dee2}li b{color:#004f68}li.sec{display:block;font-weight:800;padding-top:14px}.pledge{padding:10px 14px;border:1px solid #d6dee2;background:#f6f9fb;font-weight:600}.sig{margin-top:24px;border:1px solid #d6dee2;padding:14px 18px}.sig img{display:block;max-width:360px;width:100%;border-bottom:1px solid #9fb0b8;margin:8px 0}dl{display:grid;grid-template-columns:130px 1fr;gap:4px 12px;font-size:13px}dt{color:#587383}dd{margin:0;font-weight:600}</style></head><body><h1>' + esc(docTitle(r.doc)) + '</h1>' + items
           + '<div class="sig"><img alt="signature" src="' + r.signature + '"><dl><dt>이름</dt><dd>' + esc(r.name) + '</dd><dt>구분</dt><dd>' + esc(ROLE[r.role] || r.role) + '</dd><dt>이메일</dt><dd>' + esc(r.email) + '</dd><dt>서명 시각</dt><dd>' + esc(when(Date.parse(r.signedAt))) + ' (한국 시간)</dd><dt>확인번호</dt><dd>' + esc(r.code) + '</dd><dt>문서 버전</dt><dd>' + esc(r.version) + '</dd></dl></div>'
           + '<script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>');
         w.document.close();

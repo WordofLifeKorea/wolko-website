@@ -8,6 +8,8 @@
  *   agree:v1:{문서}:{YYYYMM(KST)}:{확인번호}   서명 한 건. 값 = 전체(서명 그림 포함), 메타데이터 = 목록에 필요한 칸만
  *   agree:rl:{ip해시}:{시간}                  남용 방지 횟수(하루 남짓 뒤 사라짐)
  */
+import { CHILD_PROTECTION, CAMP_RULES } from './agreementDocsExtra.js';
+
 export const AGREEMENT_PREFIX = 'agree:v1:';
 export const ROLES = ['staff', 'crew'];
 export const ROLE_LABEL = { staff: { ko: '스태프', en: 'Staff' }, crew: { ko: '크루', en: 'Crew' } };
@@ -53,13 +55,25 @@ export const DOCS = {
         en: "Since every person is uniquely created in the image of God and formed by God, we hold to the sanctity of all human life. Since the Bible reflects that life begins at conception and lasts beyond death into eternity, God calls everyone to value, respect, defend, and protect all human life regardless of age or condition." }
     ],
   },
+  childprotection: CHILD_PROTECTION,
+  rules: CAMP_RULES,
 };
 
-export const docList = () => Object.values(DOCS);
+/** 서명을 받는(초안이 아닌) 문서만. includeDrafts 는 로컬 미리보기용 */
+export const docList = ({ includeDrafts = false } = {}) => Object.values(DOCS).filter((d) => includeDrafts || !d.draft);
+
+/** 문서를 '소제목 + 항목' 묶음으로 — 항목만 있는 문서(신앙고백서)는 제목 없는 한 묶음 */
+export function docSections(doc) {
+  return doc.sections || [{ ko: '', en: '', items: doc.items || [] }];
+}
 
 /** 문서의 글 전체를 한 덩어리로 — 해시 · 서명본 인쇄에 쓴다 */
 export function docText(doc) {
-  return [doc.ko.title, doc.ko.intro, ...doc.items.map((i, n) => `${n + 1}. ${i.ko}`), doc.ko.pledge, '', doc.en.title, doc.en.intro, ...doc.items.map((i, n) => `${n + 1}. ${i.en}`), doc.en.pledge].join('\n');
+  if (!doc.sections) {   // 신앙고백서처럼 항목만 있는 문서: 글 모양을 바꾸지 않는다(이미 받은 서명의 해시가 그대로 맞도록)
+    return [doc.ko.title, doc.ko.intro, ...doc.items.map((i, n) => `${n + 1}. ${i.ko}`), doc.ko.pledge, '', doc.en.title, doc.en.intro, ...doc.items.map((i, n) => `${n + 1}. ${i.en}`), doc.en.pledge].join('\n');
+  }
+  const lang = (k) => [doc[k].title, doc[k].intro, ...doc.sections.flatMap((sec) => [sec[k], ...sec.items.map((i) => i[k])]), ...(doc.declaration ? [doc.declaration[k]] : []), doc[k].pledge];
+  return [...lang('ko'), '', ...lang('en')].join('\n');
 }
 export async function docHash(doc) {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${doc.id}|${doc.version}|${docText(doc)}`));

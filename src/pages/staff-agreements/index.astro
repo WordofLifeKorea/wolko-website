@@ -4,10 +4,11 @@
 // 관리자 보기: 포탈 /portal/agreements/. 검색에는 나오지 않게 해 두었고(noindex), 스태프 · 크루에게만 링크로 보낸다.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
-import { docList, ROLE_LABEL } from '../../../functions/lib/staffAgreements.js';
+import { docList, docSections, ROLE_LABEL } from '../../../functions/lib/staffAgreements.js';
 
-const docs = docList();
-const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko: d.ko, en: d.en, items: d.items }))).replace(/</g, '\\u003c');
+// 초안(draft) 문서는 공개 페이지에 넣지 않는다. WOLKO_SHOW_DRAFTS=1 로 만든 로컬 미리보기에서만 보인다.
+const docs = docList({ includeDrafts: process.env.WOLKO_SHOW_DRAFTS === '1' });
+const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko: d.ko, en: d.en, sections: docSections(d), declaration: d.declaration || null }))).replace(/</g, '\\u003c');
 ---
 
 <BaseLayout
@@ -42,6 +43,8 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
   .sa-doc-head p { margin: 10px 0 0; font-size: 15px; line-height: 1.8; color: var(--sa-body); }
   .sa-items { margin: 0; padding: 8px 28px 8px; list-style: none; counter-reset: sa; }
   .sa-items li { counter-increment: sa; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; padding: 16px 0; border-top: 1px solid var(--sa-line); font-size: 15px; line-height: 1.85; color: var(--sa-ink); }
+  .sa-items li.sa-sec { counter-increment: none; display: block; padding: 20px 0 8px; font-size: 16px; font-weight: 800; color: var(--sa-navy); }
+  .sa-items li.sa-sec::before { display: none; }
   .sa-items li::before { content: counter(sa, decimal-leading-zero); width: 40px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); background: var(--sa-soft); color: var(--sa-deep); font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
   .sa-pledge { margin: 8px 28px 0; padding: 16px 18px; background: var(--sa-soft); border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); font-size: 15px; line-height: 1.8; color: var(--sa-navy); font-weight: 600; }
   .sa-form { padding: 24px 28px 28px; display: grid; gap: 16px; }
@@ -116,8 +119,13 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
           <p><span class="wl-ko">{doc.ko.intro}</span><span class="wl-en">{doc.en.intro}</span></p>
         </div>
         <ol class="sa-items">
-          {doc.items.map((it) => (
-            <li><span><span class="wl-ko">{it.ko}</span><span class="wl-en">{it.en}</span></span></li>
+          {docSections(doc).map((sec) => (
+            <>
+              {sec.ko && <li class="sa-sec"><span><span class="wl-ko">{sec.ko}</span><span class="wl-en">{sec.en}</span></span></li>}
+              {sec.items.map((it) => (
+                <li><span><span class="wl-ko">{it.ko}</span><span class="wl-en">{it.en}</span></span></li>
+              ))}
+            </>
           ))}
         </ol>
         <p class="sa-pledge"><span class="wl-ko">{doc.ko.pledge}</span><span class="wl-en">{doc.en.pledge}</span></p>
@@ -171,6 +179,15 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
             <p class="sa-err" data-err="signature" hidden></p>
           </div>
 
+          {doc.declaration && (
+            <>
+              <label class="sa-check">
+                <input type="checkbox" name="declared">
+                <span><strong class="wl-ko">{doc.declaration.ko}</strong><strong class="wl-en">{doc.declaration.en}</strong></span>
+              </label>
+              <p class="sa-err" data-err="declared" hidden></p>
+            </>
+          )}
           <label class="sa-check">
             <input type="checkbox" name="agree">
             <span><strong class="wl-ko">위 문서를 모두 읽었으며, 내용에 동의합니다.</strong><strong class="wl-en">I have read the whole document above and I agree with it.</strong></span>
@@ -289,17 +306,19 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
   function printCopy(doc, rec) {
     var w = window.open('', '_blank');
     if (!w) { alert(T('팝업이 막혀 있어요. 이 사이트의 팝업을 허용한 뒤 다시 눌러 주세요.', 'Pop-ups are blocked. Please allow pop-ups for this site and try again.')); return; }
-    var items = function (k) { return doc.items.map(function (it, n) { return '<li><b>' + String(n + 1).padStart(2, '0') + '</b><span>' + esc(it[k]) + '</span></li>'; }).join(''); };
+    var n0 = 0;
+    var items = function (k) { n0 = 0; return doc.sections.map(function (sec) { return (sec[k] ? '<li class="sec"><span>' + esc(sec[k]) + '</span></li>' : '') + sec.items.map(function (it) { n0++; return '<li><b>' + String(n0).padStart(2, '0') + '</b><span>' + esc(it[k]) + '</span></li>'; }).join(''); }).join(''); };
+    var decl = function (k) { return doc.declaration ? '<p class="pledge">' + esc(doc.declaration[k]) + '</p>' : ''; };
     var roleLabel = rec.role === 'crew' ? '크루 Crew' : '스태프 Staff';
     // (여는 태그를 둘로 나눠 쓴 것은 '전체 페이지는 스크롤 잠금 스크립트를 불러온다'는 검사가 이 글자열을 쪽 전체로 오해하지 않게 하려는 것)
     w.document.write('<!doctype html><' + 'html lang="ko"><head><meta charset="utf-8"><title>' + esc(doc.ko.title) + ' — ' + esc(rec.name) + '</title><style>'
       + 'body{font:14px/1.75 "Noto Sans KR",system-ui,sans-serif;color:#10252e;max-width:760px;margin:32px auto;padding:0 24px}h1{font-size:22px;margin:0 0 4px}h2{font-size:15px;margin:28px 0 6px;color:#3e535d}p{margin:6px 0}'
-      + 'ol{list-style:none;padding:0;margin:8px 0}li{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:8px 0;border-top:1px solid #d6dee2}li b{color:#004f68}'
+      + 'ol{list-style:none;padding:0;margin:8px 0}li{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:8px 0;border-top:1px solid #d6dee2}li b{color:#004f68}li.sec{display:block;font-weight:800;padding-top:16px}'
       + '.pledge{padding:10px 14px;border:1px solid #d6dee2;background:#f6f9fb;font-weight:600}.sig{margin-top:24px;border:1px solid #d6dee2;padding:14px 18px;page-break-inside:avoid}.sig img{display:block;max-width:360px;width:100%;height:auto;border-bottom:1px solid #9fb0b8;margin:8px 0}'
       + '.meta{display:grid;grid-template-columns:120px 1fr;gap:4px 12px;font-size:13px}.meta dt{color:#587383}.meta dd{margin:0;font-weight:600}.en{margin-top:36px;border-top:2px solid #10252e;padding-top:8px}@media print{body{margin:0}}'
       + '</style></head><body>'
-      + '<h1>' + esc(doc.ko.title) + '</h1><p>' + esc(doc.ko.intro) + '</p><ol>' + items('ko') + '</ol><p class="pledge">' + esc(doc.ko.pledge) + '</p>'
-      + '<div class="en"><h1>' + esc(doc.en.title) + '</h1><p>' + esc(doc.en.intro) + '</p><ol>' + items('en') + '</ol><p class="pledge">' + esc(doc.en.pledge) + '</p></div>'
+      + '<h1>' + esc(doc.ko.title) + '</h1><p>' + esc(doc.ko.intro) + '</p><ol>' + items('ko') + '</ol>' + decl('ko') + '<p class="pledge">' + esc(doc.ko.pledge) + '</p>'
+      + '<div class="en"><h1>' + esc(doc.en.title) + '</h1><p>' + esc(doc.en.intro) + '</p><ol>' + items('en') + '</ol>' + decl('en') + '<p class="pledge">' + esc(doc.en.pledge) + '</p></div>'
       + '<div class="sig"><img alt="signature" src="' + rec.signature + '"><dl class="meta">'
       + '<dt>이름 / Name</dt><dd>' + esc(rec.name) + '</dd><dt>구분 / Role</dt><dd>' + roleLabel + '</dd><dt>이메일 / Email</dt><dd>' + esc(rec.email) + '</dd>'
       + '<dt>서명 시각 / Signed</dt><dd>' + esc(signedAtText(rec.signedAt)) + '</dd><dt>확인번호 / Code</dt><dd>' + esc(rec.code) + '</dd><dt>문서 버전 / Version</dt><dd>' + esc(doc.version) + '</dd></dl></div>'
@@ -325,7 +344,7 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
       var input = field === 'signature' ? padBox : form.elements[field];
       if (input && input.classList) input.classList.toggle('is-invalid', !!msg);
     }
-    function clearErrs() { ['role', 'name', 'email', 'phone', 'signature', 'agree', 'consent', 'form'].forEach(function (f) { showErr(f, ''); }); }
+    function clearErrs() { ['role', 'name', 'email', 'phone', 'signature', 'declared', 'agree', 'consent', 'form'].forEach(function (f) { showErr(f, ''); }); }
     function validate() {
       var first = null;
       var bad = function (f, ko, en) { showErr(f, T(ko, en)); if (!first) first = f; };
@@ -334,6 +353,7 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
       if (!EMAIL_RE.test(val('email').trim())) bad('email', '이메일 주소를 정확히 적어 주세요.', 'Please enter a valid email address.');
       if (val('phone').trim() && !/^[+0-9()\-\s.]{6,30}$/.test(val('phone').trim())) bad('phone', '휴대폰 번호 모양이 맞지 않아요.', 'That phone number does not look right.');
       if (!pad.hasInk()) bad('signature', '서명을 그려 주세요.', 'Please draw your signature.');
+      if (doc.declaration && !form.elements.declared.checked) bad('declared', '본인 진술을 확인해 주세요.', 'Please confirm your statement.');
       if (!form.elements.agree.checked) bad('agree', '문서를 읽고 동의해 주세요.', 'Please confirm that you have read and agree.');
       if (!form.elements.consent.checked) bad('consent', '서명과 개인정보 수집에 동의해 주세요.', 'Please agree to the collection of your signature and personal information.');
       return first;
@@ -341,7 +361,7 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
     article.querySelector('[data-clear]').addEventListener('click', function () { pad.clear(); showErr('signature', ''); });
     // 고치기 시작하면 그 칸의 오류 문구를 바로 지운다(고쳤는데도 빨갛게 남아 있지 않게)
     form.addEventListener('input', function (e) { var n = e.target && e.target.name; if (n === 'name' || n === 'email' || n === 'phone') showErr(n, ''); });
-    form.addEventListener('change', function (e) { var t = e.target; if (t.type === 'radio') showErr('role', ''); if (t.name === 'agree' || t.name === 'consent') showErr(t.name, ''); });
+    form.addEventListener('change', function (e) { var t = e.target; if (t.type === 'radio') showErr('role', ''); if (t.name === 'agree' || t.name === 'consent' || t.name === 'declared') showErr(t.name, ''); });
     article.querySelector('[data-pad]').addEventListener('pointerdown', function () { showErr('signature', ''); });
     form.addEventListener('submit', async function (e) {
       e.preventDefault(); clearErrs();
@@ -355,7 +375,7 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
       submit.disabled = true;
       var png;
       try { png = pad.toPng(); } catch (err) { submit.disabled = false; showErr('form', T('서명 그림을 만들지 못했어요. 다시 서명해 주세요.', 'Could not prepare your signature. Please sign again.')); return; }
-      var body = { doc: doc.id, version: doc.version, role: roleVal(), name: val('name').trim(), email: val('email').trim(), phone: val('phone').trim(), agree: true, consent: true, signature: png, lang: isEn() ? 'en' : 'ko', website: val('website') };
+      var body = { doc: doc.id, version: doc.version, role: roleVal(), name: val('name').trim(), email: val('email').trim(), phone: val('phone').trim(), agree: true, consent: true, declared: doc.declaration ? true : undefined, signature: png, lang: isEn() ? 'en' : 'ko', website: val('website') };
       try {
         var res = await fetch('/api/agreements/sign', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         var d = await res.json().catch(function () { return {}; });

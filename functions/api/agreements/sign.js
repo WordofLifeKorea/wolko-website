@@ -18,7 +18,7 @@ export async function onRequestPost({ env, request }) {
   if (clean(body?.website, 40)) return fail('요청을 처리할 수 없습니다.', 'We could not process this request.', 400, { field: 'website' });
 
   const doc = DOCS[String(body?.doc || '')];
-  if (!doc) return fail('알 수 없는 문서입니다.', 'Unknown document.', 400, { field: 'doc' });
+  if (!doc || doc.draft) return fail('알 수 없는 문서입니다.', 'Unknown document.', 400, { field: 'doc' });   // 초안은 서명을 받지 않는다
   if (body?.version !== doc.version) return fail('문서가 새로 바뀌었어요. 페이지를 새로고침한 뒤 다시 읽고 서명해 주세요.', 'This document has been updated. Please refresh the page, read it again and sign.', 409, { field: 'version' });
   const role = ROLES.includes(body?.role) ? body.role : '';
   if (!role) return fail('스태프인지 크루인지 골라 주세요.', 'Please choose staff or crew.', 400, { field: 'role' });
@@ -29,6 +29,7 @@ export async function onRequestPost({ env, request }) {
   const phone = clean(body?.phone, 30);
   if (phone && !/^[+0-9()\-\s.]{6,30}$/.test(phone)) return fail('휴대폰 번호 모양이 맞지 않아요.', 'That phone number does not look right.', 400, { field: 'phone' });
   if (body?.agree !== true) return fail('신앙고백서를 읽고 동의해 주세요.', 'Please confirm that you have read and agree to the document.', 400, { field: 'agree' });
+  if (doc.declaration && body?.declared !== true) return fail('본인 진술을 확인해 주세요.', 'Please confirm your statement.', 400, { field: 'declared' });
   if (body?.consent !== true) return fail('서명과 개인정보 수집에 동의해 주세요.', 'Please agree to the collection of your signature and personal information.', 400, { field: 'consent' });
   if (!checkSignature(body?.signature)) return fail('서명을 그려 주세요.', 'Please draw your signature.', 400, { field: 'signature' });
 
@@ -38,7 +39,7 @@ export async function onRequestPost({ env, request }) {
   const now = Date.now();
   const code = newAgreementCode();
   const record = {
-    code, doc: doc.id, version: doc.version, textHash: await docHash(doc), role, name, email, phone,
+    code, doc: doc.id, version: doc.version, textHash: await docHash(doc), role, name, email, phone, ...(doc.declaration ? { declared: true } : {}),
     lang: body?.lang === 'en' ? 'en' : 'ko', signedAt: new Date(now).toISOString(), signature: body.signature,
   };
   const key = `${AGREEMENT_PREFIX}${doc.id}:${kstMonthKey(now)}:${code}`;

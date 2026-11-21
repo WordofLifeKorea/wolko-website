@@ -6,7 +6,7 @@
  * DELETE /api/portal/agreements?code=AG-XXXXXX        한 건 삭제(삭제 요청용)
  */
 import { sessionFor, canWrite, error } from '../../lib/portalResources.js';
-import { DOCS, AGREEMENT_PREFIX, ROLE_LABEL, docHash } from '../../lib/staffAgreements.js';
+import { DOCS, AGREEMENT_PREFIX, ROLE_LABEL, docHash, docSections } from '../../lib/staffAgreements.js';
 import { kstDateTime } from '../../lib/materials.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' };
@@ -57,7 +57,7 @@ export async function onRequestGet({ env, request }) {
     const doc = DOCS[record.doc];
     // 서명한 때의 문서 글과 지금 글이 같을 때(버전과 글 해시가 모두 같을 때)만 글을 같이 보낸다 — 버전을 안 올리고 문구만 고쳤어도 '서명한 글'로 잘못 보이지 않게
     const same = doc && doc.version === record.version && record.textHash === (await docHash(doc));
-    return Response.json({ record, doc: same ? doc : null }, { headers: CORS });
+    return Response.json({ record, doc: same ? { ...doc, sections: docSections(doc) } : null }, { headers: CORS });
   }
   const { rows, truncated } = await listRows(env, url.searchParams.get('doc') || '');
   if (url.searchParams.get('format') === 'csv') {
@@ -68,7 +68,7 @@ export async function onRequestGet({ env, request }) {
     for (const r of rows) lines.push([csvCell(kstDateTime(r.t)), csvCell(DOCS[r.doc]?.ko.title || r.doc), csvCell(r.version), csvCell(ROLE_LABEL[r.role]?.ko || r.role), csvCell(r.name), csvCell(r.email), phoneCell(r.phone), csvCell(r.code)].join(','));
     return new Response('﻿' + lines.join('\r\n') + '\r\n', { headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Cache-Control': 'private, no-store', 'Content-Disposition': 'attachment; filename="wolko-agreements.csv"' } });
   }
-  return Response.json({ items: rows.map(({ key, ...r }) => r), truncated, docs: Object.values(DOCS).map((d) => ({ id: d.id, version: d.version, title: d.ko.title })) }, { headers: CORS });
+  return Response.json({ items: rows.map(({ key, ...r }) => r), truncated, docs: Object.values(DOCS).map((d) => ({ id: d.id, version: d.version, title: d.ko.title, draft: !!d.draft })) }, { headers: CORS });
 }
 
 export async function onRequestDelete({ env, request }) {
