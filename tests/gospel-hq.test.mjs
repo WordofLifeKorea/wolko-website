@@ -175,7 +175,7 @@ test('복음 통계 화면 스크립트: render() 가 부르는 함수와 id 가
   for (const name of new Set(called)) assert.match(src, new RegExp(`function ${name}\\(`), `${name} 가 정의돼 있다`);
   // 코드가 $('id') 로 찾는 요소는 페이지에 있어야 한다(없으면 스크립트가 시작하다 멈춘다)
   for (const id of new Set([...src.matchAll(/\$\('([A-Za-z]\w*)'\)/g)].map(m => m[1]))) {
-    if (['fMonth', 'fTeam', 'fSave', 'fWarn', 'fDelete', 'crsNote', 'churchRows', 'churchTotal', 'churchApply', 'churchSec', 'gsChurchList', 'repInput', 'fMonthSel'].includes(id) || /^(f_|ce_)/.test(id)) continue;   // 폼·표를 그릴 때 만들어지는 요소
+    if (['fMonth', 'fTeam', 'fSave', 'fWarn', 'fDelete', 'crsNote', 'churchRows', 'churchTotal', 'churchApply', 'churchSec', 'gsChurchList', 'repInput', 'fMonthSel', 'fOlder'].includes(id) || /^(f_|ce_)/.test(id)) continue;   // 폼·표를 그릴 때 만들어지는 요소
     assert.ok(html.includes(`id="${id}"`), `#${id} 가 페이지에 있다`);
   }
   assert.match(src, /sessionStorage\.getItem\('gsView'\) === 'year' \? 'year' : 'month'/, '월별이 기본');
@@ -274,7 +274,7 @@ test('열린 달(보고하는 달·이번 달)의 사역 현황은 CRS 지금 �
   assert.equal((await view(month)).mainland.churchA, 2, 'CRS 에서 등급을 바꾸면 바로 반영');
 
   // 지난 달은 저장값을 그대로 쓴다(CRS 에는 등급 이력이 없다)
-  await t.stats('POST', master, { body: { month: old, location: 'mainland', scope: 'ministry', values: { churchA: 7 } } });   // 예전 달은 마스터만
+  await t.stats('POST', master, { body: { month: old, location: 'mainland', scope: 'ministry', values: { churchA: 7 } } });   // 예전 달
   assert.equal((await view(old)).mainland.churchA, 7);
 
   // CRS 를 읽을 수 없으면 저장값으로 돌아간다

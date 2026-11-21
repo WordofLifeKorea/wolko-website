@@ -19,7 +19,7 @@
       item: '항목', combined: '통합', month: '달', reports: '보고', tHeard: '들은 인원', tSalv: '구원', tDed: '헌신', monthShort: function (m) { return Number(m.split('-')[1]) + '월'; },
       rName: '보고자', rPlace: '위치', rType: '유형', rUpdated: '수정', individual: '개인', team: '팀', teamOf: function (n) { return '팀 · ' + n; },
       mineTitle: '내가 낸 보고', edit: '고치기', del: '지우기', delAsk: '이 보고를 지울까요?',
-      formTitle: '월간 복음 전도 보고', formMonth: '보고하는 달', formWho: '보고 종류', formTeam: '팀 이름', formTeamPh: '예: 평택 캠프팀', formPlace: '위치', segIndividualSub: '내 전도 숫자', segMinistry: '사역 현황', segMinistrySub: '제자훈련·지역교회',
+      formTitle: '월간 복음 전도 보고', formMonth: '보고하는 달', olderMonthHint: function (m) { return '지난달이 아닌 ' + Number(m.split('-')[1]) + '월을 고르셨어요. 이미 낸 보고가 있으면 그 숫자가 열리고, 없으면 새로 씁니다. 사역 현황의 교회 등급은 지금 CRS 기준으로 채워지니 숫자를 꼭 확인해 주세요.'; }, formWho: '보고 종류', formTeam: '팀 이름', formTeamPh: '예: 평택 캠프팀', formPlace: '위치', segIndividualSub: '내 전도 숫자', segMinistry: '사역 현황', segMinistrySub: '제자훈련·지역교회',
       placeMainland: '평택', placeJeju: '제주', save: '저장하기', saving: '저장 중…', cancel: '닫기',
       formLoaded: '이미 낸 보고를 불러왔어요. 고쳐서 저장하면 덮어써요.', saved: '저장했어요.', savedUpdated: '고쳐서 저장했어요.', crsAdded: function (names) { return 'CRS에 새 교회로 등록했어요: ' + names + '. CRS에서 주소·담임목사를 채워 주세요.'; },
       needPlace: '위치(평택 또는 제주)를 선택해 주세요.', needTeam: '팀 이름을 입력해 주세요.',
@@ -47,7 +47,7 @@
       item: 'Item', combined: 'Combined', month: 'Month', reports: 'Reports', tHeard: 'Heard', tSalv: 'Saved', tDed: 'Dedicated', monthShort: function (m) { return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Number(m.split('-')[1]) - 1]; },
       rName: 'Reporter', rPlace: 'Location', rType: 'Type', rUpdated: 'Updated', individual: 'Individual', team: 'Team', teamOf: function (n) { return 'Team · ' + n; },
       mineTitle: 'My reports', edit: 'Edit', del: 'Delete', delAsk: 'Delete this report?',
-      formTitle: 'Monthly Gospel Outreach Report', formMonth: 'Month', formWho: 'Report type', formTeam: 'Team name', formTeamPh: 'e.g. Pyeongtaek Camp Team', formPlace: 'Location', segIndividualSub: 'my own outreach', segMinistry: 'Ministry status', segMinistrySub: 'discipleship & churches',
+      formTitle: 'Monthly Gospel Outreach Report', formMonth: 'Month', olderMonthHint: function (m) { return 'You chose an earlier month than last month. If a report already exists its numbers open; otherwise you write a new one. For ministry status, church grades are filled from the current CRS, so please check the numbers.'; }, formWho: 'Report type', formTeam: 'Team name', formTeamPh: 'e.g. Pyeongtaek Camp Team', formPlace: 'Location', segIndividualSub: 'my own outreach', segMinistry: 'Ministry status', segMinistrySub: 'discipleship & churches',
       placeMainland: 'Pyeongtaek', placeJeju: 'Jeju', save: 'Save', saving: 'Saving…', cancel: 'Close',
       formLoaded: 'Loaded the report you already submitted. Saving will overwrite it.', saved: 'Saved.', savedUpdated: 'Updated.', crsAdded: function (names) { return 'Added to the CRS as new churches: ' + names + '. Please fill in the address and pastor in the CRS.'; },
       needPlace: 'Please choose a location (Pyeongtaek or Jeju).', needTeam: 'Please enter a team name.',
@@ -373,8 +373,7 @@
 
   /* ───────── 보고 쓰기 ───────── */
   function monthOptions() {
-    if (!(data.me && data.me.role === 'master')) return [data.reportMonth];   // 지난달 보고만 쓰고 고친다(그 전 달은 마감) — 마스터만 예전 달도
-    var out = [], m = data.reportMonth;
+    var out = [], m = data.reportMonth;   // 지난달부터 12개월 전까지 — 놓친 달도 나중에 쓰고 고칠 수 있다
     while (m >= data.earliest) { out.push(m); var p = m.split('-'); var d = new Date(Date.UTC(Number(p[0]), Number(p[1]) - 2, 1)); m = d.toISOString().slice(0, 7); }
     return out;
   }
@@ -426,13 +425,13 @@
   }
 
   function buildForm(report) {
-    var master = data.me && data.me.role === 'master';   // 마스터가 아니면 늘 지난달(그 전 달은 마감)
-    var month = !master ? data.reportMonth : report ? report.month : (viewMonth >= data.earliest && viewMonth <= data.reportMonth ? viewMonth : data.reportMonth);
+    // 새 보고는 지금 보고 있는 달이 기본값(연간 보기이거나 범위 밖이면 지난달) — 위 '보고하는 달'에서 지난 12개월 중 아무 달이나 고를 수 있다
+    var month = report ? report.month : (viewMonth && viewMonth >= data.earliest && viewMonth <= data.reportMonth ? viewMonth : data.reportMonth);
     var scope = report ? report.scope : 'individual';
     var place = report ? report.location : ((data.me && data.me.location) || lastPlace()); // 새 보고: 가입할 때 고른 소속(평택/제주)이 기본값
     var v = (report && report.values) || {};
     var designated = !!(data.me && data.me.designated);
-    var html = '<div class="gs-meta"><fieldset class="gs-fieldset"><legend>' + esc(t('formMonth')) + '</legend><select id="fMonth" class="gs-select">' + monthOptions().map(function (m) { return '<option value="' + m + '"' + (m === month ? ' selected' : '') + '>' + esc(t('monthLabel', m)) + '</option>'; }).join('') + '</select></fieldset>' +
+    var html = '<div class="gs-meta"><fieldset class="gs-fieldset"><legend>' + esc(t('formMonth')) + '</legend><select id="fMonth" class="gs-select">' + monthOptions().map(function (m) { return '<option value="' + m + '"' + (m === month ? ' selected' : '') + '>' + esc(t('monthLabel', m)) + '</option>'; }).join('') + '</select><p class="gs-ce-hint" id="fOlder" hidden></p></fieldset>' +
       // 개인/팀 구분은 없앴다(입력 항목이 같다). 담당자만 '사역 현황'을 고를 수 있고, 아니면 고를 것이 없어 이 칸을 숨긴다
       '<fieldset class="gs-fieldset"' + (designated ? '' : ' hidden') + '><legend>' + esc(t('formWho')) + '</legend><div class="gs-choices">' +
         // 같은 너비의 칸 두 개(큰 이름 + 작은 설명)로 나란히 — 긴 이름이 줄바꿈되며 칸 크기가 들쭉날쭉하던 것을 정리
@@ -459,11 +458,17 @@
       + '<div class="gs-ce-foot"><button type="button" class="gs-small" id="churchAdd">＋ ' + esc(t('churchAdd')) + '</button><span class="gs-ce-total" id="churchTotal"></span></div></div></section><datalist id="gsChurchList"></datalist>';
     html += '<p class="gs-warn" id="fWarn" hidden></p><div class="gs-formbtns"><button type="submit" class="gs-primary" id="fSave">' + esc(t('save')) + '</button><button type="button" class="gs-small" id="fCancel">' + esc(t('cancel')) + '</button></div>';   // '이 보고 지우기' 버튼은 뺐다 — 고쳐서 저장하면 덮어쓴다
     $('reportForm').innerHTML = html;
-    drafts = {}; applyScopeUi(); formKey = unitKey(currentUnit());
+    drafts = {}; applyScopeUi(); formKey = unitKey(currentUnit()); updateOlder();
     updateWarn(); updateChurchTotal(); loadChurches();
     if (currentUnit().scope === 'ministry' && !report) applyCrs(false);
   }
 
+  /** 지난달이 아닌 달을 골랐을 때만 안내 문구를 보여 준다 */
+  function updateOlder() {
+    var el = $('fOlder'), sel = $('fMonth'); if (!el || !sel) return;
+    var old = !!sel.value && sel.value !== data.reportMonth;
+    el.hidden = !old; el.textContent = old ? t('olderMonthHint', sel.value) : '';
+  }
   function formValues() { var out = {}; document.querySelectorAll('#reportForm [data-field]').forEach(function (i) { out[i.dataset.field] = i.value; }); return out; }
   function n(v) { var x = Number(String(v || '').replace(/[,\s]/g, '')); return Number.isFinite(x) ? x : 0; }
   function updateWarn() {
@@ -704,6 +709,7 @@
   $('reportForm').addEventListener('focusin', function (e) { if (e.target.matches('[data-field]')) setTimeout(function () { e.target.select(); }, 0); });
   $('reportForm').addEventListener('change', function (e) {
     if (e.target.name === 'fScope') applyScopeUi();
+    if (e.target.id === 'fMonth') updateOlder();
     if (e.target.id === 'fMonth' || e.target.name === 'fScope' || (e.target.name === 'fPlace' && document.querySelector('input[name="fScope"]:checked').value === 'ministry')) syncExisting();
   });
   $('reportForm').addEventListener('focusout', function (e) { if (e.target.id === 'fTeam') syncExisting(); });

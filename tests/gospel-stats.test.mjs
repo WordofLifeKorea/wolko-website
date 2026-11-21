@@ -162,7 +162,7 @@ test('익명: 예전에 이름·이메일과 함께 저장된 보고는 읽을 �
 
 test('추이: 선택한 달까지 최근 6개월 합계', async () => {
   const t = setup(); await t.acc(anna[0]);
-  await t.call('POST', master, { body: report({ month: shiftMonth(month, -2), values: { evangelism: 3 } }) });   // 예전 달은 마스터만 쓸 수 있다
+  await t.call('POST', master, { body: report({ month: shiftMonth(month, -2), values: { evangelism: 3 } }) });   // 예전 달도 쓸 수 있다
   await t.call('POST', anna, { body: report({ values: { evangelism: 4 } }) });
   const r = await t.call('GET', anna, { query: `?month=${month}` });
   assert.equal(r.trend.length, 6); assert.equal(r.trend[5].month, month);
@@ -322,13 +322,20 @@ test('집계 저장(캐시): 한 번 계산한 달은 저장해 두고, 보고�
   assert.equal(store.has(`gospel:agg:${cur}`), false, '지우면 그 달 저장값이 지워진다');
 });
 
-test('마감: 지난달 보고만 쓰고 고칠 수 있다 — 그 전 달은 막히고, 마스터만 예전 달도 고칠 수 있다', async () => {
+test('보고하는 달: 지난달부터 12개월 전까지는 누구나 놓친 달을 쓰고 고칠 수 있고, 이번 달 · 미래 · 12개월보다 오래된 달은 막힌다', async () => {
   const t = setup(); await t.acc(anna[0]);
-  const old = shiftMonth(month, -1);
-  const r = await t.call('POST', anna, { body: report({ month: old, values: { evangelism: 1 } }) });
-  assert.equal(r.status, 403); assert.match(r.error, /지난달 보고만/);
-  assert.equal((await t.call('POST', anna, { body: report({ values: { evangelism: 2 } }) })).status, 200, '지난달은 된다');
-  assert.equal((await t.call('POST', master, { body: report({ month: old, values: { evangelism: 3 } }) })).status, 200, '마스터는 예전 달도');
+  const old = shiftMonth(month, -1), older = shiftMonth(month, -5), oldest = shiftMonth(month, -11);
+  for (const m of [month, old, older, oldest]) {
+    const r = await t.call('POST', anna, { body: report({ month: m, values: { evangelism: 1 } }) });
+    assert.equal(r.status, 200, `${m} 은 일반 보고자도 쓸 수 있다`);
+  }
+  // 같은 달을 다시 보내면 고쳐진다(새로 쌓이지 않는다)
+  const again = await t.call('POST', anna, { body: report({ month: older, values: { evangelism: 4 } }) });
+  assert.equal(again.status, 200); assert.equal(again.updated, true);
+  for (const m of [shiftMonth(month, 1), shiftMonth(month, 5), shiftMonth(month, -12), 'abc']) {
+    assert.equal((await t.call('POST', anna, { body: report({ month: m, values: { evangelism: 1 } }) })).status, 400, `${m} 은 막힌다`);
+  }
+  assert.equal((await t.call('POST', master, { body: report({ month: old, values: { evangelism: 3 } }) })).status, 200, '마스터는 그대로');
 });
 
 test('CRS 에 없는 교회는 새로 등록하고, 이름이 같은 교회(띄어쓰기·대소문자 무시)는 그 교회로 잇는다', async () => {
