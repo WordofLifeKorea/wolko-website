@@ -166,6 +166,7 @@ test('아동보호 서약서 내용: 디렉터가 정한 것들이 들어 있다
   assert.ok(all.every((i) => i.ko && i.en), '모든 항목에 한국어와 영어가 있다');
   assert.ok(ko.includes('범죄경력') && ko.includes('지체 없이'), '월코가 요구하면 범죄경력 서류를 지체 없이 제공');
   assert.ok(/without delay/.test(en));
+  assert.ok(ko.includes('캠프 기간 동안만 보관하고, 캠프가 끝나면 폐기') && /destroyed when the camp ends/.test(en), '제출한 범죄경력 서류는 캠프 기간 동안만 보관 후 폐기');
   assert.ok(ko.includes('Jason Anderson') && ko.includes('캠프팀 디렉터') && ko.includes('Aiden Park') && ko.includes('코디네이터'), '아동보호 담당자 · 부담당자');
   assert.ok(en.includes('Jason Anderson') && en.includes('Aiden Park'));
   assert.ok(/개인 SNS/.test(ko) && /personal social media/.test(en), '캠퍼와 개인 SNS 를 공유하지 않는다');

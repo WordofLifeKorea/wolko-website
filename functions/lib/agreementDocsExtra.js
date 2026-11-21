@@ -3,7 +3,7 @@
  * draft: true 인 동안은 공개 페이지에 나오지 않고 서버도 서명을 받지 않는다. 문구가 확정되면 draft 를 false 로 바꾸고 version 을 정한다.
  *
  * 정해진 것(디렉터 결정, 2026-11-21):
- *  - 범죄경력 확인에 필요한 서류는 월코가 요구하면 지체 없이 제공한다.
+ *  - 범죄경력 확인에 필요한 서류는 월코가 요구하면 지체 없이 제공한다. 제출한 서류는 캠프 기간 동안만 보관하고 캠프가 끝나면 폐기한다(2026-11-21).
  *  - 아동보호 담당자: 캠프팀 디렉터 Jason Anderson · 부담당자: 코디네이터 Aiden Park.
  *  - 미성년 크루의 역할 범위는 나중에 정한다(그동안은 '어른 지도자의 지도에 따라 활동한다'는 원칙만 둔다).
  *  - 캠퍼와 개인 SNS 를 서로 공유하지 않는다 · 사역에 방해될 내용을 SNS 에 올리지 않는다.
@@ -44,8 +44,8 @@ export const CHILD_PROTECTION = {
       items: [
         { ko: '나는 아동·청소년과 함께하는 역할을 맡기 전에 지원서, 추천인 확인, 면접을 거치는 데 동의합니다. 지원서에 허위로 적거나 빠뜨린 것이 있으면 선발에서 제외되거나 해임될 수 있음을 이해합니다.',
           en: 'Before serving in any role with children, I agree to the application, reference checks and interview. I understand that false or missing information can lead to rejection or dismissal.' },
-        { ko: '월코가 요구하면, 나는 범죄경력 확인에 필요한 서류(한국에서 발급받는 범죄경력회보서, 해외에서 지낸 적이 있으면 그 나라에서 발급받는 범죄경력 증명서 등)를 지체 없이 제공하겠습니다.',
-          en: 'Whenever WOLKO asks, I will provide without delay the documents needed for a criminal record check (such as a criminal record certificate issued in Korea and, if I have lived abroad, one issued by that country).' },
+        { ko: '월코가 요구하면, 나는 범죄경력 확인에 필요한 서류(한국에서 발급받는 범죄경력회보서, 해외에서 지낸 적이 있으면 그 나라에서 발급받는 범죄경력 증명서 등)를 지체 없이 제공하겠습니다. 제출한 서류는 캠프 기간 동안만 보관하고, 캠프가 끝나면 폐기합니다.',
+          en: 'Whenever WOLKO asks, I will provide without delay the documents needed for a criminal record check (such as a criminal record certificate issued in Korea and, if I have lived abroad, one issued by that country). The documents I submit are kept only for the duration of the camp and are destroyed when the camp ends.' },
       ],
     },
     {
@@ -163,6 +163,6 @@ export const OPEN_QUESTIONS = [
   '미성년 크루의 구체적인 역할 범위(차후 결정)',
   '아동에 대한 학대 · 성적으로 부적절한 행동 · 체벌은 경고 없이 즉시 퇴출(무관용)로 할지',
   '필수 규칙에 더 넣을 항목(술 · 담배 · 이성 교제 · 휴대폰 · 외출 · 복장 · 시간 · 숙소 등)과 경고를 주는 사람 · 기록 방법 · 하차 후 처리(보호자 연락, 귀가 방법)',
-  '범죄경력 서류의 보관 기간과 열람자, 외국인 스태프의 본국 서류 범위',
+  '범죄경력 서류를 볼 수 있는 사람(열람자)과 외국인 스태프의 본국 서류 범위(보관은 캠프 기간 동안만, 끝나면 폐기로 정했다)',
   '두 문서에 보호자(법정대리인) 서명을 받을지(크루)',
 ];
