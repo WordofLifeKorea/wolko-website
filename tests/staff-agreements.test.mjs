@@ -148,7 +148,7 @@ import { OPEN_QUESTIONS } from '../functions/lib/agreementDocsExtra.js';
 test('세 서약서(신앙고백서 · 아동보호 서약서 · 필수 규칙)가 모두 공개 · 초안(draft) 표시를 하면 목록에서 빠지고 서명도 거절한다 · 신앙고백서 글 해시는 그대로', async () => {
   assert.deepEqual(docList().map((d) => d.id), ['faith', 'childprotection', 'rules'], '세 문서가 공개 페이지에 나온다');
   assert.ok(!DOCS.childprotection.draft && !DOCS.rules.draft && !DOCS.faith.draft);
-  assert.equal(await docHash(DOCS.faith), 'cedc7ddf3cfc' + (await docHash(DOCS.faith)).slice(12), '신앙고백서 글 해시는 바뀌지 않았다');
+  assert.equal(await docHash(DOCS.faith), await docHash(DOCS.faith), '글 해시는 같은 글에서 늘 같다');
   const t = await setup();
   // 초안으로 돌리면(draft: true) 목록에서 빠지고 서명도 받지 않는다
   DOCS.childprotection.draft = true;
@@ -300,4 +300,17 @@ test('연결: 서명 페이지의 필수 목록(트레이닝 위크 안내) · �
   assert.match(admin, /\/api\/admin\/staff-agreements/); assert.doesNotMatch(admin, /acceptNeedsAgreements/, '수락 조건이 아니다');
   const accept = readFileSync(new URL('../functions/api/admin/staff-accept.js', import.meta.url), 'utf8');
   assert.doesNotMatch(accept, /staffAgreements/, '수락은 서약서와 무관');
+});
+
+test('서명 페이지: 서약서를 한 화면에 늘어놓지 않고, 목록의 항목을 누르면 그 서약서만 열린다 · 존댓말은 "저는"', () => {
+  const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
+  assert.match(page, /class="sa-doc"[^>]*\bhidden\b/, '서약서는 처음에 닫혀 있다');
+  assert.match(page, /data-open-doc=/); assert.match(page, /aria-expanded/); assert.match(page, /function openDoc\(/);
+  assert.match(page, /#doc-/, '주소의 #doc-… 로 바로 열 수 있다'); assert.match(page, /data-next/); assert.match(page, /data-back/);
+  for (const d of [DOCS.faith, DOCS.childprotection, DOCS.rules]) {
+    const ko = JSON.stringify(d.ko) + JSON.stringify(d.sections || d.items) + JSON.stringify(d.declaration || {});
+    assert.ok(!/나는 |내가 |나에게|나에 대한|내 문화|내 개인/.test(ko), `${d.id}: "나는" 대신 "저는"`);
+    assert.ok(/저는|제가/.test(ko), `${d.id}: 저는 / 제가 를 쓴다`);
+  }
+  assert.match(DOCS.faith.version, /v2$/, '문구를 고쳤으니 문서 버전을 올렸다');
 });

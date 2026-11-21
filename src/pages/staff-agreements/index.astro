@@ -40,9 +40,16 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
   .sa-need { border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); background: var(--sa-soft); padding: 18px 22px; }
   .sa-need-title { margin: 0 0 10px; font-size: 15px; line-height: 1.7; font-weight: 700; color: var(--sa-navy); }
   .sa-need-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
-  .sa-need-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; background: #fff; border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); font-size: 14.5px; }
-  .sa-need-list a { color: var(--sa-ink); font-weight: 700; text-decoration: none; }
-  .sa-need-list a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .sa-need-list li { margin: 0; }
+  .sa-need-btn { width: 100%; min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; background: #fff; border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); font: inherit; font-size: 15.5px; text-align: left; color: var(--sa-ink); cursor: pointer; }
+  .sa-need-btn:hover { background: var(--sa-soft); }
+  .sa-need-btn:focus-visible { outline: 2px solid var(--sa-deep); outline-offset: 2px; }
+  .sa-need-btn[aria-expanded="true"] { border-color: var(--sa-deep); box-shadow: 0 0 0 1px var(--sa-deep); }
+  .sa-need-name { font-weight: 700; flex: 1; min-width: 0; }
+  .sa-need-btn::after { content: ''; flex: none; width: 8px; height: 8px; margin: -3px 2px 0 0; border-right: 2px solid var(--sa-muted); border-bottom: 2px solid var(--sa-muted); transform: rotate(45deg); transition: transform .2s; }
+  .sa-need-btn[aria-expanded="true"]::after { transform: rotate(225deg); margin-top: 3px; }
+  .sa-need-hint { margin: 10px 0 0; font-size: 13.5px; color: var(--sa-muted); }
+  .sa-doc[hidden] { display: none; }
   .sa-need-state { flex: none; display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border: 1px solid var(--sa-field); border-radius: var(--ws-radius-sm, 8px); font-size: 12.5px; font-weight: 800; color: var(--sa-muted); }
   .sa-need-list li.is-done .sa-need-state { border-color: var(--sa-deep); background: var(--sa-deep); color: #fff; }
   .sa-need-done { margin: 12px 0 0; font-size: 14.5px; font-weight: 700; color: var(--sa-deep); }
@@ -129,16 +136,25 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
       </p>
       <ol class="sa-need-list">
         {docs.map((doc) => (
-          <li data-need-doc={doc.id}><a href={`#doc-${doc.id}`}><span class="wl-ko">{doc.ko.title}</span><span class="wl-en">{doc.en.title}</span></a><span class="sa-need-state" data-need-state><span class="wl-ko">작성 전</span><span class="wl-en">Not yet</span></span></li>
+          <li data-need-doc={doc.id}>
+            <button type="button" class="sa-need-btn" data-open-doc={doc.id} aria-expanded="false" aria-controls={`doc-${doc.id}`}>
+              <span class="sa-need-name"><span class="wl-ko">{doc.ko.title}</span><span class="wl-en">{doc.en.title}</span></span>
+              <span class="sa-need-state" data-need-state><span class="wl-ko">작성 전</span><span class="wl-en">Not yet</span></span>
+            </button>
+          </li>
         ))}
       </ol>
+      <p class="sa-need-hint" data-need-hint>
+        <span class="wl-ko">서약서를 눌러 내용을 읽고 서명해 주세요.</span>
+        <span class="wl-en">Tap an agreement to read it and sign.</span>
+      </p>
       <p class="sa-need-done" data-need-done hidden>
         <span class="wl-ko">모든 서약서를 작성하셨어요. 감사합니다!</span>
         <span class="wl-en">You have completed all the agreements. Thank you!</span>
       </p>
     </div>
     {docs.map((doc) => (
-      <article class="sa-doc" id={`doc-${doc.id}`} data-doc={doc.id} data-version={doc.version}>
+      <article class="sa-doc" id={`doc-${doc.id}`} data-doc={doc.id} data-version={doc.version} hidden>
         <div class="sa-doc-head">
           <h2><span class="wl-ko">{doc.ko.title}</span><span class="wl-en">{doc.en.title}</span></h2>
           <p><span class="wl-ko">{doc.ko.intro}</span><span class="wl-en">{doc.en.intro}</span></p>
@@ -240,7 +256,9 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
           <span class="sa-code" data-code></span>
           <p data-signed-at></p>
           <div class="sa-actions">
-            <button type="button" class="sa-btn" data-print><span class="wl-ko">서명본 인쇄 · PDF로 저장</span><span class="wl-en">Print or save signed copy as PDF</span></button>
+            <button type="button" class="sa-btn" data-next hidden><span class="wl-ko">다음 서약서 작성하기</span><span class="wl-en">Next agreement</span></button>
+            <button type="button" class="sa-btn ghost" data-print><span class="wl-ko">서명본 인쇄 · PDF로 저장</span><span class="wl-en">Print or save signed copy as PDF</span></button>
+            <button type="button" class="sa-btn ghost" data-back><span class="wl-ko">서약서 목록으로</span><span class="wl-en">Back to the list</span></button>
           </div>
         </div>
       </article>
@@ -353,10 +371,34 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
 
   /* ───── 필수 서약서 진행 표시 · 이름/이메일 미리 채우기 ───── */
   var doneIds = {};
+  /* ───── 서약서 하나만 열기: 목록의 항목을 누르면 그 서약서의 내용과 서명 칸만 보인다 ───── */
+  var articles = Array.prototype.slice.call(document.querySelectorAll('.sa-doc'));
+  function openDoc(id, scroll) {
+    var target = null;
+    articles.forEach(function (a) { var on = a.dataset.doc === id; a.hidden = !on; if (on) target = a; });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-open-doc]'), function (b) { b.setAttribute('aria-expanded', String(b.dataset.openDoc === id && !!target)); });
+    var hint = document.querySelector('[data-need-hint]'); if (hint) hint.hidden = !!target;
+    try { history.replaceState(null, '', target ? '#doc-' + id : location.pathname + location.search); } catch (e) {}
+    if (target && scroll !== false) target.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    refreshNext();
+  }
+  function nextUnsigned(afterId) {
+    var ids = articles.map(function (a) { return a.dataset.doc; });
+    var start = ids.indexOf(afterId);
+    for (var i = 1; i <= ids.length; i++) { var id = ids[(start + i) % ids.length]; if (id !== afterId && !doneIds[id]) return id; }
+    return null;
+  }
+  function refreshNext() {   // 서명을 마친 서약서의 '다음 서약서' 단추: 아직 안 쓴 다음 서약서가 있을 때만
+    articles.forEach(function (a) {
+      var btn = a.querySelector('[data-next]'); if (!btn) return;
+      var nxt = nextUnsigned(a.dataset.doc); btn.hidden = !nxt; btn.dataset.nextDoc = nxt || '';
+    });
+  }
   function markDone(id) {
     doneIds[id] = true;
     var li = document.querySelector('[data-need-doc="' + id + '"]');
     if (li) { li.classList.add('is-done'); var st = li.querySelector('[data-need-state]'); if (st) st.innerHTML = '<span class="wl-ko">작성 완료</span><span class="wl-en">Done</span>'; }
+    refreshNext();
     var need = document.querySelector('[data-need]');
     if (need && Object.keys(doneIds).length >= Number(need.dataset.total)) { var m = need.querySelector('[data-need-done]'); if (m) m.hidden = false; }
   }
@@ -444,6 +486,19 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
       }
     });
     q('[data-print]').addEventListener('click', function () { if (last) printCopy(doc, { code: last.code, signedAt: last.signedAt, name: last.name, email: last.email, role: last.role, signature: last.signature }); });
+    q('[data-next]').addEventListener('click', function (e) { var id = e.currentTarget.dataset.nextDoc; if (id) openDoc(id); });
+    q('[data-back]').addEventListener('click', function () { openDoc(null, false); var need = document.querySelector('[data-need]'); if (need) need.scrollIntoView({ block: 'start', behavior: 'smooth' }); });
   });
+
+  // 목록의 항목을 누르면 그 서약서만 열리고, 같은 항목을 다시 누르면 닫힌다
+  Array.prototype.forEach.call(document.querySelectorAll('[data-open-doc]'), function (b) {
+    b.addEventListener('click', function () {
+      var id = b.dataset.openDoc, a = articles.filter(function (x) { return x.dataset.doc === id; })[0];
+      openDoc(a && !a.hidden ? null : id);
+    });
+  });
+  // 주소에 #doc-… 가 있으면(QR · 링크) 그 서약서를 바로 연다
+  var hashId = (location.hash.match(/^#doc-([a-z0-9]+)$/) || [])[1];
+  if (hashId && DOCS[hashId]) openDoc(hashId, false); else refreshNext();
 })();
 </script>

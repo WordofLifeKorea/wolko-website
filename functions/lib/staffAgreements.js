@@ -19,11 +19,11 @@ export const MAX_SIGNATURE_BYTES = 240 * 1024;   // 서명 그림(PNG) 한도
 export const DOCS = {
   faith: {
     id: 'faith',
-    version: '2026-11-v1',
+    version: '2026-11-v2',
     ko: {
       title: '신앙고백서',
       intro: '월코 캠프에서 스태프나 크루로 섬기는 모든 분은 아래 신앙고백을 읽고 동의하며 서명합니다.',
-      pledge: '나는 위 신앙고백서를 처음부터 끝까지 읽었으며, 그 내용에 동의합니다. 월코 캠프에서 이 신앙에 어긋나지 않게 섬기겠습니다.',
+      pledge: '저는 위 신앙고백서를 처음부터 끝까지 읽었으며, 그 내용에 동의합니다. 월코 캠프에서 이 신앙에 어긋나지 않게 섬기겠습니다.',
     },
     en: {
       title: 'Statement of Faith',
