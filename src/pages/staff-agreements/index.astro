@@ -162,7 +162,6 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
     <section class="sa-who" data-who aria-labelledby="sa-who-title">
       <h2 class="sa-who-title" id="sa-who-title"><span class="wl-ko">내 정보</span><span class="wl-en">Your information</span></h2>
       <form data-who-form novalidate>
-        <p class="sa-note" style="margin:0"><span class="wl-ko">먼저 이름과 이메일을 적어 주세요. 이미 서명한 서약서는 알려 드리고, 아직인 것만 서명하시면 돼요.</span><span class="wl-en">Please enter your name and email first. We will tell you which agreements you have already signed, and you only sign the rest.</span></p>
         <fieldset class="sa-roles" aria-label="구분 / Role">
           {Object.entries(ROLE_LABEL).map(([value, label]) => (
             <label class="sa-role"><input type="radio" name="who-role" value={value}><span><span class="wl-ko">{label.ko}</span><span class="wl-en">{label.en}</span></span></label>
@@ -183,7 +182,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
         </div>
         <p class="sa-err" data-who-err="form" role="alert" hidden></p>
         <div class="sa-actions"><button type="submit" class="sa-btn" data-who-go><span class="wl-ko">확인하고 시작하기</span><span class="wl-en">Continue</span></button></div>
-        <p class="sa-note" style="margin:0"><span class="wl-ko">크루(미성년자)는 지원서에서 보호자 동의를 따로 받아요. 신청하실 때 적은 이메일을 그대로 써 주세요.</span><span class="wl-en">Crew members (minors) also need separate guardian consent, which is collected in the application. Please use the same email you used when you applied.</span></p>
+        <p class="sa-note" data-crew-note style="margin:0" hidden><span class="wl-ko">크루(미성년자)는 지원서에서 보호자 동의를 따로 받아요. 신청하실 때 적은 이메일을 그대로 써 주세요.</span><span class="wl-en">Crew members (minors) also need separate guardian consent, which is collected in the application. Please use the same email you used when you applied.</span></p>
       </form>
       <div class="sa-who-summary" data-who-summary hidden>
         <span class="sa-who-text" data-who-text></span>
@@ -586,7 +585,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
     continueWho({ role: roleEl.value, name: name, email: email });
   });
   whoForm.addEventListener('input', function (e) { var n = (e.target && e.target.name) || ''; if (n === 'who-name') whoErr('name', ''); if (n === 'who-email') whoErr('email', ''); whoErr('form', ''); });
-  whoForm.addEventListener('change', function (e) { if (e.target && e.target.name === 'who-role') whoErr('role', ''); });
+  whoForm.addEventListener('change', function (e) { if (e.target && e.target.name === 'who-role') { whoErr('role', ''); var cn = whoForm.querySelector('[data-crew-note]'); if (cn) cn.hidden = e.target.value !== 'crew'; } });   // 보호자 안내는 '크루'를 골랐을 때만 보여 준다
   whoEl.querySelector('[data-who-edit]').addEventListener('click', editWho);
 
   /* ───── 문서마다 폼 연결 ───── */
@@ -695,7 +694,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
     var saved = null; if (!fromUrl) { try { saved = JSON.parse(sessionStorage.getItem(WHO_KEY) || 'null'); } catch (e) {} }
     var name = (QS.get('name') || (saved && saved.name) || '').slice(0, 60), email = (QS.get('email') || (saved && saved.email) || '').slice(0, 100), role = QS.get('role') || (saved && saved.role) || '';
     whoForm.elements['who-name'].value = name; whoForm.elements['who-email'].value = email;
-    if (role === 'staff' || role === 'crew') { var r = whoForm.querySelector('input[name="who-role"][value="' + role + '"]'); if (r) r.checked = true; }
+    if (role === 'staff' || role === 'crew') { var r = whoForm.querySelector('input[name="who-role"][value="' + role + '"]'); if (r) { r.checked = true; var cn0 = whoForm.querySelector('[data-crew-note]'); if (cn0) cn0.hidden = role !== 'crew'; } }
     var hashId = (location.hash.match(/^#doc-([a-z0-9]+)$/) || [])[1];
     if (hashId && DOCS[hashId]) pendingOpen = hashId;
     var campParam = QS.get('camp');
