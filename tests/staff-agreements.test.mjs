@@ -568,3 +568,12 @@ test('아동보호 서약서는 한 사람(서약하는 사람)의 목소리: �
   assert.ok(/removed from WOLKO camps/.test(en) && !/dismiss|expel|fired/i.test(en), '영어의 제명은 removal 로 통일');
   assert.ok(items.every((i) => /\b(I|I’ve)\b|\bI\b/.test(i.en)), '영어도 모두 1인칭');
 });
+
+test('서약서 항목은 번호(01, 02…) 대신 체크 표시로, 소제목은 가는 선 + 글자로 보여 준다(화면) · 인쇄본은 번호로 참조', () => {
+  const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
+  assert.doesNotMatch(page, /counter-reset: sa|counter\(sa/, '화면에는 항목 번호를 매기지 않는다');
+  assert.match(page, /\.sa-items li::before \{ content: ''; width: 26px/, '체크 표시');
+  assert.match(page, /\.sa-items li\.sa-sec > span::before \{ content: ''; display: inline-block; width: 24px; height: 2px/, '소제목: 가는 선 + 글자');
+  assert.doesNotMatch(page.slice(page.indexOf('.sa-items {'), page.indexOf('.sa-pledge {')), /border-left|box-shadow: inset|●/, '왼쪽 줄무늬 · ● 없음');
+  assert.match(page, /String\(n0\)\.padStart\(2, '0'\)/, '인쇄본에는 항목 번호가 남는다');
+});

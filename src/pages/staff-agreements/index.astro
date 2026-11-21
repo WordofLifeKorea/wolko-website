@@ -86,13 +86,16 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
   .sa-doc-head { padding: 24px 28px 8px; }
   .sa-doc-head h2 { margin: 0; font-family: var(--ff-serif); font-size: 26px; font-weight: 800; letter-spacing: -.02em; color: var(--sa-navy); }
   .sa-doc-head p { margin: 10px 0 0; font-size: 15px; line-height: 1.8; color: var(--sa-body); }
-  .sa-items { margin: 0; padding: 8px 28px 8px; list-style: none; counter-reset: sa; }
-  .sa-items li { counter-increment: sa; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; padding: 16px 0; border-top: 1px solid var(--sa-line); font-size: 15px; line-height: 1.85; color: var(--sa-ink); }
+  /* 항목 표시: 번호 대신 옅은 체크 표시(장식 — 실제 동의는 아래 체크 칸). 소제목은 가는 선 + 글자 */
+  .sa-items { margin: 0; padding: 6px 28px 10px; list-style: none; }
+  .sa-items li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 16px; padding: 15px 0; border-top: 1px solid #e6edf0; font-size: 15px; line-height: 1.85; color: var(--sa-ink); }
   .sa-items li .wl-ko, .sa-items li .wl-en { white-space: pre-line; }
   .sa-ln { display: block; }   /* 위쪽 큰 제목 아래 설명: 문장마다 한 줄(좁은 화면에서도 합쳐지지 않게 br 대신 블록) */
-  .sa-items li.sa-sec { counter-increment: none; display: block; padding: 20px 0 8px; font-size: 16px; font-weight: 800; color: var(--sa-navy); }
+  .sa-items li::before { content: ''; width: 26px; height: 26px; margin-top: 1px; box-sizing: border-box; border: 0; background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%2373a0b3' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 8.4l3 3 6-6.6'/%3E%3C/svg%3E") center / 20px no-repeat; }   /* 상자 없이 체크 글자만 — 이미 체크된 칸처럼 보이지 않게 */
+  .sa-items li.sa-sec { display: block; padding: 26px 0 6px; border-top: 0; font-size: 16.5px; font-weight: 800; letter-spacing: -.01em; color: var(--sa-navy); }
   .sa-items li.sa-sec::before { display: none; }
-  .sa-items li::before { content: counter(sa, decimal-leading-zero); width: 40px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); background: var(--sa-soft); color: var(--sa-deep); font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .sa-items li.sa-sec > span::before { content: ''; display: inline-block; width: 24px; height: 2px; margin: 0 12px 4px 0; background: var(--sa-deep); vertical-align: middle; }
+  .sa-items li.sa-sec + li { border-top: 0; }
   .sa-pledge { white-space: pre-line; margin: 8px 28px 0; padding: 16px 18px; background: var(--sa-soft); border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); font-size: 15px; line-height: 1.8; color: var(--sa-navy); font-weight: 600; }
   .sa-form { padding: 24px 28px 28px; display: grid; gap: 16px; }
   .sa-form h3 { margin: 0; font-size: 17px; font-weight: 800; color: var(--sa-navy); }
@@ -156,8 +159,8 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
     .sa-shell { width: calc(100% - 32px); gap: 28px; }
     .sa-doc-head, .sa-form, .sa-done, .sa-already { padding-left: 18px; padding-right: 18px; }
     .sa-who { padding: 18px; }
-    .sa-items { padding: 4px 18px; } .sa-items li { grid-template-columns: 34px minmax(0, 1fr); gap: 10px; }
-    .sa-items li::before { width: 34px; }
+    .sa-items { padding: 2px 18px 8px; } .sa-items li { grid-template-columns: 24px minmax(0, 1fr); gap: 12px; }
+    .sa-items li::before { width: 24px; height: 24px; }
     .sa-pledge { margin: 8px 18px 0; }
     .sa-two { grid-template-columns: minmax(0, 1fr); }
     .sa-pad canvas { height: 160px; }
