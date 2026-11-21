@@ -514,7 +514,7 @@ test('서명 페이지 동작(원본 검사): 정보 고치기 · 사람이 바�
 test('아동보호 서약서는 캠프 선택 없이 한 번만 작성: 캠프 칸이 없고 · 문서에 "캠프마다" 문장이 없고 · 같은 사람이 다시 쓰면 409', async () => {
   assert.equal(DOCS.childprotection.perCamp, false);
   assert.ok(!JSON.stringify(DOCS.childprotection.sections).includes('캠프마다 이 서약서를 새로'), '캠프마다 새로 작성한다는 문장을 뺐다');
-  assert.match(DOCS.childprotection.version, /v6$/, '문구를 고쳤으니 문서 버전을 올렸다');
+  assert.match(DOCS.childprotection.version, /v7$/, '문구를 고쳤으니 문서 버전을 올렸다');
   const cpKo2 = docSections(DOCS.childprotection).flatMap((x) => x.items).map((i) => i.ko).join('\n');
   assert.ok(cpKo2.includes('캠프가 진행되는 국가의 법이나 규정이 이 서약서보다 더 엄격하면 더 엄격한 쪽을 따릅니다.'), '캠프 국가의 법이나 규정이 더 엄격하면 그쪽');
   assert.ok(docSections(DOCS.childprotection).flatMap((x) => x.items).every((i) => /저는|제가/.test(i.ko) || i.ko.includes('월코의 아동보호 담당자는') || i.ko.includes('선의로')), '아동보호 서약서 항목은 1인칭(담당자 안내 · 신고자 보호 안내 제외)');
@@ -530,4 +530,16 @@ test('아동보호 서약서는 캠프 선택 없이 한 번만 작성: 캠프 �
   assert.ok(out.signed.childprotection.at, '확인 결과는 캠프 없이 서명 시각만');
   const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
   assert.match(page, /\{doc\.perCamp && \(/, '캠프 선택칸은 캠프마다 쓰는 문서에만 그린다');
+});
+
+test('서약서 항목은 문장이 끝나는 마침표 뒤에서 줄바꿈해 보여 준다(화면 · 인쇄본) · 소제목 "단독행위와 제3자 규칙"', () => {
+  const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
+  assert.match(page, /const sentences = \(t\) =>/, '화면용 문장 줄바꿈 도우미');
+  assert.match(page, /\{sentences\(it\.ko\)\}/); assert.match(page, /white-space: pre-line/);
+  assert.match(page, /esc\(sentences\(it\[k\]\)\)/, '인쇄본도 같은 줄바꿈');
+  const f = (t) => String(t).replace(/([.!?])[ \t]+(?=\S)/g, '$1\n');
+  assert.equal(f('저는 읽었습니다. 동의합니다.'), '저는 읽었습니다.\n동의합니다.');
+  assert.equal(f('동의합니다.\n\n연락해 주세요.'), '동의합니다.\n\n연락해 주세요.', '원문의 빈 줄은 그대로');
+  assert.equal(f('(귀걸이는 한 쌍까지는 괜찮습니다.)'), '(귀걸이는 한 쌍까지는 괜찮습니다.)', '괄호 안 마침표는 건드리지 않는다');
+  assert.ok(docSections(DOCS.childprotection).some((x) => x.ko === '단독행위와 제3자 규칙' && /Solo activity/.test(x.en)));
 });

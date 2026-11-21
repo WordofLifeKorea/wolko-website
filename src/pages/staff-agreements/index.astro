@@ -8,6 +8,9 @@ import { getCollection } from 'astro:content';
 import { docList, docSections, ROLE_LABEL } from '../../../functions/lib/staffAgreements.js';
 import { campEndDate } from '../../../functions/lib/campDates.js';
 
+// 문장이 끝나는 '.' · '!' · '?' 뒤의 공백은 줄바꿈으로 바꿔 한 문장씩 한 줄에 보이게 한다(원문의 줄바꿈은 그대로 둔다)
+const sentences = (t) => String(t || '').replace(/([.!?])[ \t]+(?=\S)/g, '$1\n');
+
 // 초안(draft) 문서는 공개 페이지에 넣지 않는다. WOLKO_SHOW_DRAFTS=1 로 만든 로컬 미리보기에서만 보인다.
 const docs = docList({ includeDrafts: process.env.WOLKO_SHOW_DRAFTS === '1' });
 // 캠프마다 쓰는 서약서(아동보호 서약서)에서 고를 캠프. 끝난 캠프는 화면에서(오늘 날짜로) 걸러낸다
@@ -85,6 +88,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
   .sa-doc-head p { margin: 10px 0 0; font-size: 15px; line-height: 1.8; color: var(--sa-body); }
   .sa-items { margin: 0; padding: 8px 28px 8px; list-style: none; counter-reset: sa; }
   .sa-items li { counter-increment: sa; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; padding: 16px 0; border-top: 1px solid var(--sa-line); font-size: 15px; line-height: 1.85; color: var(--sa-ink); }
+  .sa-items li .wl-ko, .sa-items li .wl-en { white-space: pre-line; }
   .sa-items li.sa-sec { counter-increment: none; display: block; padding: 20px 0 8px; font-size: 16px; font-weight: 800; color: var(--sa-navy); }
   .sa-items li.sa-sec::before { display: none; }
   .sa-items li::before { content: counter(sa, decimal-leading-zero); width: 40px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); background: var(--sa-soft); color: var(--sa-deep); font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
@@ -236,12 +240,12 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
             <>
               {sec.ko && <li class="sa-sec"><span><span class="wl-ko">{sec.ko}</span><span class="wl-en">{sec.en}</span></span></li>}
               {sec.items.map((it) => (
-                <li><span><span class="wl-ko">{it.ko}</span><span class="wl-en">{it.en}</span></span></li>
+                <li><span><span class="wl-ko">{sentences(it.ko)}</span><span class="wl-en">{sentences(it.en)}</span></span></li>
               ))}
             </>
           ))}
         </ol>
-        <p class="sa-pledge"><span class="wl-ko">{doc.ko.pledge}</span><span class="wl-en">{doc.en.pledge}</span></p>
+        <p class="sa-pledge"><span class="wl-ko">{sentences(doc.ko.pledge)}</span><span class="wl-en">{sentences(doc.en.pledge)}</span></p>
 
         <form class="sa-form" novalidate data-form>
           <h3><span class="wl-ko">서명하기</span><span class="wl-en">Sign</span></h3>
@@ -402,22 +406,23 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
   }
 
   /* ───── 서명본 인쇄(새 창에 문서 전체 + 서명 그림 + 확인번호) ───── */
+  var sentences = function (t) { return String(t || '').replace(/([.!?])[ \t]+(?=\S)/g, '$1\n'); };   // 화면과 같이 문장마다 줄바꿈
   function printCopy(doc, rec) {
     var w = window.open('', '_blank');
     if (!w) { alert(T('팝업이 막혀 있어요. 이 사이트의 팝업을 허용한 뒤 다시 눌러 주세요.', 'Pop-ups are blocked. Please allow pop-ups for this site and try again.')); return; }
     var n0 = 0;
-    var items = function (k) { n0 = 0; return doc.sections.map(function (sec) { return (sec[k] ? '<li class="sec"><span>' + esc(sec[k]) + '</span></li>' : '') + sec.items.map(function (it) { n0++; return '<li><b>' + String(n0).padStart(2, '0') + '</b><span>' + esc(it[k]) + '</span></li>'; }).join(''); }).join(''); };
+    var items = function (k) { n0 = 0; return doc.sections.map(function (sec) { return (sec[k] ? '<li class="sec"><span>' + esc(sec[k]) + '</span></li>' : '') + sec.items.map(function (it) { n0++; return '<li><b>' + String(n0).padStart(2, '0') + '</b><span>' + esc(sentences(it[k])) + '</span></li>'; }).join(''); }).join(''); };
     var decl = function (k) { return doc.declaration ? '<p class="pledge">' + esc(doc.declaration[k]) + '</p>' : ''; };
     var roleLabel = rec.role === 'crew' ? '크루 Crew' : '스태프 Staff';
     // (여는 태그를 둘로 나눠 쓴 것은 '전체 페이지는 스크롤 잠금 스크립트를 불러온다'는 검사가 이 글자열을 쪽 전체로 오해하지 않게 하려는 것)
     w.document.write('<!doctype html><' + 'html lang="ko"><head><meta charset="utf-8"><title>' + esc(doc.ko.title) + ' — ' + esc(rec.name) + '</title><style>'
       + 'body{font:14px/1.75 "Noto Sans KR",system-ui,sans-serif;color:#10252e;max-width:760px;margin:32px auto;padding:0 24px}h1{font-size:22px;margin:0 0 4px}h2{font-size:15px;margin:28px 0 6px;color:#3e535d}p{margin:6px 0}'
-      + 'ol{list-style:none;padding:0;margin:8px 0}li{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:8px 0;border-top:1px solid #d6dee2}li b{color:#004f68}li.sec{display:block;font-weight:800;padding-top:16px}'
+      + 'ol{list-style:none;padding:0;margin:8px 0}li{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:8px 0;border-top:1px solid #d6dee2}li b{color:#004f68}li span,.pledge{white-space:pre-line}li.sec{display:block;font-weight:800;padding-top:16px}'
       + '.pledge{padding:10px 14px;border:1px solid #d6dee2;background:#f6f9fb;font-weight:600;white-space:pre-line}.sig{margin-top:24px;border:1px solid #d6dee2;padding:14px 18px;page-break-inside:avoid}.sig img{display:block;max-width:360px;width:100%;height:auto;border-bottom:1px solid #9fb0b8;margin:8px 0}'
       + '.meta{display:grid;grid-template-columns:120px 1fr;gap:4px 12px;font-size:13px}.meta dt{color:#587383}.meta dd{margin:0;font-weight:600}.en{margin-top:36px;border-top:2px solid #10252e;padding-top:8px}@media print{body{margin:0}}'
       + '</style></head><body>'
-      + '<h1>' + esc(doc.ko.title) + '</h1><p>' + esc(doc.ko.intro) + '</p><ol>' + items('ko') + '</ol>' + decl('ko') + '<p class="pledge">' + esc(doc.ko.pledge) + '</p>'
-      + '<div class="en"><h1>' + esc(doc.en.title) + '</h1><p>' + esc(doc.en.intro) + '</p><ol>' + items('en') + '</ol>' + decl('en') + '<p class="pledge">' + esc(doc.en.pledge) + '</p></div>'
+      + '<h1>' + esc(doc.ko.title) + '</h1><p>' + esc(doc.ko.intro) + '</p><ol>' + items('ko') + '</ol>' + decl('ko') + '<p class="pledge">' + esc(sentences(doc.ko.pledge)) + '</p>'
+      + '<div class="en"><h1>' + esc(doc.en.title) + '</h1><p>' + esc(doc.en.intro) + '</p><ol>' + items('en') + '</ol>' + decl('en') + '<p class="pledge">' + esc(sentences(doc.en.pledge)) + '</p></div>'
       + '<div class="sig"><img alt="signature" src="' + rec.signature + '"><dl class="meta">'
       + '<dt>이름 / Name</dt><dd>' + esc(rec.name) + '</dd><dt>구분 / Role</dt><dd>' + roleLabel + '</dd><dt>이메일 / Email</dt><dd>' + esc(rec.email) + '</dd>'
       + (rec.camp ? '<dt>캠프 / Camp</dt><dd>' + esc(rec.camp) + '</dd>' : '')

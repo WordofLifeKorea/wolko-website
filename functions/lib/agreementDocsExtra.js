@@ -20,7 +20,7 @@
 
 export const CHILD_PROTECTION = {
   id: 'childprotection',
-  version: '2026-11-v6',   // v6: 모든 항목을 1인칭('저는')으로 · 2번 문장을 '캠프가 진행되는 국가의 법이나 규정'으로 · 범죄경력 서류 문구(성범죄경력 및 아동학대 범죄전력회신서 · 원본 반환) · v4: '캠프마다 새로 작성' 문장을 뺐다(한 번만 작성) · v5: 맺음말을 '월코 캠프에 참여하는 캠퍼를 지키기 위해'로 고쳤다
+  version: '2026-11-v7',   // v7: 소제목 '단독행위와 제3자 규칙' · v6: 모든 항목을 1인칭('저는')으로 · 2번 문장을 '캠프가 진행되는 국가의 법이나 규정'으로 · 범죄경력 서류 문구(성범죄경력 및 아동학대 범죄전력회신서 · 원본 반환) · v4: '캠프마다 새로 작성' 문장을 뺐다(한 번만 작성) · v5: 맺음말을 '월코 캠프에 참여하는 캠퍼를 지키기 위해'로 고쳤다
   perCamp: false,   // 2026-11-21: 캠프 선택 없이 한 번만 작성한다(처음에는 캠프마다였으나 사용자가 '캠프 선택은 필요 없다'고 정했다). true 로 돌리면 서명할 때 캠프를 고르는 방식이 다시 켜진다
   draft: false,   // 2026-11-21 '초안이지만 일단 공개' — 문구를 바꾸면 version 을 올려 예전 서명과 구분한다
   ko: {
@@ -54,7 +54,7 @@ export const CHILD_PROTECTION = {
       ],
     },
     {
-      ko: '두 어른 규칙과 감독', en: 'Two-adult rule and supervision',
+      ko: '단독행위와 제3자 규칙', en: 'Solo activity and the third-person rule',
       items: [
         { ko: '저는 아동·청소년과 단둘이 사적인 공간에 있지 않습니다. 면담이나 상담도 다른 어른이 볼 수 있는 열린 공간에서 합니다.',
           en: 'I will not be alone with a child in a private space. Any one-to-one conversation takes place in an open area visible to another adult.' },
