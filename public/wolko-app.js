@@ -110,11 +110,22 @@
     return fakeWindow();
   };
 
-  /* 인쇄 */
+  /* 인쇄 — 휴대폰 웹 화면은 인쇄 미리보기를 그릴 때마다 스스로 beforeprint/afterprint 를 보낸다.
+     그대로 두면 인쇄 창이 열려 있는 동안 페이지가 인쇄용 화면을 되돌려 버려서(용지를 바꾸면 그 화면이 찍힌다)
+     인쇄 창이 열려 있는 동안은 그 신호를 막고, 창이 닫힐 때 afterprint 를 한 번만 보낸다 */
   if (P.WolkoApp && typeof P.WolkoApp.printPage === 'function') {
+    var printing = false;
+    ['beforeprint', 'afterprint'].forEach(function (type) {
+      window.addEventListener(type, function (e) { if (printing && e.isTrusted) e.stopImmediatePropagation(); }, true);
+    });
     window.print = function () {
+      if (printing) return;
       window.dispatchEvent(new Event('beforeprint'));
-      P.WolkoApp.printPage().catch(function () {}).then(function () { window.dispatchEvent(new Event('afterprint')); });
+      printing = true;
+      P.WolkoApp.printPage().catch(function () {}).then(function () {
+        printing = false;
+        window.dispatchEvent(new Event('afterprint'));
+      });
     };
   }
 
