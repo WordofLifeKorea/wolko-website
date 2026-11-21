@@ -225,6 +225,8 @@ export async function onRequestPost(context) {
     const referral = referralPick === '월코 캠퍼' ? '월코 캠퍼로 참여한 적 있음'
       : referralPick === '기타' ? (referralOther ? `기타: ${referralOther}` : '기타') : referralPick;
     const crewPledge = role === 'crew' && data.crewPledge === true;
+    // 신앙 간증 · 이단 단체 참여 여부 · 건강 정보는 민감정보 — 개인정보 동의와 따로 받는다
+    const sensitiveConsent = data.sensitiveConsent === true;
 
     const required = [name, phone, email, gender, birthDate, introduction, faithStory, church,
       cultHistory, englishAbility, mediaTech, previousCamp, team1];
@@ -258,6 +260,10 @@ export async function onRequestPost(context) {
       }
     }
 
+    if (!sensitiveConsent) {
+      return Response.json({ error: '민감정보(신앙 간증·이단 단체 참여 여부·건강 정보) 수집·이용에 별도로 동의해 주세요. 동의 칸이 보이지 않으면 화면을 새로고침해 주세요.', code: 'sensitive-consent-required' }, { status: 400, headers: CORS });
+    }
+
     // 선택한 캠프마다 한 건씩 저장해서 캠프별 관리자 목록에 모두 보이게 한다.
     // 이미 같은 이메일로 지원한 캠프는 건너뛰고, 전부 이미 지원한 캠프면 409.
     const dupeChecks = await Promise.all(availableCamps.map(id => env.CAMP_KV.get(`camp:${id}:staff:email:${email}`)));
@@ -288,6 +294,8 @@ export async function onRequestPost(context) {
       trainingException,
       notes,
       testimony: faithStory,
+      sensitiveConsent: true,
+      sensitiveConsentAt: registeredAt,
       registeredAt,
       confirmed: false,
       confirmedAt: null,

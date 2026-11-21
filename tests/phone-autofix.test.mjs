@@ -54,7 +54,7 @@ test('스태프 · 크루 지원도 고친 번호로 저장한다', async () => 
   try {
     const body = { role: 'staff', name: '김스태프', phone: '1-2222-3333', email: 'staff@example.com', gender: 'female', birthDate: '2000-05-05',
       introduction: '안녕하세요', faithStory: '교회에서', church: '평택교회', cultHistory: 'no', englishAbility: '3', mediaTech: '2',
-      previousCamp: 'no', team1: '프로그램', availableCamps: ['2027-wolko-winter'], availableCampNames: ['겨울 월코 영어 캠프'] };
+      previousCamp: 'no', team1: '프로그램', availableCamps: ['2027-wolko-winter'], availableCampNames: ['겨울 월코 영어 캠프'], sensitiveConsent: true };
     const res = await staffRegister.onRequestPost({ env, request: new Request('https://x/api/staff-register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }), waitUntil: () => {} });
     assert.equal(res.status, 200, await res.clone().text());
     const reg = JSON.parse([...store.entries()].find(([k]) => k.includes(':reg:'))[1]);

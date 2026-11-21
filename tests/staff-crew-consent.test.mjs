@@ -31,6 +31,7 @@ const base = {
   name: '김크루', phone: '010-2222-3333', email: 'crew@example.com', gender: 'female', birthDate: '2010-05-05',
   introduction: '안녕하세요', faithStory: '교회에서', church: '평택교회', cultHistory: 'no', englishAbility: '3', mediaTech: '2',
   previousCamp: 'no', team1: '프로그램', availableCamps: ['2027-wolko-winter'], availableCampNames: ['겨울 월코 영어 캠프'],
+  sensitiveConsent: true,   // 민감정보 별도 동의(신앙 간증 · 이단 참여 여부 · 건강 정보)
 };
 const post = (url, body, headers = {}) => new Request(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body) });
 

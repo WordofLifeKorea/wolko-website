@@ -13,8 +13,8 @@ const purposes = [
     ko: '캠프 신청 (개인)', en: 'Camp registration (individual)',
     whyKo: '캠프 신청 접수와 안내, 참가비 · 환불 처리, 캠프 운영과 안전 관리',
     whyEn: 'Receiving and confirming registrations, fees and refunds, running the camp safely',
-    itemsKo: '필수: 캠퍼 이름, 연락처, 성별, 생년월일, 이메일, 환불 계좌(은행 · 예금주 · 계좌번호), 사진 · 영상 공유 동의 여부 / 선택: 학년, 소속 교회, 학교, 비상연락처, 할인 해당 여부, 함께 참여하는 형제 · 친구 이름, 알게 된 경로, 특이사항(건강 · 알레르기 · 복용약 등)',
-    itemsEn: 'Required: camper name, phone, gender, date of birth, email, refund account (bank, holder, number), whether you agree to photo / video sharing / Optional: grade, church, school, emergency contact, discount eligibility, siblings or friends attending, how you heard of us, notes (health, allergies, medication, etc.)',
+    itemsKo: '필수: 캠퍼 이름, 연락처, 성별, 생년월일, 이메일, 환불 계좌(은행 · 예금주 · 계좌번호), 사진 · 영상 공유 동의 여부 / 선택: 학년, 소속 교회, 학교, 비상연락처, 할인 해당 여부, 함께 참여하는 형제 · 친구 이름, 알게 된 경로, 특이사항(건강 · 알레르기 · 복용약 등 — 글을 적으실 때만 받으며 별도 동의를 받습니다)',
+    itemsEn: 'Required: camper name, phone, gender, date of birth, email, refund account (bank, holder, number), whether you agree to photo / video sharing / Optional: grade, church, school, emergency contact, discount eligibility, siblings or friends attending, how you heard of us, notes (health, allergies, medication, etc. — collected only if you write them, with separate consent)',
   },
   {
     ko: '캠프 신청 (교회 · 단체)', en: 'Camp registration (church or group)',
@@ -31,8 +31,8 @@ const purposes = [
   {
     ko: '캠프 스태프 · 크루 지원', en: 'Camp staff and crew applications',
     whyKo: '스태프 선발, 훈련, 캠프 운영', whyEn: 'Selecting, training and organising camp staff',
-    itemsKo: '이름, 생년월일, 성별, 연락처, 이메일, 자기소개, 신앙 간증, 출석 교회(교회명 · 홈페이지 · 담임목사 성함 · 연락처), 이단 단체 참여 여부, 영어 · 미디어 · 악기 역량, 봉사 경험, 선호 팀, 가능한 캠프 / 크루(미성년자): 보호자 이름 · 관계 · 연락처 · 이메일, 알게 된 경로 / 선택: 건강 · 알레르기 · 복용약',
-    itemsEn: 'Name, date of birth, gender, phone, email, self-introduction, faith story, church (name, website, pastor name and contact), involvement with heretical groups, English / media / instrument skills, service experience, team preference, available camps / Crew (minors): guardian name, relationship, phone, email, how they heard of us / Optional: health, allergies, medication',
+    itemsKo: '이름, 생년월일, 성별, 연락처, 이메일, 자기소개, 신앙 간증, 출석 교회(교회명 · 홈페이지 · 담임목사 성함 · 연락처), 이단 단체 참여 여부, 영어 · 미디어 · 악기 역량, 봉사 경험, 선호 팀, 가능한 캠프 / 크루(미성년자): 보호자 이름 · 관계 · 연락처 · 이메일, 알게 된 경로 / 선택: 건강 · 알레르기 · 복용약. 신앙 간증 · 이단 단체 참여 여부 · 건강 정보는 민감정보라서 개인정보 동의와 별도로 동의를 받습니다.',
+    itemsEn: 'Name, date of birth, gender, phone, email, self-introduction, faith story, church (name, website, pastor name and contact), involvement with heretical groups, English / media / instrument skills, service experience, team preference, available camps / Crew (minors): guardian name, relationship, phone, email, how they heard of us / Optional: health, allergies, medication. Faith story, involvement with cult groups and health details are sensitive information, so we ask for your consent separately from the general privacy consent.',
   },
   {
     ko: '섬김(사역자 · 스태프) 지원', en: 'Ministry staff applications',
@@ -113,6 +113,10 @@ const processors = [
     <p class="pv-date"><span class="wl-ko">시행일: {EFFECTIVE_KO}</span><span class="wl-en">Effective: {EFFECTIVE_EN}</span></p>
 
     <h2><span class="wl-ko">1. 처리하는 개인정보와 목적 · 보유 기간</span><span class="wl-en">1. What we collect, why, and how long we keep it</span></h2>
+    <p>
+      <span class="wl-ko">건강 · 알레르기 · 복용약, 신앙 간증, 이단 단체 참여 여부처럼 법에서 민감정보로 보는 내용은 <strong>개인정보 동의와 별도로</strong> 동의를 받은 경우에만 수집합니다(캠프 신청서는 특이사항에 글을 적을 때, 스태프 · 크루 지원서는 항상, 섬김 지원서는 항상). 동의 시각은 신청 기록에 함께 남깁니다.</span>
+      <span class="wl-en">Information the law treats as sensitive, such as health, allergies, medication, faith story and involvement with cult groups, is collected <strong>only with consent given separately from the general privacy consent</strong> (for camp registration when you write in Special Notes; for staff and crew applications and ministry applications, always). The time of consent is recorded with the submission.</span>
+    </p>
     <p>
       <span class="wl-ko">보유 기간은 <strong>{RETAIN_KO}</strong>입니다. 다만 섬김(사역자 · 스태프) 지원서는 거절한 신청서는 결정 후 30일, 보류한 신청서는 12개월이 지나면 추천서 답변까지 자동으로 삭제합니다(담당자가 신청 목록을 열 때 정리되므로 실제 삭제는 조금 늦어질 수 있습니다). 법령에 따라 보관해야 하는 정보(예: 후원 · 회계 기록)는 그 기간 동안 보관합니다.</span>
       <span class="wl-en">The retention period is: <strong>{RETAIN_EN}</strong>. The exception is ministry staff applications: a rejected application is deleted 30 days after the decision and an application put on hold is deleted after 12 months, together with the reference answers (clean-up runs when staff open the application list, so actual deletion may come slightly later). Information that the law requires us to keep (for example, donation and accounting records) is kept for the required period.</span>
