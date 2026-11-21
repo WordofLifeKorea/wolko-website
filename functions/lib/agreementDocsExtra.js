@@ -20,7 +20,7 @@
 
 export const CHILD_PROTECTION = {
   id: 'childprotection',
-  version: '2026-11-v5',   // v4: '캠프마다 새로 작성' 문장을 뺐다(한 번만 작성) · v5: 맺음말을 '월코 캠프에 참여하는 캠퍼를 지키기 위해'로 고쳤다
+  version: '2026-11-v6',   // v6: 모든 항목을 1인칭('저는')으로 · 2번 문장을 '캠프가 진행되는 국가의 법이나 규정'으로 · v4: '캠프마다 새로 작성' 문장을 뺐다(한 번만 작성) · v5: 맺음말을 '월코 캠프에 참여하는 캠퍼를 지키기 위해'로 고쳤다
   perCamp: false,   // 2026-11-21: 캠프 선택 없이 한 번만 작성한다(처음에는 캠프마다였으나 사용자가 '캠프 선택은 필요 없다'고 정했다). true 로 돌리면 서명할 때 캠프를 고르는 방식이 다시 켜진다
   draft: false,   // 2026-11-21 '초안이지만 일단 공개' — 문구를 바꾸면 version 을 올려 예전 서명과 구분한다
   ko: {
@@ -38,10 +38,10 @@ export const CHILD_PROTECTION = {
     {
       ko: '우리의 약속', en: 'Our commitment',
       items: [
-        { ko: '우리는 모든 아동·청소년이 신체적·정서적·성적 해악으로부터 안전할 권리가 있다고 믿습니다. 이 서약서는 월코 캠프의 모든 스태프와 크루가 반드시 지켜야 할 최소 기준입니다.',
-          en: 'We believe every child and young person has the right to be safe from physical, emotional and sexual harm. This agreement sets the minimum standard that every WOLKO staff member and crew member must follow.' },
-        { ko: '저는 캠프 기간뿐 아니라 캠프 전후에도 이 기준을 지킵니다. 법이나 월코의 지침이 이 서약서보다 더 엄격하면 더 엄격한 쪽을 따릅니다.',
-          en: 'I keep these standards not only during camp but also before and after it. If the law or WOLKO guidance is stricter than this agreement, I follow the stricter one.' },
+        { ko: '저는 모든 아동·청소년이 신체적·정서적·성적 해악으로부터 안전할 권리가 있다고 믿습니다. 이 서약서는 월코 캠프의 모든 스태프와 크루가 반드시 지켜야 할 최소 기준임을 이해합니다.',
+          en: 'I believe every child and young person has the right to be safe from physical, emotional and sexual harm. I understand that this agreement sets the minimum standard that every WOLKO staff member and crew member must follow.' },
+        { ko: '저는 캠프 기간뿐 아니라 캠프 전후에도 이 기준을 지킵니다. 캠프가 진행되는 국가의 법이나 규정이 이 서약서보다 더 엄격하면 더 엄격한 쪽을 따릅니다.',
+          en: 'I keep these standards not only during camp but also before and after it. If the law or regulations of the country where the camp takes place are stricter than this agreement, I follow the stricter one.' },
       ],
     },
     {
@@ -67,8 +67,8 @@ export const CHILD_PROTECTION = {
     {
       ko: '신체 접촉과 훈육', en: 'Physical contact and discipline',
       items: [
-        { ko: '신체 접촉은 공개된 곳에서, 필요한 만큼만 합니다. 캠퍼가 원하지 않으면 하지 않습니다. "제 문화에서는 괜찮다"는 이유로 접촉을 허용하지 않으며, 월코의 기준을 따릅니다.',
-          en: 'Any physical contact is in public, only as much as needed, and never if the camper does not want it. "It is fine in my culture" is not a reason; I follow WOLKO’s standard.' },
+        { ko: '저는 신체 접촉을 공개된 곳에서, 필요한 만큼만 하며, 캠퍼가 원하지 않으면 하지 않습니다. "제 문화에서는 괜찮다"는 이유로 접촉을 허용하지 않고, 월코의 기준을 따릅니다.',
+          en: 'I keep physical contact in public and only as much as needed, and never if the camper does not want it. "It is fine in my culture" is not a reason; I follow WOLKO’s standard.' },
         { ko: '저는 어떤 경우에도 아동·청소년을 때리거나 밀치거나 조롱하거나 위협하지 않으며, 식사·수면·화장실 이용을 벌로 제한하지 않습니다.',
           en: 'I will never hit, push, ridicule or threaten a child, and I will never withhold food, sleep or toilet access as discipline.' },
       ],
@@ -78,22 +78,22 @@ export const CHILD_PROTECTION = {
       items: [
         { ko: '저는 캠퍼와 개인 SNS(카카오톡, 인스타그램 등)를 서로 공유하지 않습니다. 친구 추가, 팔로우, 개인 메시지를 하지 않고, 연락이 필요하면 월코 공식 그룹 채널에서 하거나 다른 어른과 보호자를 함께 참조합니다.',
           en: 'I do not share personal social media (KakaoTalk, Instagram, etc.) with campers. I do not add, follow or privately message them; when contact is needed I use official WOLKO group channels, or copy another adult and a parent.' },
-        { ko: '캠프에서 찍은 사진과 영상은 월코가 정한 방법으로만 다룹니다. 캠퍼의 사진, 영상, 이름을 제 개인 SNS에 올리지 않으며, 촬영 동의가 없는 캠퍼는 찍거나 올리지 않습니다.',
-          en: 'Photos and videos taken at camp are handled only in the way WOLKO sets. I do not post campers’ photos, videos or names on my personal social media, and I do not photograph or post any camper without consent.' },
+        { ko: '저는 캠프에서 찍은 사진과 영상을 월코가 정한 방법으로만 다룹니다. 캠퍼의 사진, 영상, 이름을 제 개인 SNS에 올리지 않으며, 촬영 동의가 없는 캠퍼는 찍거나 올리지 않습니다.',
+          en: 'I handle photos and videos taken at camp only in the way WOLKO sets. I do not post campers’ photos, videos or names on my personal social media, and I do not photograph or post any camper without consent.' },
       ],
     },
     {
       ko: '이동과 안전', en: 'Transport and safety',
       items: [
-        { ko: '캠프 차량은 월코가 승인한 운전자만 운전합니다. 모든 이동에서 안전벨트를 확인하고 정원을 지키며, 어른 혼자 캠퍼 한 명만 태우고 이동하지 않습니다.',
-          en: 'Only drivers approved by WOLKO drive camp vehicles. Seat belts are checked on every trip, capacity is never exceeded, and an adult does not drive a single camper alone.' },
+        { ko: '저는 월코가 승인한 운전자일 때만 캠프 차량을 운전합니다. 모든 이동에서 안전벨트를 확인하고 정원을 지키며, 혼자서 캠퍼 한 명만 태우고 이동하지 않습니다.',
+          en: 'I drive camp vehicles only if I am a driver approved by WOLKO. I check seat belts on every trip, never exceed capacity, and never drive a single camper alone.' },
       ],
     },
     {
       ko: '크루(미성년자)', en: 'Crew (minors)',
       items: [
-        { ko: '크루는 18세 미만이어도 이 서약서를 똑같이 지킵니다. 크루의 구체적인 역할 범위는 월코가 따로 정해 안내하며, 크루는 어른 지도자의 지도에 따라 활동합니다.',
-          en: 'Crew members under 18 keep this agreement in the same way. WOLKO will set and explain the specific scope of crew roles separately, and crew members act under the guidance of an adult leader.' },
+        { ko: '저는 크루가 18세 미만이어도 이 서약서가 똑같이 적용됨을 이해합니다. 크루의 구체적인 역할 범위는 월코가 따로 정해 안내하며, 크루는 어른 지도자의 지도에 따라 활동합니다.',
+          en: 'I understand that this agreement applies in the same way to crew members under 18. WOLKO will set and explain the specific scope of crew roles separately, and crew members act under the guidance of an adult leader.' },
       ],
     },
     {
@@ -114,8 +114,8 @@ export const CHILD_PROTECTION = {
     {
       ko: '어겼을 때', en: 'If this agreement is broken',
       items: [
-        { ko: '이 서약서를 어기면 즉시 아동·청소년과 접촉하는 일에서 제외될 수 있고, 월코 캠프에서 퇴출될 수 있으며, 법적 책임을 질 수 있습니다.',
-          en: 'If I break this agreement I can be removed at once from any contact with children, removed from WOLKO camps, and held legally responsible.' },
+        { ko: '저는 이 서약서를 어기면 즉시 아동·청소년과 접촉하는 일에서 제외될 수 있고, 월코 캠프에서 퇴출될 수 있으며, 법적 책임을 질 수 있음을 이해합니다.',
+          en: 'I understand that if I break this agreement I can be removed at once from any contact with children, removed from WOLKO camps, and held legally responsible.' },
       ],
     },
   ],
@@ -123,7 +123,7 @@ export const CHILD_PROTECTION = {
 
 export const CAMP_RULES = {
   id: 'rules',
-  version: '2026-11-v6',   // v6: 1번은 '반복적으로 어기면 경고 또는 제명' 한 문장만(경고 절차 · 예외 설명은 문서에서 뺐다) · 교제 문구 '어떠한 경우에도' · 스태프·크루 사이 문구에 '준비기간' 추가 · 외출 · 시간 · 숙소 · 문신 · 위생과 복장 항목을 새 문구로, 휴대폰 항목을 '최대한 지양' + 사역에 필요한 사용은 예외로 · 경찰 보고 문구를 '아동보호 서약과 관련된 문제를 야기할 경우 필요에 따라 보고할 수 있습니다'로 · v5: 항목에서 '저는'을 빼고 '~에 동의합니다' 투로 · 장신구 문구 교체 · v3: 맨 앞에 '반복적으로 어기면 경고 또는 제명' 문장 · v4: '성인 스태프 귀가' 항목을 뺐고, 경고 절차를 포함해 '경고와 제명' 설명을 1번 하나로 합치고 '중도 하차'를 모두 '제명'으로 통일
+  version: '2026-11-v6',   // v6: 1번은 '반복적으로 어기면 경고 또는 제명' 한 문장만(경고 절차 · 예외 설명은 문서에서 뺐다) · 교제 문구 '어떠한 경우에도' · 스태프·크루 사이 문구에 '준비기간' 추가 · 외출 · 시간 · 숙소 · 문신 · 위생과 복장 · 제명 뒤 첫 항목을 새 문구로 · 보호자 본인 확인 문장 삭제 · 소제목 '경고 없이 바로 제명될 수 있는 경우' · 외출 문구에 '밤에는 외출을 지양' 추가, 휴대폰 항목을 '최대한 지양' + 사역에 필요한 사용은 예외로 · 경찰 보고 문구를 '아동보호 서약과 관련된 문제를 야기할 경우 필요에 따라 보고할 수 있습니다'로 · v5: 항목에서 '저는'을 빼고 '~에 동의합니다' 투로 · 장신구 문구 교체 · v3: 맨 앞에 '반복적으로 어기면 경고 또는 제명' 문장 · v4: '성인 스태프 귀가' 항목을 뺐고, 경고 절차를 포함해 '경고와 제명' 설명을 1번 하나로 합치고 '중도 하차'를 모두 '제명'으로 통일
   draft: false,   // 2026-11-21 디렉터 결정으로 공개 — 스태프 · 크루가 작성해야 하는 필수 서약서
   ko: {
     title: '월코 캠프 필수 규칙',
@@ -144,7 +144,7 @@ export const CAMP_RULES = {
       ],
     },
     {
-      ko: '경고 없이 바로 제명하는 경우', en: 'Reasons for immediate removal without a warning',
+      ko: '경고 없이 바로 제명될 수 있는 경우', en: 'Cases that can lead to removal without a warning',
       items: [
         { ko: '아동·청소년에 대한 학대, 성적으로 부적절한 행동, 체벌 등 아동보호 서약서를 어긴 경우.',
           en: 'Breaking the Child Protection Agreement, including abuse of children or young people, sexually inappropriate behavior, or corporal punishment.' },
@@ -190,8 +190,8 @@ export const CAMP_RULES = {
     {
       ko: '외출', en: 'Going out',
       items: [
-        { ko: '캠프 지정장소 밖으로 나갈 때는 캠프 디렉터나 코디네이터와 꼭 소통한 후, 단독행동보다는 동일 성별 1인과 함께 나가고, 이성과 나가야 할 경우에는 제3자를 포함해 3인이 동행하는 것에 동의합니다.',
-          en: 'When going outside the designated camp area, I agree to talk with the Camp Director or the Coordinator first, to go out with one person of the same gender rather than acting alone, and, if I need to go out with someone of the opposite sex, to have a third person join so that three of us go together.' },
+        { ko: '캠프 지정장소 밖으로 나갈 때는 캠프 디렉터나 코디네이터와 꼭 소통한 후, 단독행동보다는 동일 성별 1인과 함께 나가고, 이성과 나가야 할 경우에는 제3자를 포함해 3인이 동행하며, 밤에는 외출을 지양하는 것에 동의합니다.',
+          en: 'When going outside the designated camp area, I agree to talk with the Camp Director or the Coordinator first, to go out with one person of the same gender rather than acting alone, and, if I need to go out with someone of the opposite sex, to have a third person join so that three of us go together, and to avoid going out at night.' },
       ],
     },
     {
@@ -236,10 +236,10 @@ export const CAMP_RULES = {
     {
       ko: '제명된 뒤', en: 'After removal',
       items: [
-        { ko: '제명이 결정되면 곧바로 캠프 시설을 떠나고 제명된 일을 SNS에 올리지 않는 것에 동의합니다. 캠퍼에게는 사유를 공개하지 않고 간단히만 설명합니다.',
-          en: 'I agree to leave the camp site right away when I am removed from camp and not to post about it on social media. The reason is not shared with campers; only a brief explanation is given.' },
-        { ko: '미성년 크루는 제명이 결정되면 디렉터가 보호자에게 직접 연락합니다. 보호자가 동의하면 혼자 귀가할 수 있고, 동의하지 않으면 보호자가 오시거나 보호자가 정한 방법으로 귀가합니다. 월코는 동의한 사람이 보호자 본인인지 직접 연락해 확인합니다.',
-          en: 'When a minor crew member is removed, the Director contacts the guardian directly. If the guardian agrees, the crew member may travel home alone; if not, the guardian comes to pick them up or arranges how they travel. WOLKO confirms by contacting the guardian directly that the person agreeing is the guardian.' },
+        { ko: '만에 하나 제명이 결정되면, 월코의 결정을 존중하고, 제명된 일을 SNS에 올리거나 캠퍼에게 험담을 하는 행위를 자제하는 것에 동의합니다.',
+          en: 'If, in the unlikely case, I am removed, I agree to respect WOLKO’s decision and to refrain from posting about it on social media or speaking ill of it to campers.' },
+        { ko: '미성년 크루는 제명이 결정되면 디렉터가 보호자에게 직접 연락합니다. 보호자가 동의하면 혼자 귀가할 수 있고, 동의하지 않으면 보호자가 오시거나 보호자가 정한 방법으로 귀가합니다.',
+          en: 'When a minor crew member is removed, the Director contacts the guardian directly. If the guardian agrees, the crew member may travel home alone; if not, the guardian comes to pick them up or arranges how they travel.' },
       ],
     },
   ],
