@@ -20,7 +20,7 @@
 
 export const CHILD_PROTECTION = {
   id: 'childprotection',
-  version: '2026-11-v10',   // v10: '퇴출 · 해임'을 모두 '제명'으로 통일 · v9: 신체 접촉 항목을 '우리 문화에서는 괜찮다 또는 캠퍼가 먼저 원해서라는 이유로 하지 않고 월코의 기준을 따르겠습니다'로 · v8: '캠퍼 배정과 감독 배치' 항목을 '차량 운행을 이유로 1명의 캠퍼와 단독 운행 금지'로 바꾸고 이동 항목의 같은 문구는 뺐다 · v7: 소제목 '단독행위와 제3자 규칙' · v6: 모든 항목을 1인칭('저는')으로 · 2번 문장을 '캠프가 진행되는 국가의 법이나 규정'으로 · 범죄경력 서류 문구(성범죄경력 및 아동학대 범죄전력회신서 · 원본 반환) · v4: '캠프마다 새로 작성' 문장을 뺐다(한 번만 작성) · v5: 맺음말을 '월코 캠프에 참여하는 캠퍼를 지키기 위해'로 고쳤다
+  version: '2026-11-v11',   // v11: 모든 항목을 서약하는 사람의 목소리('저는')로 통일(크루 · 담당자 안내 · 신고자 보호 항목 다듬음) · v10: '퇴출 · 해임'을 모두 '제명'으로 통일 · v9: 신체 접촉 항목을 '우리 문화에서는 괜찮다 또는 캠퍼가 먼저 원해서라는 이유로 하지 않고 월코의 기준을 따르겠습니다'로 · v8: '캠퍼 배정과 감독 배치' 항목을 '차량 운행을 이유로 1명의 캠퍼와 단독 운행 금지'로 바꾸고 이동 항목의 같은 문구는 뺐다 · v7: 소제목 '단독행위와 제3자 규칙' · v6: 모든 항목을 1인칭('저는')으로 · 2번 문장을 '캠프가 진행되는 국가의 법이나 규정'으로 · 범죄경력 서류 문구(성범죄경력 및 아동학대 범죄전력회신서 · 원본 반환) · v4: '캠프마다 새로 작성' 문장을 뺐다(한 번만 작성) · v5: 맺음말을 '월코 캠프에 참여하는 캠퍼를 지키기 위해'로 고쳤다
   perCamp: false,   // 2026-11-21: 캠프 선택 없이 한 번만 작성한다(처음에는 캠프마다였으나 사용자가 '캠프 선택은 필요 없다'고 정했다). true 로 돌리면 서명할 때 캠프를 고르는 방식이 다시 켜진다
   draft: false,   // 2026-11-21 '초안이지만 일단 공개' — 문구를 바꾸면 version 을 올려 예전 서명과 구분한다
   ko: {
@@ -38,7 +38,7 @@ export const CHILD_PROTECTION = {
     {
       ko: '우리의 약속', en: 'Our commitment',
       items: [
-        { ko: '저는 모든 아동·청소년이 신체적·정서적·성적 해악으로부터 안전할 권리가 있다고 믿습니다. 이 서약서는 월코 캠프의 모든 스태프와 크루가 반드시 지켜야 할 최소 기준임을 이해합니다.',
+        { ko: '저는 모든 아동·청소년이 신체적·정서적·성적 해악으로부터 안전할 권리가 있다고 믿습니다. 이 서약서가 월코 캠프의 모든 스태프와 크루가 반드시 지켜야 할 최소 기준임을 이해합니다.',
           en: 'I believe every child and young person has the right to be safe from physical, emotional and sexual harm. I understand that this agreement sets the minimum standard that every WOLKO staff member and crew member must follow.' },
         { ko: '저는 캠프 기간뿐 아니라 캠프 전후에도 이 기준을 지킵니다. 캠프가 진행되는 국가의 법이나 규정이 이 서약서보다 더 엄격하면 더 엄격한 쪽을 따릅니다.',
           en: 'I keep these standards not only during camp but also before and after it. If the law or regulations of the country where the camp takes place are stricter than this agreement, I follow the stricter one.' },
@@ -92,8 +92,8 @@ export const CHILD_PROTECTION = {
     {
       ko: '크루(미성년자)', en: 'Crew (minors)',
       items: [
-        { ko: '저는 크루가 18세 미만이어도 이 서약서가 똑같이 적용됨을 이해합니다. 크루의 구체적인 역할 범위는 월코가 따로 정해 안내하며, 크루는 어른 지도자의 지도에 따라 활동합니다.',
-          en: 'I understand that this agreement applies in the same way to crew members under 18. WOLKO will set and explain the specific scope of crew roles separately, and crew members act under the guidance of an adult leader.' },
+        { ko: '저는 18세 미만의 크루에게도 이 서약서가 똑같이 적용됨을 이해합니다. 저는 월코가 따로 정해 안내하는 크루의 역할 범위를 지키며, 크루가 어른 지도자의 지도에 따라 활동한다는 원칙을 따릅니다.',
+          en: 'I understand that this agreement applies in the same way to crew members under 18. I will keep to the scope of crew roles that WOLKO sets and explains separately, and I will follow the principle that crew members act under the guidance of an adult leader.' },
       ],
     },
     {
@@ -101,12 +101,12 @@ export const CHILD_PROTECTION = {
       items: [
         { ko: '저는 아동학대가 의심되는 상황을 보거나 들으면 즉시 112와 아동보호 담당자에게 알립니다. 담당자에게 알렸다고 신고가 끝난 것이 아니며, 확신이 없어도 의심만으로 신고합니다.',
           en: 'If I see or hear anything that suggests a child may be harmed, I immediately call 112 and tell the Child Protection Officer. Telling the Officer does not replace reporting, and suspicion is enough.' },
-        { ko: '월코의 아동보호 담당자는 캠프팀 디렉터 Jason Anderson, 부담당자는 코디네이터 Aiden Park입니다. 담당자가 의혹과 관련되어 있거나 연락이 닿지 않으면 부담당자에게, 또는 곧바로 112에 알립니다. 담당자의 연락처는 월코 포탈의 회원 정보에서 확인할 수 있고, 캠프 전에 따로 안내하고 캠프 현장에 게시합니다.',
-          en: 'WOLKO’s Child Protection Officer is the Camp Team Director, Jason Anderson, and the Deputy Officer is the Coordinator, Aiden Park. If the Officer is involved in the concern or cannot be reached, I tell the Deputy Officer or call 112 directly. Their contact details can be found in their WOLKO Portal member information, and are also given before camp and posted at the camp site.' },
-        { ko: '아동이 학대를 말하면 저는 끝까지 듣고, 비밀을 약속하지 않으며, 스스로 조사하지 않고, 들은 내용을 있는 그대로 기록해 즉시 담당자에게 알립니다.',
+        { ko: '저는 월코의 아동보호 담당자가 캠프팀 디렉터 Jason Anderson이고 부담당자가 코디네이터 Aiden Park임을 확인했습니다. 담당자가 의혹과 관련되어 있거나 연락이 닿지 않으면 부담당자에게, 또는 곧바로 112에 알립니다. 담당자의 연락처는 월코 포탈의 회원 정보에서 확인할 수 있고, 캠프 전에 따로 안내받으며 캠프 현장에도 게시됨을 이해합니다.',
+          en: 'I have confirmed that WOLKO’s Child Protection Officer is the Camp Team Director, Jason Anderson, and the Deputy Officer is the Coordinator, Aiden Park. If the Officer is involved in the concern or cannot be reached, I tell the Deputy Officer or call 112 directly. I understand that their contact details can be found in their WOLKO Portal member information, will be given to me before camp, and will be posted at the camp site.' },
+        { ko: '저는 아동이 학대를 이야기하면 끝까지 들어 주고, 비밀을 약속하지 않으며, 스스로 조사하지 않고, 들은 내용을 있는 그대로 기록해 즉시 담당자에게 알립니다.',
           en: 'If a child tells me about abuse, I listen to the end, I do not promise secrecy, I do not investigate myself, and I write down exactly what I heard and tell the Officer immediately.' },
-        { ko: '선의로 신고하거나 알린 사람에게는 어떤 불이익도 보복도 없습니다. 저는 신고하는 사람을 방해하거나 보복하지 않습니다.',
-          en: 'No one who reports in good faith will be penalized or retaliated against, and I will not obstruct or retaliate against anyone who reports.' },
+        { ko: '저는 선의로 신고하거나 알린 사람을 방해하거나 보복하지 않으며, 그 사람에게 어떤 불이익도 주지 않습니다.',
+          en: 'I will not obstruct, retaliate against or penalize anyone who reports or raises a concern in good faith.' },
         { ko: '저에 대한 의혹이 제기되면, 저는 조사가 끝날 때까지 아동·청소년과 접촉하는 일에서 물러나고 조사에 협조합니다.',
           en: 'If an allegation is made against me, I step back from all contact with children until the matter is resolved, and I cooperate with the investigation.' },
       ],

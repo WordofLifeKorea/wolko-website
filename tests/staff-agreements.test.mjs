@@ -197,7 +197,7 @@ test('아동보호 서약서 내용: 디렉터가 정한 것들이 들어 있다
   assert.ok(en.includes('Jason Anderson') && en.includes('Aiden Park'));
   assert.ok(/개인 SNS/.test(ko) && /personal social media/.test(en), '캠퍼와 개인 SNS 를 공유하지 않는다');
   assert.ok(/112/.test(ko), '신고는 112');
-  assert.ok(ko.includes('역할 범위는 월코가 따로 정해'), '미성년 크루 역할 범위는 나중에 정한다는 원칙만');
+  assert.ok(ko.includes('월코가 따로 정해 안내하는 크루의 역할 범위'), '미성년 크루 역할 범위는 나중에 정한다는 원칙만');
   assert.ok(!ko.includes('시야'), '크루의 "시야 안" 같은 세부 규칙은 역할 범위를 정할 때 함께 정한다');
   assert.match(docText(d), /Jason Anderson/);
 });
@@ -514,13 +514,14 @@ test('서명 페이지 동작(원본 검사): 정보 고치기 · 사람이 바�
 test('아동보호 서약서는 캠프 선택 없이 한 번만 작성: 캠프 칸이 없고 · 문서에 "캠프마다" 문장이 없고 · 같은 사람이 다시 쓰면 409', async () => {
   assert.equal(DOCS.childprotection.perCamp, false);
   assert.ok(!JSON.stringify(DOCS.childprotection.sections).includes('캠프마다 이 서약서를 새로'), '캠프마다 새로 작성한다는 문장을 뺐다');
-  assert.match(DOCS.childprotection.version, /v10$/, '문구를 고쳤으니 문서 버전을 올렸다');
+  assert.match(DOCS.childprotection.version, /v11$/, '문구를 고쳤으니 문서 버전을 올렸다');
   const cpKo2 = docSections(DOCS.childprotection).flatMap((x) => x.items).map((i) => i.ko).join('\n');
   for (const d of [DOCS.childprotection, DOCS.rules]) assert.ok(!/퇴출|해임|하차/.test(JSON.stringify(d)), d.id + ': 서약서는 "제명"으로 통일');
   assert.ok(cpKo2.includes('저는 "우리 문화에서는 괜찮다" 또는 "캠퍼가 먼저 원해서"라는 이유로 신체 접촉을 하지 않고, 월코의 기준을 따르겠습니다.'), '신체 접촉 문구');
   assert.ok(cpKo2.includes('저는 차량 운행을 이유로 1명의 캠퍼와 단독으로 차량 운행을 하지 않겠습니다.') && !cpKo2.includes('캠퍼 배정과 감독 배치') && !cpKo2.includes('혼자서 캠퍼 한 명만'), '차량 단독 운행 금지 문구(중복 없이)');
   assert.ok(cpKo2.includes('캠프가 진행되는 국가의 법이나 규정이 이 서약서보다 더 엄격하면 더 엄격한 쪽을 따릅니다.'), '캠프 국가의 법이나 규정이 더 엄격하면 그쪽');
-  assert.ok(docSections(DOCS.childprotection).flatMap((x) => x.items).every((i) => /저는|제가/.test(i.ko) || i.ko.includes('월코의 아동보호 담당자는') || i.ko.includes('선의로')), '아동보호 서약서 항목은 1인칭(담당자 안내 · 신고자 보호 안내 제외)');
+  assert.ok(docSections(DOCS.childprotection).flatMap((x) => x.items).every((i) => /저는|제가/.test(i.ko)), '아동보호 서약서 항목은 모두 서약하는 사람의 목소리(저는)');
+  assert.ok(docSections(DOCS.childprotection).flatMap((x) => x.items).every((i) => /\bI\b/.test(i.en)), '영어도 모두 "I"로 시작하는 1인칭');
   assert.ok(DOCS.childprotection.ko.pledge.includes('월코 캠프에 참여하는 캠퍼를 지키기 위해') && DOCS.childprotection.en.pledge.includes('campers who take part in WOLKO camps'), '맺음말은 캠퍼를 지키기 위해');
   const t = await setup();
   const post = async (patch = {}) => { const r = await t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), doc: 'childprotection', version: DOCS.childprotection.version, declared: true, ...patch } }); return { status: r.status, ...(await r.json()) }; };
@@ -545,4 +546,10 @@ test('서약서 항목은 문장이 끝나는 마침표 뒤에서 줄바꿈해 �
   assert.equal(f('동의합니다.\n\n연락해 주세요.'), '동의합니다.\n\n연락해 주세요.', '원문의 빈 줄은 그대로');
   assert.equal(f('(귀걸이는 한 쌍까지는 괜찮습니다.)'), '(귀걸이는 한 쌍까지는 괜찮습니다.)', '괄호 안 마침표는 건드리지 않는다');
   assert.ok(docSections(DOCS.childprotection).some((x) => x.ko === '단독행위와 제3자 규칙' && /Solo activity/.test(x.en)));
+});
+
+test('서명 페이지 위쪽 설명도 문장마다 한 줄(블록)로 나눈다', () => {
+  const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
+  assert.match(page, /<span class="sa-ln">캠프에서 섬기는 모든 분이 읽고 동의하며 서명하는 문서예요\.<\/span><span class="sa-ln">폰에서는/);
+  assert.match(page, /\.sa-ln \{ display: block; \}/);
 });

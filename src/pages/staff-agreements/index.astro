@@ -34,8 +34,8 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
       <span class="wl-en"><em>Agreements</em></span>
     </Fragment>
     <Fragment slot="desc">
-      <span class="wl-ko">캠프에서 섬기는 모든 분이 읽고 동의하며 서명하는 문서예요. 폰에서는 손가락으로, 컴퓨터에서는 마우스로 서명하시면 돼요.</span>
-      <span class="wl-en">Everyone who serves at camp reads, agrees to and signs these documents. Sign with your finger on a phone, or with your mouse on a computer.</span>
+      <span class="wl-ko"><span class="sa-ln">캠프에서 섬기는 모든 분이 읽고 동의하며 서명하는 문서예요.</span><span class="sa-ln">폰에서는 손가락으로, 컴퓨터에서는 마우스로 서명하시면 돼요.</span></span>
+      <span class="wl-en"><span class="sa-ln">Everyone who serves at camp reads, agrees to and signs these documents.</span><span class="sa-ln">Sign with your finger on a phone, or with your mouse on a computer.</span></span>
     </Fragment>
   </PageHero>
 
@@ -89,6 +89,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
   .sa-items { margin: 0; padding: 8px 28px 8px; list-style: none; counter-reset: sa; }
   .sa-items li { counter-increment: sa; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; padding: 16px 0; border-top: 1px solid var(--sa-line); font-size: 15px; line-height: 1.85; color: var(--sa-ink); }
   .sa-items li .wl-ko, .sa-items li .wl-en { white-space: pre-line; }
+  .sa-ln { display: block; }   /* 위쪽 큰 제목 아래 설명: 문장마다 한 줄(좁은 화면에서도 합쳐지지 않게 br 대신 블록) */
   .sa-items li.sa-sec { counter-increment: none; display: block; padding: 20px 0 8px; font-size: 16px; font-weight: 800; color: var(--sa-navy); }
   .sa-items li.sa-sec::before { display: none; }
   .sa-items li::before { content: counter(sa, decimal-leading-zero); width: 40px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); background: var(--sa-soft); color: var(--sa-deep); font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
