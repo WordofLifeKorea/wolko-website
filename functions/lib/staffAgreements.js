@@ -105,3 +105,33 @@ export function checkSignature(value) {
   } catch { return 0; }
   return bytes;
 }
+
+/* ── 필수 서약: 스태프 · 크루로 신청한 모든 사람이 (공개된) 서약 문서를 모두 작성해야 수락할 수 있다 ── */
+/** 지금 작성해야 하는 문서 = 공개된(draft 아닌) 문서. 초안 문서는 공개로 바뀌는 순간부터 필수가 된다 */
+export const requiredDocs = () => docList();
+
+/**
+ * 이메일별로 '지금 버전'에 서명한 필수 문서 id 목록 — { 'a@b.org': ['faith', 'rules'] }
+ * 문서 버전이 바뀌면 예전 서명은 세지 않는다(다시 읽고 서명해야 한다).
+ */
+export async function signedMap(env) {
+  const map = {};
+  for (const doc of requiredDocs()) {
+    let cursor;
+    for (let page = 0; page < 100; page++) {
+      const res = await env.CAMP_KV.list({ prefix: `${AGREEMENT_PREFIX}${doc.id}:`, cursor, limit: 1000 });
+      for (const k of res.keys || []) {
+        const m = k.metadata || {};
+        if (m.v !== doc.version || !m.e) continue;
+        const email = String(m.e).toLowerCase();
+        (map[email] ||= new Set()).add(doc.id);
+      }
+      if (res.list_complete || !res.cursor) break;
+      cursor = res.cursor;
+    }
+  }
+  return Object.fromEntries(Object.entries(map).map(([e, set]) => [e, [...set]]));
+}
+
+/** 이 이메일이 아직 작성하지 않은 필수 문서들 */
+export const missingDocs = (signed, email) => requiredDocs().filter((d) => !(signed?.[String(email || '').toLowerCase()] || []).includes(d.id));

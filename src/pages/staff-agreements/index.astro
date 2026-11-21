@@ -37,7 +37,17 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
     padding: 56px 0 96px; background: #fff; color: var(--sa-ink); font-family: var(--ff-sans); word-break: keep-all;
   }
   .sa-shell { width: min(860px, calc(100% - 48px)); margin: 0 auto; display: grid; gap: 40px; }
-  .sa-doc { border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); background: #fff; }
+  .sa-need { border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); background: var(--sa-soft); padding: 18px 22px; }
+  .sa-need-title { margin: 0 0 10px; font-size: 15px; line-height: 1.7; font-weight: 700; color: var(--sa-navy); }
+  .sa-need-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .sa-need-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; background: #fff; border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); font-size: 14.5px; }
+  .sa-need-list a { color: var(--sa-ink); font-weight: 700; text-decoration: none; }
+  .sa-need-list a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .sa-need-state { flex: none; display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border: 1px solid var(--sa-field); border-radius: var(--ws-radius-sm, 8px); font-size: 12.5px; font-weight: 800; color: var(--sa-muted); }
+  .sa-need-list li.is-done .sa-need-state { border-color: var(--sa-deep); background: var(--sa-deep); color: #fff; }
+  .sa-need-done { margin: 12px 0 0; font-size: 14.5px; font-weight: 700; color: var(--sa-deep); }
+  .sa-need-done[hidden] { display: none; }
+  .sa-doc { scroll-margin-top: 96px; border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); background: #fff; }
   .sa-doc-head { padding: 24px 28px 8px; }
   .sa-doc-head h2 { margin: 0; font-family: var(--ff-serif); font-size: 26px; font-weight: 800; letter-spacing: -.02em; color: var(--sa-navy); }
   .sa-doc-head p { margin: 10px 0 0; font-size: 15px; line-height: 1.8; color: var(--sa-body); }
@@ -112,8 +122,23 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
 
 <section class="sa">
   <div class="sa-shell">
+    <div class="sa-need" data-need data-total={docs.length}>
+      <p class="sa-need-title">
+        <span class="wl-ko">필수 서약서 {docs.length}개 · 스태프와 크루로 신청한 모든 분은 아래 서약서를 모두 작성해야 합니다.</span>
+        <span class="wl-en">{docs.length} required agreements · everyone who applied as staff or crew must complete all of the agreements below.</span>
+      </p>
+      <ol class="sa-need-list">
+        {docs.map((doc) => (
+          <li data-need-doc={doc.id}><a href={`#doc-${doc.id}`}><span class="wl-ko">{doc.ko.title}</span><span class="wl-en">{doc.en.title}</span></a><span class="sa-need-state" data-need-state><span class="wl-ko">작성 전</span><span class="wl-en">Not yet</span></span></li>
+        ))}
+      </ol>
+      <p class="sa-need-done" data-need-done hidden>
+        <span class="wl-ko">모든 서약서를 작성하셨어요. 감사합니다!</span>
+        <span class="wl-en">You have completed all the agreements. Thank you!</span>
+      </p>
+    </div>
     {docs.map((doc) => (
-      <article class="sa-doc" data-doc={doc.id} data-version={doc.version}>
+      <article class="sa-doc" id={`doc-${doc.id}`} data-doc={doc.id} data-version={doc.version}>
         <div class="sa-doc-head">
           <h2><span class="wl-ko">{doc.ko.title}</span><span class="wl-en">{doc.en.title}</span></h2>
           <p><span class="wl-ko">{doc.ko.intro}</span><span class="wl-en">{doc.en.intro}</span></p>
@@ -326,6 +351,31 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
     w.document.close();
   }
 
+  /* ───── 필수 서약서 진행 표시 · 이름/이메일 미리 채우기 ───── */
+  var doneIds = {};
+  function markDone(id) {
+    doneIds[id] = true;
+    var li = document.querySelector('[data-need-doc="' + id + '"]');
+    if (li) { li.classList.add('is-done'); var st = li.querySelector('[data-need-state]'); if (st) st.innerHTML = '<span class="wl-ko">작성 완료</span><span class="wl-en">Done</span>'; }
+    var need = document.querySelector('[data-need]');
+    if (need && Object.keys(doneIds).length >= Number(need.dataset.total)) { var m = need.querySelector('[data-need-done]'); if (m) m.hidden = false; }
+  }
+  var QS = (function () { try { return new URLSearchParams(location.search); } catch (e) { return new URLSearchParams(''); } })();
+  function setField(form, name, value) { var el = form.elements[name]; if (el && value && !el.value) el.value = value; }
+  function prefill(form) {
+    setField(form, 'name', (QS.get('name') || '').slice(0, 60)); setField(form, 'email', (QS.get('email') || '').slice(0, 100));
+    var role = QS.get('role'); if (role === 'staff' || role === 'crew') { var r = form.querySelector('input[type=radio][value="' + role + '"]'); if (r) r.checked = true; }
+  }
+  /* 한 문서에 서명하면 나머지 문서의 빈 칸(이름 · 이메일 · 휴대폰 · 구분)을 같은 값으로 채워 다시 적지 않게 한다 */
+  function shareWho(from, body) {
+    Array.prototype.forEach.call(document.querySelectorAll('.sa-doc'), function (a) {
+      if (a === from) return;
+      var f = a.querySelector('[data-form]'); if (!f) return;
+      setField(f, 'name', body.name); setField(f, 'email', body.email); setField(f, 'phone', body.phone);
+      if (!f.querySelector('input[type=radio]:checked')) { var r = f.querySelector('input[type=radio][value="' + body.role + '"]'); if (r) r.checked = true; }
+    });
+  }
+
   /* ───── 문서마다 폼 연결 ───── */
   Array.prototype.forEach.call(document.querySelectorAll('.sa-doc'), function (article) {
     var doc = DOCS[article.dataset.doc]; if (!doc) return;
@@ -337,6 +387,8 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
     var val = function (name) { var el = form.elements[name]; return el ? el.value : ''; };
     var roleVal = function () { var r = form.querySelector('input[type=radio]:checked'); return r ? r.value : ''; };
     var last = null;   // 완료 후 인쇄에 쓸 값
+    // 지원서에서 넘어온 이름 · 이메일 · 구분은 미리 채워 둔다(?name=&email=&role=)
+    prefill(form);
 
     function showErr(field, msg) {
       var el = q('[data-err="' + field + '"]'); if (!el) return;
@@ -380,6 +432,8 @@ const data = JSON.stringify(docs.map((d) => ({ id: d.id, version: d.version, ko:
         var res = await fetch('/api/agreements/sign', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         var d = await res.json().catch(function () { return {}; });
         if (!res.ok) { submit.disabled = false; showErr(d.field && d.field !== 'website' && d.field !== 'version' && d.field !== 'doc' ? d.field : 'form', isEn() ? (d.errorEn || d.error) : (d.error || '제출하지 못했어요.')); return; }
+        shareWho(article, body);
+        markDone(doc.id);
         last = { code: d.code, signedAt: d.signedAt, name: body.name, email: body.email, role: body.role, signature: png };
         q('[data-code]').textContent = d.code; q('[data-signed-at]').textContent = signedAtText(d.signedAt);
         form.hidden = true; done.hidden = false;

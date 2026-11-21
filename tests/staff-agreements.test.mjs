@@ -145,18 +145,20 @@ test('공개 서명 페이지: 검색 제외 · 신앙고백서 11항목 · 서�
 import { docList, docSections } from '../functions/lib/staffAgreements.js';
 import { OPEN_QUESTIONS } from '../functions/lib/agreementDocsExtra.js';
 
-test('초안 문서(아동보호 · 필수 규칙): 공개 목록에 나오지 않고 서명도 받지 않는다 · 신앙고백서는 그대로', async () => {
-  assert.deepEqual(docList().map((d) => d.id), ['faith'], '확정 전 문서는 공개 페이지 목록에 없다');
+test('초안 문서(아동보호 서약서): 공개 목록에 나오지 않고 서명도 받지 않는다 · 신앙고백서는 그대로(필수 규칙은 공개됨)', async () => {
+  assert.deepEqual(docList().map((d) => d.id), ['faith', 'rules'], '확정 전 문서(아동보호 서약서)는 공개 페이지 목록에 없다');
   assert.deepEqual(docList({ includeDrafts: true }).map((d) => d.id), ['faith', 'childprotection', 'rules']);
-  assert.ok(DOCS.childprotection.draft && DOCS.rules.draft && !DOCS.faith.draft);
+  assert.ok(DOCS.childprotection.draft && !DOCS.rules.draft && !DOCS.faith.draft);
   assert.equal(await docHash(DOCS.faith), 'cedc7ddf3cfc' + (await docHash(DOCS.faith)).slice(12), '신앙고백서 글 해시는 바뀌지 않았다');
   const t = await setup();
-  for (const id of ['childprotection', 'rules']) {
+  for (const id of ['childprotection']) {
     const r = await t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), doc: id, version: DOCS[id].version, declared: true } });
     assert.equal(r.status, 400, `${id} 초안은 서명을 받지 않는다`);
     assert.equal((await r.json()).field, 'doc');
   }
   assert.equal([...t.kv.store.keys()].filter((k) => k.startsWith('agree:v1:')).length, 0);
+  // 공개된 필수 규칙은 서명을 받는다
+  assert.equal((await t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), doc: 'rules', version: DOCS.rules.version } })).status, 200);
 });
 
 test('아동보호 서약서 내용: 디렉터가 정한 것들이 들어 있다(범죄경력 서류 · 담당자 · SNS · 크루) 그리고 한·영이 짝을 이룬다', () => {
@@ -229,4 +231,63 @@ test('지각은 경고에 넣지 않는다(경미한 실수) · 허락 없이 �
   assert.ok(time.ko.includes('지각은 경미한 실수로 보고 경고에 넣지 않습니다') && /Being late is treated as a minor mistake and is not counted as a warning/.test(time.en));
   assert.ok(time.ko.includes('허락 없이 자리를 비우는 것은 규칙을 어긴 것'), '허락 없이 자리를 비우는 것은 그대로 규칙 위반');
   assert.ok(!OPEN_QUESTIONS.some((q) => q.includes('지각')), '지각 기준 질문은 해결돼 뺐다');
+});
+
+/* ── 스태프·크루 필수 서약: 공개된 문서를 모두 작성해야 수락 ── */
+import * as acceptApi from '../functions/api/admin/staff-accept.js';
+import * as statusApi from '../functions/api/admin/staff-agreements.js';
+import { requiredDocs, signedMap, missingDocs } from '../functions/lib/staffAgreements.js';
+
+test('필수 서약서 = 공개된 문서(신앙고백서 · 필수 규칙). 아동보호 서약서는 초안이라 아직 필수가 아니다', () => {
+  assert.deepEqual(requiredDocs().map((d) => d.id), ['faith', 'rules']);
+  assert.equal(DOCS.rules.draft, false); assert.equal(DOCS.childprotection.draft, true);
+});
+
+test('서명 → 이메일별 작성 현황(signedMap) · 현재 버전만 센다 · 미작성 문서 목록(missingDocs)', async () => {
+  const t = await setup();
+  const sign = (doc, email) => t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), doc, version: DOCS[doc].version, email } });
+  assert.equal((await sign('faith', 'A@x.org')).status, 200);
+  let map = await signedMap(t.env);
+  assert.deepEqual(map['a@x.org'], ['faith']);
+  assert.deepEqual(missingDocs(map, 'a@x.org').map((d) => d.id), ['rules'], '필수 규칙이 남았다');
+  assert.deepEqual(missingDocs(map, 'nobody@x.org').map((d) => d.id), ['faith', 'rules']);
+  assert.equal((await sign('rules', 'a@x.org')).status, 200);
+  map = await signedMap(t.env);
+  assert.deepEqual(missingDocs(map, 'A@X.ORG').map((d) => d.id), [], '대소문자 상관없이 모두 작성');
+  // 문서 버전이 바뀌면 예전 서명은 세지 않는다
+  const [[key]] = [...t.kv.store.entries()].filter(([k, v]) => k.includes(':rules:') && v.metadata?.e === 'a@x.org');
+  const old = t.kv.store.get(key); t.kv.store.set(key, { value: old.value, metadata: { ...old.metadata, v: '1999-01-v1' } });
+  assert.deepEqual(missingDocs(await signedMap(t.env), 'a@x.org').map((d) => d.id), ['rules']);
+});
+
+test('스태프 수락: 필수 서약서를 모두 작성해야 수락된다(안 하면 409) · 현황 API 는 관리자만', async () => {
+  const t = await setup();
+  const reg = { regId: 'r1', campId: '2026-test', registrationType: 'staff', role: 'staff', email: 'serve@example.com', name: '김섬김', accepted: false };
+  t.kv.store.set('camp:2026-test:reg:r1', { value: JSON.stringify(reg) });
+  const accept = () => t.call(acceptApi, 'POST', '/api/admin/staff-accept', { token: t.admin, body: { action: 'accept', regId: 'r1', campId: '2026-test' } });
+  const blocked = await accept();
+  assert.equal(blocked.status, 409);
+  const b = await blocked.json(); assert.match(b.error, /서약서/); assert.deepEqual(b.missing, ['faith', 'rules']);
+  await t.call(signApi, 'POST', '/api/agreements/sign', { body: good() });   // 신앙고백서(serve@example.com)
+  assert.deepEqual((await (await accept()).json()).missing, ['rules'], '필수 규칙이 남았다');
+  await t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), doc: 'rules', version: DOCS.rules.version } });
+  const ok = await accept();
+  assert.equal(ok.status, 200); assert.equal((await ok.json()).reg.accepted, true);
+  // 현황 API
+  const noLogin = await t.call(statusApi, 'GET', '/api/admin/staff-agreements');
+  assert.equal(noLogin.status, 401);
+  t.kv.store.set('hub:account:member@wolko.org', { value: JSON.stringify({ email: 'member@wolko.org', name: 'm', role: 'counselor', status: 'approved' }) });
+  assert.equal((await t.call(statusApi, 'GET', '/api/admin/staff-agreements', { token: t.member })).status, 403);
+  const st = await (await t.call(statusApi, 'GET', '/api/admin/staff-agreements', { token: t.admin })).json();
+  assert.deepEqual(st.required.map((d) => d.id), ['faith', 'rules']); assert.deepEqual(st.signed['serve@example.com'].sort(), ['faith', 'rules']);
+  assert.ok(!JSON.stringify(st).includes('data:image'), '서명 그림은 없다');
+});
+
+test('연결: 지원서 완료 화면에 서약서 작성 안내(이름 · 이메일 · 구분 전달) · 서명 페이지의 필수 목록 · 관리자 목록 표시', () => {
+  const camp = readFileSync(new URL('../src/pages/camp-register/index.astro', import.meta.url), 'utf8');
+  assert.match(camp, /id="staffAgreeLink"/); assert.match(camp, /\/staff-agreements\/\?role=/); assert.match(camp, /encodeURIComponent\(payload\.email/);
+  const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
+  assert.match(page, /data-need/); assert.match(page, /function prefill\(/); assert.match(page, /function shareWho\(/);
+  const admin = readFileSync(new URL('../src/pages/portal/wolkoadmin.astro', import.meta.url), 'utf8');
+  assert.match(admin, /\/api\/admin\/staff-agreements/); assert.match(admin, /acceptNeedsAgreements/);
 });

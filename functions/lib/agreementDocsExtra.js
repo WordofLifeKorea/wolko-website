@@ -1,6 +1,8 @@
 /**
  * 서약 문서 2 · 3 의 초안 — 아동보호 서약서 · 캠프 필수 규칙.
  * draft: true 인 동안은 공개 페이지에 나오지 않고 서버도 서명을 받지 않는다. 문구가 확정되면 draft 를 false 로 바꾸고 version 을 정한다.
+ * 공개된(draft 아닌) 문서는 스태프 · 크루로 신청한 모든 사람이 작성해야 하는 필수 서약서가 된다(수락 전 확인: functions/api/admin/staff-accept.js).
+ * 현재: 신앙고백서(staffAgreements.js) · 필수 규칙(rules)은 공개, 아동보호 서약서는 아직 초안.
  *
  * 정해진 것(디렉터 결정, 2026-11-21):
  *  - 범죄경력 확인에 필요한 서류는 월코가 요구하면 지체 없이 제공한다. 제출한 서류는 캠프 기간 동안만 보관하고 캠프가 끝나면 폐기한다(2026-11-21).
@@ -124,7 +126,7 @@ export const CHILD_PROTECTION = {
 export const CAMP_RULES = {
   id: 'rules',
   version: '2026-11-v1',
-  draft: true,
+  draft: false,   // 2026-11-21 디렉터 결정으로 공개 — 스태프 · 크루가 작성해야 하는 필수 서약서
   ko: {
     title: '월코 캠프 필수 규칙',
     intro: '월코 캠프 기간 동안 스태프와 크루가 반드시 지켜야 할 규칙입니다.',

@@ -9,6 +9,7 @@
 import { parseHubSessionToken, portalSession } from '../../lib/hubAccounts.js';
 import { isCampRegistrationEditor } from '../../lib/campRegistrationAccess.js';
 import { canAccept, consentAppKey, consentKey, sendConsentRequest } from '../../lib/staffCrew.js';
+import { signedMap, missingDocs } from '../../lib/staffAgreements.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 
@@ -41,6 +42,11 @@ export async function onRequestPost({ request, env }) {
       if (reg.accepted) return Response.json({ success: true, reg }, { headers: CORS });
       if (!canAccept(reg)) {
         return Response.json({ error: '보호자 동의가 아직 완료되지 않아 수락할 수 없습니다.' }, { status: 409, headers: CORS });
+      }
+      // 스태프 · 크루로 신청한 모든 사람은 공개된 서약서(신앙고백서 · 필수 규칙 · 아동보호 서약서)를 모두 작성해야 수락할 수 있다
+      const missing = missingDocs(await signedMap(env), reg.email);
+      if (missing.length) {
+        return Response.json({ error: `서약서를 아직 모두 작성하지 않아 수락할 수 없습니다: ${missing.map((d) => d.ko.title).join(', ')}`, missing: missing.map((d) => d.id) }, { status: 409, headers: CORS });
       }
       const next = { ...reg, accepted: true, acceptedAt: new Date().toISOString(), acceptedBy: who.email };
       await env.CAMP_KV.put(key, JSON.stringify(next));
