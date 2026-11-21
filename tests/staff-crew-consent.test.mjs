@@ -5,20 +5,14 @@ import * as consent from '../functions/api/staff-consent.js';
 import * as accept from '../functions/api/admin/staff-accept.js';
 import { createHubSessionToken } from '../functions/lib/hubAccounts.js';
 import { canAccept, consentSmsText, CAMP_SMS_SENDER_DEFAULT } from '../functions/lib/staffCrew.js';
-import { requiredDocs } from '../functions/lib/staffAgreements.js';
-
-// 스태프 · 크루로 신청한 사람은 공개된 서약서를 모두 작성해야 수락된다 — 이 시험에서는 서약 기록을 바로 채워 둔다
-async function signAllAgreements(t, email) {
-  for (const doc of requiredDocs()) await t.env.CAMP_KV.put(`agree:v1:${doc.id}:202611:AG-${doc.id.toUpperCase().padEnd(6, 'X').slice(0, 6)}`, '{}', { metadata: { d: doc.id, v: doc.version, e: email } });
-}
 
 function setup() {
-  const store = new Map(); const metas = new Map();
+  const store = new Map();
   const kv = {
     get: async (k, type) => { const v = store.get(k); if (v === undefined) return null; return type === 'json' ? JSON.parse(v) : v; },
-    put: async (k, v, o = {}) => { store.set(k, v); if (o.metadata) metas.set(k, o.metadata); },
-    delete: async k => { store.delete(k); metas.delete(k); },
-    list: async ({ prefix }) => ({ keys: [...store.keys()].filter(k => k.startsWith(prefix)).map(name => ({ name, metadata: metas.get(name) })), list_complete: true }),
+    put: async (k, v) => { store.set(k, v); },
+    delete: async k => { store.delete(k); },
+    list: async ({ prefix }) => ({ keys: [...store.keys()].filter(k => k.startsWith(prefix)).map(name => ({ name })), list_complete: true }),
   };
   const sent = [];
   const realFetch = globalThis.fetch;
@@ -88,9 +82,6 @@ test('크루 지원 → 보호자에게 캠프 업무폰으로 문자 · 이메�
     assert.equal(agreed.status, 'agreed');
     assert.equal(JSON.parse(t.store.get(regKey)).parentConsent.signerName, '김엄마');
 
-    const noAgreements = await accept.onRequestPost({ env: t.env, request: post('https://x/api/admin/staff-accept', { action: 'accept', regId: reg.regId, campId: reg.campId }, auth) });
-    assert.equal(noAgreements.status, 409, '보호자가 동의해도 서약서를 다 쓰기 전에는 수락할 수 없다');
-    await signAllAgreements(t, 'crew@example.com');
     const ok = await accept.onRequestPost({ env: t.env, request: post('https://x/api/admin/staff-accept', { action: 'accept', regId: reg.regId, campId: reg.campId }, auth) });
     assert.equal(ok.status, 200);
     assert.equal(JSON.parse(t.store.get(regKey)).accepted, true);

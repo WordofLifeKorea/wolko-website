@@ -260,34 +260,31 @@ test('서명 → 이메일별 작성 현황(signedMap) · 현재 버전만 센�
   assert.deepEqual(missingDocs(await signedMap(t.env), 'a@x.org').map((d) => d.id), ['rules']);
 });
 
-test('스태프 수락: 필수 서약서를 모두 작성해야 수락된다(안 하면 409) · 현황 API 는 관리자만', async () => {
+test('서약서는 캠프 트레이닝 위크에 작성한다 — 수락 조건이 아니다 · 현황 API 는 관리자만(작성 현황 표시용)', async () => {
   const t = await setup();
   const reg = { regId: 'r1', campId: '2026-test', registrationType: 'staff', role: 'staff', email: 'serve@example.com', name: '김섬김', accepted: false };
   t.kv.store.set('camp:2026-test:reg:r1', { value: JSON.stringify(reg) });
-  const accept = () => t.call(acceptApi, 'POST', '/api/admin/staff-accept', { token: t.admin, body: { action: 'accept', regId: 'r1', campId: '2026-test' } });
-  const blocked = await accept();
-  assert.equal(blocked.status, 409);
-  const b = await blocked.json(); assert.match(b.error, /서약서/); assert.deepEqual(b.missing, ['faith', 'rules']);
-  await t.call(signApi, 'POST', '/api/agreements/sign', { body: good() });   // 신앙고백서(serve@example.com)
-  assert.deepEqual((await (await accept()).json()).missing, ['rules'], '필수 규칙이 남았다');
-  await t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), doc: 'rules', version: DOCS.rules.version } });
-  const ok = await accept();
+  // 서약서를 하나도 쓰지 않아도 수락할 수 있다(트레이닝 위크에 작성)
+  const ok = await t.call(acceptApi, 'POST', '/api/admin/staff-accept', { token: t.admin, body: { action: 'accept', regId: 'r1', campId: '2026-test' } });
   assert.equal(ok.status, 200); assert.equal((await ok.json()).reg.accepted, true);
   // 현황 API
   const noLogin = await t.call(statusApi, 'GET', '/api/admin/staff-agreements');
   assert.equal(noLogin.status, 401);
   t.kv.store.set('hub:account:member@wolko.org', { value: JSON.stringify({ email: 'member@wolko.org', name: 'm', role: 'counselor', status: 'approved' }) });
   assert.equal((await t.call(statusApi, 'GET', '/api/admin/staff-agreements', { token: t.member })).status, 403);
+  await t.call(signApi, 'POST', '/api/agreements/sign', { body: good() });   // 신앙고백서(serve@example.com)
   const st = await (await t.call(statusApi, 'GET', '/api/admin/staff-agreements', { token: t.admin })).json();
-  assert.deepEqual(st.required.map((d) => d.id), ['faith', 'rules']); assert.deepEqual(st.signed['serve@example.com'].sort(), ['faith', 'rules']);
+  assert.deepEqual(st.required.map((d) => d.id), ['faith', 'rules']); assert.deepEqual(st.signed['serve@example.com'], ['faith']);
   assert.ok(!JSON.stringify(st).includes('data:image'), '서명 그림은 없다');
 });
 
-test('연결: 지원서 완료 화면에 서약서 작성 안내(이름 · 이메일 · 구분 전달) · 서명 페이지의 필수 목록 · 관리자 목록 표시', () => {
+test('연결: 서명 페이지의 필수 목록(트레이닝 위크 안내) · 지원서 완료 화면에는 서약서 안내를 넣지 않는다 · 관리자 목록 표시', () => {
   const camp = readFileSync(new URL('../src/pages/camp-register/index.astro', import.meta.url), 'utf8');
-  assert.match(camp, /id="staffAgreeLink"/); assert.match(camp, /\/staff-agreements\/\?role=/); assert.match(camp, /encodeURIComponent\(payload\.email/);
+  assert.doesNotMatch(camp, /staffAgreeLink|staff-agreements/, '서약서는 지원할 때가 아니라 캠프 트레이닝 위크에 작성한다');
   const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
-  assert.match(page, /data-need/); assert.match(page, /function prefill\(/); assert.match(page, /function shareWho\(/);
+  assert.match(page, /data-need/); assert.match(page, /캠프 트레이닝 위크/); assert.match(page, /function prefill\(/); assert.match(page, /function shareWho\(/);
   const admin = readFileSync(new URL('../src/pages/portal/wolkoadmin.astro', import.meta.url), 'utf8');
-  assert.match(admin, /\/api\/admin\/staff-agreements/); assert.match(admin, /acceptNeedsAgreements/);
+  assert.match(admin, /\/api\/admin\/staff-agreements/); assert.doesNotMatch(admin, /acceptNeedsAgreements/, '수락 조건이 아니다');
+  const accept = readFileSync(new URL('../functions/api/admin/staff-accept.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(accept, /staffAgreements/, '수락은 서약서와 무관');
 });

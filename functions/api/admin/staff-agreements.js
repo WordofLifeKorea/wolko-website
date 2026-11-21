@@ -1,7 +1,7 @@
 /**
  * GET /api/admin/staff-agreements — 스태프 · 크루 필수 서약서 작성 현황
  *   → { required: [{ id, title, version }], signed: { 'a@b.org': ['faith', 'rules'] } }
- * 지원서 목록(신청자 관리)이 '서약서 2/3' 표시와 수락 단추에 쓴다. 이메일과 문서 id 만 있고 서명 그림은 없다.
+ * 지원서 목록(신청자 관리)이 '서약서 2/3' 표시에 쓴다(캠프 트레이닝 위크에 작성 — 수락 조건이 아니다). 이메일과 문서 id 만 있고 서명 그림은 없다.
  * 볼 수 있는 사람: 스태프 수락과 같은 범위(관리자 · 마스터, 신청자 목록 편집 담당).
  */
 import { parseHubSessionToken, portalSession } from '../../lib/hubAccounts.js';
