@@ -19,16 +19,16 @@ export const MAX_SIGNATURE_BYTES = 240 * 1024;   // 서명 그림(PNG) 한도
 export const DOCS = {
   faith: {
     id: 'faith',
-    version: '2026-11-v2',
+    version: '2026-11-v3',   // v3: 맺음말을 '동의하지 않는 내용이 있으면 camp@wolko.org 로 연락' 안내로 고쳤다
     ko: {
       title: '신앙고백서',
       intro: '월코 캠프에서 스태프나 크루로 섬기는 모든 분은 아래 신앙고백을 읽고 동의하며 서명합니다.',
-      pledge: '저는 위 신앙고백서를 처음부터 끝까지 읽었으며, 그 내용에 동의합니다. 월코 캠프에서 이 신앙에 어긋나지 않게 섬기겠습니다.',
+      pledge: '저는 위 신앙고백서를 처음부터 끝까지 읽었으며, 그 내용에 동의합니다.\n\n만약 동의하지 않는 내용이 있다면 캠프팀 이메일로 연락해 주세요.\n\ncamp@wolko.org',
     },
     en: {
       title: 'Statement of Faith',
       intro: 'Everyone who serves at a WOLKO camp as staff or crew reads, agrees to and signs the Statement of Faith below.',
-      pledge: 'I have read the Statement of Faith above from beginning to end and I agree with it. I will serve at WOLKO camps in a way that is consistent with this faith.',
+      pledge: 'I have read the Statement of Faith above from beginning to end and I agree with it.\n\nIf there is anything you do not agree with, please contact the camp team by email.\n\ncamp@wolko.org',
     },
     items: [
       { ko: "우리는 구약과 신약 성경이 하나님의 감동으로 기록되었으며, 원본에 오류가 없고, 신앙과 삶에 있어 최고의 최종 권위임을 믿습니다.",

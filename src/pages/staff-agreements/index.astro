@@ -88,7 +88,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
   .sa-items li.sa-sec { counter-increment: none; display: block; padding: 20px 0 8px; font-size: 16px; font-weight: 800; color: var(--sa-navy); }
   .sa-items li.sa-sec::before { display: none; }
   .sa-items li::before { content: counter(sa, decimal-leading-zero); width: 40px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); background: var(--sa-soft); color: var(--sa-deep); font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
-  .sa-pledge { margin: 8px 28px 0; padding: 16px 18px; background: var(--sa-soft); border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); font-size: 15px; line-height: 1.8; color: var(--sa-navy); font-weight: 600; }
+  .sa-pledge { white-space: pre-line; margin: 8px 28px 0; padding: 16px 18px; background: var(--sa-soft); border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); font-size: 15px; line-height: 1.8; color: var(--sa-navy); font-weight: 600; }
   .sa-form { padding: 24px 28px 28px; display: grid; gap: 16px; }
   .sa-form h3 { margin: 0; font-size: 17px; font-weight: 800; color: var(--sa-navy); }
   .sa-field label, .sa-legend { display: block; margin: 0 0 6px; font-size: 14px; font-weight: 700; color: var(--sa-navy); }
@@ -413,7 +413,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
     w.document.write('<!doctype html><' + 'html lang="ko"><head><meta charset="utf-8"><title>' + esc(doc.ko.title) + ' — ' + esc(rec.name) + '</title><style>'
       + 'body{font:14px/1.75 "Noto Sans KR",system-ui,sans-serif;color:#10252e;max-width:760px;margin:32px auto;padding:0 24px}h1{font-size:22px;margin:0 0 4px}h2{font-size:15px;margin:28px 0 6px;color:#3e535d}p{margin:6px 0}'
       + 'ol{list-style:none;padding:0;margin:8px 0}li{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:8px 0;border-top:1px solid #d6dee2}li b{color:#004f68}li.sec{display:block;font-weight:800;padding-top:16px}'
-      + '.pledge{padding:10px 14px;border:1px solid #d6dee2;background:#f6f9fb;font-weight:600}.sig{margin-top:24px;border:1px solid #d6dee2;padding:14px 18px;page-break-inside:avoid}.sig img{display:block;max-width:360px;width:100%;height:auto;border-bottom:1px solid #9fb0b8;margin:8px 0}'
+      + '.pledge{padding:10px 14px;border:1px solid #d6dee2;background:#f6f9fb;font-weight:600;white-space:pre-line}.sig{margin-top:24px;border:1px solid #d6dee2;padding:14px 18px;page-break-inside:avoid}.sig img{display:block;max-width:360px;width:100%;height:auto;border-bottom:1px solid #9fb0b8;margin:8px 0}'
       + '.meta{display:grid;grid-template-columns:120px 1fr;gap:4px 12px;font-size:13px}.meta dt{color:#587383}.meta dd{margin:0;font-weight:600}.en{margin-top:36px;border-top:2px solid #10252e;padding-top:8px}@media print{body{margin:0}}'
       + '</style></head><body>'
       + '<h1>' + esc(doc.ko.title) + '</h1><p>' + esc(doc.ko.intro) + '</p><ol>' + items('ko') + '</ol>' + decl('ko') + '<p class="pledge">' + esc(doc.ko.pledge) + '</p>'

@@ -327,7 +327,8 @@ test('서명 페이지: 서약서를 한 화면에 늘어놓지 않고, 목록�
     assert.ok(!/(^|[^가-힣])(나는|내가|나에게|나에 대한|내 문화|내 개인)/.test(ko), `${d.id}: "나는" 대신 "저는" (낱말 안의 "…나는" 은 그대로)`);
     assert.ok(/저는|제가/.test(ko), `${d.id}: 저는 / 제가 를 쓴다`);
   }
-  assert.match(DOCS.faith.version, /v2$/, '문구를 고쳤으니 문서 버전을 올렸다');
+  assert.match(DOCS.faith.version, /v3$/, '문구를 고쳤으니 문서 버전을 올렸다');
+  assert.ok(DOCS.faith.ko.pledge.includes('동의하지 않는 내용이 있다면') && DOCS.faith.ko.pledge.includes('camp@wolko.org') && DOCS.faith.en.pledge.includes('camp@wolko.org'), '신앙고백서 맺음말에 문의 이메일 안내');
 });
 
 testPerCamp('아동보호 서약서는 참여하는 캠프마다 작성: 캠프 필수 · 알 수 없는 캠프는 거절 · 기록에 캠프가 남는다 · 관리자 목록/CSV 에 캠프 열', async () => {
