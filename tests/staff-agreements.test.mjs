@@ -514,8 +514,10 @@ test('서명 페이지 동작(원본 검사): 정보 고치기 · 사람이 바�
 test('아동보호 서약서는 캠프 선택 없이 한 번만 작성: 캠프 칸이 없고 · 문서에 "캠프마다" 문장이 없고 · 같은 사람이 다시 쓰면 409', async () => {
   assert.equal(DOCS.childprotection.perCamp, false);
   assert.ok(!JSON.stringify(DOCS.childprotection.sections).includes('캠프마다 이 서약서를 새로'), '캠프마다 새로 작성한다는 문장을 뺐다');
-  assert.match(DOCS.childprotection.version, /v8$/, '문구를 고쳤으니 문서 버전을 올렸다');
+  assert.match(DOCS.childprotection.version, /v10$/, '문구를 고쳤으니 문서 버전을 올렸다');
   const cpKo2 = docSections(DOCS.childprotection).flatMap((x) => x.items).map((i) => i.ko).join('\n');
+  for (const d of [DOCS.childprotection, DOCS.rules]) assert.ok(!/퇴출|해임|하차/.test(JSON.stringify(d)), d.id + ': 서약서는 "제명"으로 통일');
+  assert.ok(cpKo2.includes('저는 "우리 문화에서는 괜찮다" 또는 "캠퍼가 먼저 원해서"라는 이유로 신체 접촉을 하지 않고, 월코의 기준을 따르겠습니다.'), '신체 접촉 문구');
   assert.ok(cpKo2.includes('저는 차량 운행을 이유로 1명의 캠퍼와 단독으로 차량 운행을 하지 않겠습니다.') && !cpKo2.includes('캠퍼 배정과 감독 배치') && !cpKo2.includes('혼자서 캠퍼 한 명만'), '차량 단독 운행 금지 문구(중복 없이)');
   assert.ok(cpKo2.includes('캠프가 진행되는 국가의 법이나 규정이 이 서약서보다 더 엄격하면 더 엄격한 쪽을 따릅니다.'), '캠프 국가의 법이나 규정이 더 엄격하면 그쪽');
   assert.ok(docSections(DOCS.childprotection).flatMap((x) => x.items).every((i) => /저는|제가/.test(i.ko) || i.ko.includes('월코의 아동보호 담당자는') || i.ko.includes('선의로')), '아동보호 서약서 항목은 1인칭(담당자 안내 · 신고자 보호 안내 제외)');

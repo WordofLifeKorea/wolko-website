@@ -20,13 +20,13 @@
 
 export const CHILD_PROTECTION = {
   id: 'childprotection',
-  version: '2026-11-v8',   // v8: '캠퍼 배정과 감독 배치' 항목을 '차량 운행을 이유로 1명의 캠퍼와 단독 운행 금지'로 바꾸고 이동 항목의 같은 문구는 뺐다 · v7: 소제목 '단독행위와 제3자 규칙' · v6: 모든 항목을 1인칭('저는')으로 · 2번 문장을 '캠프가 진행되는 국가의 법이나 규정'으로 · 범죄경력 서류 문구(성범죄경력 및 아동학대 범죄전력회신서 · 원본 반환) · v4: '캠프마다 새로 작성' 문장을 뺐다(한 번만 작성) · v5: 맺음말을 '월코 캠프에 참여하는 캠퍼를 지키기 위해'로 고쳤다
+  version: '2026-11-v10',   // v10: '퇴출 · 해임'을 모두 '제명'으로 통일 · v9: 신체 접촉 항목을 '우리 문화에서는 괜찮다 또는 캠퍼가 먼저 원해서라는 이유로 하지 않고 월코의 기준을 따르겠습니다'로 · v8: '캠퍼 배정과 감독 배치' 항목을 '차량 운행을 이유로 1명의 캠퍼와 단독 운행 금지'로 바꾸고 이동 항목의 같은 문구는 뺐다 · v7: 소제목 '단독행위와 제3자 규칙' · v6: 모든 항목을 1인칭('저는')으로 · 2번 문장을 '캠프가 진행되는 국가의 법이나 규정'으로 · 범죄경력 서류 문구(성범죄경력 및 아동학대 범죄전력회신서 · 원본 반환) · v4: '캠프마다 새로 작성' 문장을 뺐다(한 번만 작성) · v5: 맺음말을 '월코 캠프에 참여하는 캠퍼를 지키기 위해'로 고쳤다
   perCamp: false,   // 2026-11-21: 캠프 선택 없이 한 번만 작성한다(처음에는 캠프마다였으나 사용자가 '캠프 선택은 필요 없다'고 정했다). true 로 돌리면 서명할 때 캠프를 고르는 방식이 다시 켜진다
   draft: false,   // 2026-11-21 '초안이지만 일단 공개' — 문구를 바꾸면 version 을 올려 예전 서명과 구분한다
   ko: {
     title: '아동보호 서약서',
     intro: '월코 캠프에서 스태프나 크루로 섬기는 모든 분은 아래 아동보호 기준을 읽고, 설명을 듣고, 지키겠다고 서명합니다.',
-    pledge: '저는 이 서약서를 처음부터 끝까지 읽었고, 설명을 듣고 질문할 기회를 가졌으며, 내용을 이해했습니다. 월코 캠프에 참여하는 캠퍼를 지키기 위해 이 기준을 반드시 지키겠습니다. 이를 어기면 월코 캠프에서 퇴출될 수 있고 법적 책임을 질 수 있음을 이해합니다.',
+    pledge: '저는 이 서약서를 처음부터 끝까지 읽었고, 설명을 듣고 질문할 기회를 가졌으며, 내용을 이해했습니다. 월코 캠프에 참여하는 캠퍼를 지키기 위해 이 기준을 반드시 지키겠습니다. 이를 어기면 월코 캠프에서 제명될 수 있고 법적 책임을 질 수 있음을 이해합니다.',
   },
   en: {
     title: 'Child Protection Agreement',
@@ -47,8 +47,8 @@ export const CHILD_PROTECTION = {
     {
       ko: '심사와 범죄경력 확인', en: 'Screening and criminal record checks',
       items: [
-        { ko: '저는 아동·청소년과 함께하는 역할을 맡기 전에 지원서, 추천인 확인, 면접을 거치는 데 동의합니다. 지원서에 허위로 적거나 빠뜨린 것이 있으면 선발에서 제외되거나 해임될 수 있음을 이해합니다.',
-          en: 'Before serving in any role with children, I agree to the application, reference checks and interview. I understand that false or missing information can lead to rejection or dismissal.' },
+        { ko: '저는 아동·청소년과 함께하는 역할을 맡기 전에 지원서, 추천인 확인, 면접을 거치는 데 동의합니다. 지원서에 허위로 적거나 빠뜨린 것이 있으면 선발에서 제외되거나 제명될 수 있음을 이해합니다.',
+          en: 'Before serving in any role with children, I agree to the application, reference checks and interview. I understand that false or missing information can lead to rejection or removal.' },
         { ko: '월코가 요구하면, 저는 성범죄, 아동학대 범죄경력 확인에 필요한 서류(성범죄경력 및 아동학대 범죄전력회신서, 외국인의 경우 본국 등 해당 나라에서 발급받은 범죄경력 증명서)를 지체 없이 제공하겠습니다. 제출한 서류는 캠프 기간 동안만 보관하고, 캠프가 끝나면 원본 문서를 반환합니다.',
           en: 'Whenever WOLKO asks, I will provide without delay the documents needed to check for sex-crime and child-abuse criminal records (the reply certificate on sex-crime records and child-abuse crime history and, for foreign nationals, a criminal record certificate issued by my home country or the relevant country). The documents I submit are kept only for the duration of the camp, and the original documents are returned when the camp ends.' },
       ],
@@ -67,8 +67,8 @@ export const CHILD_PROTECTION = {
     {
       ko: '신체 접촉과 훈육', en: 'Physical contact and discipline',
       items: [
-        { ko: '저는 신체 접촉을 공개된 곳에서, 필요한 만큼만 하며, 캠퍼가 원하지 않으면 하지 않습니다. "제 문화에서는 괜찮다"는 이유로 접촉을 허용하지 않고, 월코의 기준을 따릅니다.',
-          en: 'I keep physical contact in public and only as much as needed, and never if the camper does not want it. "It is fine in my culture" is not a reason; I follow WOLKO’s standard.' },
+        { ko: '저는 "우리 문화에서는 괜찮다" 또는 "캠퍼가 먼저 원해서"라는 이유로 신체 접촉을 하지 않고, 월코의 기준을 따르겠습니다.',
+          en: 'I will not have physical contact on the grounds that "it is fine in our culture" or "the camper wanted it first", and I will follow WOLKO’s standard.' },
         { ko: '저는 어떤 경우에도 아동·청소년을 때리거나 밀치거나 조롱하거나 위협하지 않으며, 식사·수면·화장실 이용을 벌로 제한하지 않습니다.',
           en: 'I will never hit, push, ridicule or threaten a child, and I will never withhold food, sleep or toilet access as discipline.' },
       ],
@@ -114,7 +114,7 @@ export const CHILD_PROTECTION = {
     {
       ko: '어겼을 때', en: 'If this agreement is broken',
       items: [
-        { ko: '저는 이 서약서를 어기면 즉시 아동·청소년과 접촉하는 일에서 제외될 수 있고, 월코 캠프에서 퇴출될 수 있으며, 법적 책임을 질 수 있음을 이해합니다.',
+        { ko: '저는 이 서약서를 어기면 즉시 아동·청소년과 접촉하는 일에서 제외될 수 있고, 월코 캠프에서 제명될 수 있으며, 법적 책임을 질 수 있음을 이해합니다.',
           en: 'I understand that if I break this agreement I can be removed at once from any contact with children, removed from WOLKO camps, and held legally responsible.' },
       ],
     },
@@ -248,8 +248,8 @@ export const CAMP_RULES = {
 /** 아직 정하지 못한 것 — 확정 전에 디렉터와 정해서 위 문서에 반영한다 */
 /** 나중에 아동보호 서약서 서명 칸 아래쪽에 넣을 본인 진술 체크 문구(지금은 문서에 붙어 있지 않다) */
 export const CHILD_PROTECTION_DECLARATION_LATER = {
-    ko: '저는 아동·청소년에 대한 학대나 성범죄로 유죄 판결을 받았거나 현재 수사·재판을 받고 있지 않습니다. 사실과 다르게 진술하면 해임·퇴출되며 법적 책임을 질 수 있음을 이해합니다.',
-    en: 'I have not been convicted of, and am not currently under investigation or on trial for, any offense involving abuse of or sexual offenses against children. I understand that a false statement will lead to dismissal and may result in legal responsibility.',
+    ko: '저는 아동·청소년에 대한 학대나 성범죄로 유죄 판결을 받았거나 현재 수사·재판을 받고 있지 않습니다. 사실과 다르게 진술하면 제명되며 법적 책임을 질 수 있음을 이해합니다.',
+    en: 'I have not been convicted of, and am not currently under investigation or on trial for, any offense involving abuse of or sexual offenses against children. I understand that a false statement will lead to removal and may result in legal responsibility.',
   };
 
 export const OPEN_QUESTIONS = [
