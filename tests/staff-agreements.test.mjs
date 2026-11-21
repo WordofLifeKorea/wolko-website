@@ -362,3 +362,18 @@ test('서명 페이지: 캠프 선택(아동보호 서약서) · 다른 캠프�
   const admin = readFileSync(new URL('../src/pages/portal/wolkoadmin.astro', import.meta.url), 'utf8');
   assert.match(admin, /d\.perCamp \? `\$\{d\.id\}@\$\{r\.campId\}` : d\.id/, '관리자 목록의 서약서 n/m 은 캠프별');
 });
+
+test('서약서 페이지는 검색으로 찾을 수 없다: 페이지 noindex · 서버 헤더(X-Robots-Tag) · 사이트맵 · 안에서 걸린 링크 없음 · robots.txt 로 막지는 않는다(막으면 noindex 를 읽지 못한다)', async () => {
+  const read = (p) => readFileSync(new URL(p, import.meta.url), 'utf8');
+  assert.match(read('../src/pages/staff-agreements/index.astro'), /^\s*noindex\s*$/m, '페이지 meta robots noindex');
+  const headers = read('../public/_headers');
+  assert.match(headers, /\/staff-agreements\n\s+X-Robots-Tag: noindex, nofollow, noarchive, nosnippet/);
+  assert.match(headers, /\/staff-agreements\/\*\n\s+X-Robots-Tag: noindex, nofollow, noarchive, nosnippet/);
+  assert.ok(!read('../public/sitemap.xml').includes('staff-agreements'), '사이트맵에 없다');
+  assert.doesNotMatch(read('../public/robots.txt'), /staff-agreements/, 'robots.txt 에는 적지 않는다(주소가 드러나고, 막으면 noindex 를 못 읽는다)');
+  // 공개 페이지 어디에서도 이 주소로 걸린 링크가 없다(링크로만 접근)
+  const { execSync } = (await import('node:child_process'));
+  const hits = execSync("grep -rl 'staff-agreements' src public --include=*.astro --include=*.html --include=*.xml --include=*.txt --include=*.json || true", { cwd: new URL('..', import.meta.url).pathname }).toString().split('\n').filter(Boolean);
+  assert.deepEqual(hits.sort(), ['public/_headers', 'src/pages/portal/agreements/index.astro', 'src/pages/portal/wolkoadmin.astro', 'src/pages/staff-agreements/index.astro'].filter((f) => hits.includes(f)).sort(), '공개 페이지에서 걸린 링크 없음');
+  assert.ok(!hits.some((f) => /^src\/(pages\/(index|about|camp|camp-register|team|people|contact|give)|layouts|components)/.test(f)), '메뉴 · 본문 · 레이아웃에 링크가 없다');
+});
