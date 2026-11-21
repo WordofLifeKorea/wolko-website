@@ -5,7 +5,7 @@
  *   ADS_ID 가 비어 있으면 이 파일은 아무것도 불러오지도 보내지도 않는다(지금 상태).
  * 원칙: 이름 · 이메일 · 전화 같은 개인 정보는 보내지 않는다(전환이 일어났다는 사실과 종류만).
  *   포탈(/portal)과 보호자 동의 페이지(/camp-register/consent — 주소에 동의 토큰이 들어 있다)에서는 불러오지 않는다.
- *   구글에 보내는 페이지 주소에서는 ?쿼리와 #해시를 뺀다.
+ *   구글 태그는 페이지 주소를 쿼리째 보낸다(광고 클릭 식별자 gclid 가 그래야 이어진다). 그러니 주소에 토큰 · 개인 정보가 들어가는 페이지는 위 제외 목록에 넣을 것.
  *   구글 광고 설정의 '향상된 전환(자동)'은 켜지 말 것 — 켜면 구글 태그가 화면의 이메일·전화를 스스로 읽어 보낸다.
  * 페이지에서 쓰는 법: window.wolkoConversion('camp_register') — 함수가 아직 없을 수도 있으니 if (window.wolkoConversion) 로 감싼다.
  */
@@ -29,7 +29,7 @@
   s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(ADS_ID);
   document.head.appendChild(s);
   window.gtag('js', new Date());
-  window.gtag('config', ADS_ID, { page_location: location.origin + location.pathname });
+  window.gtag('config', ADS_ID);
 
   /** 전환 하나를 보낸다. 라벨이 없는 종류는 조용히 건너뛴다.
    *  신청 · 지원 · 문의는 성공할 때마다 센다(한 번 방문에 두 캠프를 신청할 수 있다). 후원 클릭만 페이지당 한 번. */
