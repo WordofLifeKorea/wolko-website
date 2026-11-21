@@ -20,7 +20,8 @@
 
 export const CHILD_PROTECTION = {
   id: 'childprotection',
-  version: '2026-11-v2',
+  version: '2026-11-v3',
+  perCamp: true,   // 모든 스태프 · 크루가 '참여하는 캠프마다' 새로 작성한다(2026-11-21) — 서명할 때 캠프를 고르고, 기록에 캠프가 남는다
   draft: false,   // 2026-11-21 '초안이지만 일단 공개' — 문구를 바꾸면 version 을 올려 예전 서명과 구분한다
   ko: {
     title: '아동보호 서약서',
@@ -42,6 +43,8 @@ export const CHILD_PROTECTION = {
       items: [
         { ko: '우리는 모든 아동·청소년이 신체적·정서적·성적 해악으로부터 안전할 권리가 있다고 믿습니다. 이 서약서는 월코 캠프의 모든 스태프와 크루가 반드시 지켜야 할 최소 기준입니다.',
           en: 'We believe every child and young person has the right to be safe from physical, emotional and sexual harm. This agreement sets the minimum standard that every WOLKO staff member and crew member must follow.' },
+        { ko: '저는 참여하는 캠프마다 이 서약서를 새로 작성합니다.',
+          en: 'I sign this agreement again for every camp I take part in.' },
         { ko: '저는 캠프 기간뿐 아니라 캠프 전후에도 이 기준을 지킵니다. 법이나 월코의 지침이 이 서약서보다 더 엄격하면 더 엄격한 쪽을 따릅니다.',
           en: 'I keep these standards not only during camp but also before and after it. If the law or WOLKO guidance is stricter than this agreement, I follow the stricter one.' },
       ],
@@ -160,7 +163,7 @@ export const CAMP_RULES = {
           en: 'Sexual abuse, sexual violence or sexual harassment.' },
         { ko: '다른 사람에게 폭력을 쓰거나 폭행·위협하는 경우.',
           en: 'Using violence against, assaulting or threatening another person.' },
-        { ko: '잘못된 신학이나 교리를 전파하는 경우. 월코 신앙고백서에 어긋저는 내용을 캠퍼, 스태프, 크루에게 가르치거나 퍼뜨리는 것을 말합니다. 질문하고 함께 배우는 것은 해당되지 않으며, 캠프 디렉터와 코디네이터가 함께 판단합니다.',
+        { ko: '잘못된 신학이나 교리를 전파하는 경우. 월코 신앙고백서에 어긋나는 내용을 캠퍼, 스태프, 크루에게 가르치거나 퍼뜨리는 것을 말합니다. 질문하고 함께 배우는 것은 해당되지 않으며, 캠프 디렉터와 코디네이터가 함께 판단합니다.',
           en: 'Spreading false theology or doctrine, meaning teaching or spreading to campers, staff or crew anything that contradicts the WOLKO Statement of Faith. Asking questions and learning together is not included. The Camp Director and the Coordinator decide together.' },
         { ko: '술이나 불법 약물을 하는 경우.',
           en: 'Using alcohol or illegal drugs.' },

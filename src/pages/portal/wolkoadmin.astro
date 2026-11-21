@@ -2142,7 +2142,8 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
     function agreementProgress(r) {
       if (!agreementStatus || !agreementStatus.required || !agreementStatus.required.length) return null;
       const signed = agreementStatus.signed[String(r.email || '').toLowerCase()] || [];
-      return { done: agreementStatus.required.filter(d => signed.includes(d.id)).length, total: agreementStatus.required.length };
+      // 캠프마다 쓰는 문서(아동보호 서약서)는 이 신청의 캠프에 대한 서명만 센다('문서@캠프id')
+      return { done: agreementStatus.required.filter(d => signed.includes(d.perCamp ? `${d.id}@${r.campId}` : d.id)).length, total: agreementStatus.required.length };
     }
     function staffStatusBadges(r) {
       let html = '';

@@ -148,7 +148,7 @@ import { OPEN_QUESTIONS } from '../functions/lib/agreementDocsExtra.js';
 test('세 서약서(신앙고백서 · 아동보호 서약서 · 필수 규칙)가 모두 공개 · 초안(draft) 표시를 하면 목록에서 빠지고 서명도 거절한다 · 신앙고백서 글 해시는 그대로', async () => {
   assert.deepEqual(docList().map((d) => d.id), ['faith', 'childprotection', 'rules'], '세 문서가 공개 페이지에 나온다');
   assert.ok(!DOCS.childprotection.draft && !DOCS.rules.draft && !DOCS.faith.draft);
-  assert.equal(await docHash(DOCS.faith), await docHash(DOCS.faith), '글 해시는 같은 글에서 늘 같다');
+  assert.match(await docHash(DOCS.faith), /^[0-9a-f]{64}$/);
   const t = await setup();
   // 초안으로 돌리면(draft: true) 목록에서 빠지고 서명도 받지 않는다
   DOCS.childprotection.draft = true;
@@ -164,7 +164,7 @@ test('세 서약서(신앙고백서 · 아동보호 서약서 · 필수 규칙)�
 
 test('아동보호 서약서: 본인 진술(유죄 판결 · 수사 · 재판 없음) 체크가 필수 — 없으면 400, 있으면 저장(declared:true)', async () => {
   const t = await setup();
-  const body = { ...good(), doc: 'childprotection', version: DOCS.childprotection.version };
+  const body = { ...good(), doc: 'childprotection', version: DOCS.childprotection.version, campId: 'camp-a' };
   const no = await t.call(signApi, 'POST', '/api/agreements/sign', { body });
   assert.equal(no.status, 400); assert.equal((await no.json()).field, 'declared');
   assert.equal((await t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...body, declared: 'true' } })).status, 400, '문자열 "true" 는 안 된다');
@@ -257,20 +257,25 @@ test('필수 서약서 = 공개된 문서 세 개(신앙고백서 · 아동보�
 
 test('서명 → 이메일별 작성 현황(signedMap) · 현재 버전만 센다 · 미작성 문서 목록(missingDocs)', async () => {
   const t = await setup();
-  const sign = (doc, email) => t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), doc, version: DOCS[doc].version, email, declared: true } });
+  const sign = (doc, email, campId = 'camp-a') => t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), doc, version: DOCS[doc].version, email, declared: true, campId } });
   assert.equal((await sign('faith', 'A@x.org')).status, 200);
   let map = await signedMap(t.env);
   assert.deepEqual(map['a@x.org'], ['faith']);
-  assert.deepEqual(missingDocs(map, 'a@x.org').map((d) => d.id), ['childprotection', 'rules'], '아동보호 서약서와 필수 규칙이 남았다');
-  assert.deepEqual(missingDocs(map, 'nobody@x.org').map((d) => d.id), ['faith', 'childprotection', 'rules']);
-  assert.equal((await sign('childprotection', 'a@x.org')).status, 200);
+  assert.deepEqual(missingDocs(map, 'a@x.org', 'camp-a').map((d) => d.id), ['childprotection', 'rules'], '아동보호 서약서와 필수 규칙이 남았다');
+  assert.deepEqual(missingDocs(map, 'nobody@x.org', 'camp-a').map((d) => d.id), ['faith', 'childprotection', 'rules']);
+  assert.equal((await sign('childprotection', 'a@x.org', 'camp-a')).status, 200);
   assert.equal((await sign('rules', 'a@x.org')).status, 200);
   map = await signedMap(t.env);
-  assert.deepEqual(missingDocs(map, 'A@X.ORG').map((d) => d.id), [], '대소문자 상관없이 모두 작성');
+  assert.deepEqual(missingDocs(map, 'A@X.ORG', 'camp-a').map((d) => d.id), [], '대소문자 상관없이 모두 작성');
+  // 아동보호 서약서는 캠프마다 — 다른 캠프에는 다시 작성해야 한다(신앙고백서 · 필수 규칙은 그대로 인정)
+  assert.deepEqual(missingDocs(map, 'a@x.org', 'camp-b').map((d) => d.id), ['childprotection'], '다른 캠프는 아동보호 서약서만 다시');
+  assert.ok(map['a@x.org'].includes('childprotection@camp-a') && !map['a@x.org'].includes('childprotection'));
+  assert.equal((await sign('childprotection', 'a@x.org', 'camp-b')).status, 200);
+  assert.deepEqual(missingDocs(await signedMap(t.env), 'a@x.org', 'camp-b').map((d) => d.id), [], '캠프 b 도 작성하면 완료');
   // 문서 버전이 바뀌면 예전 서명은 세지 않는다
   const [[key]] = [...t.kv.store.entries()].filter(([k, v]) => k.includes(':rules:') && v.metadata?.e === 'a@x.org');
   const old = t.kv.store.get(key); t.kv.store.set(key, { value: old.value, metadata: { ...old.metadata, v: '1999-01-v1' } });
-  assert.deepEqual(missingDocs(await signedMap(t.env), 'a@x.org').map((d) => d.id), ['rules']);
+  assert.deepEqual(missingDocs(await signedMap(t.env), 'a@x.org', 'camp-b').map((d) => d.id), ['rules']);
 });
 
 test('서약서는 캠프 트레이닝 위크에 작성한다 — 수락 조건이 아니다 · 현황 API 는 관리자만(작성 현황 표시용)', async () => {
@@ -309,8 +314,50 @@ test('서명 페이지: 서약서를 한 화면에 늘어놓지 않고, 목록�
   assert.match(page, /#doc-/, '주소의 #doc-… 로 바로 열 수 있다'); assert.match(page, /data-next/); assert.match(page, /data-back/);
   for (const d of [DOCS.faith, DOCS.childprotection, DOCS.rules]) {
     const ko = JSON.stringify(d.ko) + JSON.stringify(d.sections || d.items) + JSON.stringify(d.declaration || {});
-    assert.ok(!/나는 |내가 |나에게|나에 대한|내 문화|내 개인/.test(ko), `${d.id}: "나는" 대신 "저는"`);
+    assert.ok(!/(^|[^가-힣])(나는|내가|나에게|나에 대한|내 문화|내 개인)/.test(ko), `${d.id}: "나는" 대신 "저는" (낱말 안의 "…나는" 은 그대로)`);
     assert.ok(/저는|제가/.test(ko), `${d.id}: 저는 / 제가 를 쓴다`);
   }
   assert.match(DOCS.faith.version, /v2$/, '문구를 고쳤으니 문서 버전을 올렸다');
+});
+
+test('아동보호 서약서는 참여하는 캠프마다 작성: 캠프 필수 · 알 수 없는 캠프는 거절 · 기록에 캠프가 남는다 · 관리자 목록/CSV 에 캠프 열', async () => {
+  assert.equal(DOCS.childprotection.perCamp, true);
+  assert.ok(!DOCS.faith.perCamp && !DOCS.rules.perCamp, '신앙고백서 · 필수 규칙은 캠프마다가 아니다');
+  assert.ok(JSON.stringify(DOCS.childprotection.sections).includes('참여하는 캠프마다 이 서약서를 새로 작성합니다'), '문서에도 캠프마다 새로 작성한다고 적혀 있다');
+  const t = await setup();
+  const base = { ...good(), doc: 'childprotection', version: DOCS.childprotection.version, declared: true };
+  const post = async (patch) => { const r = await t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...base, ...patch } }); return { status: r.status, ...(await r.json()) }; };
+  assert.equal((await post({})).field, 'campId', '캠프를 안 고르면 거절');
+  assert.equal((await post({ campId: 'bad id!' })).field, 'campId');
+  // 캠프 일정을 읽을 수 있을 때는 목록에 없는 캠프를 거절한다
+  t.env.ASSETS = { fetch: async () => new Response(JSON.stringify([{ id: '2027-wolko-winter', titleKo: '2027 겨울 월코 영어 캠프', titleEn: 'Winter', startDate: '2027-01-11', endDate: '2027-01-16' }])) };
+  const { resetScheduleCache } = await import('../functions/lib/gospelCamps.js'); resetScheduleCache();
+  assert.equal((await post({ campId: 'no-such-camp' })).field, 'campId', '일정에 없는 캠프는 거절');
+  const ok = await post({ campId: '2027-wolko-winter' });
+  assert.equal(ok.status, 200);
+  const [[, val]] = [...t.kv.store.entries()].filter(([k]) => k.startsWith('agree:v1:childprotection:'));
+  const rec = JSON.parse(val.value);
+  assert.equal(rec.campId, '2027-wolko-winter'); assert.equal(rec.campName, '2027 겨울 월코 영어 캠프'); assert.equal(val.metadata.c, '2027-wolko-winter');
+  // 다른 서약서(신앙고백서)는 캠프를 요구하지도 기록하지도 않는다
+  assert.equal((await t.call(signApi, 'POST', '/api/agreements/sign', { body: good() })).status, 200);
+  const faith = [...t.kv.store.entries()].find(([k]) => k.startsWith('agree:v1:faith:'))[1];
+  assert.ok(!('campId' in JSON.parse(faith.value)) && !('c' in faith.metadata));
+  // 관리자 목록 · CSV
+  const list = await (await t.call(adminApi, 'GET', '/api/portal/agreements', { token: t.admin })).json();
+  assert.ok(list.items.some((i) => i.doc === 'childprotection' && i.camp === '2027-wolko-winter'));
+  const csv = await (await t.call(adminApi, 'GET', '/api/portal/agreements?format=csv', { token: t.admin })).text();
+  assert.ok(csv.split('\r\n')[0].includes('캠프') && csv.includes('2027-wolko-winter'));
+  resetScheduleCache();
+});
+
+test('서명 페이지: 캠프 선택(아동보호 서약서) · 다른 캠프로 다시 작성 · 서약서가 열릴 때 초점 · 한·영 캠프 이름', () => {
+  const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
+  assert.match(page, /data-camp-select/); assert.match(page, /name="campId"/); assert.match(page, /function fillCampSelects\(/);
+  assert.match(page, /data-again/); assert.match(page, /\?camp=|QS\.get\('camp'\)/);
+  assert.match(page, /hashchange/); assert.match(page, /h\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(page, /\.sa-need \{ scroll-margin-top: 96px; \}/);
+  const fix = readFileSync(new URL('../functions/lib/agreementDocsExtra.js', import.meta.url), 'utf8');
+  assert.ok(!fix.includes('어긋저는') && fix.includes('어긋나는'), '"나는"→"저는" 치환이 낱말 안(어긋나는)을 건드리지 않았다');
+  const admin = readFileSync(new URL('../src/pages/portal/wolkoadmin.astro', import.meta.url), 'utf8');
+  assert.match(admin, /d\.perCamp \? `\$\{d\.id\}@\$\{r\.campId\}` : d\.id/, '관리자 목록의 서약서 n/m 은 캠프별');
 });

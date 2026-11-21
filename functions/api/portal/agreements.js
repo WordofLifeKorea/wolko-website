@@ -28,7 +28,7 @@ async function listRows(env, doc = '') {
     const res = await env.CAMP_KV.list({ prefix, cursor, limit: 1000 });
     for (const k of res.keys || []) {
       const m = k.metadata || {};
-      rows.push({ key: k.name, code: k.name.slice(k.name.lastIndexOf(':') + 1), doc: m.d || k.name.split(':')[2] || '', version: m.v || '', role: m.r || '', name: m.n || '', email: m.e || '', phone: m.p || '', t: Number(m.t) || 0 });
+      rows.push({ key: k.name, code: k.name.slice(k.name.lastIndexOf(':') + 1), doc: m.d || k.name.split(':')[2] || '', version: m.v || '', role: m.r || '', name: m.n || '', email: m.e || '', phone: m.p || '', camp: m.c || '', t: Number(m.t) || 0 });
     }
     if (res.list_complete || !res.cursor) { complete = true; break; }
     cursor = res.cursor;
@@ -61,11 +61,11 @@ export async function onRequestGet({ env, request }) {
   }
   const { rows, truncated } = await listRows(env, url.searchParams.get('doc') || '');
   if (url.searchParams.get('format') === 'csv') {
-    const head = ['서명 시각(한국시간)', '문서', '문서 버전', '구분', '이름', '이메일', '휴대폰', '확인번호'];
+    const head = ['서명 시각(한국시간)', '문서', '문서 버전', '캠프', '구분', '이름', '이메일', '휴대폰', '확인번호'];
     const lines = [head.map(csvCell).join(',')];
     // 휴대폰은 엑셀이 숫자로 읽어 앞의 0을 지우거나 '+'를 수식으로 읽지 않게 글자 그대로 보이는 수식(="…")으로 쓴다(검사를 통과한 숫자 · 기호만 들어 있다)
     const phoneCell = (p) => (p && /^[+0-9()\-\s.]{1,30}$/.test(p) ? '"=""' + p + '"""' : csvCell(p));
-    for (const r of rows) lines.push([csvCell(kstDateTime(r.t)), csvCell(DOCS[r.doc]?.ko.title || r.doc), csvCell(r.version), csvCell(ROLE_LABEL[r.role]?.ko || r.role), csvCell(r.name), csvCell(r.email), phoneCell(r.phone), csvCell(r.code)].join(','));
+    for (const r of rows) lines.push([csvCell(kstDateTime(r.t)), csvCell(DOCS[r.doc]?.ko.title || r.doc), csvCell(r.version), csvCell(r.camp), csvCell(ROLE_LABEL[r.role]?.ko || r.role), csvCell(r.name), csvCell(r.email), phoneCell(r.phone), csvCell(r.code)].join(','));
     return new Response('﻿' + lines.join('\r\n') + '\r\n', { headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Cache-Control': 'private, no-store', 'Content-Disposition': 'attachment; filename="wolko-agreements.csv"' } });
   }
   return Response.json({ items: rows.map(({ key, ...r }) => r), truncated, docs: Object.values(DOCS).map((d) => ({ id: d.id, version: d.version, title: d.ko.title, draft: !!d.draft })) }, { headers: CORS });

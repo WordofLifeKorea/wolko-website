@@ -110,9 +110,12 @@ export function checkSignature(value) {
 /** 지금 작성해야 하는 문서 = 공개된(draft 아닌) 문서. 초안 문서는 공개로 바뀌는 순간부터 필수가 된다 */
 export const requiredDocs = () => docList();
 
+/** 서명 현황의 키: 캠프마다 쓰는 문서(perCamp)는 'childprotection@캠프id', 그 밖의 문서는 문서 id */
+export const signedKey = (doc, campId) => (doc.perCamp ? `${doc.id}@${campId || ''}` : doc.id);
+
 /**
- * 이메일별로 '지금 버전'에 서명한 필수 문서 id 목록 — { 'a@b.org': ['faith', 'rules'] }
- * 문서 버전이 바뀌면 예전 서명은 세지 않는다(다시 읽고 서명해야 한다).
+ * 이메일별로 '지금 버전'에 서명한 필수 문서 목록 — { 'a@b.org': ['faith', 'rules', 'childprotection@2027-wolko-winter'] }
+ * 문서 버전이 바뀌면 예전 서명은 세지 않는다(다시 읽고 서명해야 한다). 캠프마다 쓰는 문서는 캠프별로 센다.
  */
 export async function signedMap(env) {
   const map = {};
@@ -124,7 +127,8 @@ export async function signedMap(env) {
         const m = k.metadata || {};
         if (m.v !== doc.version || !m.e) continue;
         const email = String(m.e).toLowerCase();
-        (map[email] ||= new Set()).add(doc.id);
+        if (doc.perCamp && !m.c) continue;   // 캠프가 적히지 않은 서명은 캠프별 문서로 세지 않는다
+        (map[email] ||= new Set()).add(signedKey(doc, m.c));
       }
       if (res.list_complete || !res.cursor) break;
       cursor = res.cursor;
@@ -133,5 +137,5 @@ export async function signedMap(env) {
   return Object.fromEntries(Object.entries(map).map(([e, set]) => [e, [...set]]));
 }
 
-/** 이 이메일이 아직 작성하지 않은 필수 문서들 */
-export const missingDocs = (signed, email) => requiredDocs().filter((d) => !(signed?.[String(email || '').toLowerCase()] || []).includes(d.id));
+/** 이 이메일이 (이 캠프에 대해) 아직 작성하지 않은 필수 문서들 — campId 는 캠프마다 쓰는 문서에만 쓴다 */
+export const missingDocs = (signed, email, campId = '') => requiredDocs().filter((d) => !(signed?.[String(email || '').toLowerCase()] || []).includes(signedKey(d, campId)));
