@@ -123,7 +123,7 @@ export const CHILD_PROTECTION = {
 
 export const CAMP_RULES = {
   id: 'rules',
-  version: '2026-11-v5',   // v5: 항목에서 '저는'을 빼고 '~에 동의합니다' 투로 · 장신구 문구 교체 · v3: 맨 앞에 '반복적으로 어기면 경고 또는 제명' 문장 · v4: '성인 스태프 귀가' 항목을 뺐고, 경고 절차를 포함해 '경고와 제명' 설명을 1번 하나로 합치고 '중도 하차'를 모두 '제명'으로 통일
+  version: '2026-11-v6',   // v6: 1번은 '반복적으로 어기면 경고 또는 제명' 한 문장만(경고 절차 · 예외 설명은 문서에서 뺐다) · 교제 문구 '어떠한 경우에도' · 스태프·크루 사이 문구에 '준비기간' 추가 · 휴대폰 항목을 '최대한 지양' + 사역에 필요한 사용은 예외로 · 경찰 보고 문구를 '아동보호 서약과 관련된 문제를 야기할 경우 필요에 따라 보고할 수 있습니다'로 · v5: 항목에서 '저는'을 빼고 '~에 동의합니다' 투로 · 장신구 문구 교체 · v3: 맨 앞에 '반복적으로 어기면 경고 또는 제명' 문장 · v4: '성인 스태프 귀가' 항목을 뺐고, 경고 절차를 포함해 '경고와 제명' 설명을 1번 하나로 합치고 '중도 하차'를 모두 '제명'으로 통일
   draft: false,   // 2026-11-21 디렉터 결정으로 공개 — 스태프 · 크루가 작성해야 하는 필수 서약서
   ko: {
     title: '월코 캠프 필수 규칙',
@@ -139,8 +139,8 @@ export const CAMP_RULES = {
     {
       ko: '경고와 제명', en: 'Warnings and removal',
       items: [
-        { ko: '아래 캠프 규칙을 반복적으로 어기면 경고를 받거나 월코 캠프에서 제명당할 수 있습니다. 캠프 디렉터와 코디네이터가 경고를 줍니다. 경고를 줄 때는 이유를 설명하고, 경고 기록지에 날짜와 내용을 적어 확인 서명을 받습니다. 이의가 있으면 24시간 안에 디렉터에게 말할 수 있습니다. 경고가 2회 쌓이면 캠프에서 제명되며, 경고는 한 캠프 안에서만 쌓입니다. 경고 기록지는 캠프가 끝나면 폐기합니다. 이 경고와 제명 절차는 캠프 디렉터, 코디네이터, 풀타임 선교사에게는 적용하지 않습니다. 아동보호 서약서와 법에 따른 신고·조치는 모두에게 똑같이 적용됩니다.',
-          en: 'If I repeatedly break the camp rules below, I may receive a warning or be removed from WOLKO camps. The Camp Director and the Coordinator give me a warning. They explain the reason, write the date and details on a warning record, and ask for a confirming signature. If I disagree, I can tell the Director within 24 hours. When two warnings have been given, I am removed from the camp; warnings add up only within one camp. Warning records are destroyed when the camp ends. This warning and removal procedure does not apply to the Camp Director, the Coordinator or full-time missionaries. The Child Protection Agreement and reporting and measures required by law apply to everyone equally.' },
+        { ko: '아래 캠프 규칙을 반복적으로 어기면 경고를 받거나 월코 캠프에서 제명당할 수 있습니다.',
+          en: 'If I repeatedly break the camp rules below, I may receive a warning or be removed from WOLKO camps.' },
       ],
     },
     {
@@ -160,8 +160,8 @@ export const CAMP_RULES = {
           en: 'Committing a crime such as theft.' },
         { ko: '월코에 허위 서류를 내거나 사실과 다르게 진술한 경우.',
           en: 'Submitting false documents to WOLKO or making false statements.' },
-        { ko: '위의 경우 월코는 아동보호 서약서와 법에 따라 필요하면 경찰에 신고합니다.',
-          en: 'In these cases WOLKO reports to the police when needed, in line with the Child Protection Agreement and the law.' },
+        { ko: '특히 아동보호 서약과 관련된 문제를 야기할 경우 필요에 따라 경찰에 보고할 수 있습니다.',
+          en: 'In particular, if I cause a problem related to the Child Protection Agreement, WOLKO may report it to the police as needed.' },
       ],
     },
     {
@@ -174,17 +174,17 @@ export const CAMP_RULES = {
     {
       ko: '이성 교제', en: 'Dating and romantic relationships',
       items: [
-        { ko: '캠퍼와 교제하지 않는 것에 동의합니다. 이는 어떤 경우에도 해당합니다.',
-          en: 'I agree not to date campers, under any circumstances.' },
-        { ko: '캠프 기간에 스태프·크루 사이에서도 연인 같은 행동(손잡기, 포옹, 단둘이 있기)을 하지 않는 것에 동의합니다. 부부와 가족은 예외입니다.',
-          en: 'I agree not to show romantic behavior (holding hands, hugging, being alone together) during camp, even with other staff or crew. Married couples and family members are the exception.' },
+        { ko: '어떠한 경우에도 캠퍼와 교제하지 않는 것에 동의합니다.',
+          en: 'I agree not to date campers under any circumstances.' },
+        { ko: '캠프 기간 및 준비기간에 스태프·크루 사이에서도 연인 같은 행동(손잡기, 포옹, 단둘이 있기)을 하지 않는 것에 동의합니다. 부부와 가족은 예외로 합니다.',
+          en: 'I agree not to show romantic behavior (holding hands, hugging, being alone together) during camp and the preparation period, even with other staff or crew. Married couples and family members are the exception.' },
       ],
     },
     {
       ko: '휴대폰', en: 'Mobile phones',
       items: [
-        { ko: '사역 시간에 개인 통화, SNS, 게임을 하지 않는 것에 동의합니다. 사역에 필요한 연락과 공식 방법의 촬영은 예외입니다.',
-          en: 'I agree not to make personal calls or use social media or games during ministry time. Contact needed for the ministry and photos taken in the official way are the exception.' },
+        { ko: '캠프 기간 동안 휴대폰 사용, SNS, 게임을 최대한 지양하는 것에 동의합니다. 캠프 사역에 필요한 휴대폰 및 전자기기 사용은 예외로 간주합니다.',
+          en: 'I agree to avoid using my phone, social media and games as much as possible during camp. Phone and electronic device use needed for the camp ministry is considered an exception.' },
       ],
     },
     {
