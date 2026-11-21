@@ -13,14 +13,20 @@ const purposes = [
     ko: '캠프 신청 (개인)', en: 'Camp registration (individual)',
     whyKo: '캠프 신청 접수와 안내, 참가비 · 환불 처리, 캠프 운영과 안전 관리',
     whyEn: 'Receiving and confirming registrations, fees and refunds, running the camp safely',
-    itemsKo: '필수: 캠퍼 이름, 연락처, 성별, 생년월일, 이메일, 환불 계좌(은행 · 예금주 · 계좌번호) / 선택: 소속 교회, 학교, 비상연락처, 할인 해당 여부, 함께 참여하는 형제 · 친구 이름, 특이사항(건강 · 알레르기 · 복용약 등)',
-    itemsEn: 'Required: camper name, phone, gender, date of birth, email, refund account (bank, holder, number) / Optional: church, school, emergency contact, discount eligibility, siblings or friends attending, notes (health, allergies, medication, etc.)',
+    itemsKo: '필수: 캠퍼 이름, 연락처, 성별, 생년월일, 이메일, 환불 계좌(은행 · 예금주 · 계좌번호), 사진 · 영상 공유 동의 여부 / 선택: 학년, 소속 교회, 학교, 비상연락처, 할인 해당 여부, 함께 참여하는 형제 · 친구 이름, 알게 된 경로, 특이사항(건강 · 알레르기 · 복용약 등)',
+    itemsEn: 'Required: camper name, phone, gender, date of birth, email, refund account (bank, holder, number), whether you agree to photo / video sharing / Optional: grade, church, school, emergency contact, discount eligibility, siblings or friends attending, how you heard of us, notes (health, allergies, medication, etc.)',
   },
   {
     ko: '캠프 신청 (교회 · 단체)', en: 'Camp registration (church or group)',
     whyKo: '단체 신청 접수와 안내', whyEn: 'Receiving and confirming group registrations',
-    itemsKo: '담당자 이름, 연락처, 이메일, 소속 교회 · 단체, 참여 인원, 참가 학생 명단, 전달 사항, 환불 계좌',
-    itemsEn: 'Contact person name, phone, email, church or group, number of participants, participant list, notes, refund account',
+    itemsKo: '담당자 이름, 연락처, 이메일, 소속 교회 · 단체, 참여 인원, 참가 학생 명단(이름 · 성별 · 생년월일), 전달 사항, 환불 계좌, 알게 된 경로, 사진 · 영상 공유 동의 여부',
+    itemsEn: 'Contact person name, phone, email, church or group, number of participants, participant list (name, gender, date of birth), notes, refund account, how you heard of us, whether you agree to photo / video sharing',
+  },
+  {
+    ko: '캠프 사진 · 영상 공유 (선택 동의)', en: 'Camp photo and video sharing (with consent)',
+    whyKo: '동의하신 경우에 한해 캠프 중 찍은 사진 · 영상을 네이버 카페와 유튜브에 올려 참가자와 가족이 볼 수 있게 함', whyEn: 'Only if you agree, photos and videos taken at camp are posted on Naver Cafe and YouTube so campers and families can see them',
+    itemsKo: '캠프 중 촬영한 참가자의 사진 · 영상. 신청서에서 “동의 안 함”을 고르시면 올리지 않으며, 이 경우 캠프 중 아이의 사진 · 영상을 받아 보실 수 없습니다.',
+    itemsEn: 'Photos and videos of participants taken during camp. If you choose “Do not agree” on the form, they are not posted, and you will not be able to receive photos and videos of your child from camp.',
   },
   {
     ko: '캠프 스태프 · 크루 지원', en: 'Camp staff and crew applications',
@@ -31,8 +37,8 @@ const purposes = [
   {
     ko: '섬김(사역자 · 스태프) 지원', en: 'Ministry staff applications',
     whyKo: '사역자 · 스태프 선발과 추천서 요청', whyEn: 'Selecting ministry staff and requesting references',
-    itemsKo: '지원서에 적은 인적 사항 · 경력 · 신앙 이력, 추천인 이름 · 이메일 · 추천서 내용. 건강 등 민감정보는 따로 동의를 받고 분리 · 암호화해 저장합니다.',
-    itemsEn: 'Personal details, background and faith history written in the application, referee names, emails and reference answers. Sensitive information such as health is collected only with separate consent and stored separately and encrypted.',
+    itemsKo: '지원서에 적은 인적 사항 · 경력 · 신앙 이력, 추천인 이름 · 연락처 · 이메일 · 추천서 내용, 지원서 작성용 임시 계정(이메일 · 해시 처리한 비밀번호). 민감정보(건강 · 알레르기 · 이혼 · 형사 · 학대 관련 사항)는 일반 동의와 별도로 동의를 받고, 다른 항목과 분리해 저장하며 알림 메일 · 문자 · 외부 AI 서비스로 내보내지 않습니다. 임시 계정은 마지막 로그인 후 30일이 지나면 삭제합니다.',
+    itemsEn: 'Personal details, background and faith history written in the application; referee names, contact details, emails and reference answers; a temporary account for completing the form (email and a hashed password). Sensitive information (health, allergies, divorce, criminal record, abuse-related matters) is collected only with separate consent, stored apart from other items, and never sent out through notification emails, text messages or external AI services. Temporary accounts are deleted 30 days after the last sign-in.',
   },
   {
     ko: '이벤트 참석 신청', en: 'Event RSVP',
@@ -48,8 +54,9 @@ const purposes = [
 
 const processors = [
   { name: 'Cloudflare, Inc.', jobKo: '홈페이지 운영, 신청 자료 저장', jobEn: 'Website hosting and storing submissions', where: '미국 등 / USA and others', itemsKo: '위 표의 신청 · 지원 · 문의 정보', itemsEn: 'Information in the table above' },
-  { name: 'Google LLC', jobKo: '신청 자료 관리(구글 스프레드시트), 광고 효과 측정(구글 광고)', jobEn: 'Managing submissions (Google Sheets), measuring ad results (Google Ads)', where: '미국 / USA', itemsKo: '신청 · 지원 정보 / 쿠키 · 접속 기록', itemsEn: 'Registration and application details / cookies and visit logs' },
-  { name: 'Resend, Inc.', jobKo: '접수 확인 · 안내 이메일 발송', jobEn: 'Sending confirmation and notice emails', where: '미국 / USA', itemsKo: '이름, 이메일, 안내 내용', itemsEn: 'Name, email, message content' },
+  { name: 'Google LLC', jobKo: '신청 자료 관리(구글 스프레드시트), 접수 알림 메일 수신(Gmail), 광고 효과 측정(구글 광고), 사진 · 영상 공유(유튜브)', jobEn: 'Managing submissions (Google Sheets), receiving submission notices (Gmail), measuring ad results (Google Ads), photo / video sharing (YouTube)', where: '미국 / USA', itemsKo: '신청 · 지원 · 문의 정보 / 쿠키 · 접속 기록 / 동의하신 캠프 영상', itemsEn: 'Registration, application and enquiry details / cookies and visit logs / camp videos you agreed to share' },
+  { name: 'Resend, Inc.', jobKo: '접수 확인 · 안내 이메일, 협회 담당자용 접수 알림 이메일 발송', jobEn: 'Sending confirmation emails and submission-notice emails to WOLKO staff', where: '미국 / USA', itemsKo: '신청 · 지원 · 문의 · 참석 접수 때 적은 내용(접수 알림 메일에는 접수 내용이 담깁니다)', itemsEn: 'What you submit in registrations, applications, enquiries and RSVPs (notice emails contain the submission details)' },
+  { name: '네이버 카페 · Naver Cafe', jobKo: '동의하신 캠프 사진 · 영상 게시', jobEn: 'Posting camp photos and videos you agreed to share', where: '대한민국 / Korea', itemsKo: '동의하신 캠프 사진 · 영상', itemsEn: 'Camp photos and videos you agreed to share' },
   { name: 'Anthropic PBC', jobKo: '신청서에 글로 쓴 답의 한 · 영 번역, 캠프 운영 업무 보조', jobEn: 'Korean–English translation of written answers, camp-team work assistance', where: '미국 / USA', itemsKo: '신청 · 지원서의 글로 쓴 답(메모 · 교회 · 학교 · 자기소개 등)', itemsEn: 'Written answers in forms (notes, church, school, self-introduction, etc.)' },
   { name: '(주)솔라피 SOLAPI', jobKo: '알림톡 · 문자 발송', jobEn: 'Sending KakaoTalk notices and text messages', where: '대한민국 / Korea', itemsKo: '이름, 연락처, 안내 내용', itemsEn: 'Name, phone, message content' },
 ];
@@ -107,8 +114,8 @@ const processors = [
 
     <h2><span class="wl-ko">1. 처리하는 개인정보와 목적 · 보유 기간</span><span class="wl-en">1. What we collect, why, and how long we keep it</span></h2>
     <p>
-      <span class="wl-ko">모든 항목의 보유 기간은 <strong>{RETAIN_KO}</strong>입니다. 법령에 따라 보관해야 하는 정보(예: 후원 · 회계 기록)는 그 기간 동안 보관합니다.</span>
-      <span class="wl-en">For every item below, the retention period is: <strong>{RETAIN_EN}</strong>. Information that the law requires us to keep (for example, donation and accounting records) is kept for the required period.</span>
+      <span class="wl-ko">보유 기간은 <strong>{RETAIN_KO}</strong>입니다. 다만 섬김(사역자 · 스태프) 지원서는 거절한 신청서는 결정 후 30일, 보류한 신청서는 12개월이 지나면 추천서 답변까지 자동으로 삭제합니다. 법령에 따라 보관해야 하는 정보(예: 후원 · 회계 기록)는 그 기간 동안 보관합니다.</span>
+      <span class="wl-en">The retention period is: <strong>{RETAIN_EN}</strong>. The exception is ministry staff applications: a rejected application is deleted 30 days after the decision and an application put on hold is deleted after 12 months, together with the reference answers. Information that the law requires us to keep (for example, donation and accounting records) is kept for the required period.</span>
     </p>
     <div class="pv-items">
       {purposes.map((p) => (
@@ -126,9 +133,9 @@ const processors = [
         <h3><span class="wl-ko">홈페이지 이용 기록 (자동 수집)</span><span class="wl-en">Website usage (collected automatically)</span></h3>
         <dl>
           <dt><span class="wl-ko">목적</span><span class="wl-en">Purpose</span></dt>
-          <dd><span class="wl-ko">구글 광고 효과 측정</span><span class="wl-en">Measuring Google Ads results</span></dd>
+          <dd><span class="wl-ko">구글 광고 효과 측정, 홈페이지 보안 · 남용 방지</span><span class="wl-en">Measuring Google Ads results, website security and abuse prevention</span></dd>
           <dt><span class="wl-ko">항목</span><span class="wl-en">Items</span></dt>
-          <dd><span class="wl-ko">쿠키, 방문한 페이지, 광고 클릭 식별자, 기기 · 브라우저 정보</span><span class="wl-en">Cookies, pages visited, ad click identifier, device and browser information</span></dd>
+          <dd><span class="wl-ko">쿠키, 방문한 페이지, 광고 클릭 식별자, 기기 · 브라우저 정보, 접속 IP 주소(과도한 요청을 막기 위한 횟수 제한에도 사용)</span><span class="wl-en">Cookies, pages visited, ad click identifier, device and browser information, IP address (also used to limit excessive requests)</span></dd>
           <dt><span class="wl-ko">보유</span><span class="wl-en">Retention</span></dt>
           <dd><span class="wl-ko">구글 정책에 따름 (광고 클릭 후 최대 90일 동안 전환을 측정)</span><span class="wl-en">According to Google’s policy (conversions are measured for up to 90 days after an ad click)</span></dd>
         </dl>
@@ -137,8 +144,8 @@ const processors = [
 
     <h2><span class="wl-ko">2. 미성년자의 개인정보</span><span class="wl-en">2. Children and minors</span></h2>
     <p>
-      <span class="wl-ko">월코는 만 14세 미만 아동을 포함한 미성년자가 캠프 · 행사에 참여할 때 법정대리인(부모 등 보호자)의 동의를 받습니다. 법정대리인은 아동의 개인정보에 대해 열람 · 정정 · 삭제 · 처리정지를 요청할 수 있습니다.</span>
-      <span class="wl-en">When minors, including children under 14, take part in a camp or event, WOLKO obtains the consent of a parent or legal guardian. Guardians may ask to see, correct, delete or stop the processing of their child’s information.</span>
+      <span class="wl-ko">월코는 만 14세 미만 아동을 포함한 미성년자가 캠프 · 행사에 참여할 때 법정대리인(부모 등 보호자)의 동의를 받고 진행합니다. 캠프 크루에 지원하는 미성년자는 신청서와 별도로 보호자 동의 절차(보호자에게 보내는 동의 링크)를 거칩니다. 법정대리인은 아동의 개인정보에 대해 열람 · 정정 · 삭제 · 처리정지를 요청할 수 있습니다.</span>
+      <span class="wl-en">When minors, including children under 14, take part in a camp or event, WOLKO proceeds with the consent of a parent or legal guardian. Minors applying for Camp Crew also go through a separate guardian-consent step (a consent link sent to the guardian). Guardians may ask to see, correct, delete or stop the processing of their child’s information.</span>
     </p>
 
     <h2><span class="wl-ko">3. 제3자 제공</span><span class="wl-en">3. Sharing with third parties</span></h2>
@@ -191,8 +198,8 @@ const processors = [
     <h2><span class="wl-ko">8. 안전성 확보 조치</span><span class="wl-en">8. How we keep it safe</span></h2>
     <ul>
       <li><span class="wl-ko">신청 자료는 암호화된 연결(HTTPS)로 전송합니다.</span><span class="wl-en">Submissions are sent over an encrypted connection (HTTPS).</span></li>
-      <li><span class="wl-ko">신청 자료는 권한을 받은 직원만 로그인해 볼 수 있습니다.</span><span class="wl-en">Only authorised staff can sign in to see submissions.</span></li>
-      <li><span class="wl-ko">민감정보와 추천서는 분리해 암호화 저장합니다.</span><span class="wl-en">Sensitive information and references are stored separately and encrypted.</span></li>
+      <li><span class="wl-ko">직원용 포탈은 권한을 받은 직원만 로그인해 볼 수 있습니다. 접수 알림 이메일은 협회 담당자의 공용 이메일로 받고, 신청 자료는 구글 스프레드시트로도 관리하며, 이 자료들은 협회가 지정한 담당자만 열람하도록 관리합니다.</span><span class="wl-en">The staff portal can be opened only by signed-in staff with permission. Submission-notice emails go to a shared WOLKO staff mailbox and submissions are also kept in a Google spreadsheet; access to these is limited to staff WOLKO has designated.</span></li>
+      <li><span class="wl-ko">섬김 지원서의 민감정보는 다른 항목과 분리해 저장하고, 알림 메일 · 문자 · 외부 AI 서비스로 내보내지 않습니다.</span><span class="wl-en">Sensitive information in ministry staff applications is stored apart from other items and is never sent out through notification emails, text messages or external AI services.</span></li>
     </ul>
 
     <h2><span class="wl-ko">9. 개인정보 보호책임자</span><span class="wl-en">9. Privacy officer</span></h2>
