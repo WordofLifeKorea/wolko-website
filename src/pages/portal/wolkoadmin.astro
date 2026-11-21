@@ -3370,7 +3370,10 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         const me = await res.json();
         setCanProcess(!!me.isAccountant);
         if (canAcceptStaff !== !!me.canAcceptStaff) { canAcceptStaff = !!me.canAcceptStaff; try { renderStaffTable(); } catch (e) {} }
-        if (canAcceptStaff) loadAgreementStatus();
+        if (canAcceptStaff) {
+          loadAgreementStatus();
+          if (!window.__agreementFocusBound) { window.__agreementFocusBound = true; window.addEventListener('focus', () => { if (canAcceptStaff) loadAgreementStatus(); }); }   // 서명이 계속 들어오는 트레이닝 위크: 이 탭으로 돌아오면 작성 현황을 다시 불러온다
+        }
       } catch (e) {}
     }
     async function depositReg(regId, campId) {

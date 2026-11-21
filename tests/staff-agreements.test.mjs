@@ -145,20 +145,33 @@ test('공개 서명 페이지: 검색 제외 · 신앙고백서 11항목 · 서�
 import { docList, docSections } from '../functions/lib/staffAgreements.js';
 import { OPEN_QUESTIONS } from '../functions/lib/agreementDocsExtra.js';
 
-test('초안 문서(아동보호 서약서): 공개 목록에 나오지 않고 서명도 받지 않는다 · 신앙고백서는 그대로(필수 규칙은 공개됨)', async () => {
-  assert.deepEqual(docList().map((d) => d.id), ['faith', 'rules'], '확정 전 문서(아동보호 서약서)는 공개 페이지 목록에 없다');
-  assert.deepEqual(docList({ includeDrafts: true }).map((d) => d.id), ['faith', 'childprotection', 'rules']);
-  assert.ok(DOCS.childprotection.draft && !DOCS.rules.draft && !DOCS.faith.draft);
+test('세 서약서(신앙고백서 · 아동보호 서약서 · 필수 규칙)가 모두 공개 · 초안(draft) 표시를 하면 목록에서 빠지고 서명도 거절한다 · 신앙고백서 글 해시는 그대로', async () => {
+  assert.deepEqual(docList().map((d) => d.id), ['faith', 'childprotection', 'rules'], '세 문서가 공개 페이지에 나온다');
+  assert.ok(!DOCS.childprotection.draft && !DOCS.rules.draft && !DOCS.faith.draft);
   assert.equal(await docHash(DOCS.faith), 'cedc7ddf3cfc' + (await docHash(DOCS.faith)).slice(12), '신앙고백서 글 해시는 바뀌지 않았다');
   const t = await setup();
-  for (const id of ['childprotection']) {
-    const r = await t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), doc: id, version: DOCS[id].version, declared: true } });
-    assert.equal(r.status, 400, `${id} 초안은 서명을 받지 않는다`);
-    assert.equal((await r.json()).field, 'doc');
-  }
+  // 초안으로 돌리면(draft: true) 목록에서 빠지고 서명도 받지 않는다
+  DOCS.childprotection.draft = true;
+  try {
+    assert.deepEqual(docList().map((d) => d.id), ['faith', 'rules']);
+    const r = await t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), doc: 'childprotection', version: DOCS.childprotection.version, declared: true } });
+    assert.equal(r.status, 400); assert.equal((await r.json()).field, 'doc');
+  } finally { DOCS.childprotection.draft = false; }
   assert.equal([...t.kv.store.keys()].filter((k) => k.startsWith('agree:v1:')).length, 0);
-  // 공개된 필수 규칙은 서명을 받는다
+  // 공개된 문서는 서명을 받는다
   assert.equal((await t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), doc: 'rules', version: DOCS.rules.version } })).status, 200);
+});
+
+test('아동보호 서약서: 본인 진술(유죄 판결 · 수사 · 재판 없음) 체크가 필수 — 없으면 400, 있으면 저장(declared:true)', async () => {
+  const t = await setup();
+  const body = { ...good(), doc: 'childprotection', version: DOCS.childprotection.version };
+  const no = await t.call(signApi, 'POST', '/api/agreements/sign', { body });
+  assert.equal(no.status, 400); assert.equal((await no.json()).field, 'declared');
+  assert.equal((await t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...body, declared: 'true' } })).status, 400, '문자열 "true" 는 안 된다');
+  const ok = await t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...body, declared: true } });
+  assert.equal(ok.status, 200);
+  const [[, val]] = [...t.kv.store.entries()].filter(([k]) => k.startsWith('agree:v1:childprotection:'));
+  assert.equal(JSON.parse(val.value).declared, true); assert.equal(JSON.parse(val.value).textHash, await docHash(DOCS.childprotection));
 });
 
 test('아동보호 서약서 내용: 디렉터가 정한 것들이 들어 있다(범죄경력 서류 · 담당자 · SNS · 크루) 그리고 한·영이 짝을 이룬다', () => {
@@ -238,19 +251,19 @@ import * as acceptApi from '../functions/api/admin/staff-accept.js';
 import * as statusApi from '../functions/api/admin/staff-agreements.js';
 import { requiredDocs, signedMap, missingDocs } from '../functions/lib/staffAgreements.js';
 
-test('필수 서약서 = 공개된 문서(신앙고백서 · 필수 규칙). 아동보호 서약서는 초안이라 아직 필수가 아니다', () => {
-  assert.deepEqual(requiredDocs().map((d) => d.id), ['faith', 'rules']);
-  assert.equal(DOCS.rules.draft, false); assert.equal(DOCS.childprotection.draft, true);
+test('필수 서약서 = 공개된 문서 세 개(신앙고백서 · 아동보호 서약서 · 필수 규칙)', () => {
+  assert.deepEqual(requiredDocs().map((d) => d.id), ['faith', 'childprotection', 'rules']);
 });
 
 test('서명 → 이메일별 작성 현황(signedMap) · 현재 버전만 센다 · 미작성 문서 목록(missingDocs)', async () => {
   const t = await setup();
-  const sign = (doc, email) => t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), doc, version: DOCS[doc].version, email } });
+  const sign = (doc, email) => t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), doc, version: DOCS[doc].version, email, declared: true } });
   assert.equal((await sign('faith', 'A@x.org')).status, 200);
   let map = await signedMap(t.env);
   assert.deepEqual(map['a@x.org'], ['faith']);
-  assert.deepEqual(missingDocs(map, 'a@x.org').map((d) => d.id), ['rules'], '필수 규칙이 남았다');
-  assert.deepEqual(missingDocs(map, 'nobody@x.org').map((d) => d.id), ['faith', 'rules']);
+  assert.deepEqual(missingDocs(map, 'a@x.org').map((d) => d.id), ['childprotection', 'rules'], '아동보호 서약서와 필수 규칙이 남았다');
+  assert.deepEqual(missingDocs(map, 'nobody@x.org').map((d) => d.id), ['faith', 'childprotection', 'rules']);
+  assert.equal((await sign('childprotection', 'a@x.org')).status, 200);
   assert.equal((await sign('rules', 'a@x.org')).status, 200);
   map = await signedMap(t.env);
   assert.deepEqual(missingDocs(map, 'A@X.ORG').map((d) => d.id), [], '대소문자 상관없이 모두 작성');
@@ -274,7 +287,7 @@ test('서약서는 캠프 트레이닝 위크에 작성한다 — 수락 조건�
   assert.equal((await t.call(statusApi, 'GET', '/api/admin/staff-agreements', { token: t.member })).status, 403);
   await t.call(signApi, 'POST', '/api/agreements/sign', { body: good() });   // 신앙고백서(serve@example.com)
   const st = await (await t.call(statusApi, 'GET', '/api/admin/staff-agreements', { token: t.admin })).json();
-  assert.deepEqual(st.required.map((d) => d.id), ['faith', 'rules']); assert.deepEqual(st.signed['serve@example.com'], ['faith']);
+  assert.deepEqual(st.required.map((d) => d.id), ['faith', 'childprotection', 'rules']); assert.deepEqual(st.signed['serve@example.com'], ['faith']);
   assert.ok(!JSON.stringify(st).includes('data:image'), '서명 그림은 없다');
 });
 
