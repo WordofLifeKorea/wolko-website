@@ -15,7 +15,7 @@
     camp_register: '',   // 캠프 신청 완료 (/camp-register)
     staff_apply: '',     // 스태프 · 크루 지원 완료 (/camp-register 의 스태프 지원서)
     contact: '',         // 문의 보내기 완료 (/contact)
-    donate_click: '',    // 후원 버튼 클릭 — 국내 정기·일시 후원(online.mrm.or.kr), 해외 후원(give.wol.org)으로 나가는 링크
+    donate_click: '',    // 후원 버튼 클릭 — 국내 정기·일시 후원(online.mrm.or.kr), 해외 후원(give.wol.org), 선교사 영문 후원(missions.wol.org/missionaries)으로 나가는 링크
   };
 
   window.wolkoConversion = function () {};   // 꺼져 있어도 페이지 코드가 그대로 부를 수 있게
@@ -49,7 +49,7 @@
 
   // 후원 버튼: 후원 결제 페이지로 나가는 링크를 누르면 전환. 새 탭으로 열리는 링크라 페이지 이동을 막지 않는다
   document.addEventListener('click', function (e) {
-    var a = e.target && e.target.closest && e.target.closest('a[href^="https://give.wol.org/"], a[href^="https://online.mrm.or.kr/"]');
+    var a = e.target && e.target.closest && e.target.closest('a[href^="https://give.wol.org/"], a[href^="https://online.mrm.or.kr/"], a[href^="https://missions.wol.org/missionaries/"]');
     if (a) window.wolkoConversion('donate_click');
   }, true);
 })();
