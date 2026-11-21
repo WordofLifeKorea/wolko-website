@@ -52,7 +52,7 @@ test('캠프 신청: 남학생 · 여학생 색이 파랑 / 주황으로 서로 
 test('캠프 신청 창: 낮은 화면 · 가로 폰 · 키 작은 폰에서 창을 줄이는 규칙이 있다', () => {
   assert.match(camp, /@media \(min-width: 741px\) and \(max-height: 820px\)/, '노트북 높이');
   assert.match(camp, /@media \(max-width: 740px\) and \(max-height: 700px\)/, '키 작은 폰');
-  assert.match(camp, /@media \(max-height: 500px\) and \(max-width: 1000px\) \{[\s\S]*?\.crp-reg-modal \{ padding: 0; align-items: stretch; \}/, '가로로 돌린 폰은 화면 전체');
+  assert.match(camp, /@media \(max-height: 500px\) \{[\s\S]*?\.crp-reg-modal \{ padding: 0; align-items: stretch; \}/, '가로로 돌린 폰은 화면 전체');
   // 아래 고정 단추 줄이 낮아졌다(52 → 48px) 그래도 누르기 좋은 44px 이상
   assert.match(camp, /\.crp-cancel-btn, \.crp-form-actions \.crp-submit, \.staff-form-actions \.crp-submit, \.staff-draft-btn \{ height: 48px; min-height: 48px !important; \}/);
   // 큰 화면: 성별 | 이메일을 한 줄에
