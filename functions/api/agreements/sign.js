@@ -28,7 +28,7 @@ export async function onRequestPost({ env, request }) {
   if (!email || !EMAIL_RE.test(email)) return fail('이메일 주소를 정확히 적어 주세요.', 'Please enter a valid email address.', 400, { field: 'email' });
   const phone = clean(body?.phone, 30);
   if (phone && !/^[+0-9()\-\s.]{6,30}$/.test(phone)) return fail('휴대폰 번호 모양이 맞지 않아요.', 'That phone number does not look right.', 400, { field: 'phone' });
-  if (body?.agree !== true) return fail('신앙고백서를 읽고 동의해 주세요.', 'Please confirm that you have read and agree to the document.', 400, { field: 'agree' });
+  if (body?.agree !== true) return fail('문서를 읽고 동의해 주세요.', 'Please confirm that you have read and agree to the document.', 400, { field: 'agree' });
   if (doc.declaration && body?.declared !== true) return fail('본인 진술을 확인해 주세요.', 'Please confirm your statement.', 400, { field: 'declared' });
   if (body?.consent !== true) return fail('서명과 개인정보 수집에 동의해 주세요.', 'Please agree to the collection of your signature and personal information.', 400, { field: 'consent' });
   if (!checkSignature(body?.signature)) return fail('서명을 그려 주세요.', 'Please draw your signature.', 400, { field: 'signature' });

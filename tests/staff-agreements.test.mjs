@@ -171,6 +171,7 @@ test('아동보호 서약서 내용: 디렉터가 정한 것들이 들어 있다
   assert.ok(/개인 SNS/.test(ko) && /personal social media/.test(en), '캠퍼와 개인 SNS 를 공유하지 않는다');
   assert.ok(/112/.test(ko), '신고는 112');
   assert.ok(ko.includes('역할 범위는 월코가 따로 정해'), '미성년 크루 역할 범위는 나중에 정한다는 원칙만');
+  assert.ok(!ko.includes('시야'), '크루의 "시야 안" 같은 세부 규칙은 역할 범위를 정할 때 함께 정한다');
   assert.ok(d.declaration.ko.includes('유죄 판결') && d.declaration.en.includes('convicted'), '본인 진술 칸');
   assert.match(docText(d), /Jason Anderson/);
 });
@@ -182,6 +183,7 @@ test('캠프 필수 규칙 초안: 경고 2회 중도 하차 · 문신 · 얼굴
   assert.ok(ko.includes('경고가 2회') && ko.includes('중도 하차'));
   assert.ok(ko.includes('문신이 보이지 않게') && /tattoo/i.test(en));
   assert.ok(ko.includes('두 세트 이상의 귀걸이') && ko.includes('코걸이') && ko.includes('혀 피어싱'), '얼굴 장신구 규칙');
+  assert.ok(ko.includes('보이지 않게') && !ko.includes('한 세트'), '디렉터가 말한 대로 "보이지 않게"만 — 귀걸이 한 세트 허용은 아직 정하지 않았으니 문서에 쓰지 않는다');
   assert.ok(ko.includes('사역에 방해가 될 만한 내용을 SNS에 올리지 않습니다'));
   assert.ok(all.every((i) => i.ko && i.en));
 });
