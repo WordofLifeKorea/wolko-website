@@ -2,20 +2,20 @@
  * 구글 광고(Ad Grants) 전환 측정 — 광고를 보고 들어온 사람이 실제로 신청·문의·후원으로 이어졌는지 구글 광고에 알린다.
  *
  * 켜는 법: 구글 광고 › 목표 › 전환에서 전환 액션을 만들고, 아래 ADS_ID(AW-로 시작)와 액션별 라벨을 채운다.
- *   ADS_ID 가 비어 있으면 이 파일은 아무것도 불러오지도 보내지도 않는다(지금 상태).
+ *   ADS_ID 가 비어 있으면 이 파일은 아무것도 불러오지도 보내지도 않는다(끄려면 ADS_ID 를 비운다).
  * 원칙: 이름 · 이메일 · 전화 같은 개인 정보는 보내지 않는다(전환이 일어났다는 사실과 종류만).
  *   포탈(/portal)과 보호자 동의 페이지(/camp-register/consent — 주소에 동의 토큰이 들어 있다)에서는 불러오지 않는다.
  *   구글 태그는 페이지 주소를 쿼리째 보낸다(광고 클릭 식별자 gclid 가 그래야 이어진다). 그러니 주소에 토큰 · 개인 정보가 들어가는 페이지는 위 제외 목록에 넣을 것.
- *   구글 광고 설정의 '향상된 전환(자동)'은 켜지 말 것 — 켜면 구글 태그가 화면의 이메일·전화를 스스로 읽어 보낸다.
+ *   구글 광고 설정의 '향상된 전환(자동)'은 켜지 말 것 — 켜면 구글 태그가 화면의 이메일·전화를 스스로 읽어 보낸다(아래 consent 설정으로 코드에서도 막아 둠).
  * 페이지에서 쓰는 법: window.wolkoConversion('camp_register') — 함수가 아직 없을 수도 있으니 if (window.wolkoConversion) 로 감싼다.
  */
 (function () {
-  var ADS_ID = '';   // 예: 'AW-123456789'
+  var ADS_ID = 'AW-18515294451';   // 한국생명의 말씀협회 구글 광고 계정
   var LABELS = {
-    camp_register: '',   // 캠프 신청 완료 (/camp-register)
-    staff_apply: '',     // 스태프 · 크루 지원 완료 (/camp-register 의 스태프 지원서)
-    contact: '',         // 문의 보내기 완료 (/contact)
-    donate_click: '',    // 후원 버튼 클릭 — 국내 정기·일시 후원(online.mrm.or.kr), 해외 후원(give.wol.org), 선교사 영문 후원(missions.wol.org/missionaries)으로 나가는 링크
+    camp_register: '7w0RCI-Rv7wdEPPx4_xE',   // 캠프 신청 완료 (/camp-register)
+    staff_apply: 'n5NqCKacv7wdEPPx4_xE',     // 스태프 · 크루 지원 완료 (/camp-register 의 스태프 지원서)
+    contact: '_KqECIGXurwdEPPx4_xE',         // 문의 보내기 완료 (/contact)
+    donate_click: '0DCPCP23v7wdEPPx4_xE',    // 후원 버튼 클릭 — 국내 정기·일시 후원(online.mrm.or.kr), 해외 후원(give.wol.org), 선교사 영문 후원(missions.wol.org/missionaries)으로 나가는 링크
   };
 
   window.wolkoConversion = function () {};   // 꺼져 있어도 페이지 코드가 그대로 부를 수 있게
@@ -28,6 +28,11 @@
   s.async = true;
   s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(ADS_ID);
   document.head.appendChild(s);
+  // 전환 측정만 한다. 구글 계정 설정과 상관없이 코드에서 먼저 막는다:
+  //  ad_user_data 거부 — 구글 태그가 화면의 이메일·전화를 스스로 찾아 (해시해) 보내는 것을 막는다(2026-11-21 실제로 보내는 것을 확인함)
+  //  ad_personalization 거부 — 방문자를 리마케팅 목록에 넣지 않는다
+  //  광고 쿠키(ad_storage)는 그대로 — 광고 클릭 식별자(gclid)가 전환에 이어져야 광고 성과를 셀 수 있다
+  window.gtag('consent', 'default', { ad_user_data: 'denied', ad_personalization: 'denied' });
   window.gtag('js', new Date());
   window.gtag('config', ADS_ID);
 
