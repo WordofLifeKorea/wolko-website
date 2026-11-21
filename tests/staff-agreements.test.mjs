@@ -192,7 +192,7 @@ test('캠프 필수 규칙 초안: 경고 2회 중도 하차 · 문신 · 얼굴
 test('초안 문서가 공개 페이지(빌드)에 새지 않는다 · 아직 정하지 못한 것 목록이 있다', () => {
   const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
   assert.match(page, /includeDrafts: process\.env\.WOLKO_SHOW_DRAFTS === '1'/);
-  assert.ok(OPEN_QUESTIONS.length >= 5 && OPEN_QUESTIONS.some((q) => q.includes('연락처')) && OPEN_QUESTIONS.some((q) => q.includes('크루')));
+  assert.ok(OPEN_QUESTIONS.length >= 4 && OPEN_QUESTIONS.some((q) => q.includes('크루')) && OPEN_QUESTIONS.some((q) => q.includes('열람자')));
 });
 
 test('캠프 필수 규칙 초안(결정 반영): 경고는 디렉터·코디네이터 · 즉시 하차 목록(성적 학대·폭력·잘못된 신학/교리) · 미성년 크루 귀가', () => {
@@ -210,4 +210,16 @@ test('캠프 필수 규칙 초안(결정 반영): 경고는 디렉터·코디네
   assert.ok(ko.includes('디렉터가 보호자에게 직접 연락'), '하차 시 보호자 연락');
   assert.ok(ko.includes('경고 기록지는 캠프가 끝나면 폐기'), '경고 기록은 캠프가 끝나면 폐기');
   assert.ok(docSections(d).every((s) => s.items.every((i) => i.ko && i.en)), '한·영이 짝을 이룬다');
+});
+
+test('결정 반영(2): 본국 서류는 필요할 때만 · 담당자 연락처는 포탈 회원 정보 · 디렉터/코디네이터/풀타임 선교사는 경고·하차 제외 · 즉시 하차에 범죄·허위 서류', () => {
+  const cp = docSections(DOCS.childprotection).flatMap((s) => s.items), rules = docSections(DOCS.rules).flatMap((s) => s.items);
+  const cpKo = cp.map((i) => i.ko).join('\n'), cpEn = cp.map((i) => i.en).join('\n'), rKo = rules.map((i) => i.ko).join('\n'), rEn = rules.map((i) => i.en).join('\n');
+  assert.ok(cpKo.includes('월코가 필요하다고 알려 준 경우에는 본국') && /only if WOLKO tells me it is needed/.test(cpEn), '본국 서류는 월코가 필요하다고 한 경우에만');
+  assert.ok(!cpKo.includes('해외에서 지낸 적이 있으면'), '해외 거주자 모두에게 요구하지 않는다');
+  assert.ok(cpKo.includes('월코 포탈의 회원 정보에서 확인') && /WOLKO Portal member information/.test(cpEn), '담당자 연락처는 포탈 회원 정보');
+  assert.ok(rKo.includes('캠프 디렉터, 코디네이터, 풀타임 선교사에게는 적용하지 않습니다') && /full-time missionaries/.test(rEn), '경고·하차는 디렉터·코디네이터·풀타임 선교사 제외');
+  assert.ok(rKo.includes('아동보호 서약서와 법에 따른 신고·조치는 모두에게'), '아동보호와 법에 따른 조치는 모두에게');
+  assert.ok(rKo.includes('절도 등 범죄 행위') && rKo.includes('허위 서류'), '즉시 하차: 범죄 행위 · 허위 서류');
+  assert.ok(!OPEN_QUESTIONS.some((q) => q.includes('연락처') || q.includes('보호자(법정대리인) 서명')), '해결된 질문은 목록에서 뺐다');
 });

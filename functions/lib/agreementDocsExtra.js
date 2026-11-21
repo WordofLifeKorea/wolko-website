@@ -5,6 +5,8 @@
  * 정해진 것(디렉터 결정, 2026-11-21):
  *  - 범죄경력 확인에 필요한 서류는 월코가 요구하면 지체 없이 제공한다. 제출한 서류는 캠프 기간 동안만 보관하고 캠프가 끝나면 폐기한다(2026-11-21).
  *  - 아동보호 담당자: 캠프팀 디렉터 Jason Anderson · 부담당자: 코디네이터 Aiden Park.
+ *  - 크루(미성년자)의 보호자 동의는 지원서 단계에서 받는다(이 문서들에서 따로 받지 않는다). 아동보호 담당자의 연락처는 포탈 회원 정보에서 찾는다.
+ *  - 경고·중도 하차는 디렉터·코디네이터·풀타임 선교사에게 적용하지 않는다. 즉시 하차에 절도 등 범죄 행위와 허위 서류 제출도 넣는다. 본국 범죄경력 서류는 월코가 필요하다고 한 경우에만.
  *  - 미성년 크루의 역할 범위는 나중에 정한다(그동안은 '어른 지도자의 지도에 따라 활동한다'는 원칙만 둔다).
  *  - 캠퍼와 개인 SNS 를 서로 공유하지 않는다 · 사역에 방해될 내용을 SNS 에 올리지 않는다.
  *  - 경고는 캠프 디렉터와 코디네이터가 준다(2026-11-21). 즉시 하차: 아동보호 서약 위반, 성적 학대·폭력, 잘못된 신학·교리 전파, 술·약물.
@@ -46,8 +48,8 @@ export const CHILD_PROTECTION = {
       items: [
         { ko: '나는 아동·청소년과 함께하는 역할을 맡기 전에 지원서, 추천인 확인, 면접을 거치는 데 동의합니다. 지원서에 허위로 적거나 빠뜨린 것이 있으면 선발에서 제외되거나 해임될 수 있음을 이해합니다.',
           en: 'Before serving in any role with children, I agree to the application, reference checks and interview. I understand that false or missing information can lead to rejection or dismissal.' },
-        { ko: '월코가 요구하면, 나는 범죄경력 확인에 필요한 서류(한국에서 발급받는 범죄경력회보서, 해외에서 지낸 적이 있으면 그 나라에서 발급받는 범죄경력 증명서 등)를 지체 없이 제공하겠습니다. 제출한 서류는 캠프 기간 동안만 보관하고, 캠프가 끝나면 폐기합니다.',
-          en: 'Whenever WOLKO asks, I will provide without delay the documents needed for a criminal record check (such as a criminal record certificate issued in Korea and, if I have lived abroad, one issued by that country). The documents I submit are kept only for the duration of the camp and are destroyed when the camp ends.' },
+        { ko: '월코가 요구하면, 나는 범죄경력 확인에 필요한 서류(한국에서 발급받는 범죄경력회보서, 그리고 월코가 필요하다고 알려 준 경우에는 본국 등 해당 나라에서 발급받은 범죄경력 증명서)를 지체 없이 제공하겠습니다. 제출한 서류는 캠프 기간 동안만 보관하고, 캠프가 끝나면 폐기합니다.',
+          en: 'Whenever WOLKO asks, I will provide without delay the documents needed for a criminal record check (a criminal record certificate issued in Korea and, only if WOLKO tells me it is needed, one issued by my home country or the relevant country). The documents I submit are kept only for the duration of the camp and are destroyed when the camp ends.' },
       ],
     },
     {
@@ -98,8 +100,8 @@ export const CHILD_PROTECTION = {
       items: [
         { ko: '나는 아동학대가 의심되는 상황을 보거나 들으면 즉시 112와 아동보호 담당자에게 알립니다. 담당자에게 알렸다고 신고가 끝난 것이 아니며, 확신이 없어도 의심만으로 신고합니다.',
           en: 'If I see or hear anything that suggests a child may be harmed, I immediately call 112 and tell the Child Protection Officer. Telling the Officer does not replace reporting, and suspicion is enough.' },
-        { ko: '월코의 아동보호 담당자는 캠프팀 디렉터 Jason Anderson, 부담당자는 코디네이터 Aiden Park입니다. 담당자가 의혹과 관련되어 있거나 연락이 닿지 않으면 부담당자에게, 또는 곧바로 112에 알립니다. 담당자의 연락처는 캠프 전에 따로 안내하고 캠프 현장에 게시합니다.',
-          en: 'WOLKO’s Child Protection Officer is the Camp Team Director, Jason Anderson, and the Deputy Officer is the Coordinator, Aiden Park. If the Officer is involved in the concern or cannot be reached, I tell the Deputy Officer or call 112 directly. Their contact details are given before camp and posted at the camp site.' },
+        { ko: '월코의 아동보호 담당자는 캠프팀 디렉터 Jason Anderson, 부담당자는 코디네이터 Aiden Park입니다. 담당자가 의혹과 관련되어 있거나 연락이 닿지 않으면 부담당자에게, 또는 곧바로 112에 알립니다. 담당자의 연락처는 월코 포탈의 회원 정보에서 확인할 수 있고, 캠프 전에 따로 안내하고 캠프 현장에 게시합니다.',
+          en: 'WOLKO’s Child Protection Officer is the Camp Team Director, Jason Anderson, and the Deputy Officer is the Coordinator, Aiden Park. If the Officer is involved in the concern or cannot be reached, I tell the Deputy Officer or call 112 directly. Their contact details can be found in their WOLKO Portal member information, and are also given before camp and posted at the camp site.' },
         { ko: '아동이 학대를 말하면 나는 끝까지 듣고, 비밀을 약속하지 않으며, 스스로 조사하지 않고, 들은 내용을 있는 그대로 기록해 즉시 담당자에게 알립니다.',
           en: 'If a child tells me about abuse, I listen to the end, I do not promise secrecy, I do not investigate myself, and I write down exactly what I heard and tell the Officer immediately.' },
         { ko: '선의로 신고하거나 알린 사람에게는 어떤 불이익도 보복도 없습니다. 나는 신고하는 사람을 방해하거나 보복하지 않습니다.',
@@ -142,6 +144,8 @@ export const CAMP_RULES = {
           en: 'When two warnings have been given, I leave the camp early. Warnings add up only within one camp.' },
         { ko: '경고 기록지는 캠프가 끝나면 폐기합니다.',
           en: 'Warning records are destroyed when the camp ends.' },
+        { ko: '이 규칙의 경고와 중도 하차 절차는 캠프 디렉터, 코디네이터, 풀타임 선교사에게는 적용하지 않습니다. 아동보호 서약서와 법에 따른 신고·조치는 모두에게 똑같이 적용됩니다.',
+          en: 'The warning and early-removal procedure in these rules does not apply to the Camp Director, the Coordinator or full-time missionaries. The Child Protection Agreement and reporting and measures required by law apply to everyone equally.' },
       ],
     },
     {
@@ -157,6 +161,10 @@ export const CAMP_RULES = {
           en: 'Spreading false theology or doctrine, meaning teaching or spreading to campers, staff or crew anything that contradicts the WOLKO Statement of Faith. Asking questions and learning together is not included. The Camp Director and the Coordinator decide together.' },
         { ko: '술이나 불법 약물을 하는 경우.',
           en: 'Using alcohol or illegal drugs.' },
+        { ko: '절도 등 범죄 행위를 한 경우.',
+          en: 'Committing a crime such as theft.' },
+        { ko: '월코에 허위 서류를 내거나 사실과 다르게 진술한 경우.',
+          en: 'Submitting false documents to WOLKO or making false statements.' },
         { ko: '위의 경우 월코는 아동보호 서약서와 법에 따라 필요하면 경찰에 신고합니다.',
           en: 'In these cases WOLKO reports to the police when needed, in line with the Child Protection Agreement and the law.' },
       ],
@@ -246,13 +254,10 @@ export const CAMP_RULES = {
 
 /** 아직 정하지 못한 것 — 확정 전에 디렉터와 정해서 위 문서에 반영한다 */
 export const OPEN_QUESTIONS = [
-  '아동보호 담당자 · 부담당자의 연락처(휴대전화, 이메일)',
   '미성년 크루의 구체적인 역할 범위(차후 결정)',
-  '범죄경력 서류를 볼 수 있는 사람(열람자)과 외국인 스태프의 본국 서류 범위(보관은 캠프 기간 동안만, 끝나면 폐기로 정했다)',
-  '두 문서에 크루 보호자(법정대리인) 서명을 받을지',
+  '범죄경력 서류를 볼 수 있는 사람(열람자) — 제안: 아동보호 담당자 두 분만(보관은 캠프 기간 동안만, 끝나면 폐기로 정했다)',
   '지각을 몇 분부터 · 몇 번부터 경고로 볼지(지금은 "늦거나 허락 없이 자리를 비우면"만 적고 디렉터와 코디네이터가 판단)',
-  '경고를 받는 사람이 디렉터나 코디네이터 본인일 때 누가 주는지',
   '미성년 크루의 귀가: 보호자 동의를 확인하는 방법과 귀가 후 도착 확인(제안 — 지금은 디렉터가 보호자에게 직접 연락해 확인)',
   '잘못된 신학 · 교리 전파의 판단 방법(지금은 디렉터와 코디네이터가 함께 판단)',
-  '즉시 하차 목록에 더 넣을 것(예: 절도 등 범죄 행위, 허위 서류 제출)',
+  '디렉터 · 코디네이터 · 풀타임 선교사의 적용 제외 범위 확인(지금은 필수 규칙의 경고·중도 하차만 제외하고, 아동보호 서약서와 법에 따른 조치는 모두에게 적용)',
 ];
