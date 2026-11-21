@@ -1228,7 +1228,8 @@
 
     let deferredInstallPrompt = null;
     function isPortalStandalone() {
-      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      // WOLKOApp/ = 아이폰·안드로이드 포탈 앱(mobile/) 안에서 열린 경우 — 이미 앱이므로 설치 안내가 필요 없다
+      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true || /WOLKOApp\//.test(navigator.userAgent);
     }
     const SHOW_INSTALL_BUTTON = false;   // 앱 설치 버튼은 일단 숨긴다 — 다시 보이려면 true 로
     function syncInstallButton() {
