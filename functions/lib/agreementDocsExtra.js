@@ -20,18 +20,18 @@
 
 export const CHILD_PROTECTION = {
   id: 'childprotection',
-  version: '2026-11-v4',   // v4: '캠프마다 새로 작성' 문장을 뺐다(한 번만 작성)
+  version: '2026-11-v5',   // v4: '캠프마다 새로 작성' 문장을 뺐다(한 번만 작성) · v5: 맺음말을 '월코 캠프에 참여하는 캠퍼를 지키기 위해'로 고쳤다
   perCamp: false,   // 2026-11-21: 캠프 선택 없이 한 번만 작성한다(처음에는 캠프마다였으나 사용자가 '캠프 선택은 필요 없다'고 정했다). true 로 돌리면 서명할 때 캠프를 고르는 방식이 다시 켜진다
   draft: false,   // 2026-11-21 '초안이지만 일단 공개' — 문구를 바꾸면 version 을 올려 예전 서명과 구분한다
   ko: {
     title: '아동보호 서약서',
     intro: '월코 캠프에서 스태프나 크루로 섬기는 모든 분은 아래 아동보호 기준을 읽고, 설명을 듣고, 지키겠다고 서명합니다.',
-    pledge: '저는 이 서약서를 처음부터 끝까지 읽었고, 설명을 듣고 질문할 기회를 가졌으며, 내용을 이해했습니다. 아동·청소년을 지키기 위해 이 기준을 반드시 지키겠습니다. 이를 어기면 월코 캠프에서 퇴출될 수 있고 법적 책임을 질 수 있음을 이해합니다.',
+    pledge: '저는 이 서약서를 처음부터 끝까지 읽었고, 설명을 듣고 질문할 기회를 가졌으며, 내용을 이해했습니다. 월코 캠프에 참여하는 캠퍼를 지키기 위해 이 기준을 반드시 지키겠습니다. 이를 어기면 월코 캠프에서 퇴출될 수 있고 법적 책임을 질 수 있음을 이해합니다.',
   },
   en: {
     title: 'Child Protection Agreement',
     intro: 'Everyone who serves at a WOLKO camp as staff or crew reads, is briefed on, and signs to keep the child protection standards below.',
-    pledge: 'I have read this agreement from beginning to end, I have been briefed on it and had the chance to ask questions, and I understand it. I will keep these standards to protect children and young people. I understand that breaking them can lead to removal from WOLKO camps and to legal responsibility.',
+    pledge: 'I have read this agreement from beginning to end, I have been briefed on it and had the chance to ask questions, and I understand it. I will keep these standards to protect the campers who take part in WOLKO camps. I understand that breaking them can lead to removal from WOLKO camps and to legal responsibility.',
   },
   // 본인 진술(유죄 판결 · 수사 · 재판 없음) 체크 칸은 공개 페이지에 내놓지 않기로 했다(2026-11-21). 캠프 트레이닝 위크에 서명할 때 서명 칸 아래쪽에 넣는다 — 그때 아래 CHILD_PROTECTION_DECLARATION_LATER 를 이 자리에 `declaration:` 으로 되돌리고 version 을 올린다
   sections: [

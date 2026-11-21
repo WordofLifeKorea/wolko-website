@@ -43,7 +43,9 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
     --sa-line:#d6dee2; --sa-field:#cdd7dc; --sa-soft:#f6f9fb; --sa-error:#a3262f;
     padding: 56px 0 96px; background: #fff; color: var(--sa-ink); font-family: var(--ff-sans); word-break: keep-all;
   }
-  .sa-shell { width: min(860px, calc(100% - 48px)); margin: 0 auto; display: grid; gap: 40px; }
+  /* 바깥 폭은 위쪽 큰 제목 영역과 같은 왼쪽 선에 맞추고(1200px), 읽는 칸은 880px 까지만 — 가운데로 뜨지 않고 제목과 나란히 선다 */
+  .sa-shell { width: min(1200px, calc(100% - 48px)); margin: 0 auto; display: grid; gap: 40px; }
+  .sa-shell > * { max-width: 880px; min-width: 0; }
   .sa-need { border: 1px solid var(--sa-line); border-radius: var(--ws-radius-sm, 8px); background: var(--sa-soft); padding: 18px 22px; }
   .sa-need-title { margin: 0 0 10px; font-size: 15px; line-height: 1.7; font-weight: 700; color: var(--sa-navy); }
   .sa-need-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
