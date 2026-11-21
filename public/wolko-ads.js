@@ -31,7 +31,9 @@
   // 전환 측정만 한다. 구글 계정 설정과 상관없이 코드에서 먼저 막는다:
   //  ad_user_data 거부 — 구글 태그가 화면의 이메일·전화를 스스로 찾아 (해시해) 보내는 것을 막는다(2026-11-21 실제로 보내는 것을 확인함)
   //  ad_personalization 거부 — 방문자를 리마케팅 목록에 넣지 않는다
-  //  광고 쿠키(ad_storage)는 그대로 — 광고 클릭 식별자(gclid)가 전환에 이어져야 광고 성과를 셀 수 있다
+  //  대가: ad_user_data 를 거부하면 구글이 광고 클릭 쿠키(_gcl_aw)를 남기지 않아, 광고를 누르고 들어온 그 탭 안에서 한 전환만 광고 성과로 잡힌다
+  //  (다른 탭 · 다음 날 신청은 못 잡음). 구글 태그 설정의 '사용자 제공 데이터 자동 감지'(gtag/js 의 __ogt_1p_data_v2 isAutoEnabled)를
+  //  끈 것을 확인하면 ad_user_data 거부를 빼서 쿠키를 살린다. ad_personalization 거부는 계속 둔다.
   window.gtag('consent', 'default', { ad_user_data: 'denied', ad_personalization: 'denied' });
   window.gtag('js', new Date());
   window.gtag('config', ADS_ID);
