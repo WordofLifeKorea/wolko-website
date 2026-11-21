@@ -194,3 +194,20 @@ test('초안 문서가 공개 페이지(빌드)에 새지 않는다 · 아직 �
   assert.match(page, /includeDrafts: process\.env\.WOLKO_SHOW_DRAFTS === '1'/);
   assert.ok(OPEN_QUESTIONS.length >= 5 && OPEN_QUESTIONS.some((q) => q.includes('연락처')) && OPEN_QUESTIONS.some((q) => q.includes('크루')));
 });
+
+test('캠프 필수 규칙 초안(결정 반영): 경고는 디렉터·코디네이터 · 즉시 하차 목록(성적 학대·폭력·잘못된 신학/교리) · 미성년 크루 귀가', () => {
+  const d = DOCS.rules;
+  const secs = docSections(d);
+  const by = (title) => secs.find((s) => s.ko === title);
+  const ko = secs.flatMap((s) => s.items).map((i) => i.ko).join('\n'), en = secs.flatMap((s) => s.items).map((i) => i.en).join('\n');
+  assert.ok(ko.includes('캠프 디렉터와 코디네이터가 경고를 줍니다') && /Camp Director and the Coordinator give me a warning/.test(en), '경고는 디렉터와 코디네이터');
+  const immediate = by('경고 없이 바로 하차하는 경우').items.map((i) => i.ko).join('\n');
+  for (const must of ['성적 학대', '폭력', '잘못된 신학이나 교리', '아동보호 서약서', '술이나 불법 약물']) assert.ok(immediate.includes(must), `즉시 하차: ${must}`);
+  const imm = by('경고 없이 바로 하차하는 경우').items.map((i) => i.en).join('\n');
+  assert.ok(/sexual abuse/i.test(imm) && /violence/i.test(imm) && /false theology or doctrine/i.test(imm));
+  for (const title of ['술, 담배, 약물', '이성 교제', '휴대폰', '외출', '시간', '숙소', '외모와 복장', '사역 태도', 'SNS', '하차한 뒤']) assert.ok(by(title), `${title} 항목이 있다`);
+  assert.ok(ko.includes('보호자가 동의하면 혼자 귀가할 수 있고'), '크루 부모님이 동의하면 혼자 귀가 가능');
+  assert.ok(ko.includes('디렉터가 보호자에게 직접 연락'), '하차 시 보호자 연락');
+  assert.ok(ko.includes('경고 기록지는 캠프가 끝나면 폐기'), '경고 기록은 캠프가 끝나면 폐기');
+  assert.ok(docSections(d).every((s) => s.items.every((i) => i.ko && i.en)), '한·영이 짝을 이룬다');
+});
