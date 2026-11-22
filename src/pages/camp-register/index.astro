@@ -4295,6 +4295,8 @@ function crpCloseConfirmBox(restoreFocus) {
 document.getElementById('crpConfirmKeepBtn').addEventListener('click', function() { crpCloseConfirmBox(true); });
 document.getElementById('crpConfirmCloseBtn').addEventListener('click', closeCrpModal);
 confirmBox.addEventListener('click', function(e) { if (e.target === confirmBox) crpCloseConfirmBox(true); });
+/* 뒤로가기: 처음엔 '저장하지 않고 닫을까요?'를 묻고, 그 상태에서 한 번 더 누르면 닫는다(임시 저장은 closeCrpModal 이 한다) */
+if (window.WolkoBack) WolkoBack.step(modal, function() { if (confirmBox.hidden) return false; closeCrpModal(); return true; });
 
 /* ── 신청서 임시 저장 — 이 탭(sessionStorage)에만, 캠프마다 따로. 탭을 닫으면 사라진다.
    저장하지 않는 것: 환불 은행·예금주·계좌번호, 동의 체크 3개, 사진 동의, Best Camper 확인 ── */

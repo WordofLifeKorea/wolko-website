@@ -146,7 +146,7 @@
     var first = c.querySelector('[data-a=save]') || c.querySelector('[data-a=keep]'); if (first) first.focus();
   }
   CT.tryClose = function (d) { if (!d || !d.open) return; if (dirty(d)) confirmDirty(d); else d.close(); };
-  function openDialogs() { return [].filter.call(document.querySelectorAll('dialog'), function (x) { return x.open && !x.classList.contains('ct-confirm'); }); }
+  function openDialogs() { return [].filter.call(document.querySelectorAll('dialog'), function (x) { return x.open && x._ctOk && !x.classList.contains('ct-confirm'); }); }
   function dirtyDialog() { return openDialogs().filter(dirty)[0] || null; }
   // 팝업이 열려 있는 동안 기록에 표시(ct) 한 칸을 얹어 두고, 뒤로가기를 그 한 칸으로 받는다.
   // 다른 화면으로 가기 전에는 그 표시를 먼저 치워서 뒤로가기 기록이 어지러워지지 않게 한다

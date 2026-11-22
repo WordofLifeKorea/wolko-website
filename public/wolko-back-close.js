@@ -31,14 +31,18 @@
   });
 
   function nameOf(el) { var c = el.className; return (c && c.baseVal !== undefined ? c.baseVal : c || '') + ' ' + (el.id || ''); }
-  function owned(el) { return !!(el.closest && el.closest('[data-wl-back="own"],[data-wl-back="off"]')) || !!el._ctOk; }   // _ctOk: 캠프팀 포탈의 팝업은 campteam.js 가 직접 다룬다
+  function owned(el) { return !!(el.closest && el.closest('[data-wl-back="own"],[data-wl-back="off"]')) || !!el._ctOk || !!(el.classList && el.classList.contains('ct-confirm')); }   // _ctOk: 캠프팀 포탈의 팝업은 campteam.js 가 직접 다룬다
+  var fadeRetry = false, fadeCount = 0;
   function covers(el) {
     var cs = getComputedStyle(el);
-    if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0 || cs.pointerEvents === 'none') return false;
-    if (el.hasAttribute('data-wl-modal')) { var r0 = el.getBoundingClientRect(); return r0.width > 0 && r0.height > 0; }   // 이름이 다른 창은 표시를 달아 알린다
+    if (cs.display === 'none' || cs.visibility === 'hidden' || cs.pointerEvents === 'none') return false;
+    var faded = parseFloat(cs.opacity) < 0.01;
+    if (el.hasAttribute('data-wl-modal')) { var r0 = el.getBoundingClientRect(); return !faded && r0.width > 0 && r0.height > 0; }   // 이름이 다른 창은 표시를 달아 알린다
     if (cs.position !== 'fixed') return false;
     var r = el.getBoundingClientRect();
-    return r.width >= window.innerWidth * 0.9 && r.height >= window.innerHeight * 0.9 && r.right > 0 && r.bottom > 0;
+    if (!(r.width >= window.innerWidth * 0.9 && r.height >= window.innerHeight * 0.9 && r.right > 0 && r.bottom > 0)) return false;
+    if (faded) { if (parseFloat(cs.transitionDuration) > 0 || parseFloat(cs.animationDuration) > 0) fadeRetry = true; return false; }   // 서서히 나타나는 중일 수 있다 → 잠시 뒤 다시 본다
+    return true;
   }
   function isOpen(el) {
     if (!el || !el.isConnected) return false;
@@ -75,11 +79,13 @@
     }
   }
   function sync() {
+    fadeRetry = false;
     var open = detect();
     tracked.forEach(function (el) { if (open.indexOf(el) < 0) tries.delete(el); });   // 닫힌 창은 '닫아 본 횟수'를 잊는다
     tracked = tracked.filter(function (el) { return open.indexOf(el) >= 0; });
     open.forEach(function (el) { if (tracked.indexOf(el) < 0) tracked.push(el); });
     reconcile();
+    if (fadeRetry && fadeCount++ < 12) setTimeout(sync, 45); else if (!fadeRetry) fadeCount = 0;
   }
 
   function visibleBtn(b) { return !b.disabled && (b.offsetWidth || b.offsetHeight || b.getClientRects().length); }
@@ -136,6 +142,7 @@
     var step = stepFns.get(el);
     if (step) { var handled = false; try { handled = !!step(); } catch (e) { handled = false; } if (handled) { setTimeout(sync, 0); return; } }   // 안에서 먼저 한 단계 되돌렸다 → 창은 그대로, 기록 칸만 다시 얹는다
     var n = tries.get(el) || 0; tries.set(el, n + 1);
+    setTimeout(function () { if (tries.get(el) === n + 1) tries.delete(el); }, 1500);   // 한동안 다시 누르지 않으면 '닫아 본 횟수'를 잊는다(막혔던 창이 풀린 뒤 다시 닫을 수 있게)
     closeEl(el, n);
     setTimeout(sync, 150);
     setTimeout(sync, 450);   // 닫히는 움직임이 끝난 뒤에도 한 번 더 맞춘다
@@ -146,10 +153,19 @@
     curState = e.state;
     if (ignore > 0) { ignore--; if (!ignore) clearBusy(); e.stopImmediatePropagation(); setTimeout(sync, 0); return; }
     if (wasOurs && depth > 0 && tracked.length) { depth--; e.stopImmediatePropagation(); closeTop(); return; }
-    if (e.state && e.state.wlm) {   // 열린 창이 없는데 우리가 남긴 칸에 닿았다(앞으로가기 · 이미 닫힌 창의 칸) → 페이지가 모르게 한 칸 더 돌아간다
+    if (e.state && e.state.wlm && !tracked.length) {   // 열린 창이 없는데 우리가 남긴 칸에 닿았다(앞으로가기 · 이미 닫힌 창의 칸) → 페이지가 모르게 한 칸 더 돌아간다
       e.stopImmediatePropagation(); ignore = 1; setBusy(); history.back();
     }
   }, true);
+
+  // 창이 열린 채 링크로 떠났거나 새로고침한 페이지는 우리가 얹은 칸 위에서 다시 열린다 → 그 칸을 치워서 뒤로가기가 한 번 헛돌지 않게 한다
+  if (curState && curState.wlm) { try { history.back(); } catch (e) { /* 무시 */ } }
+  window.addEventListener('pageshow', function (e) {
+    if (!e.persisted) return;   // 뒤로/앞으로 이동으로 보관된 페이지가 그대로 돌아온 경우
+    curState = history.state; ignore = 0; clearBusy(); tracked = []; depth = 0;
+    if (curState && curState.wlm && !detect().length) { ignore = 1; setBusy(); try { history.back(); } catch (e2) { ignore = 0; clearBusy(); } }
+    else { depth = (curState && curState.wlm) || 0; sync(); }
+  });
 
   var timer = null;
   function schedule() { if (timer) return; timer = setTimeout(function () { timer = null; sync(); }, 40); }
