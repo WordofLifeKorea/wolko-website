@@ -100,7 +100,8 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
   .sa-items li.sa-sec { display: block; padding: 26px 0 6px; border-top: 0; font-size: 16.5px; font-weight: 800; letter-spacing: -.01em; color: var(--sa-navy); }
   .sa-items li.sa-sec > span::before { content: ''; display: inline-block; width: 24px; height: 2px; margin: 0 12px 4px 0; background: var(--sa-deep); vertical-align: middle; }
   .sa-items li.sa-sec + li { border-top: 0; }
-  .sa-ack { margin: 4px 28px 0; font-size: 14px; font-weight: 700; color: var(--sa-body); }
+  .sa-ack { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 4px 28px 0; font-size: 14px; font-weight: 700; color: var(--sa-body); }
+  .sa-ack-count { flex: none; margin-left: auto; text-align: right; white-space: nowrap; }
   .sa-ack b { color: var(--sa-deep); font-variant-numeric: tabular-nums; }
   .sa-ack.is-done { color: var(--sa-deep); }
   .sa-ack-err { margin: 6px 28px 0; }
@@ -249,7 +250,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
           </div>
         </div>
 
-        <p class="sa-ack" data-ack data-total={docSections(doc).reduce((n, sec) => n + sec.items.length, 0)}><span class="wl-ko">각 항목을 읽고 하나씩 체크해 주세요 · <b data-ack-n>0</b> / {docSections(doc).reduce((n, sec) => n + sec.items.length, 0)}</span><span class="wl-en">Read each item and tick it · <b data-ack-n>0</b> / {docSections(doc).reduce((n, sec) => n + sec.items.length, 0)}</span></p>
+        <p class="sa-ack" data-ack data-total={docSections(doc).reduce((n, sec) => n + sec.items.length, 0)}><span class="sa-ack-text"><span class="wl-ko">각 항목을 읽고 하나씩 체크해 주세요</span><span class="wl-en">Read each item and tick it</span></span><span class="sa-ack-count" aria-label="체크한 항목 / Items ticked"><b data-ack-n>0</b> / {docSections(doc).reduce((n, sec) => n + sec.items.length, 0)}</span></p>
         <p class="sa-err sa-ack-err" data-err="items" role="alert" hidden></p>
         <ol class="sa-items">
           {docSections(doc).map((sec) => (
