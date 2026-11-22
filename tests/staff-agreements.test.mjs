@@ -581,6 +581,8 @@ test('서약서 항목은 번호 대신 항목마다 체크박스: 모두 체크
   assert.match(page, /acks: itemTotal/, '체크한 항목 수를 서버에 보낸다');
   assert.match(page, /form\.elements\.agree\.checked = n === itemTotal/, '모두 체크하면 아래 동의 칸도 체크');
   assert.match(page, /function resetItems\(\)/, '사람이 바뀌면 항목 체크도 비운다');
+  assert.match(page, /@keyframes saPop/, '체크할 때 움직임(눌린 듯 작아졌다 돌아오고 체크 표시가 나타난다)');
+  assert.match(page, /prefers-reduced-motion: reduce\) \{ \.sa-item-box/, '움직임 줄이기 설정을 따른다');
   assert.match(page, /showErr\('items', ''\); showErr\('agree', ''\)/, '모두 체크하면 남아 있던 항목 · 동의 오류를 지운다');
   assert.match(page, /    syncAck\(\);   \/\/ 브라우저가 되살린/, '불러올 때 한 번 맞춘다');
   assert.ok(page.indexOf('data-err="items"') < page.indexOf('<ol class="sa-items">'), '항목 오류 문구는 항목 목록 위(진행 표시 아래)');

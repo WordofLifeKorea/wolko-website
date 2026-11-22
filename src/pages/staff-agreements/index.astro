@@ -93,9 +93,13 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
   .sa-ln { display: block; }   /* 위쪽 큰 제목 아래 설명: 문장마다 한 줄(좁은 화면에서도 합쳐지지 않게 br 대신 블록) */
   .sa-item { position: relative; display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 14px; padding: 15px 0; cursor: pointer; }
   .sa-item input { position: absolute; opacity: 0; width: 20px; height: 20px; margin: 0; left: 0; top: 19px; cursor: pointer; }
-  .sa-item-box { width: 20px; height: 20px; margin-top: 4px; box-sizing: border-box; border: 1.5px solid #8fabb8; border-radius: 6px; background: #fff; transition: background-color .15s, border-color .15s; }
+  .sa-item-box { position: relative; width: 20px; height: 20px; margin-top: 4px; box-sizing: border-box; border: 1.5px solid #8fabb8; border-radius: 6px; background: #fff; transition: background-color .18s, border-color .18s; }
+  .sa-item-box::after { content: ''; position: absolute; left: 5.5px; top: 1.5px; width: 5px; height: 9.5px; border: solid #fff; border-width: 0 2.2px 2.2px 0; transform: rotate(45deg) scale(0); opacity: 0; transition: transform .26s cubic-bezier(.34, 1.56, .64, 1) .04s, opacity .12s; }   /* 체크 표시: 탄력 있게 나타난다 */
   .sa-item:hover .sa-item-box { border-color: var(--sa-deep); }
-  .sa-item input:checked + .sa-item-box { border-color: var(--sa-deep); background: var(--sa-deep) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23ffffff' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 8.4l3 3 6-6.6'/%3E%3C/svg%3E") center / 13px no-repeat; }
+  .sa-item input:checked + .sa-item-box { border-color: var(--sa-deep); background: var(--sa-deep); animation: saPop .3s ease; }
+  .sa-item input:checked + .sa-item-box::after { transform: rotate(45deg) scale(1); opacity: 1; }
+  @keyframes saPop { 0% { transform: scale(1); } 40% { transform: scale(.84); } 100% { transform: scale(1); } }
+  @media (prefers-reduced-motion: reduce) { .sa-item-box, .sa-item-box::after { transition: none; } .sa-item input:checked + .sa-item-box { animation: none; } }
   .sa-item input:focus-visible + .sa-item-box { outline: 3px solid rgba(0, 79, 104, .35); outline-offset: 2px; }
   .sa-items li.sa-sec { display: block; padding: 26px 0 6px; border-top: 0; font-size: 16.5px; font-weight: 800; letter-spacing: -.01em; color: var(--sa-navy); }
   .sa-items li.sa-sec > span::before { content: ''; display: inline-block; width: 24px; height: 2px; margin: 0 12px 4px 0; background: var(--sa-deep); vertical-align: middle; }
