@@ -123,7 +123,7 @@ export const CHILD_PROTECTION = {
 
 export const CAMP_RULES = {
   id: 'rules',
-  version: '2026-11-v7',   // v7: 잘못된 신학 항목을 '고의로 가르치거나 전달' · '좋은 의도의 토론은 해당 안 됨'으로 · v6: 1번은 '반복적으로 어기면 경고 또는 제명' 한 문장만(경고 절차 · 예외 설명은 문서에서 뺐다) · 교제 문구 '어떠한 경우에도' · 스태프·크루 사이 문구에 '준비기간' 추가 · 외출 · 시간 · 숙소 · 문신 · 위생과 복장 · 제명 뒤 첫 항목을 새 문구로 · 보호자 본인 확인 문장 삭제 · 소제목 '경고 없이 바로 제명될 수 있는 경우' · 외출 문구에 '밤에는 외출을 지양' 추가, 휴대폰 항목을 '최대한 지양' + 사역에 필요한 사용은 예외로 · 경찰 보고 문구를 '아동보호 서약과 관련된 문제를 야기할 경우 필요에 따라 보고할 수 있습니다'로 · v5: 항목에서 '저는'을 빼고 '~에 동의합니다' 투로 · 장신구 문구 교체 · v3: 맨 앞에 '반복적으로 어기면 경고 또는 제명' 문장 · v4: '성인 스태프 귀가' 항목을 뺐고, 경고 절차를 포함해 '경고와 제명' 설명을 1번 하나로 합치고 '중도 하차'를 모두 '제명'으로 통일
+  version: '2026-11-v8',   // v8: 잘못된 신학 항목에 '즉,' 추가 · v7: 잘못된 신학 항목을 '고의로 가르치거나 전달' · '좋은 의도의 토론은 해당 안 됨'으로 · v6: 1번은 '반복적으로 어기면 경고 또는 제명' 한 문장만(경고 절차 · 예외 설명은 문서에서 뺐다) · 교제 문구 '어떠한 경우에도' · 스태프·크루 사이 문구에 '준비기간' 추가 · 외출 · 시간 · 숙소 · 문신 · 위생과 복장 · 제명 뒤 첫 항목을 새 문구로 · 보호자 본인 확인 문장 삭제 · 소제목 '경고 없이 바로 제명될 수 있는 경우' · 외출 문구에 '밤에는 외출을 지양' 추가, 휴대폰 항목을 '최대한 지양' + 사역에 필요한 사용은 예외로 · 경찰 보고 문구를 '아동보호 서약과 관련된 문제를 야기할 경우 필요에 따라 보고할 수 있습니다'로 · v5: 항목에서 '저는'을 빼고 '~에 동의합니다' 투로 · 장신구 문구 교체 · v3: 맨 앞에 '반복적으로 어기면 경고 또는 제명' 문장 · v4: '성인 스태프 귀가' 항목을 뺐고, 경고 절차를 포함해 '경고와 제명' 설명을 1번 하나로 합치고 '중도 하차'를 모두 '제명'으로 통일
   draft: false,   // 2026-11-21 디렉터 결정으로 공개 — 스태프 · 크루가 작성해야 하는 필수 서약서
   ko: {
     title: '월코 캠프 필수 규칙',
@@ -152,8 +152,8 @@ export const CAMP_RULES = {
           en: 'Sexual abuse, sexual violence or sexual harassment.' },
         { ko: '다른 사람에게 폭력을 쓰거나 폭행·위협하는 경우.',
           en: 'Using violence against, assaulting or threatening another person.' },
-        { ko: '잘못된 신학이나 교리를 전하는 경우. 월코 신앙고백서에 어긋나는 내용을 캠퍼, 스태프, 크루에게 고의로 가르치거나 전달하는 것을 의미합니다. 좋은 의도로 토론하고 함께 배우는 것은 이 항목에 해당되지 않습니다.',
-          en: 'Teaching false theology or doctrine. This means deliberately teaching or passing on to campers, staff or crew anything that contradicts the WOLKO Statement of Faith. Discussing and learning together with good intentions is not included.' },
+        { ko: '잘못된 신학이나 교리를 전하는 경우. 즉, 월코 신앙고백서에 어긋나는 내용을 캠퍼, 스태프, 크루에게 고의로 가르치거나 전달하는 것을 의미합니다. 좋은 의도로 토론하고 함께 배우는 것은 이 항목에 해당되지 않습니다.',
+          en: 'Teaching false theology or doctrine. In other words, this means deliberately teaching or passing on to campers, staff or crew anything that contradicts the WOLKO Statement of Faith. Discussing and learning together with good intentions is not included.' },
         { ko: '술이나 불법 약물을 하는 경우.',
           en: 'Using alcohol or illegal drugs.' },
         { ko: '절도 등 범죄 행위를 한 경우.',

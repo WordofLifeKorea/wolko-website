@@ -228,7 +228,7 @@ test('캠프 필수 규칙 초안(결정 반영): 1번은 한 문장 · 즉시 �
   const first = docSections(DOCS.rules)[0].items[0];
   assert.ok(first.ko === '아래 캠프 규칙을 반복적으로 어기면 경고를 받거나 월코 캠프에서 제명당할 수 있습니다.' && /repeatedly break the camp rules below/.test(first.en), '1번은 이 한 문장만(경고 절차 · 제외 대상 설명은 문서에 넣지 않는다)');
   assert.ok(!JSON.stringify(DOCS.rules.ko) .includes('하차') && !JSON.stringify(DOCS.rules.sections).includes('하차'), '필수 규칙 문서는 "제명"으로 통일');
-  assert.match(DOCS.rules.version, /v7$/);
+  assert.match(DOCS.rules.version, /v8$/);
   const itemsOf = (t) => docSections(DOCS.rules).find((x) => x.ko === t).items.map((i) => i.ko);
   assert.ok(itemsOf('숙소')[0].includes('캠퍼는 스태프 방에, 스태프는 캠퍼 숙소에 혼자 들어가지 않으며') && itemsOf('숙소')[0].endsWith('숙소를 깨끗하게 사용하는 것에 동의합니다.'), '숙소 문구');
   assert.ok(itemsOf('외모와 복장')[0] === '문신이 보이지 않게 가리는 것에 동의합니다.', '문신 문구');
@@ -252,7 +252,7 @@ test('캠프 필수 규칙 초안(결정 반영): 1번은 한 문장 · 즉시 �
   for (const must of ['성적 학대', '폭력', '잘못된 신학이나 교리', '아동보호 서약서', '술이나 불법 약물']) assert.ok(immediate.includes(must), `즉시 하차: ${must}`);
   const imm = by('경고 없이 바로 제명될 수 있는 경우').items.map((i) => i.en).join('\n');
   assert.ok(/sexual abuse/i.test(imm) && /violence/i.test(imm) && /false theology or doctrine/i.test(imm) && /deliberately/.test(imm));
-  assert.ok(immediate.includes('고의로 가르치거나 전달하는 것을 의미합니다') && immediate.includes('좋은 의도로 토론하고 함께 배우는 것은 이 항목에 해당되지 않습니다') && !immediate.includes('함께 판단'), '잘못된 신학: 고의 · 좋은 의도의 토론은 제외');
+  assert.ok(immediate.includes('즉, 월코 신앙고백서에 어긋나는 내용을 캠퍼, 스태프, 크루에게 고의로 가르치거나 전달하는 것을 의미합니다') && immediate.includes('좋은 의도로 토론하고 함께 배우는 것은 이 항목에 해당되지 않습니다') && !immediate.includes('함께 판단'), '잘못된 신학: 고의 · 좋은 의도의 토론은 제외');
   for (const title of ['술, 담배, 약물', '이성 교제', '휴대폰', '외출', '시간', '숙소', '외모와 복장', '사역 태도', 'SNS', '제명된 뒤']) assert.ok(by(title), `${title} 항목이 있다`);
   assert.ok(ko.includes('보호자가 동의하면 혼자 귀가할 수 있고'), '크루 부모님이 동의하면 혼자 귀가 가능');
   assert.ok(ko.includes('디렉터가 보호자에게 직접 연락'), '제명 시 보호자 연락');
