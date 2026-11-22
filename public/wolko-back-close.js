@@ -70,6 +70,7 @@
     var put = function () { if (Math.abs(window.scrollY - k.y) > 1 || Math.abs(window.scrollX - k.x) > 1) window.scrollTo(k.x, k.y); };
     put(); setTimeout(put, 30); setTimeout(function () { put(); if (keepScroll === k) keepScroll = null; }, 120);
   }
+  ['wheel', 'touchmove', 'keydown', 'mousedown'].forEach(function (t) { window.addEventListener(t, function () { keepScroll = null; }, { capture: true, passive: true }); });   // 사용자가 직접 스크롤하면 되돌려 놓기를 멈춘다
   function clearBusy() { busy = false; clearTimeout(busyTimer); }
 
   // 열린 창 수와 얹어 둔 기록 칸 수를 맞춘다
