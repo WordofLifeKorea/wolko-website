@@ -44,7 +44,7 @@ test('뒤로가기 모달 닫기: 스크립트 핵심 동작과 페이지별 연
   assert.match(js, /history\.pushState\(\{ wlm:/);
   assert.match(js, /stopImmediatePropagation/);
   assert.match(js, /r\.left < window\.innerWidth/);          // 화면 밖으로 밀어 둔 패널은 열린 창이 아니다
-  assert.match(js, /scrollRestoration/);                        // 기록을 치울 때 스크롤이 튀지 않는다
+  assert.match(js, /keepScroll/);                              // 기록을 치울 때 스크롤이 튀지 않는다
   assert.match(js, /ct-confirm/);                               // 캠프팀 확인창은 campteam.js 가 다룬다
   assert.match(js, /force-pw/);                                 // 강제 비밀번호 변경 창은 건드리지 않는다
   const exp = readFileSync(join(root, 'src/pages/portal/expense/index.astro'), 'utf8');
