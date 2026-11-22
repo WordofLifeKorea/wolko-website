@@ -40,7 +40,7 @@
     if (el.hasAttribute('data-wl-modal')) { var r0 = el.getBoundingClientRect(); return !faded && r0.width > 0 && r0.height > 0; }   // 이름이 다른 창은 표시를 달아 알린다
     if (cs.position !== 'fixed') return false;
     var r = el.getBoundingClientRect();
-    if (!(r.width >= window.innerWidth * 0.9 && r.height >= window.innerHeight * 0.9 && r.right > 0 && r.bottom > 0)) return false;
+    if (!(r.width >= window.innerWidth * 0.9 && r.height >= window.innerHeight * 0.9 && r.right > 0 && r.bottom > 0 && r.left < window.innerWidth && r.top < window.innerHeight)) return false;   // 화면 밖으로 밀어 둔 패널은 닫힌 것
     if (faded) { if (parseFloat(cs.transitionDuration) > 0 || parseFloat(cs.animationDuration) > 0) fadeRetry = true; return false; }   // 서서히 나타나는 중일 수 있다 → 잠시 뒤 다시 본다
     return true;
   }
@@ -64,6 +64,12 @@
   }
 
   function setBusy() { busy = true; clearTimeout(busyTimer); busyTimer = setTimeout(function () { busy = false; ignore = 0; sync(); }, 500); }
+  var keepScroll = null;
+  function restoreScroll() {
+    var k = keepScroll; if (!k) return;
+    var put = function () { if (Math.abs(window.scrollY - k.y) > 1 || Math.abs(window.scrollX - k.x) > 1) window.scrollTo(k.x, k.y); };
+    put(); setTimeout(put, 30); setTimeout(function () { put(); if (keepScroll === k) keepScroll = null; }, 120);
+  }
   function clearBusy() { busy = false; clearTimeout(busyTimer); }
 
   // 열린 창 수와 얹어 둔 기록 칸 수를 맞춘다
@@ -75,7 +81,10 @@
       var n = depth - tracked.length;
       depth = tracked.length;
       // 맨 위 칸이 우리 것일 때만 되돌린다(그 위에 페이지가 따로 얹은 칸이 있으면 건드리지 않는다)
-      if (curState && curState.wlm) { ignore = 1; setBusy(); history.go(-n); }
+      if (curState && curState.wlm) {
+        keepScroll = { x: window.scrollX, y: window.scrollY };   // 기록을 되돌릴 때 브라우저가 스크롤을 옛 칸 위치로 돌려놓는 것을 되돌려 놓는다
+        ignore = 1; setBusy(); history.go(-n);
+      }
     }
   }
   function sync() {
@@ -151,7 +160,7 @@
   window.addEventListener('popstate', function (e) {
     var wasOurs = !!(curState && curState.wlm);
     curState = e.state;
-    if (ignore > 0) { ignore--; if (!ignore) clearBusy(); e.stopImmediatePropagation(); setTimeout(sync, 0); return; }
+    if (ignore > 0) { ignore--; if (!ignore) clearBusy(); e.stopImmediatePropagation(); restoreScroll(); setTimeout(sync, 0); return; }
     if (wasOurs && depth > 0 && tracked.length) { depth--; e.stopImmediatePropagation(); closeTop(); return; }
     if (e.state && e.state.wlm && !tracked.length) {   // 열린 창이 없는데 우리가 남긴 칸에 닿았다(앞으로가기 · 이미 닫힌 창의 칸) → 페이지가 모르게 한 칸 더 돌아간다
       e.stopImmediatePropagation(); ignore = 1; setBusy(); history.back();
