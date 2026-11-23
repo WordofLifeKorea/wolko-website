@@ -25,7 +25,10 @@
   /** 날씨·낮밤에 맞는 하늘 배경설정에서 「하늘 배경」을 끌 수 있다 */
   function skyUpdate() {
     if (!window.TVSky || !S.res) return; var st = S.res.settings || {}, w = S.weather, h = Number(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul', hour: 'numeric', hour12: false })) % 24;
-    TVSky.mount(canvas, { on: st.sky !== 'off', kind: w && w.kind ? w.kind : '', isDay: w && w.isDay != null ? !!w.isDay : (h >= 6 && h < 18) });
+    var info = { on: st.sky !== 'off', kind: w && w.kind ? w.kind : '', isDay: w && w.isDay != null ? !!w.isDay : (h >= 6 && h < 18) }, fx = S.fx || 'auto';
+    if (fx === 'off') info.force = 'none'; else if (fx !== 'auto' && fx !== 'weather') info.force = fx; // 관리자가 설정에서 정한 계절 배경 (자동·날씨 따라는 지금처럼 날씨와 날짜로)
+    TVSky.mount(canvas, info);
+    if (!S.fxAt || Date.now() - S.fxAt > 600000) { S.fxAt = Date.now(); try { fetch('/api/campteam/config', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (c) { var v = c && c.seasonFx; if (v && v !== S.fx) { S.fx = v; skyUpdate(); } }).catch(function () {}); } catch (e) {} }
   }
   /** 서버가 읽어 둔 오늘 날씨(포털과 같은 값)를 쓴다. 없으면 아래 fetchWeather 가 직접 읽는다 */
   function serverWeather() {
