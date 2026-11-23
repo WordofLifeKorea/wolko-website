@@ -18,13 +18,13 @@
   /* 포탈 첫 화면 · 로그인 */
   .login-btn, .login-link-btn, .login-signup-btn, .auth-secondary-btn, .hub-reset-btn, .hub-install-confirm, .hub-prayer-save,
   /* 동의서 · 섬김 신청 · 캠프 자료 · 캠프 스태프 (페이지 안의 .primary/.secondary 단추) */
-  button.primary, .master-open, .gs-mricbtn,
+  :is(button.primary, button.secondary, button.danger, button.ghost):not(.btn, .pt-btn, .sm, .sa-btn, .ap-btn, .mt-btn, .ex-btn, .wolko-vnlp-btn), .master-open, .gs-mricbtn,
   /* 차량 · 운전 · 주방 · 차량일지 · 기도 · 복음 통계 */
   .car-btn, .log-primary, .log-secondary, .gs-primary,
   /* CRS */
   .btn-primary, .btn-save, .btn-cancel, .btn-visit-save, .btn-visit-cancel, .btn-approve, .btn-reject-user,
   /* 경비 · 마이페이지 */
-  .ex-btn:not(.sm, .ex-x),
+  .ex-btn:not(.sm, .ex-x), .ex-tab-new,
   /* 일정 */
   .sc-modal-btn, .sc-fab, .car-fab,
   /* 자료실 */
@@ -32,7 +32,7 @@
   /* ── 홈페이지 ── 쪽마다 머리 그림 아래 큰 단추 · 문의 · 후원 · 신청 */
   .ph-cta, .hm-btn, .ch-btn, .mh-btn, .wj-btn, .wr-btn, .jr-btn, .gv-btn, .pp-btn, .mp-btn, .cf-btn, .btn-contact, .wh-promo-btn,
   .crp-btn-contact, .crp-reg-btn, .crp-staff-open-btn, .crp-submit, .crp-cancel-btn, .crp-refund-agree-btn, .staff-ms-done,
-  .ct-form-btn, .inv-btn, #invShare, #invCopy, .rv-rsvp-btn, .rv-share-btn, .ap-btn, .cs-submit, .lo-map-btn, .download-btn, .primary-btn, .ghost-btn, .mt-btn,
+  .ct-form-btn, .inv-btn, .inv-share button, .rv-rsvp-btn, .rv-share-btn, .ap-btn, .cs-submit, .lo-map-btn, .download-btn, .primary-btn, .ghost-btn, .mt-btn,
   .sa-btn, .tv-save, .tv-btn,
   /* 신청자 관리 · 행사 */
   .btn-confirm, .account-submit, .account-cancel, .rsvp-add-save, .rsvp-add-cancel
@@ -54,16 +54,16 @@
   /* 포탈 첫 화면 */
   .hub-notice-edit, .hub-prayer-edit, .hub-prayer-del, .hub-prayer-cancel, .hub-pray-btn, .hub-pending-approve, .hub-pending-reject, .pt-btn,
   /* 캠프 자료 · 캠프 스태프 · 동의서 · 섬김 신청 */
-  :is(button.secondary, button.danger, button.ghost):not(.sa-btn, .ap-btn, .mt-btn, .ex-btn, .wolko-vnlp-btn), .main-tab-btn, .season-toggle-btn, .edit-toggle, .camp-manage-btn, .camp-rename-btn, .upload-placeholder-btn,
+  .main-tab-btn, .season-toggle-btn, .edit-toggle, .camp-manage-btn, .camp-rename-btn, .upload-placeholder-btn,
   button.tab,
   /* 운전 · 주방 · 차량일지 · 자료실 신고 */
-  .drive-manage, .drive-today, .drive-times-reset, .log-manage, .mat-report-btn,
+  .drive-manage, .drive-today, .drive-times-reset, .log-manage, .log-secondary.mat-report-btn,
   /* 차량 · 일정 */
   .cal-today-btn, .sc-btn, .car-tab,
   /* CRS */
   .view-tab, .btn-add, .btn-add-visit, .btn-edit, .btn-layout-reset, .map-search-btn, .btn-addr-search, .danger-go,
   /* 경비 · 마이페이지 */
-  .ex-btn.sm:not(.ex-x), .ex-tab, .ex-seg-btn,
+  .ex-btn.sm:not(.ex-x), .ex-tab:not(.ex-tab-new), .ex-seg-btn,
   /* 복음 통계 */
   .gs-small, .gs-tab, .gs-viewtoggle button,
   /* 자료실 */
@@ -72,7 +72,7 @@
   .btn-edit-mode, .btn-print, .btn-csv, .btn-team-panel-edit, .btn-staff-secondary, .btn-revert, .btn-cm-add, .trash-restore, .trash-purge,
   .group-notes-toggle, .campus-tab, .events-tab, .events-manage, .events-add,
   /* ── 홈페이지 ── 탭 · 보조 단추 */
-  .lo-tab, .year-tab, .crp-type-tab, .sa-need-btn, .admin-toggle, .btn-translate, .pdf-upload-btn, .file-picker-btn,
+  .sa-need-btn, .admin-toggle, .btn-translate, .pdf-upload-btn, .file-picker-btn,
   .mp-bio-toggle, .gv-pick-toggle, .crp-acct-copy, .crp-recent-clear, .staff-draft-btn, .staff-draft-discard, .staff-ms-btn, .tv-photo-btn, .delete-btn,
   .pp-seg button, .pp-chips button, .page-header-actions :is(.btn-preview, .btn-logout)
 ) {
@@ -90,10 +90,10 @@
 /* 3단계 — 작은 단추 · 칩 */
 :root:root:root :is(
   .wb-3,
-  .pt-tag, .sort-btn, .camp-team-filter, .row-toggle-btn,
+  .pt-tag, .sort-btn, .camp-team-filter button, .row-toggle-btn,
   .ex-chip, .ex-cf-toggle,
   .gc-chip, .day-toggle, .car-selected-date-bar button, .car-view-tab, .rr-filter, .docx-version-button, .viewer-layout-toggle,
-  .sort-seg button, .campus-seg button, .steps-toggle,
+  .steps-toggle,
   [data-filter]:is(button),
   /* ── 홈페이지 */
   .wh-promo-dismiss
@@ -115,3 +115,4 @@
 /* 단추 안의 숫자 표시가 단추를 키우지 않게 */
 :root:root .campus-tab .campus-tab-count { padding-block: 0 !important; line-height: 18px !important; }
 :root:root .page-header-actions :is(.btn-preview, .btn-logout) { white-space: nowrap; letter-spacing: 0 !important; }
+:root:root .add-resource span[data-t] { font-size: inherit; }
