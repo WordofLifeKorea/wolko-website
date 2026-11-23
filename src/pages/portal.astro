@@ -42,6 +42,7 @@
   <link rel="stylesheet" href="/wolko-customize.css?v=4">
   <script src="/wolko-customize.js?v=4" defer></script>
   <script src="/wolko-rail.js?v=55" defer></script>
+  <script src="/portal-teams.js?v=1" defer></script>
   <link rel="manifest" href="/portal-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -205,6 +206,9 @@
         <button class="hub-sidebar-lang" id="pendingBtn" onclick="openPendingPanel()" hidden>
           <span data-t="pendingLabel">승인 대기</span>
           <span class="hub-pending-badge hidden" id="pendingCount"></span>
+        </button>
+        <button class="hub-sidebar-lang" id="teamsBtn" type="button" onclick="window.openTeamsPanel && window.openTeamsPanel()" hidden>
+          <span data-t="teamsLabel">팀 관리</span>
         </button>
         <button class="hub-sidebar-lang hub-install-button" id="installAppBtn" type="button" onclick="installPortalApp()" data-t-title="installApp" data-t-aria="installApp" title="앱 설치" aria-label="앱 설치">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11"/><path d="m8 10 4 4 4-4"/><path d="M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"/></svg>
@@ -425,7 +429,7 @@
         installHelpDefault: '브라우저 메뉴에서 앱 설치 또는 홈 화면에 추가를 선택해 주세요.',
         installDone: 'WOLKO 앱을 설치했어요.',
         close: '확인',
-        pendingLabel: '승인 대기',
+        pendingLabel: '승인 대기', teamsLabel: '팀 관리',
         pendingListTitle: '승인 대기 목록',
         pendingEmpty: '기다리는 가입 신청이 없어요.',
         deleteTitle: '계정 삭제', deleteHelp: '선택한 포탈 계정을 지워요. 카운슬러 페이지 계정은 따로 관리돼서 그대로예요. 30일 동안은 복구용 사본이 남아요.', deleteBtn: '계정 삭제', deletePrompt: e => `${e} 계정을 삭제하려면 이 이메일을 그대로 입력해 주세요.`, deleteDone: '계정을 삭제했어요.',
@@ -513,7 +517,7 @@
         installHelpDefault: 'Open your browser menu and choose Install app or Add to Home Screen.',
         installDone: 'The WOLKO app is installed.',
         close: 'OK',
-        pendingLabel: 'Pending',
+        pendingLabel: 'Pending', teamsLabel: 'Teams',
         pendingListTitle: 'Pending Requests',
         pendingEmpty: 'No sign-up requests waiting.',
         deleteTitle: 'Delete account', deleteHelp: 'Deletes the selected portal account. Counselor-page accounts are managed separately and stay as they are. A recovery copy is kept for 30 days.', deleteBtn: 'Delete account', deletePrompt: e => `To delete ${e}, type this email exactly as shown.`, deleteDone: 'Account deleted.',
@@ -1595,6 +1599,7 @@
       $('authLang').hidden = true;
       loadDashboard();
       $('pendingBtn').hidden = currentSession?.role !== 'master';
+      $('teamsBtn').hidden = !['master', 'admin'].includes(currentSession?.role);
       if (currentSession?.role === 'master') refreshPendingCount();
       syncRole();
       if (window.wolkoCheckPasswordReset) window.wolkoCheckPasswordReset(); // 임시 비밀번호로 들어왔다면 새 비밀번호 설정 창
@@ -1613,6 +1618,7 @@
         sessionStorage.setItem('wolko-hub-role', me.role);
         try { if (localStorage.getItem('wolko-hub-role') !== null) localStorage.setItem('wolko-hub-role', me.role); } catch (e) {}
         $('pendingBtn').hidden = me.role !== 'master';
+        $('teamsBtn').hidden = !['master', 'admin'].includes(me.role);
         if (me.role === 'master') refreshPendingCount();
       } catch (e) {}
     }
