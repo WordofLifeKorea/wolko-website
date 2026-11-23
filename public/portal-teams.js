@@ -106,7 +106,10 @@
         '</div></div>';
     }).join('') : '<p class="pt-empty">' + esc(L('찾는 멤버가 없어요.', 'No matching members.')) + '</p>';
   }
-  function apply(p) { return p.then(function (d) { state = d; setErr(''); render(); }).catch(function (e) { setErr(e.message); }); }
+  // 보내는 중인 팀 배정(이메일 → 팀 목록): 앞 요청의 답이 와도 아직 안 보낸 선택이 화면과 다음 요청에서 사라지지 않게 덮어 쓴다
+  var pending = {}, inflight = 0;
+  function overlayPending(d) { (d && d.people || []).forEach(function (p) { if (pending[p.email]) p.teams = pending[p.email].slice(); }); return d; }
+  function apply(p) { return p.then(function (d) { state = overlayPending(d); setErr(''); render(); }).catch(function (e) { setErr(e.message); }); }
   function act(a, el) {
     var id = el && el.getAttribute('data-id');
     if (a === 'create') { var n = document.getElementById('ptNew').value.trim(); if (!n) return; apply(call('POST', { action: 'create', name: n })); return; }
@@ -119,10 +122,14 @@
     if (a === 'toggle') {
       var email = el.getAttribute('data-email');
       var person = (state.people || []).find(function (p) { return p.email === email; }); if (!person) return;
-      var next = person.teams.indexOf(id) >= 0 ? person.teams.filter(function (x) { return x !== id; }) : person.teams.concat([id]);
-      person.teams = next;   // 화면의 상태를 바로 바꿔서, 빠르게 여러 번 눌러도 앞의 선택이 사라지지 않게
+      var cur = pending[email] || person.teams;
+      var next = cur.indexOf(id) >= 0 ? cur.filter(function (x) { return x !== id; }) : cur.concat([id]);
+      pending[email] = next; person.teams = next.slice();   // 화면의 상태를 바로 바꿔서, 빠르게 여러 번 눌러도 앞의 선택이 사라지지 않게
       el.setAttribute('aria-pressed', String(next.indexOf(id) >= 0));
-      queue = queue.then(function () { return apply(call('POST', { action: 'assign', email: email, teams: person.teams.slice() })); });   // 하나씩 차례로 보낸다
+      inflight++;
+      queue = queue.then(function () {   // 하나씩 차례로 보낸다. 보낼 때의 최신 선택을 보낸다
+        return apply(call('POST', { action: 'assign', email: email, teams: (pending[email] || next).slice() }));
+      }).then(function () { inflight--; if (!inflight) { pending = {}; if (state) render(); } });
     }
   }
   window.openTeamsPanel = function () {

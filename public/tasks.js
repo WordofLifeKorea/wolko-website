@@ -1939,7 +1939,7 @@
       if (!b || deletedIds.has(id)) continue;
       writing.add(id); setSaveState('saving');
       const data = serialize(b); data.rev = (b.rev || 0) + 1;
-      try { const out = await store.put(data); b.rev = data.rev; if (b.prevTeam === data.prevTeam) delete b.prevTeam; if (out && out.canDelete !== undefined) b.canDelete = !!out.canDelete; saveError = ''; retryDelay = 0; }
+      try { const out = await store.put(data); b.rev = data.rev; if ((b.team || '') === (data.team || '')) delete b.prevTeam; else b.prevTeam = data.team || ''; if (out && out.canDelete !== undefined) b.canDelete = !!out.canDelete; saveError = ''; retryDelay = 0; }
       catch (err) { handleSaveError(err, id, data); }
       finally { writing.delete(id); }
     }
@@ -1958,7 +1958,7 @@
     dirty.add(id);   // 저장 못 한 보드는 '고치는 중'으로 남겨 둔다(다른 기기 소식으로 지워지지 않게, 닫을 때 경고)
     if (code === 'auth') { saveError = L('로그인 필요', 'Log in needed'); setSaveState('error', saveError); showLogin(); return; }
     if (code === 'conflict' && err.board) { resolveConflict(id, err.board); return; }
-    if (code === 'gone' || code === 'forbidden') { keepAsPersonalCopy(id, code); return; }
+    if (code === 'gone' || (code === 'forbidden' && (data.team || data.prevTeam !== undefined))) { keepAsPersonalCopy(id, code); return; }   // 팀과 관계없는 403(일시적인 차단 등)은 아래에서 다시 시도한다
     if (code === 'too_big') { saveError = L('보드가 너무 큼', 'Board too large'); setSaveState('error', saveError); toast(err.message || L('이 보드가 너무 커서 저장되지 않아요. 가지를 다른 프로젝트로 나누거나 긴 메모를 줄여 주세요.', 'This board is too large to save. Split branches into another project or shorten long notes.')); return; }
     if (code === 'invalid_argument') {
       let big = false; try { big = JSON.stringify(data).length > 240 * 1024; } catch (e) { big = false; }
@@ -2049,7 +2049,7 @@
     const server = sanitizeBoard(id, serverBoard);
     const same = (a, b) => { const pick = (x) => JSON.stringify({ t: x.title, n: x.note, nodes: x.nodes, edges: x.edges }); try { return pick(serialize(a)) === pick(serialize(b)); } catch (e) { return false; } };
     if (mine && same(mine, server)) {   // 이미 저장돼 있던 같은 내용(응답만 놓친 경우): 사본 없이 번호만 맞춘다
-      mine.rev = server.rev; dirty.delete(id); saveError = ''; clearTimeout(saveTimer); saveTimer = setTimeout(flush, 200); return;
+      mine.rev = server.rev; if ((server.team || '') === (mine.team || '')) delete mine.prevTeam; dirty.delete(id); saveError = ''; clearTimeout(saveTimer); saveTimer = setTimeout(flush, 200); return;
     }
     if (mine) {
       const copy = JSON.parse(JSON.stringify(serialize(mine)));

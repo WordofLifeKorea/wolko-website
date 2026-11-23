@@ -81,29 +81,36 @@ export async function saveBoard(env, ctx, board) {
   if (checked.error) return checked;
   const id = String(board.id);
   const team = board.team ? String(board.team) : '';
-  const moving = board.prevTeam !== undefined && String(board.prevTeam || '') !== team;
+  let moving = board.prevTeam !== undefined && String(board.prevTeam || '') !== team;
   const prevTeam = moving ? String(board.prevTeam || '') : null;
   if (team && !inTeam(ctx, team)) return { error: '그 팀의 멤버가 아니라서 팀 프로젝트로 저장할 수 없습니다.', status: 403 };
   if (moving && prevTeam && !TEAM_ID.test(prevTeam)) return { error: '팀이 올바르지 않습니다.', status: 400 };
-  let prevBoard = null;
-  if (moving && prevTeam) {
-    if (!inTeam(ctx, prevTeam)) return { error: '그 팀의 멤버가 아닙니다.', status: 403 };
-    prevBoard = await env.CAMP_KV.get(boardKey(teamNs(prevTeam), id), 'json');
-    if (prevBoard && prevBoard.gone) return { error: '이 프로젝트는 지워졌거나 다른 곳으로 옮겨졌습니다.', status: 410, gone: true };
-    if (prevBoard && !canRemoveTeamBoard(ctx, prevBoard)) return { error: '팀 프로젝트를 옮기거나 지우는 것은 만든 사람과 관리자만 할 수 있습니다.', status: 403 };
-  }
   const ns = nsOf(ctx, team);
+  const rev = Number(board.rev) || 0;
   let current = await env.CAMP_KV.get(boardKey(ns, id), 'json');
+  const shown = (b, t) => { const { createdBy, ...rest } = b; return { ...rest, team: t || undefined, canDelete: t ? canRemoveTeamBoard(ctx, b) : true }; };
+  const conflict = (b, t) => ({ error: '다른 기기나 팀원이 먼저 저장한 내용이 있습니다.', status: 409, board: shown(b, t) });
+  let prevBoard = null;
+  if (moving) {
+    if (prevTeam && !inTeam(ctx, prevTeam)) return { error: '그 팀의 멤버가 아닙니다.', status: 403 };
+    prevBoard = await env.CAMP_KV.get(boardKey(nsOf(ctx, prevTeam), id), 'json');
+    if (prevBoard && prevBoard.gone) {
+      // 예전 자리는 이미 비었다. 새 자리에 보드가 있으면 앞서 옮긴 저장의 답만 놓친 것(다시 보낸 것) — 옮기기 없이 보통 저장으로 다룬다
+      if (!current || current.gone) return { error: '이 프로젝트는 지워졌거나 다른 곳으로 옮겨졌습니다.', status: 410, gone: true };
+      prevBoard = null;
+      moving = false;
+    } else if (prevBoard) {
+      // 예전 자리에 더 새로 저장된 내용(다른 팀원 · 다른 기기)이 있으면 옮기지 않고 그 내용을 돌려준다 — 옮기면서 남의 저장을 지우지 않게
+      if (rev <= (Number(prevBoard.rev) || 0)) return conflict(prevBoard, prevTeam);
+      if (prevTeam && !canRemoveTeamBoard(ctx, prevBoard)) return { error: '팀 프로젝트를 옮기거나 지우는 것은 만든 사람과 관리자만 할 수 있습니다.', status: 403 };
+    }
+  }
   if (current && current.gone) {
     // 이 자리의 보드는 지워졌거나 다른 곳으로 옮겨졌다. 옮겨 오는 저장(moving)만 새로 받는다
     if (!moving) return { error: '이 프로젝트는 지워졌거나 다른 곳으로 옮겨졌습니다.', status: 410, gone: true };
     current = null;
   }
-  const rev = Number(board.rev) || 0;
-  if (current && rev <= (Number(current.rev) || 0)) {
-    const { createdBy, ...shown } = current;
-    return { error: '다른 기기나 팀원이 먼저 저장한 내용이 있습니다.', status: 409, board: { ...shown, team: team || undefined, canDelete: team ? canRemoveTeamBoard(ctx, current) : true } };
-  }
+  if (current && rev <= (Number(current.rev) || 0)) return conflict(current, team);
   if (!current) {
     const index = await readIndex(env, ns);
     if (!index.some(x => x.id === id) && index.length >= MAX_BOARDS) return { error: '프로젝트가 너무 많습니다. 안 쓰는 프로젝트를 지워 주세요.', status: 413 };

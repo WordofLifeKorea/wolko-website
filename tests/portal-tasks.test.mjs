@@ -145,5 +145,33 @@ test('업무관리 팀 프로젝트: 옮기거나 지운 뒤 늦게 도착한 �
   assert.equal((await t.call('PUT', 'anna@wol.org', { body: { board: board('x1', 3, { team, prevTeam: '' }) } })).status, 200);
   assert.equal((await t.call('GET', 'ben@wol.org')).boards[0].id, 'x1');
   const js = readFileSync(new URL('../public/tasks.js', import.meta.url), 'utf8');
-  assert.match(js, /code === 'gone' \|\| code === 'forbidden'\) \{ keepAsPersonalCopy/, '410 · 403 이면 내 사본으로 남긴다');
+  assert.match(js, /code === 'gone' \|\| \(code === 'forbidden' && \(data\.team \|\| data\.prevTeam !== undefined\)\)\) \{ keepAsPersonalCopy/, '410, 그리고 팀 보드의 403 이면 내 사본으로 남긴다');
+  assert.match(js, /if \(\(b\.team \|\| ''\) === \(data\.team \|\| ''\)\) delete b\.prevTeam; else b\.prevTeam = data\.team \|\| '';/, '저장 중 공유를 또 바꾸면 다음 저장이 방금 저장된 자리에서 옮긴다');
+});
+
+test('업무관리 팀 프로젝트: 옮길 때 예전 자리에 더 새 저장이 있으면 409, 답을 놓쳐 다시 보낸 옮기기는 사본을 만들지 않는다', async () => {
+  const t = setup(); t.acc('anna@wol.org'); t.acc('ben@wol.org');
+  const env = { CAMP_KV: { get: async (k, ty) => { const v = t.store.get(k); return v == null ? null : (ty === 'json' ? JSON.parse(v) : v); }, put: async (k, v) => { t.store.set(k, v); }, delete: async k => { t.store.delete(k); }, list: async ({ prefix }) => ({ keys: [...t.store.keys()].filter(k => k.startsWith(prefix)).map(name => ({ name })), list_complete: true }) }, ADMIN_PASSWORD: 'secret' };
+  const admin = { email: 'hkim3@wol.org', role: 'admin' };
+  const team = (await manageTeams(env, admin, { action: 'create', name: '팀' })).team.id;
+  for (const e of ['anna@wol.org', 'ben@wol.org']) await manageTeams(env, admin, { action: 'assign', email: e, teams: [team] });
+  // anna 가 팀 보드를 만들고(rev 1), ben 이 rev 3 까지 고친다. 옛 화면(rev 1)의 anna 가 나만 보기로 → 409, ben 의 내용은 그대로
+  await t.call('PUT', 'anna@wol.org', { body: { board: board('m1', 1, { team }) } });
+  await t.call('PUT', 'ben@wol.org', { body: { board: board('m1', 2, { team, title: 'ben 2' }) } });
+  await t.call('PUT', 'ben@wol.org', { body: { board: board('m1', 3, { team, title: 'ben 3' }) } });
+  const stale = await t.call('PUT', 'anna@wol.org', { body: { board: board('m1', 2, { prevTeam: team }) } });
+  assert.equal(stale.status, 409); assert.equal(stale.board.title, 'ben 3'); assert.equal(stale.board.team, team);
+  assert.equal((await t.call('GET', 'ben@wol.org')).boards[0].title, 'ben 3', '팀원이 저장한 내용이 지워지지 않는다');
+  // 다른 기기에서 내 프로젝트를 더 저장했는데, 옛 기기가 팀으로 옮기려 하면 409
+  await t.call('PUT', 'anna@wol.org', { body: { board: board('p1', 1) } });
+  await t.call('PUT', 'anna@wol.org', { body: { board: board('p1', 2, { title: '다른 기기' }) } });
+  const stale2 = await t.call('PUT', 'anna@wol.org', { body: { board: board('p1', 2, { team, prevTeam: '' }) } });
+  assert.equal(stale2.status, 409); assert.equal(stale2.board.title, '다른 기기'); assert.equal(stale2.board.team, undefined);
+  // 옮기기가 저장됐는데 답을 놓쳐 같은 것을 다시 보내면 410 이 아니라 409(같은 내용 — 화면이 번호만 맞춘다)
+  assert.equal((await t.call('PUT', 'anna@wol.org', { body: { board: board('p1', 3, { team, prevTeam: '' }) } })).status, 200);
+  const again = await t.call('PUT', 'anna@wol.org', { body: { board: board('p1', 3, { team, prevTeam: '' }) } });
+  assert.equal(again.status, 409); assert.equal(again.board.team, team);
+  // 그 뒤 옮기기 표시가 남은 저장도 받아 준다
+  assert.equal((await t.call('PUT', 'anna@wol.org', { body: { board: board('p1', 4, { team, prevTeam: '' }) } })).status, 200);
+  assert.deepEqual((await t.call('GET', 'anna@wol.org')).boards.filter(b => b.id === 'p1').map(b => b.team), [team], '한 번만 나온다');
 });
