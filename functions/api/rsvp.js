@@ -168,12 +168,18 @@ export async function onRequestGet(context) {
   }
 
   const eventId = clean(new URL(request.url).searchParams.get('eventId') || 'thanksgiving-night', 60);
-  const list = await env.CAMP_KV.list({ prefix: `rsvp:${eventId}:` });
   const rsvps = [], backfill = [];
-  for (const key of list.keys) {
-    if (key.name.includes(':email:')) continue;
-    const raw = await env.CAMP_KV.get(key.name);
-    if (raw) { try { const r = JSON.parse(raw); rsvps.push(r); backfill.push({ kind: 'rsvp', key: key.name, record: r }); } catch (e) { /* 손상된 값은 건너뛴다 */ } }
+  try {
+    const list = await env.CAMP_KV.list({ prefix: `rsvp:${eventId}:` });
+    const keys = list.keys.map(k => k.name).filter(name => !name.includes(':email:'));
+    // 한 건씩 차례로 읽으면 신청이 늘수록 느려져서(20건에 3초 이상) 한꺼번에 읽는다
+    const raws = await Promise.all(keys.map(name => env.CAMP_KV.get(name)));
+    raws.forEach((raw, i) => {
+      if (!raw) return;
+      try { const r = JSON.parse(raw); rsvps.push(r); backfill.push({ kind: 'rsvp', key: keys[i], record: r }); } catch (e) { /* 손상된 값은 건너뛴다 */ }
+    });
+  } catch (e) {
+    return Response.json({ error: '신청 목록을 지금 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 503, headers: CORS });
   }
   // 자동 번역 전에 들어온 메모는 목록을 열 때마다 몇 건씩 뒤에서 번역한다(응답은 기다리지 않는다)
   if (context.waitUntil) context.waitUntil(backfillFormTranslations(env, backfill));

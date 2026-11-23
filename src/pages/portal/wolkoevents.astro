@@ -345,7 +345,12 @@
       refresh.disabled = true;
       document.getElementById('rsvp').setAttribute('aria-busy', 'true');
       try {
-        const res = await fetch('/api/rsvp?eventId=' + encodeURIComponent(currentEventId), { headers: authHeaders() });
+        // 응답이 20초 넘게 없으면 끝없이 돌지 않고 '다시 시도' 안내를 띄운다
+        const ctl = typeof AbortController === 'function' ? new AbortController() : null;
+        const timer = ctl ? setTimeout(() => ctl.abort(), 20000) : 0;
+        let res;
+        try { res = await fetch('/api/rsvp?eventId=' + encodeURIComponent(currentEventId), { headers: authHeaders(), cache: 'no-store', signal: ctl ? ctl.signal : undefined }); }
+        finally { clearTimeout(timer); }
         if (res.status === 401) { goToHub(); return; }
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
@@ -356,7 +361,7 @@
         paintManageBtn();
         renderRsvpData();
       } catch (e) {
-        body.innerHTML = `<tr><td colspan="4"><div class="state-box"><p>${t('dataLoadRetry')}</p></div></td></tr>`;
+        body.innerHTML = `<tr><td colspan="4"><div class="state-box"><p>${t('dataLoadRetry')}</p><button type="button" class="wb-2" onclick="loadRsvpData()" style="margin-top:12px;border:1px solid #d6dee2;background:#fff;cursor:pointer">${adminLang === 'en' ? 'Try again' : '다시 불러오기'}</button></div></td></tr>`;
       } finally {
         refresh.disabled = false;
         document.getElementById('rsvp').setAttribute('aria-busy', 'false');

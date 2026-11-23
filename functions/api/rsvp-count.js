@@ -21,9 +21,9 @@ export async function onRequestGet(context) {
   let totalRsvps = 0;
   try {
     const list = await env.CAMP_KV.list({ prefix: `rsvp:${eventId}:` });
-    for (const key of list.keys) {
-      if (key.name.includes(':email:')) continue;
-      const raw = await env.CAMP_KV.get(key.name);
+    const keys = list.keys.map(k => k.name).filter(name => !name.includes(':email:'));
+    const raws = await Promise.all(keys.map(name => env.CAMP_KV.get(name)));   // 한꺼번에 읽는다(차례로 읽으면 느려진다)
+    for (const raw of raws) {
       if (!raw) continue;
       try {
         const rsvp = JSON.parse(raw);
