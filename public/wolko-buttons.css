@@ -33,7 +33,7 @@
   .save-resource, .cancel-resource,
   /* ── 홈페이지 ── 쪽마다 머리 그림 아래 큰 단추 · 문의 · 후원 · 신청 */
   .ph-cta, .hm-btn, .ch-btn, .mh-btn, .wj-btn, .wr-btn, .jr-btn, .gv-btn, .pp-btn, .mp-btn, .cf-btn, .btn-contact, .wh-promo-btn,
-  .crp-btn-contact, .crp-reg-btn, .crp-staff-open-btn, .crp-submit, .crp-cancel-btn, .crp-refund-agree-btn, .staff-ms-done,
+  .crp-btn-contact, .crp-reg-btn, .crp-staff-open-btn, .crp-submit, .crp-cancel-btn, .crp-refund-agree-btn, .staff-ms-done, .staff-draft-btn,
   .ct-form-btn, .inv-btn, .inv-share button, .rv-rsvp-btn, .rv-share-btn, .ap-btn, .cs-submit, .lo-map-btn, .download-btn, .primary-btn, .ghost-btn, .mt-btn,
   .sa-btn, .tv-save, .tv-btn,
   /* 신청자 관리 · 행사 */
@@ -75,7 +75,7 @@
   .group-notes-toggle, .campus-tab, .events-tab, .events-manage, .events-add,
   /* ── 홈페이지 ── 탭 · 보조 단추 */
   .sa-need-btn, .admin-toggle, .btn-translate, .pdf-upload-btn, .file-picker-btn,
-  .mp-bio-toggle, .gv-pick-toggle, .crp-acct-copy, .crp-recent-clear, .staff-draft-btn, .staff-draft-discard, .tv-photo-btn, .delete-btn,
+  .mp-bio-toggle, .gv-pick-toggle, .crp-acct-copy, .crp-recent-clear, .staff-draft-discard, .tv-photo-btn, .delete-btn,
   .pp-seg button, .pp-chips button, .page-header-actions :is(.btn-preview, .btn-logout)
 ) {
   box-sizing: border-box !important;
@@ -135,16 +135,18 @@
 
 /* ── 휴대폰: 나란한 두 단추를 세로로 길게 쌓지 않고 한 줄에 반씩 ── */
 @media (max-width: 740px) {
-  :root:root :is(.hm-actions, .mh-closing-actions, .mp-cta-row, .wj-accred-links, .gv-involve-cta) {
+  :root:root :is(.hm-actions, .mh-closing-actions, .mp-cta-row, .wj-accred-links, .gv-involve-cta, .ph-actions, .pp-join-btns) {
     flex-direction: row !important; flex-wrap: nowrap !important; gap: 8px !important; width: 100%; max-width: 480px;
     contain: inline-size;   /* 글자 길이가 바깥 칸을 넓히지 않게 — 칸 너비 안에서 반씩 */
   }
-  :root:root :is(.hm-actions, .mh-closing-actions, .mp-cta-row, .wj-accred-links, .gv-involve-cta) > :is(a, button) {
+  :root:root :is(.hm-actions, .mh-closing-actions, .mp-cta-row, .wj-accred-links, .gv-involve-cta, .ph-actions, .pp-join-btns) > :is(a, button) {
     flex: 1 1 0 !important; min-width: 0 !important; width: auto !important;
     justify-content: center !important; gap: 6px; padding-inline: 10px !important; white-space: nowrap;
   }
 }
 @media (max-width: 360px) {   /* 아주 좁은 폰: 글자가 넘치지 않게 화살표를 뺀다 */
-  :root:root :is(.hm-actions, .mh-closing-actions, .mp-cta-row, .wj-accred-links, .gv-involve-cta) > :is(a, button) > svg { display: none; }
-  :root:root :is(.hm-actions, .mh-closing-actions, .mp-cta-row, .wj-accred-links, .gv-involve-cta) > :is(a, button) { white-space: normal; text-align: center; line-height: 1.25 !important; }
+  :root:root :is(.hm-actions, .mh-closing-actions, .mp-cta-row, .wj-accred-links, .gv-involve-cta, .ph-actions, .pp-join-btns) > :is(a, button) > svg { display: none; }
+  :root:root :is(.hm-actions, .mh-closing-actions, .mp-cta-row, .wj-accred-links, .gv-involve-cta, .ph-actions, .pp-join-btns) > :is(a, button) { white-space: normal; text-align: center; line-height: 1.25 !important; }
 }
+/* 캠프 스태프 지원서 아래 줄: 좁은 칸(96px)의 '임시 저장'이 두 줄로 꺾여 옆 단추까지 키우지 않게 */
+:root:root:root:root .staff-form-actions .staff-draft-btn { padding-inline: 8px !important; white-space: nowrap; }

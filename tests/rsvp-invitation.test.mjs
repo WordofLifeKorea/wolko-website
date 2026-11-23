@@ -35,9 +35,11 @@ test('RSVP listing keeps parking details in the invitation and sizes mobile acti
   const listing = await read('src/pages/rsvp/index.astro');
 
   assert.doesNotMatch(listing, /rv-parking|주차장이 협소하여/);
-  // 캠프 신청 페이지와 같은 모양: 두 버튼이 한 줄씩 같은 폭 · 같은 높이(52px)
-  assert.match(listing, /\.rv-card-actions \{ margin-top: auto; display: grid; gap: 10px; \}/);
-  assert.match(listing, /\.rv-rsvp-btn, \.rv-share-btn \{[\s\S]*?width: 100%; height: 52px;/);
+  // 두 버튼을 한 줄에 반씩 — 같은 폭(2칸 격자), 높이는 사이트 공통 단추 규격(wolko-buttons.css 1단계 36px)
+  assert.match(listing, /\.rv-card-actions \{ margin-top: auto; display: grid; grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); gap: 8px; \}/);
+  assert.match(listing, /\.rv-rsvp-btn, \.rv-share-btn \{[\s\S]*?width: 100%;/);
+  const tiers = await read('public/wolko-buttons.css');
+  assert.match(tiers, /\.rv-rsvp-btn, \.rv-share-btn/, '두 버튼은 같은 단계(1단계)');
 });
 
 test('RSVP card and cover use a quiet invitation line while details retain the address', async () => {
