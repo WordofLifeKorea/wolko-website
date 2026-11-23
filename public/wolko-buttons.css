@@ -12,15 +12,17 @@
   --wb-radius: 8px;
 }
 
-/* 1단계 — 주요 동작 */
+/* 1단계 — 주요 동작
+   우선순위: 1단계 > 2단계 > 3단계 순으로 셉니다(목록 안 가장 센 선택자 기준). 두 단계에 다 걸리는 단추는 원하는 단계 쪽만 남기고 다른 쪽에서 :not 으로 뺀다. */
 :root:root:root :is(
   .wb-1,
   /* 포탈 첫 화면 · 로그인 */
   .login-btn, .login-link-btn, .login-signup-btn, .auth-secondary-btn, .hub-reset-btn, .hub-install-confirm, .hub-prayer-save,
   /* 동의서 · 섬김 신청 · 캠프 자료 · 캠프 스태프 (페이지 안의 .primary/.secondary 단추) */
-  :is(button.primary, button.secondary, button.danger, button.ghost):not(.btn, .pt-btn, .sm, .sa-btn, .ap-btn, .mt-btn, .ex-btn, .wolko-vnlp-btn), .master-open, .gs-mricbtn,
+  /* 쪽마다 쓰는 primary/secondary/ghost — 지우기(danger)는 옆 단추와 짝이 제각각이라 넣지 않는다. 아이콘 단추 · 업무관리 메뉴 · 2단계로 정한 단추는 뺀다 */
+  :is(button.primary, button.secondary, button.ghost):not(.btn, .pt-btn, .sm, .sa-btn, .ap-btn, .mt-btn, .ex-btn, .wolko-vnlp-btn, .car-card-btn, .sc-card-btn, .camp-rename-btn, .camp-manage-btn, .upload-placeholder-btn, .menu-actions button), .master-open, .gs-mricbtn,
   /* 차량 · 운전 · 주방 · 차량일지 · 기도 · 복음 통계 */
-  .car-btn, .log-primary, .log-secondary, .gs-primary,
+  .car-btn, .log-primary, .log-secondary:not(.mat-report-btn), .gs-primary,
   /* CRS */
   .btn-primary, .btn-save, .btn-cancel, .btn-visit-save, .btn-visit-cancel, .btn-approve, .btn-reject-user,
   /* 경비 · 마이페이지 */
@@ -63,7 +65,7 @@
   /* CRS */
   .view-tab, .btn-add, .btn-add-visit, .btn-edit, .btn-layout-reset, .map-search-btn, .btn-addr-search, .danger-go,
   /* 경비 · 마이페이지 */
-  .ex-btn.sm:not(.ex-x), .ex-tab:not(.ex-tab-new), .ex-seg-btn,
+  :where(.ex-btn.sm:not(.ex-x)), .ex-tab:not(.ex-tab-new), .ex-seg-btn,   /* :where — 2단계가 1단계보다 더 세지 않게(둘 다 걸리는 단추는 1단계 목록에서 뺀다) */
   /* 복음 통계 */
   .gs-small, .gs-tab, .gs-viewtoggle button,
   /* 자료실 */
