@@ -63,6 +63,27 @@
     return found.filter(function (el) { return !found.some(function (o) { return o !== el && o.contains(el); }); });
   }
 
+  // 이 탭에서 다른 문서로 가는 링크를 눌렀는지 — 누른 순간(capture)에 표시하고, 페이지가 막았으면(preventDefault) 바로 풀어 준다
+  var navPending = false, navTimer = null;
+  function leavingLink(e) {
+    if (e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return false;
+    var a = e.target && e.target.closest && e.target.closest('a[href]');
+    if (!a || (a.target && a.target !== '_self') || a.hasAttribute('download')) return false;
+    var u; try { u = new URL(a.href, location.href); } catch (x) { return false; }
+    if (!/^https?:$/.test(u.protocol)) return false;
+    if (u.origin === location.origin && u.pathname === location.pathname && u.search === location.search) return false;   // 같은 페이지 안(#…) 이동
+    return true;
+  }
+  window.addEventListener('click', function (e) {
+    if (!leavingLink(e)) return;
+    navPending = true;
+    clearTimeout(navTimer); navTimer = setTimeout(function () { navPending = false; }, 4000);
+    setTimeout(function () { if (e.defaultPrevented) { navPending = false; clearTimeout(navTimer); sync(); } }, 0);
+  }, true);
+  window.addEventListener('beforeunload', function () {   // '페이지를 떠날까요?' 에서 취소하면 다시 풀리도록 같은 시간만 표시한다
+    navPending = true; clearTimeout(navTimer); navTimer = setTimeout(function () { navPending = false; }, 4000);
+  });
+
   function setBusy() { busy = true; clearTimeout(busyTimer); busyTimer = setTimeout(function () { busy = false; ignore = 0; sync(); }, 500); }
   var keepScroll = null;
   function restoreScroll() {
@@ -79,6 +100,9 @@
     if (depth < tracked.length) {
       while (depth < tracked.length) { try { history.pushState({ wlm: depth + 1 }, ''); depth++; } catch (e) { depth = tracked.length; } }
     } else if (depth > tracked.length) {
+      // 링크를 눌러 다른 페이지로 떠나는 중이면(예: 메뉴 서랍 안의 링크 — 누르면 서랍이 닫힌다) 기록을 되돌리지 않는다.
+      // 여기서 뒤로 가면 브라우저가 링크 이동을 취소해서 페이지가 안 넘어간다. 남은 칸은 돌아왔을 때 아래 load/pageshow 가 치운다.
+      if (navPending) { depth = tracked.length; return; }
       var n = depth - tracked.length;
       depth = tracked.length;
       // 맨 위 칸이 우리 것일 때만 되돌린다(그 위에 페이지가 따로 얹은 칸이 있으면 건드리지 않는다)
