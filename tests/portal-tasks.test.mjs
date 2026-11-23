@@ -73,3 +73,21 @@ test('업무관리: 포탈 메뉴 · 첫 화면 · 페이지가 연결돼 있다
   const bare = css.replace(/@font-face\s*\{[^}]*\}/g, '').replace(/\/\*[\s\S]*?\*\//g, '').split('}').map(r => r.split('{')[0].trim()).filter(r => r && !r.startsWith('@'));
   for (const sel of bare) for (const one of sel.split(',')) assert.match(one.trim(), /^(#tkApp|body\.sheet-open #tkApp)/, '모든 규칙이 #tkApp 아래: ' + one);
 });
+
+test('업무관리: 목록(index)은 새 보드일 때만 쓴다(같은 키를 연달아 쓰지 않게)', async () => {
+  const t = setup(); t.acc('anna@wol.org');
+  await t.call('PUT', 'anna@wol.org', { body: { board: board('b1', 1) } });
+  const idxKey = [...t.store.keys()].find(k => k.endsWith(':index'));
+  const before = t.store.get(idxKey);
+  t.store.set(idxKey, before + ' ');   // 표시: 다시 쓰이면 사라진다
+  await t.call('PUT', 'anna@wol.org', { body: { board: board('b1', 2) } });
+  assert.equal(t.store.get(idxKey), before + ' ', '이미 있는 보드를 저장할 때 목록을 다시 쓰지 않는다');
+});
+
+test('업무관리: 포탈 공통 클래스와 겹치는 이름을 쓰지 않는다(.toolbar 는 wolko-header.css 가 덮어씀)', () => {
+  const css = readFileSync(new URL('../public/tasks.css', import.meta.url), 'utf8');
+  assert.doesNotMatch(css, /\.toolbar\b/);
+  const js = readFileSync(new URL('../public/tasks.js', import.meta.url), 'utf8');
+  assert.match(js, /document\.documentElement\.lang = LANG/, '레일 · 서랍이 페이지 언어를 따른다');
+  assert.match(js, /undoStack = \[\]; redoStack = \[\];   \/\/ 되돌리기가 다른 기기에서 고친 내용을 지우지 않게/);
+});

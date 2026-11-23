@@ -54,9 +54,8 @@ export async function saveBoard(env, owner, board) {
   if (!current && !index.some(x => x.id === id) && index.length >= MAX_BOARDS) return { error: '프로젝트가 너무 많습니다. 안 쓰는 프로젝트를 지워 주세요.', status: 413 };
   const saved = { ...board, id, rev, savedAt: new Date().toISOString() };
   await env.CAMP_KV.put(boardKey(owner, id), JSON.stringify(saved));
-  const next = index.filter(x => x.id !== id);
-  next.push({ id, updatedAt: Number(board.updatedAt) || Date.now() });
-  await env.CAMP_KV.put(indexKey(owner), JSON.stringify(next));
+  // 목록(index)은 새 보드일 때만 쓴다 — 같은 키를 1초에 여러 번 쓰면 KV 가 거절할 수 있어서(정렬은 보드의 updatedAt 으로 한다)
+  if (!index.some(x => x.id === id)) await env.CAMP_KV.put(indexKey(owner), JSON.stringify([...index, { id }]));
   return { ok: true, rev };
 }
 

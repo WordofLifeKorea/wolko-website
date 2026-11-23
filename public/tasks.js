@@ -1324,7 +1324,7 @@
   }
   stage.addEventListener('pointerdown', (e) => {
     if (e.button === 2 || mode !== 'canvas') return;
-    if (e.target.closest('.toolbar, .banner, .help, .store-note, .pane')) return;
+    if (e.target.closest('.tk-toolbar, .banner, .help, .store-note, .pane')) return;
     if (editing && editing.el.contains(e.target)) return;
     if (editing) finishEdit(true);
     closeMenu(); closeSearch();
@@ -1461,7 +1461,7 @@
   stage.addEventListener('dblclick', (e) => {
     if (mode !== 'canvas') return;
     const under = document.elementFromPoint(e.clientX, e.clientY) || e.target;   // 손동작을 위해 포인터를 잡아 두어서 e.target 은 캔버스가 된다
-    if (!stage.contains(under) || under.closest('.toolbar, .banner, .help, .n-fold, .n-handle, .pane, .store-note')) return;
+    if (!stage.contains(under) || under.closest('.tk-toolbar, .banner, .help, .n-fold, .n-handle, .pane, .store-note')) return;
     const nodeEl = under.closest('.node');
     if (nodeEl) { startEdit(nodeEl.dataset.id); return; }
     if (under.closest('.wire-hit')) return;
@@ -1765,9 +1765,15 @@
     nodesLayer.textContent = ''; nodeEls.clear(); sizes.clear(); canvasDirty = true;
     renderAll(); if (mode === 'canvas') fit(true); else needFit = true;
   }
+  const deletedIds = new Set();   // 이 화면에서 지운 보드 — 늦게 끝난 저장이나 서버 목록이 되살리지 않게
+  function removeOnServer(id) {
+    if (!store.ready || !store.remove) return;
+    if (writing.has(id)) { setTimeout(() => removeOnServer(id), 300); return; }   // 저장이 끝난 뒤에 지운다
+    store.remove(id).catch(() => toast(L('지우지 못했어요. 잠시 뒤 다시 해 보세요.', 'Could not delete. Please try again shortly.')));
+  }
   function deleteBoard(id) {
-    boards.delete(id); dirty.delete(id);
-    if (store.ready && store.remove) store.remove(id).catch(() => toast(L('지우지 못했어요. 잠시 뒤 다시 해 보세요.', 'Could not delete. Please try again shortly.')));
+    deletedIds.add(id); boards.delete(id); dirty.delete(id);
+    removeOnServer(id);
     const next = sortedBoards()[0];
     if (next) openBoard(next.id); else showPreview();
     toast(L('프로젝트를 지웠어요', 'Project deleted'));
@@ -1895,7 +1901,7 @@
     for (const id of [...dirty]) {
       if (writing.has(id)) continue;
       const b = boards.get(id); dirty.delete(id);
-      if (!b) continue;
+      if (!b || deletedIds.has(id)) continue;
       writing.add(id); setSaveState('saving');
       const data = serialize(b); data.rev = (b.rev || 0) + 1;
       try { await store.put(data); b.rev = data.rev; saveError = ''; retryDelay = 0; }
@@ -1945,7 +1951,7 @@
   }
   function adopt(id, data) {
     if (!data || !Array.isArray(data.nodes) || !Array.isArray(data.edges)) return;
-    if (dirty.has(id) || writing.has(id)) return;   // 이 화면에서 고치는 중인 보드는 덮어쓰지 않는다
+    if (dirty.has(id) || writing.has(id) || deletedIds.has(id)) return;   // 이 화면에서 고치는 중이거나 지운 보드는 덮어쓰지 않는다
     const local = boards.get(id);
     if (local) {   // 저장 횟수(rev)로 먼저 비교하고, 같을 때만 시각으로 정한다
       const lr = local.rev || 0, rr = Number(data.rev) || 0;
@@ -1957,6 +1963,7 @@
     if (board && board.id === id && !board.preview) {
       if (editing || (document.activeElement && (panel.contains(document.activeElement) || outlinePane.contains(document.activeElement)) && /INPUT|TEXTAREA/.test(document.activeElement.tagName))) return;   // 입력 중이면 다음 소식을 기다린다
       Object.assign(board, copy);
+      undoStack = []; redoStack = [];   // 되돌리기가 다른 기기에서 고친 내용을 지우지 않게, 바뀐 보드에서는 되돌리기 기록을 비운다
       for (const mid of [...multi]) if (!board.nodes.some((n) => n.id === mid)) multi.delete(mid);
       if (sel && sel.type === 'node' && !board.nodes.some((n) => n.id === sel.id)) sel = null;
       panelFor = null; renderAll();
@@ -1964,6 +1971,8 @@
   }
   // ───────────────── 포탈 서버 저장소
   const API = '/api/portal/tasks', TOKEN_KEY = 'wolko-hub-token';
+  // 토큰 안의 이메일(다른 계정으로 다시 로그인했는지 알아보는 데만 쓴다)
+  const tokenEmail = () => { try { const tk = sessionStorage.getItem(TOKEN_KEY) || ''; const raw = atob(tk.split('.')[0].replace(/-/g, '+').replace(/_/g, '/')); const m = raw.match(/[^:\s]+@[^:\s]+/); return m ? m[0].toLowerCase() : ''; } catch (e) { return ''; } };
   const authHeaders = () => { let tk = ''; try { tk = sessionStorage.getItem(TOKEN_KEY) || ''; } catch (e) { tk = ''; } return { Authorization: 'Bearer ' + tk }; };
   async function api(method, body, query) {
     let res;
@@ -1982,6 +1991,10 @@
   function resolveConflict(id, serverBoard) {
     const mine = boards.get(id);
     const server = sanitizeBoard(id, serverBoard);
+    const same = (a, b) => { const pick = (x) => JSON.stringify({ t: x.title, n: x.note, nodes: x.nodes, edges: x.edges }); try { return pick(serialize(a)) === pick(serialize(b)); } catch (e) { return false; } };
+    if (mine && same(mine, server)) {   // 이미 저장돼 있던 같은 내용(응답만 놓친 경우): 사본 없이 번호만 맞춘다
+      mine.rev = server.rev; dirty.delete(id); saveError = ''; clearTimeout(saveTimer); saveTimer = setTimeout(flush, 200); return;
+    }
     if (mine) {
       const copy = JSON.parse(JSON.stringify(serialize(mine)));
       copy.id = newId('b'); copy.title = (copy.title || '') + L(' (이 기기 사본)', ' (this device copy)'); copy.rev = 0; copy.createdAt = copy.updatedAt = now();
@@ -1989,7 +2002,7 @@
     }
     dirty.delete(id);
     boards.set(id, server);
-    if (board && board.id === id) { Object.assign(board, server); panelFor = null; renderAll(); }
+    if (board && board.id === id) { Object.assign(board, server); undoStack = []; redoStack = []; panelFor = null; renderAll(); }
     saveError = '';
     toast(L('다른 기기에서 먼저 고친 내용을 불러왔어요. 이 기기에서 고친 것은 사본 프로젝트로 남겨 두었어요.', 'Loaded changes made on another device first. Your edits here were kept as a copy project.'));
     renderMenuIfOpen(); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 400);
@@ -2034,7 +2047,9 @@
       const res = await fetch('/api/hub/account-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: $('#tkLoginEmail').value, password: $('#tkLoginPassword').value }) });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || L('로그인하지 못했습니다.', 'Could not log in.'));
+      const before = tokenEmail();
       try { sessionStorage.setItem(TOKEN_KEY, data.hubToken); } catch (err) { /* 무시 */ }
+      if (store.ready && before && tokenEmail() && before !== tokenEmail()) { location.reload(); return; }   // 다른 계정: 앞 계정의 보드를 새 계정에 저장하지 않게 처음부터
       if (window.wolkoCheckPasswordReset) window.wolkoCheckPasswordReset();
       $('#tkLoginPassword').value = '';
       saveError = '';
@@ -2071,5 +2086,7 @@
   document.querySelectorAll('#tkApp [data-ko-aria]').forEach((el) => { el.setAttribute('aria-label', LANG === 'en' ? el.getAttribute('data-en-aria') : el.getAttribute('data-ko-aria')); });
   document.querySelectorAll('#tkApp [data-ko-ph]').forEach((el) => { el.placeholder = LANG === 'en' ? el.getAttribute('data-en-ph') : el.getAttribute('data-ko-ph'); });
   document.title = L('업무관리 — WOLKO', 'Tasks — WOLKO');
+  document.documentElement.lang = LANG;   // 레일 · 서랍 메뉴가 이 값을 보고 언어를 맞춘다
+  { const ht = document.getElementById('tkHeaderTitle'); if (ht) ht.textContent = L('업무관리', 'Tasks'); }
   initStore();
 })();
