@@ -197,6 +197,7 @@
   window.addEventListener('pageshow', function (e) {
     if (!e.persisted) return;   // 뒤로/앞으로 이동으로 보관된 페이지가 그대로 돌아온 경우
     curState = history.state; ignore = 0; clearBusy(); tracked = []; depth = 0;
+    navPending = false; clearTimeout(navTimer);   // 떠날 때 표시해 둔 '떠나는 중'은 돌아오면 풀어 준다(그래야 서랍이 닫힐 때 남은 칸을 치운다)
     if (curState && curState.wlm && !detect().length) { ignore = 1; setBusy(); try { history.back(); } catch (e2) { ignore = 0; clearBusy(); } }
     else { depth = (curState && curState.wlm) || 0; sync(); }
   });
