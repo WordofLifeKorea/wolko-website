@@ -23,13 +23,13 @@ function setup() {
 const ALL_TOOLS = ['/portal/schedule', '/portal/crs', '/portal/wolkoevents', '/portal/resource', '/portal/gospel-stats', '/portal/prayers', '/portal/wolkoadmin', '/portal/campstaff', '/portal/camp-resources', '/portal/campteam', '/portal/expense', '/portal/car-drive', '/portal/kitchen', '/portal/tasks', '/portal/mypage'];
 
 test('제주팀 일반 멤버는 CRS · Resource & Media · 복음 통계 · 기도제목 · 캠프 관리자 · 경비 리포트 · 업무관리 · 내 페이지만', () => {
-  assert.deepEqual(JEJU_MEMBER_TOOLS, ['/portal/crs', '/portal/resource', '/portal/gospel-stats', '/portal/prayers', '/portal/wolkoadmin', '/portal/expense', '/portal/tasks', '/portal/mypage']);
+  assert.deepEqual(JEJU_MEMBER_TOOLS, ['/portal/crs', '/portal/resource', '/portal/wolkoevents', '/portal/gospel-stats', '/portal/prayers', '/portal/wolkoadmin', '/portal/expense', '/portal/tasks', '/portal/mypage']);
   assert.deepEqual(allowedTools({ role: 'counselor', campus: 'jeju', email: 'a@wol.org' }), JEJU_MEMBER_TOOLS);
   for (const campus of ['wolko', undefined, '']) assert.equal(allowedTools({ role: 'counselor', campus, email: 'a@wol.org' }), null, `평택(${campus})은 전체 메뉴`);
   for (const role of ['admin', 'master']) assert.equal(allowedTools({ role, campus: 'jeju', email: 'a@wol.org' }), null, `제주 ${role} 는 전체 메뉴`);
   assert.ok(JEJU_MEMBER_TOOLS.every(t => ALL_TOOLS.includes(t)), '목록의 주소가 실제 도구 주소다');
   const blocked = ALL_TOOLS.filter(t => !JEJU_MEMBER_TOOLS.includes(t));
-  assert.deepEqual(blocked.sort(), ['/portal/campstaff', '/portal/camp-resources', '/portal/campteam', '/portal/car-drive', '/portal/kitchen', '/portal/schedule', '/portal/wolkoevents'].sort());
+  assert.deepEqual(blocked.sort(), ['/portal/campstaff', '/portal/camp-resources', '/portal/campteam', '/portal/car-drive', '/portal/kitchen', '/portal/schedule'].sort());
   assert.equal(canUseTool(null, '/portal/kitchen'), true); assert.equal(canUseTool(JEJU_MEMBER_TOOLS, '/portal/kitchen'), false);
 });
 
@@ -76,7 +76,7 @@ test('서버: 제한된 도구의 API 는 제주팀 일반 멤버에게 403, 나
     return { passed, status: res.status };
   };
   const jj = await t.bearer('jj@wol.org');
-  for (const path of ['/api/car/drive', '/api/kitchen/duty', '/api/schedule/events', '/api/campteam/members', '/api/camp-progress/data', '/api/teach/camps', '/api/rsvp-manual']) {
+  for (const path of ['/api/car/drive', '/api/kitchen/duty', '/api/schedule/events', '/api/campteam/members', '/api/camp-progress/data', '/api/teach/camps']) {
     const r = await run(path, jj); assert.deepEqual([path, r.passed, r.status], [path, false, 403]);
   }
   for (const path of ['/api/portal/resources', '/api/portal/gospel-stats', '/api/portal/gospel-reporters', '/api/portal/prayers', '/api/portal/dashboard', '/api/expense/reports', '/api/admin/registrations', '/api/hub/me', '/api/newsletter/profile', '/api/geocode', '/api/rsvp', '/api/portal/notices']) {
@@ -110,7 +110,7 @@ test('화면 스크립트(wolko-access.js): 허용 목록 밖의 /portal 도구 
   const A = window.WolkoAccess;
   assert.equal(JSON.stringify(A.tools()), JSON.stringify(tools));
   for (const ok of ['/portal', '/portal/', '/portal/crs', '/portal/crs/', '/portal/expense/report', '/portal/gospel-stats', '/portal/gospel-stats/mric', '/portal/mypage', '/', '/camp/summer', '/api/hub/me']) assert.equal(A.allows(ok), true, ok);
-  for (const no of ['/portal/car-drive', '/portal/car', '/portal/car-log', '/portal/kitchen', '/portal/schedule', '/portal/wolkoevents', '/portal/campstaff', '/portal/camp-resources', '/portal/campteam', '/portal/campteam/budget', '/portal/serve-applications', '/portal/notify-check', '/portal/crsx']) assert.equal(A.allows(no), false, no);
+  for (const no of ['/portal/car-drive', '/portal/car', '/portal/car-log', '/portal/kitchen', '/portal/schedule', '/portal/campstaff', '/portal/camp-resources', '/portal/campteam', '/portal/campteam/budget', '/portal/serve-applications', '/portal/notify-check', '/portal/crsx']) assert.equal(A.allows(no), false, no);
   // tools 가 null(제한 없음)이면 전부 연다
   const open = {}; vm.runInNewContext(src, { window: open, document, sessionStorage: { getItem: k => (k === 'wolko-hub-token' ? 'tok-1234567890abcdefgh' : k.startsWith('wolko-hub-me:') ? JSON.stringify({ tools: null }) : null), setItem() {} }, location: { pathname: '/portal/kitchen' }, fetch: async () => ({ ok: false }), setTimeout });
   assert.equal(open.WolkoAccess.allows('/portal/kitchen'), true);
