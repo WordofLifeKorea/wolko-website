@@ -122,3 +122,28 @@ test('업무관리 팀 프로젝트: 팀 멤버만 보고 고치며, 지우기 �
   assert.equal((await t.call('DELETE', 'anna@wol.org', { query: `?id=bt1&team=${team}` })).status, 200, '만든 사람은 지울 수 있다');
   assert.deepEqual((await t.call('GET', 'ben@wol.org')).boards, []);
 });
+
+test('업무관리 팀 프로젝트: 옮기거나 지운 뒤 늦게 도착한 저장은 410 — 되살리거나 만든 사람을 바꾸지 않는다', async () => {
+  const t = setup(); t.acc('anna@wol.org'); t.acc('ben@wol.org');
+  const env = { CAMP_KV: { get: async (k, ty) => { const v = t.store.get(k); return v == null ? null : (ty === 'json' ? JSON.parse(v) : v); }, put: async (k, v) => { t.store.set(k, v); }, delete: async k => { t.store.delete(k); }, list: async ({ prefix }) => ({ keys: [...t.store.keys()].filter(k => k.startsWith(prefix)).map(name => ({ name })), list_complete: true }) }, ADMIN_PASSWORD: 'secret' };
+  const admin = { email: 'hkim3@wol.org', role: 'admin' };
+  const team = (await manageTeams(env, admin, { action: 'create', name: '팀' })).team.id;
+  for (const e of ['anna@wol.org', 'ben@wol.org']) await manageTeams(env, admin, { action: 'assign', email: e, teams: [team] });
+  await t.call('PUT', 'anna@wol.org', { body: { board: board('x1', 1, { team }) } });
+  // anna 가 나만 보기로 되돌린 뒤 ben 의 늦은 저장
+  assert.equal((await t.call('PUT', 'anna@wol.org', { body: { board: board('x1', 2, { prevTeam: team }) } })).status, 200);
+  const late = await t.call('PUT', 'ben@wol.org', { body: { board: board('x1', 2, { team, title: 'ben edit' }) } });
+  assert.equal(late.status, 410); assert.equal(late.gone, true);
+  assert.deepEqual((await t.call('GET', 'anna@wol.org')).boards.map(b => [b.id, b.team || '']), [['x1', '']], '같은 id 가 두 번 나오지 않는다');
+  assert.deepEqual((await t.call('GET', 'ben@wol.org')).boards, []);
+  // 지운 뒤의 늦은 저장
+  await t.call('PUT', 'anna@wol.org', { body: { board: board('x2', 1, { team }) } });
+  assert.equal((await t.call('DELETE', 'anna@wol.org', { query: `?id=x2&team=${team}` })).status, 200);
+  assert.equal((await t.call('PUT', 'ben@wol.org', { body: { board: board('x2', 5, { team }) } })).status, 410);
+  assert.deepEqual((await t.call('GET', 'ben@wol.org')).boards, []);
+  // 다시 팀으로 옮기는 것은 된다
+  assert.equal((await t.call('PUT', 'anna@wol.org', { body: { board: board('x1', 3, { team, prevTeam: '' }) } })).status, 200);
+  assert.equal((await t.call('GET', 'ben@wol.org')).boards[0].id, 'x1');
+  const js = readFileSync(new URL('../public/tasks.js', import.meta.url), 'utf8');
+  assert.match(js, /code === 'gone' \|\| code === 'forbidden'\) \{ keepAsPersonalCopy/, '410 · 403 이면 내 사본으로 남긴다');
+});

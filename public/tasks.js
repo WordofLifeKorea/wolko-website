@@ -1958,6 +1958,7 @@
     dirty.add(id);   // 저장 못 한 보드는 '고치는 중'으로 남겨 둔다(다른 기기 소식으로 지워지지 않게, 닫을 때 경고)
     if (code === 'auth') { saveError = L('로그인 필요', 'Log in needed'); setSaveState('error', saveError); showLogin(); return; }
     if (code === 'conflict' && err.board) { resolveConflict(id, err.board); return; }
+    if (code === 'gone' || code === 'forbidden') { keepAsPersonalCopy(id, code); return; }
     if (code === 'too_big') { saveError = L('보드가 너무 큼', 'Board too large'); setSaveState('error', saveError); toast(err.message || L('이 보드가 너무 커서 저장되지 않아요. 가지를 다른 프로젝트로 나누거나 긴 메모를 줄여 주세요.', 'This board is too large to save. Split branches into another project or shorten long notes.')); return; }
     if (code === 'invalid_argument') {
       let big = false; try { big = JSON.stringify(data).length > 240 * 1024; } catch (e) { big = false; }
@@ -2018,11 +2019,30 @@
     try { data = await res.json(); } catch (e) { data = {}; }
     if (res.status === 401) throw { code: 'auth', message: data.error };
     if (res.status === 409) throw { code: 'conflict', board: data.board, message: data.error };
+    if (res.status === 410) throw { code: 'gone', message: data.error };
+    if (res.status === 403) throw { code: 'forbidden', message: data.error };
     if (res.status === 413) throw { code: 'too_big', message: data.error };
     if (!res.ok) throw { code: 'http', status: res.status, message: data.error };
     return data;
   }
   // 다른 기기에서 먼저 저장했다: 이 기기에서 고친 것은 사본으로 남기고, 서버 것을 연다
+  // 서버가 이 자리에 더는 저장을 받지 않는다(지워졌거나 옮겨졌거나, 팀에서 빠졌다): 고친 내용을 내 프로젝트 사본으로 남긴다
+  function keepAsPersonalCopy(id, code) {
+    dirty.delete(id);
+    const mine = boards.get(id);
+    if (mine && !deletedIds.has(id)) {
+      const copy = JSON.parse(JSON.stringify(serialize(mine)));
+      copy.id = newId('b'); copy.title = (copy.title || '') + L(' (내 사본)', ' (my copy)'); copy.rev = 0; copy.createdAt = copy.updatedAt = now();
+      delete copy.team; delete copy.prevTeam; copy.canDelete = true;
+      boards.set(copy.id, copy); dirty.add(copy.id);
+      boards.delete(id);
+      if (board && board.id === id) openBoard(copy.id);
+      toast(code === 'gone'
+        ? L('이 프로젝트는 다른 곳에서 지워졌거나 옮겨졌어요. 고친 내용은 내 프로젝트 사본으로 남겨 두었어요.', 'This project was deleted or moved elsewhere. Your edits were kept as a copy in My projects.')
+        : L('이 팀 프로젝트에 더는 저장할 수 없어요(팀에서 빠졌을 수 있어요). 고친 내용은 내 프로젝트 사본으로 남겨 두었어요.', 'You can no longer save to this team project (you may have left the team). Your edits were kept as a copy in My projects.'));
+    }
+    saveError = ''; renderMenuIfOpen(); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 300);
+  }
   function resolveConflict(id, serverBoard) {
     if (deletedIds.has(id)) { dirty.delete(id); return; }
     const mine = boards.get(id);

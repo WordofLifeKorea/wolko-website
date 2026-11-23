@@ -33,7 +33,7 @@ async function readIndex(env, ns) {
 async function readNs(env, ns) {
   const index = await readIndex(env, ns);
   const boards = await Promise.all(index.map(x => env.CAMP_KV.get(boardKey(ns, x.id), 'json')));
-  return boards.filter(b => b && Array.isArray(b.nodes) && Array.isArray(b.edges));
+  return boards.filter(b => b && !b.gone && Array.isArray(b.nodes) && Array.isArray(b.edges));
 }
 
 /** 내 보드와 내가 속한 팀의 보드 전부(최근 고친 것부터). 팀 보드에는 team · canDelete 를 붙인다(만든 사람 표식은 내보내지 않음) */
@@ -64,8 +64,10 @@ async function addToIndex(env, ns, id) {
   // 목록은 새 보드일 때만 쓴다. 같은 키를 1초에 여러 번 쓰면 KV 가 거절할 수 있는데, 그래도 저장은 된 것이라 다음 저장에서 다시 채운다
   try { await env.CAMP_KV.put(indexKey(ns), JSON.stringify([...index, { id }])); } catch (e) { /* 다음 저장에서 다시 */ }
 }
-async function removeFromNs(env, ns, id) {
-  await env.CAMP_KV.delete(boardKey(ns, id));
+// 지우거나 다른 곳으로 옮긴 자리에는 표지(gone)를 30일 남긴다 — 늦게 도착한 저장이 보드를 되살리거나 다른 사람을 만든 사람으로 바꾸지 않게
+const GONE_TTL = 60 * 60 * 24 * 30;
+async function removeFromNs(env, ns, id, rev) {
+  await env.CAMP_KV.put(boardKey(ns, id), JSON.stringify({ id, gone: true, rev: Number(rev) || 0, at: new Date().toISOString() }), { expirationTtl: GONE_TTL });
   const index = await readIndex(env, ns);
   if (index.some(x => x.id === id)) await env.CAMP_KV.put(indexKey(ns), JSON.stringify(index.filter(x => x.id !== id)));
 }
@@ -87,10 +89,16 @@ export async function saveBoard(env, ctx, board) {
   if (moving && prevTeam) {
     if (!inTeam(ctx, prevTeam)) return { error: '그 팀의 멤버가 아닙니다.', status: 403 };
     prevBoard = await env.CAMP_KV.get(boardKey(teamNs(prevTeam), id), 'json');
+    if (prevBoard && prevBoard.gone) return { error: '이 프로젝트는 지워졌거나 다른 곳으로 옮겨졌습니다.', status: 410, gone: true };
     if (prevBoard && !canRemoveTeamBoard(ctx, prevBoard)) return { error: '팀 프로젝트를 옮기거나 지우는 것은 만든 사람과 관리자만 할 수 있습니다.', status: 403 };
   }
   const ns = nsOf(ctx, team);
-  const current = await env.CAMP_KV.get(boardKey(ns, id), 'json');
+  let current = await env.CAMP_KV.get(boardKey(ns, id), 'json');
+  if (current && current.gone) {
+    // 이 자리의 보드는 지워졌거나 다른 곳으로 옮겨졌다. 옮겨 오는 저장(moving)만 새로 받는다
+    if (!moving) return { error: '이 프로젝트는 지워졌거나 다른 곳으로 옮겨졌습니다.', status: 410, gone: true };
+    current = null;
+  }
   const rev = Number(board.rev) || 0;
   if (current && rev <= (Number(current.rev) || 0)) {
     const { createdBy, ...shown } = current;
@@ -105,7 +113,7 @@ export async function saveBoard(env, ctx, board) {
   if (team) saved.createdBy = current?.createdBy || prevBoard?.createdBy || ctx.owner;   // 팀 보드: 처음 팀으로 올린 사람(옮겨 온 보드는 원래 만든 사람)
   await env.CAMP_KV.put(boardKey(ns, id), JSON.stringify(saved));
   await addToIndex(env, ns, id);
-  if (moving) await removeFromNs(env, nsOf(ctx, prevTeam), id);
+  if (moving) await removeFromNs(env, nsOf(ctx, prevTeam), id, rev);
   return { ok: true, rev, canDelete: team ? canRemoveTeamBoard(ctx, saved) : true };
 }
 
@@ -115,8 +123,10 @@ export async function deleteBoard(env, ctx, id, team) {
   if (team) {
     if (!TEAM_ID.test(String(team)) || !inTeam(ctx, team)) return { error: '그 팀의 멤버가 아닙니다.', status: 403 };
     const current = await env.CAMP_KV.get(boardKey(teamNs(team), id), 'json');
-    if (current && !canRemoveTeamBoard(ctx, current)) return { error: '팀 프로젝트는 만든 사람과 관리자만 지울 수 있습니다.', status: 403 };
+    if (current && !current.gone && !canRemoveTeamBoard(ctx, current)) return { error: '팀 프로젝트는 만든 사람과 관리자만 지울 수 있습니다.', status: 403 };
   }
-  await removeFromNs(env, nsOf(ctx, team), id);
+  const cur = await env.CAMP_KV.get(boardKey(nsOf(ctx, team), id), 'json');
+  if (cur && cur.gone) return { ok: true };
+  await removeFromNs(env, nsOf(ctx, team), id, cur?.rev);
   return { ok: true };
 }

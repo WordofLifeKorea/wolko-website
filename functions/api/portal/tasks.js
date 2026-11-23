@@ -32,7 +32,7 @@ export async function onRequestPut({ env, request }) {
   let body;
   try { body = await request.json(); } catch { return fail('잘못된 요청입니다.'); }
   const out = await saveBoard(env, ctx, body?.board);
-  if (out.error) return fail(out.error, out.status, out.board ? { board: out.board } : {});
+  if (out.error) return fail(out.error, out.status, out.board ? { board: out.board } : out.gone ? { gone: true } : {});
   return Response.json(out, { headers: H });
 }
 

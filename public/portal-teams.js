@@ -44,7 +44,7 @@
     '.pt-err{color:#b42318;font-size:13px;margin:0;min-height:1em}' +
     '.pt-confirm{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px;color:#b42318}';
 
-  var state = null, overlay = null, filter = '', confirmId = '', editId = '';
+  var state = null, overlay = null, filter = '', confirmId = '', editId = '', queue = Promise.resolve();
   function ensure() {
     if (overlay) return overlay;
     var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
@@ -120,8 +120,9 @@
       var email = el.getAttribute('data-email');
       var person = (state.people || []).find(function (p) { return p.email === email; }); if (!person) return;
       var next = person.teams.indexOf(id) >= 0 ? person.teams.filter(function (x) { return x !== id; }) : person.teams.concat([id]);
-      el.setAttribute('aria-pressed', String(next.indexOf(id) >= 0));   // 바로 보이게
-      apply(call('POST', { action: 'assign', email: email, teams: next }));
+      person.teams = next;   // 화면의 상태를 바로 바꿔서, 빠르게 여러 번 눌러도 앞의 선택이 사라지지 않게
+      el.setAttribute('aria-pressed', String(next.indexOf(id) >= 0));
+      queue = queue.then(function () { return apply(call('POST', { action: 'assign', email: email, teams: person.teams.slice() })); });   // 하나씩 차례로 보낸다
     }
   }
   window.openTeamsPanel = function () {
