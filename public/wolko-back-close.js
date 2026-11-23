@@ -80,7 +80,9 @@
     clearTimeout(navTimer); navTimer = setTimeout(function () { navPending = false; }, 4000);
     setTimeout(function () { if (e.defaultPrevented) { navPending = false; clearTimeout(navTimer); sync(); } }, 0);
   }, true);
-  window.addEventListener('beforeunload', function () { navPending = true; });
+  window.addEventListener('beforeunload', function () {   // '페이지를 떠날까요?' 에서 취소하면 다시 풀리도록 같은 시간만 표시한다
+    navPending = true; clearTimeout(navTimer); navTimer = setTimeout(function () { navPending = false; }, 4000);
+  });
 
   function setBusy() { busy = true; clearTimeout(busyTimer); busyTimer = setTimeout(function () { busy = false; ignore = 0; sync(); }, 500); }
   var keepScroll = null;
