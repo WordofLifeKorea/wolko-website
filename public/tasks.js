@@ -2049,7 +2049,8 @@
     const server = sanitizeBoard(id, serverBoard);
     const same = (a, b) => { const pick = (x) => JSON.stringify({ t: x.title, n: x.note, nodes: x.nodes, edges: x.edges }); try { return pick(serialize(a)) === pick(serialize(b)); } catch (e) { return false; } };
     if (mine && same(mine, server)) {   // 이미 저장돼 있던 같은 내용(응답만 놓친 경우): 사본 없이 번호만 맞춘다
-      mine.rev = server.rev; if ((server.team || '') === (mine.team || '')) delete mine.prevTeam; dirty.delete(id); saveError = ''; clearTimeout(saveTimer); saveTimer = setTimeout(flush, 200); return;
+      mine.rev = server.rev;
+      if ((server.team || '') === (mine.team || '')) { delete mine.prevTeam; dirty.delete(id); } else dirty.add(id);   // 공유를 바꾼 것이면 다음 번호로 다시 옮긴다 saveError = ''; clearTimeout(saveTimer); saveTimer = setTimeout(flush, 200); return;
     }
     if (mine) {
       const copy = JSON.parse(JSON.stringify(serialize(mine)));
