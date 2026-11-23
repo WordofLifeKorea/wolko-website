@@ -20,10 +20,10 @@ function setup() {
   const bearer = async (email, role = 'counselor') => ({ Authorization: 'Bearer ' + await H.createHubSessionToken('secret', email, role) });
   return { env, acc, bearer };
 }
-const ALL_TOOLS = ['/portal/schedule', '/portal/crs', '/portal/wolkoevents', '/portal/resource', '/portal/gospel-stats', '/portal/prayers', '/portal/wolkoadmin', '/portal/campstaff', '/portal/camp-resources', '/portal/campteam', '/portal/expense', '/portal/car-drive', '/portal/kitchen', '/portal/mypage'];
+const ALL_TOOLS = ['/portal/schedule', '/portal/crs', '/portal/wolkoevents', '/portal/resource', '/portal/gospel-stats', '/portal/prayers', '/portal/wolkoadmin', '/portal/campstaff', '/portal/camp-resources', '/portal/campteam', '/portal/expense', '/portal/car-drive', '/portal/kitchen', '/portal/tasks', '/portal/mypage'];
 
-test('제주팀 일반 멤버는 CRS · Resource & Media · 복음 통계 · 기도제목 · 캠프 관리자 · 경비 리포트 · 내 페이지만', () => {
-  assert.deepEqual(JEJU_MEMBER_TOOLS, ['/portal/crs', '/portal/resource', '/portal/gospel-stats', '/portal/prayers', '/portal/wolkoadmin', '/portal/expense', '/portal/mypage']);
+test('제주팀 일반 멤버는 CRS · Resource & Media · 복음 통계 · 기도제목 · 캠프 관리자 · 경비 리포트 · 업무관리 · 내 페이지만', () => {
+  assert.deepEqual(JEJU_MEMBER_TOOLS, ['/portal/crs', '/portal/resource', '/portal/gospel-stats', '/portal/prayers', '/portal/wolkoadmin', '/portal/expense', '/portal/tasks', '/portal/mypage']);
   assert.deepEqual(allowedTools({ role: 'counselor', campus: 'jeju', email: 'a@wol.org' }), JEJU_MEMBER_TOOLS);
   for (const campus of ['wolko', undefined, '']) assert.equal(allowedTools({ role: 'counselor', campus, email: 'a@wol.org' }), null, `평택(${campus})은 전체 메뉴`);
   for (const role of ['admin', 'master']) assert.equal(allowedTools({ role, campus: 'jeju', email: 'a@wol.org' }), null, `제주 ${role} 는 전체 메뉴`);

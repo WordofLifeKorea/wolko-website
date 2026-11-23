@@ -1,0 +1,224 @@
+---
+// 업무관리: 프로젝트를 목표 → 갈래 → 작업 노드로 펼쳐 계획하고, 캔버스 · 개요 · 상태별 보드 · 일정으로 진행을 본다.
+// 포탈 계정마다 따로 저장(/api/portal/tasks). 앱은 public/tasks.js · public/tasks.css (claude.ai 의 '가지치기'를 옮겨 온 것).
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <script is:inline src="/wolko-lang-sync.js?v=3"></script>
+  <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
+  <script is:inline src="/wolko-back-close.js?v=1"></script>
+  <title>업무관리 — WOLKO</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
+  <link rel="stylesheet" href="/car-log.css?v=8">
+  <link rel="stylesheet" href="/wolko-rail.css?v=24">
+  <link rel="stylesheet" href="/wolko-header.css?v=18">
+  <link rel="stylesheet" href="/wolko-ui.css?v=6">
+  <link rel="stylesheet" href="/wolko-layout.css?v=17">
+  <link rel="stylesheet" href="/wolko-site.css?v=13">
+  <link rel="stylesheet" href="/tasks.css?v=1">
+  <script src="/wolko-rail.js?v=55" defer></script>
+  <script src="/tasks.js?v=1" defer></script>
+  <meta name="theme-color" content="#004f68">
+  <style is:inline>
+    /* 화면 전체를 쓰는 도구: 머리글 아래를 업무관리가 모두 채운다 */
+    html, body { height: 100%; }
+    body.tk-page { margin-top: 0; margin-bottom: 0; overflow: hidden; display: flex; flex-direction: column; background: #eef1ee; }
+    body.tk-page > .car-header { flex: none; }
+    body.tk-page > #tkApp { flex: 1 1 auto; min-height: 0; position: relative; }
+  </style>
+</head>
+<body class="tk-page">
+  <header class="car-header">
+    <a class="car-header-logo" href="/portal" title="WOLKO 포탈로 돌아가기">
+      <img src="/images/WOLKO Circle.png" alt="WOLKO">
+      <span>업무관리</span>
+    </a>
+    <div class="car-header-right">
+      <div class="wl-lang-toggle" role="group" aria-label="Language">
+        <button type="button" class="wl-lang-btn" id="langKoBtn" aria-label="한국어" title="한국어"><img src="/images/flags/kr.svg" alt=""><span>KO</span></button>
+        <button type="button" class="wl-lang-btn" id="langEnBtn" aria-label="English" title="English"><img src="/images/flags/us.svg?v=2" alt=""><span>EN</span></button>
+      </div>
+    </div>
+  </header>
+
+  <main id="tkApp">
+    <div class="app">
+      <header class="top">
+        <div class="top-row">
+          <div class="proj">
+            <button class="icon-btn" id="menuBtn" type="button" aria-haspopup="true" aria-expanded="false" data-ko-aria="프로젝트 목록" data-en-aria="Projects" data-ko-title="프로젝트 목록" data-en-title="Projects">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+            </button>
+            <input class="proj-title wl-tall" id="projTitle" maxlength="80" data-ko-aria="프로젝트 이름" data-en-aria="Project name">
+          </div>
+          <div class="tabs" role="group" data-ko-aria="보기" data-en-aria="View">
+            <button type="button" data-mode="canvas" aria-pressed="true" data-ko="캔버스" data-en="Canvas">캔버스</button>
+            <button type="button" data-mode="outline" aria-pressed="false" data-ko="개요" data-en="Outline">개요</button>
+            <button type="button" data-mode="board" aria-pressed="false" data-ko="보드" data-en="Board">보드</button>
+            <button type="button" data-mode="schedule" aria-pressed="false" data-ko="일정" data-en="Schedule">일정</button>
+          </div>
+          <button class="icon-btn" id="searchBtn" type="button" aria-expanded="false" data-ko-aria="노드 찾기" data-en-aria="Find nodes" data-ko-title="찾기 (Ctrl+F)" data-en-title="Find (Ctrl+F)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+          </button>
+          <button class="icon-btn summary-btn" id="summaryBtn" type="button" data-ko-aria="프로젝트 요약 보기" data-en-aria="Project summary" data-ko-title="요약" data-en-title="Summary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+          </button>
+          <span class="save-state" id="saveState" aria-live="polite"></span>
+        </div>
+        <div class="overall">
+          <div class="ov-prog" data-ko-title="작업으로 정한 일 가운데 끝낸 비율" data-en-title="Share of committed work that is done">
+            <div class="ov-bar"><i id="ovBar"></i></div>
+            <span class="ov-num" id="ovNum"></span>
+          </div>
+          <div class="period" id="period" role="group" data-ko-aria="기간으로 보기" data-en-aria="Filter by period">
+            <button type="button" id="pClear" hidden data-ko="전체 기간" data-en="All dates">전체 기간</button>
+            <select class="wl-tall" id="pYear" data-ko-aria="연도" data-en-aria="Year"></select>
+            <select class="wl-tall" id="pMonth" data-ko-aria="월" data-en-aria="Month"></select>
+            <select class="wl-tall" id="pBasis" data-ko-aria="어떤 날짜로 볼지" data-en-aria="Which date">
+              <option value="any" data-ko="모든 날짜" data-en="Any date">모든 날짜</option>
+              <option value="due" data-ko="마감" data-en="Due">마감</option>
+              <option value="done" data-ko="끝낸 날" data-en="Finished">끝낸 날</option>
+              <option value="created" data-ko="만든 날" data-en="Created">만든 날</option>
+            </select>
+            <button type="button" id="pThis" data-ko="이번 달" data-en="This month">이번 달</button>
+            <span class="sep" aria-hidden="true"></span>
+          </div>
+          <div class="chips" id="chips" role="group" data-ko-aria="강조해서 보기" data-en-aria="Highlight"></div>
+        </div>
+        <div class="menu" id="menu" hidden></div>
+        <div class="search" id="search" hidden>
+          <input class="wl-tall" id="searchInp" type="search" autocomplete="off" data-ko-ph="이름 · 메모 · 체크리스트에서 찾기" data-en-ph="Search names, notes, checklists" data-ko-aria="찾을 말" data-en-aria="Search">
+          <ul id="searchRes"></ul>
+        </div>
+      </header>
+
+      <div class="main">
+        <div class="stage" id="stage" tabindex="-1">
+          <div class="world" id="world">
+            <svg class="wires" id="wires" aria-hidden="true"></svg>
+            <div id="nodes"></div>
+          </div>
+          <div class="marquee" id="marquee" hidden></div>
+          <div class="banner" id="banner" hidden>
+            <span data-ko="예시 보드예요. 고치기 시작하면 내 프로젝트로 저장돼요." data-en="This is a sample board. Start editing and it is saved as your project.">예시 보드예요. 고치기 시작하면 내 프로젝트로 저장돼요.</span>
+            <button class="btn" type="button" id="bannerNew" data-ko="새 프로젝트 만들기" data-en="New project">새 프로젝트 만들기</button>
+          </div>
+          <div class="store-note" id="storeNote" hidden></div>
+          <div class="toolbar" id="toolbar">
+            <button data-canvas-only class="btn primary" type="button" id="addBtn" data-ko-title="노드 추가 (선택한 노드가 있으면 그 아래 가지)" data-en-title="Add a node (under the selected one, if any)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span data-ko="노드" data-en="Node">노드</span>
+            </button>
+            <button data-canvas-only class="btn" type="button" id="tidyBtn" data-ko="정리" data-en="Tidy" data-ko-title="가지 정리 (자동 배치)" data-en-title="Tidy up (auto layout)">정리</button>
+            <button data-canvas-only class="icon-btn" type="button" id="hideDoneBtn" aria-pressed="false" data-ko-aria="끝난 가지 숨기기" data-en-aria="Hide finished branches" data-ko-title="끝난 가지 숨기기" data-en-title="Hide finished branches">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6Z"/><circle cx="12" cy="12" r="2.5"/><path d="M4 4l16 16"/></svg>
+            </button>
+            <span class="sep" data-canvas-only></span>
+            <button data-canvas-only class="icon-btn" type="button" id="zoomOut" data-ko-aria="축소" data-en-aria="Zoom out">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg>
+            </button>
+            <span data-canvas-only class="zoom-num" id="zoomNum">100%</span>
+            <button data-canvas-only class="icon-btn" type="button" id="zoomIn" data-ko-aria="확대" data-en-aria="Zoom in">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button data-canvas-only class="icon-btn" type="button" id="fitBtn" data-ko-aria="전체 보기" data-en-aria="Fit to screen" data-ko-title="전체 보기 (F)" data-en-title="Fit to screen (F)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+            </button>
+            <span class="sep" data-canvas-only></span>
+            <button class="icon-btn" type="button" id="undoBtn" disabled data-ko-aria="되돌리기" data-en-aria="Undo" data-ko-title="되돌리기 (Ctrl+Z)" data-en-title="Undo (Ctrl+Z)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+            </button>
+            <button class="icon-btn" type="button" id="redoBtn" disabled data-ko-aria="다시 하기" data-en-aria="Redo" data-ko-title="다시 하기 (Ctrl+Shift+Z)" data-en-title="Redo (Ctrl+Shift+Z)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg>
+            </button>
+            <button data-canvas-only class="icon-btn" type="button" id="helpBtn" aria-expanded="false" data-ko-aria="사용법과 단축키" data-en-aria="How to use and shortcuts" data-ko-title="사용법" data-en-title="How to use">?</button>
+          </div>
+          <div class="help" id="help" hidden>
+            <div data-lang-only="ko">
+              <h3>캔버스</h3>
+              <dl>
+                <dt>빈 곳 더블클릭</dt><dd>새 노드</dd>
+                <dt>노드 더블클릭</dt><dd>이름 바로 고치기</dd>
+                <dt>노드 끌기</dt><dd>아래 가지까지 같이 옮김 (<kbd>Alt</kbd> 누르면 그 노드만)</dd>
+                <dt>오른쪽 아래 +</dt><dd>누르면 아래 가지, 끌어서 다른 노드에 놓으면 연결</dd>
+                <dt><kbd>Shift</kbd>+클릭 · 끌기</dt><dd>여러 개 선택 (빈 곳을 끌면 네모로 선택)</dd>
+                <dt>빈 곳 끌기 · 휠</dt><dd>화면 이동</dd>
+                <dt><kbd>Ctrl</kbd>+휠 · 두 손가락</dt><dd>확대 · 축소</dd>
+              </dl>
+              <h3>키보드</h3>
+              <dl>
+                <dt><kbd>Tab</kbd> / <kbd>Enter</kbd></dt><dd>아래 가지 / 같은 줄 추가</dd>
+                <dt><kbd>F2</kbd></dt><dd>이름 고치기</dd>
+                <dt><kbd>1</kbd>–<kbd>6</kbd></dt><dd>아이디어 · 할 일 · 진행 중 · 막힘 · 완료 · 보류</dd>
+                <dt><kbd>S</kbd></dt><dd>중요 표시</dd>
+                <dt>방향키</dt><dd>노드 사이 이동</dd>
+                <dt><kbd>Ctrl</kbd>+<kbd>C</kbd> <kbd>X</kbd> <kbd>V</kbd></dt><dd>가지째 복사 · 잘라내기 · 붙여넣기</dd>
+                <dt><kbd>Ctrl</kbd>+<kbd>D</kbd></dt><dd>복제</dd>
+                <dt><kbd>Ctrl</kbd>+<kbd>F</kbd> · <kbd>/</kbd></dt><dd>찾기</dd>
+                <dt><kbd>Ctrl</kbd>+<kbd>A</kbd></dt><dd>모두 선택</dd>
+                <dt><kbd>Delete</kbd></dt><dd>지우기 (아래 가지는 위로 붙음)</dd>
+                <dt><kbd>Ctrl</kbd>+<kbd>Z</kbd></dt><dd>되돌리기</dd>
+              </dl>
+              <h3>목록 붙여넣기</h3>
+              <p class="hint">메모장이나 다른 앱에서 들여쓴 목록을 복사해 붙여넣으면 들여쓰기대로 가지가 생겨요. "[x]"는 완료, "?"로 끝나면 질문이 됩니다.</p>
+            </div>
+            <div data-lang-only="en">
+              <h3>Canvas</h3>
+              <dl>
+                <dt>Double-click empty space</dt><dd>New node</dd>
+                <dt>Double-click a node</dt><dd>Rename it</dd>
+                <dt>Drag a node</dt><dd>Moves its whole branch (hold <kbd>Alt</kbd> to move just that node)</dd>
+                <dt>+ at bottom right</dt><dd>Tap for a child; drag onto another node to connect</dd>
+                <dt><kbd>Shift</kbd>+click · drag</dt><dd>Select several (drag empty space for a box)</dd>
+                <dt>Drag empty space · wheel</dt><dd>Move around</dd>
+                <dt><kbd>Ctrl</kbd>+wheel · pinch</dt><dd>Zoom</dd>
+              </dl>
+              <h3>Keyboard</h3>
+              <dl>
+                <dt><kbd>Tab</kbd> / <kbd>Enter</kbd></dt><dd>Add child / sibling</dd>
+                <dt><kbd>F2</kbd></dt><dd>Rename</dd>
+                <dt><kbd>1</kbd>–<kbd>6</kbd></dt><dd>Idea · To do · Doing · Blocked · Done · On hold</dd>
+                <dt><kbd>S</kbd></dt><dd>Mark important</dd>
+                <dt>Arrow keys</dt><dd>Move between nodes</dd>
+                <dt><kbd>Ctrl</kbd>+<kbd>C</kbd> <kbd>X</kbd> <kbd>V</kbd></dt><dd>Copy · cut · paste with branches</dd>
+                <dt><kbd>Ctrl</kbd>+<kbd>D</kbd></dt><dd>Duplicate</dd>
+                <dt><kbd>Ctrl</kbd>+<kbd>F</kbd> · <kbd>/</kbd></dt><dd>Find</dd>
+                <dt><kbd>Ctrl</kbd>+<kbd>A</kbd></dt><dd>Select all</dd>
+                <dt><kbd>Delete</kbd></dt><dd>Delete (children move up)</dd>
+                <dt><kbd>Ctrl</kbd>+<kbd>Z</kbd></dt><dd>Undo</dd>
+              </dl>
+              <h3>Paste a list</h3>
+              <p class="hint">Copy an indented list from Notes or another app and paste it: each indent becomes a branch. "[x]" marks done; a line ending in "?" becomes a question.</p>
+            </div>
+          </div>
+          <div class="pane" id="outlinePane" hidden></div>
+          <div class="pane" id="boardPane" hidden><div class="kanban" id="kanban"></div></div>
+          <div class="pane" id="schedPane" hidden></div>
+        </div>
+
+        <aside class="panel" id="panel" data-ko-aria="상세" data-en-aria="Details"><div class="panel-in" id="panelIn"></div></aside>
+      </div>
+    </div>
+    <input type="file" id="importFile" accept=".json,application/json" class="sr" tabindex="-1" aria-hidden="true">
+    <div class="toast" id="toast" role="status" hidden></div>
+
+    <div class="tk-login" id="tkLogin" hidden>
+      <form class="tk-login-card" id="tkLoginForm">
+        <h2 data-ko="포탈 로그인" data-en="Portal login">포탈 로그인</h2>
+        <p data-ko="업무관리는 포탈 계정마다 따로 저장돼요." data-en="Your boards are saved to your own portal account.">업무관리는 포탈 계정마다 따로 저장돼요.</p>
+        <label><span data-ko="이메일" data-en="Email">이메일</span><input class="wl-tall" id="tkLoginEmail" type="email" autocomplete="username" required></label>
+        <label><span data-ko="비밀번호" data-en="Password">비밀번호</span><input class="wl-tall" id="tkLoginPassword" type="password" autocomplete="current-password" required></label>
+        <button type="submit" class="btn primary" data-ko="로그인하고 계속하기" data-en="Log in and continue">로그인하고 계속하기</button>
+        <p class="tk-login-error" id="tkLoginError" role="alert"></p>
+      </form>
+    </div>
+  </main>
+</body>
+</html>
