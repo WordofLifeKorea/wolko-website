@@ -378,7 +378,13 @@
     burger.addEventListener('click', function () { toggle(!document.body.classList.contains('wolko-drawer-open')); });
     backdrop.addEventListener('click', function () { toggle(false); });
     drawer.querySelector('.wolko-drawer-close').addEventListener('click', function () { toggle(false); });
-    drawer.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('a')) toggle(false); });
+    // 다른 페이지로 가는 링크를 눌렀을 때는 서랍을 닫지 않는다 — 닫히면 뒤로가기 처리(wolko-back-close.js)가 이동을 취소할 수 있다. 어차피 페이지가 바뀐다
+    function leavesPage(e, a) {
+      if (e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || (a.target && a.target !== '_self')) return false;
+      try { var u = new URL(a.href, location.href); return !(u.origin === location.origin && u.pathname === location.pathname && u.search === location.search); } catch (x) { return false; }
+    }
+    drawer.addEventListener('click', function (e) { var a = e.target.closest && e.target.closest('a'); if (a && !leavesPage(e, a)) toggle(false); });
+    window.addEventListener('pageshow', function (e) { if (e.persisted) toggle(false); });   // 뒤로가기로 돌아오면 서랍은 닫힌 채로
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') toggle(false); });
     window.addEventListener('resize', function () { if (window.innerWidth >= 900) toggle(false); });
   }
