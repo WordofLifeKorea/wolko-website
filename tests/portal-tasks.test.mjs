@@ -91,3 +91,34 @@ test('업무관리: 포탈 공통 클래스와 겹치는 이름을 쓰지 않는
   assert.match(js, /document\.documentElement\.lang = LANG/, '레일 · 서랍이 페이지 언어를 따른다');
   assert.match(js, /undoStack = \[\]; redoStack = \[\];   \/\/ 되돌리기가 다른 기기에서 고친 내용을 지우지 않게/);
 });
+
+import { manageTeams } from '../functions/lib/portalTeams.js';
+test('업무관리 팀 프로젝트: 팀 멤버만 보고 고치며, 지우기 · 나만 보기로 되돌리기는 만든 사람과 관리자만', async () => {
+  const t = setup(); t.acc('anna@wol.org'); t.acc('ben@wol.org'); t.acc('carl@wol.org');
+  const env = { CAMP_KV: { get: async (k, ty) => { const v = t.store.get(k); return v == null ? null : (ty === 'json' ? JSON.parse(v) : v); }, put: async (k, v) => { t.store.set(k, v); }, delete: async k => { t.store.delete(k); }, list: async ({ prefix }) => ({ keys: [...t.store.keys()].filter(k => k.startsWith(prefix)).map(name => ({ name })), list_complete: true }) }, ADMIN_PASSWORD: 'secret' };
+  const admin = { email: 'hkim3@wol.org', role: 'admin' };
+  const team = (await manageTeams(env, admin, { action: 'create', name: '캠프팀' })).team.id;
+  await manageTeams(env, admin, { action: 'assign', email: 'anna@wol.org', teams: [team] });
+  await manageTeams(env, admin, { action: 'assign', email: 'ben@wol.org', teams: [team] });
+  // anna 가 내 프로젝트를 만든 뒤 팀으로 옮긴다
+  await t.call('PUT', 'anna@wol.org', { body: { board: board('bt1', 1) } });
+  const moved = await t.call('PUT', 'anna@wol.org', { body: { board: board('bt1', 2, { team, prevTeam: '' }) } });
+  assert.equal(moved.status, 200); assert.equal(moved.canDelete, true);
+  const annaList = await t.call('GET', 'anna@wol.org');
+  assert.deepEqual(annaList.boards.map(b => [b.id, b.team]), [['bt1', team]], '내 프로젝트 쪽에서는 사라지고 팀에만 있다');
+  assert.deepEqual(annaList.teams, [{ id: team, name: '캠프팀' }]);
+  const benList = await t.call('GET', 'ben@wol.org');
+  assert.equal(benList.boards[0].id, 'bt1'); assert.equal(benList.boards[0].canDelete, false, '팀원은 지울 수 없다');
+  assert.equal(benList.boards[0].createdBy, undefined, '만든 사람 표식은 내보내지 않는다');
+  assert.deepEqual((await t.call('GET', 'carl@wol.org')).boards, [], '팀이 아닌 사람은 못 본다');
+  // ben 은 고칠 수 있다(rev 3), 지우기 · 나만 보기로 되돌리기는 안 된다
+  assert.equal((await t.call('PUT', 'ben@wol.org', { body: { board: board('bt1', 3, { team, title: 'ben 고침' }) } })).status, 200);
+  assert.equal((await t.call('DELETE', 'ben@wol.org', { query: `?id=bt1&team=${team}` })).status, 403);
+  assert.equal((await t.call('PUT', 'ben@wol.org', { body: { board: board('bt1', 4, { prevTeam: team }) } })).status, 403);
+  assert.equal((await t.call('PUT', 'carl@wol.org', { body: { board: board('bt9', 1, { team }) } })).status, 403, '팀이 아니면 팀 보드로 저장 못 함');
+  // 늦은 저장은 409 와 팀 보드를 돌려준다
+  const stale = await t.call('PUT', 'anna@wol.org', { body: { board: board('bt1', 3, { team }) } });
+  assert.equal(stale.status, 409); assert.equal(stale.board.title, 'ben 고침'); assert.equal(stale.board.team, team);
+  assert.equal((await t.call('DELETE', 'anna@wol.org', { query: `?id=bt1&team=${team}` })).status, 200, '만든 사람은 지울 수 있다');
+  assert.deepEqual((await t.call('GET', 'ben@wol.org')).boards, []);
+});

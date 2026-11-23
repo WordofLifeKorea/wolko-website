@@ -333,6 +333,7 @@
       '<button type="button" class="chip' + (stars ? '' : ' is-zero') + '" data-st="star" aria-pressed="' + (focusStatus === 'star') + L('" title="중요 표시한 것만 강조">★ 중요 <b>', '" title="Highlight important items only">★ Important <b>') + stars + '</b></button>';
     const pt = $('#projTitle');
     if (document.activeElement !== pt) pt.value = board.title || '';
+    const tb = $('#projTeam'); if (tb) { tb.hidden = !board.team; tb.textContent = board.team ? L('팀 · ', 'Team · ') + teamName(board.team) : ''; }
     $('#banner').hidden = !board.preview || mode !== 'canvas';
   }
 
@@ -583,6 +584,7 @@
     const soon = board.nodes.filter((n) => inP(n) && n.due && n.status !== 'done' && n.status !== 'hold').sort((a, b) => a.due.localeCompare(b.due)).slice(0, 6);
     const itemBtn = (n, sub) => '<li><button type="button" data-go="' + escapeHtml(n.id) + '"><span class="li-top"><span class="li-title">' + escapeHtml(n.title || L('제목 없음', 'Untitled')) + '</span><span class="li-sub">' + sub + '</span></span></button></li>';
     return sheetHead(L('프로젝트 요약', 'Project summary') + (periodOn() ? ' · ' + periodLabel() : '')) +
+      shareHtml() +
       L('<div class="field"><label for="pNote">프로젝트 메모</label><textarea class="txt" id="pNote" placeholder="왜 하는지, 언제까지, 무엇이 되면 성공인지">', '<div class="field"><label for="pNote">Project note</label><textarea class="txt" id="pNote" placeholder="Why, by when, and what success looks like">') + escapeHtml(board.note || '') + '</textarea></div>' +
       L('<div class="stat"><div class="stat-line"><span>전체 진행</span><b>', '<div class="stat"><div class="stat-line"><span>Overall</span><b>') + done + ' / ' + work + (work ? ' · ' + Math.round(done / work * 100) + '%' : '') + '</b></div><div class="big-bar"><i style="width:' + (work ? Math.round(done / work * 100) : 0) + '%"></i></div></div>' +
       L('<div class="sec"><h3>갈래별 진행</h3>', '<div class="sec"><h3>Progress by branch</h3>') + (groups.length ? '<ul class="list">' + groups.map((g) =>
@@ -594,7 +596,29 @@
       L('<div class="sec"><h3>다가오는 마감</h3>', '<div class="sec"><h3>Coming up</h3>') + (soon.length ? '<ul class="list">' + soon.map((n) => { const [, m, d] = n.due.split('-').map(Number); return itemBtn(n, (n.due < t ? L('지남 ', 'overdue ') : '') + m + '/' + d); }).join('') + '</ul>' : L('<p class="none">마감을 정한 일이 없어요.</p>', '<p class="none">No due dates yet.</p>')) + '</div>' +
       L('<p class="hint">노드를 누르면 여기에서 이름 · 상태 · 마감 · 체크리스트 · 메모를 고칠 수 있어요.</p>', '<p class="hint">Tap a node to edit its name, status, due date, checklist and note here.</p>');
   }
+  function shareHtml() {
+    if (!board || board.preview) return '';
+    const locked = board.team && !board.canDelete;   // 팀원이 만든 팀 프로젝트: 나만 보기로 되돌리기는 만든 사람 · 관리자만
+    const opts = ['<option value=""' + (!board.team ? ' selected' : '') + (locked ? ' disabled' : '') + '>' + escapeHtml(L('나만 보기', 'Only me')) + '</option>']
+      .concat(myTeams.map((t) => '<option value="' + escapeHtml(t.id) + '"' + (board.team === t.id ? ' selected' : '') + (locked && board.team !== t.id ? ' disabled' : '') + '>' + escapeHtml(L('팀: ', 'Team: ') + t.name) + '</option>'));
+    if (board.team && !myTeams.some((t) => t.id === board.team)) opts.push('<option value="' + escapeHtml(board.team) + '" selected>' + escapeHtml(L('팀: ', 'Team: ') + teamName(board.team)) + '</option>');
+    const hint = board.team
+      ? L('이 팀 멤버 모두가 보고 고칠 수 있어요. 지우기와 나만 보기로 되돌리기는 만든 사람과 관리자만 할 수 있어요.', 'Everyone in this team can see and edit it. Only the creator or an admin can delete it or make it private again.')
+      : (myTeams.length ? L('팀을 고르면 그 팀 멤버 모두가 함께 보고 고칠 수 있어요.', 'Pick a team to share this project with everyone in it.') : L('팀에 들어가면 팀원과 함께 쓰는 팀 프로젝트를 만들 수 있어요. 팀 배정은 관리자에게 부탁해 주세요.', 'Join a team to share projects with teammates. Ask an admin to add you to a team.'));
+    return '<div class="field"><label for="pShare">' + escapeHtml(L('공유', 'Sharing')) + '</label><select class="wl-tall inp" id="pShare"' + (!myTeams.length && !board.team ? ' disabled' : '') + '>' + opts.join('') + '</select><p class="hint">' + escapeHtml(hint) + '</p></div>';
+  }
   function bindOverview() {
+    const sh = $('#pShare');
+    if (sh) sh.addEventListener('change', () => {
+      const next = sh.value || '';
+      const cur = board.team || '';
+      if (next === cur) return;
+      if (board.prevTeam === undefined) board.prevTeam = cur;   // 저장할 때 예전 자리에서 지운다
+      if (next) board.team = next; else delete board.team;
+      if (next) board.canDelete = board.canDelete !== false || !cur;
+      ensureReal(); board.updatedAt = now(); scheduleSave(); renderSummary(); renderMenuIfOpen(); panelFor = null; renderPanel(true);
+      toast(next ? L('팀 프로젝트로 바꿨어요: ', 'Shared with team: ') + teamName(next) : L('나만 보는 프로젝트로 바꿨어요', 'Now only you can see this project'));
+    });
     bindHead();
     bindField($('#pNote'), (v) => { board.note = v; });
     panelIn.querySelectorAll('[data-go]').forEach((b) => { b.onclick = () => reveal(b.dataset.go); });
@@ -1701,16 +1725,20 @@
     }
     const list = sortedBoards();
     const cur = board && !board.preview ? board.id : null;
+    const item = (b) => { const p = boardProgress(b); return '<button type="button" data-open="' + escapeHtml(b.id) + '" aria-current="' + (b.id === cur) + '"><span class="m-title">' + escapeHtml(b.title || L('이름 없는 프로젝트', 'Untitled project')) + '</span><span class="m-sub">' + (p.w ? L('완료 ', 'Done ') + p.d + '/' + p.w + ' · ' : '') + ago(b.updatedAt) + '</span></button>'; };
+    const mineList = list.filter((b) => !b.team);
+    const teamIds = [...new Set(list.filter((b) => b.team).map((b) => b.team))];
     menu.innerHTML = L('<h4>내 프로젝트</h4><div class="menu-list">', '<h4>My projects</h4><div class="menu-list">') +
-      (list.length ? list.map((b) => { const p = boardProgress(b); return '<button type="button" data-open="' + escapeHtml(b.id) + '" aria-current="' + (b.id === cur) + '"><span class="m-title">' + escapeHtml(b.title || L('이름 없는 프로젝트', 'Untitled project')) + '</span><span class="m-sub">' + (p.w ? L('완료 ', 'Done ') + p.d + '/' + p.w + ' · ' : '') + ago(b.updatedAt) + '</span></button>'; }).join('')
+      (mineList.length ? mineList.map(item).join('')
         : L('<p class="hint" style="padding:4px 10px">아직 저장된 프로젝트가 없어요.</p>', '<p class="hint" style="padding:4px 10px">No saved projects yet.</p>')) + '</div>' +
+      teamIds.map((t) => '<h4>' + escapeHtml(L('팀 · ', 'Team · ') + teamName(t)) + '</h4><div class="menu-list">' + list.filter((b) => b.team === t).map(item).join('') + '</div>').join('') +
       '<div class="menu-actions">' +
         '<button type="button" data-act="new">' + ICON.plus + L('새 프로젝트 (틀 고르기)</button>', 'New project (pick a template)</button>') +
         (cur ? '<button type="button" data-act="dup">' + ICON.copy + L('이 프로젝트 복제</button>', 'Duplicate this project</button>') : '') +
         '<button type="button" data-act="import">' + ICON.up + L('JSON 파일 가져오기</button>', 'Import a JSON file</button>') +
         (cur ? '<button type="button" data-act="export">' + ICON.down + L('백업 내려받기 (JSON)</button>', 'Download a backup (JSON)</button>') : '') +
         (cur ? '<button type="button" data-act="md">' + ICON.doc + L('개요를 마크다운으로 내려받기</button>', 'Download the outline as Markdown</button>') : '') +
-        (cur ? (confirmDel
+        (cur && (!board.team || board.canDelete) ? (confirmDel
           ? '<div class="confirm"><span>' + L('', 'Delete ') + '"' + escapeHtml(board.title || '') + L('"을 지울까요? 되돌릴 수 없어요.</span><div class="row-btns"><button class="btn danger" type="button" data-act="del-yes">지우기</button><button class="btn" type="button" data-act="del-no">그만두기</button></div></div>', '"? This cannot be undone.</span><div class="row-btns"><button class="btn danger" type="button" data-act="del-yes">Delete</button><button class="btn" type="button" data-act="del-no">Cancel</button></div></div>')
           : '<button type="button" class="danger" data-act="del">' + ICON.trash + L('이 프로젝트 지우기</button>', 'Delete this project</button>')) : '') +
       '</div>';
@@ -1766,12 +1794,17 @@
     renderAll(); if (mode === 'canvas') fit(true); else needFit = true;
   }
   const deletedIds = new Set();   // 이 화면에서 지운 보드 — 늦게 끝난 저장이나 서버 목록이 되살리지 않게
+  const deletedTeam = new Map();  // 지운 보드가 어느 팀 것이었는지
   function removeOnServer(id) {
     if (!store.ready || !store.remove) return;
     if (writing.has(id)) { setTimeout(() => removeOnServer(id), 300); return; }   // 저장이 끝난 뒤에 지운다
-    store.remove(id).catch(() => toast(L('지우지 못했어요. 잠시 뒤 다시 해 보세요.', 'Could not delete. Please try again shortly.')));
+    const team = deletedTeam.get(id) || '';
+    store.remove(id, team).catch(() => toast(L('지우지 못했어요. 잠시 뒤 다시 해 보세요.', 'Could not delete. Please try again shortly.')));
   }
   function deleteBoard(id) {
+    const gone = boards.get(id);
+    if (gone && gone.team && !gone.canDelete) { toast(L('팀 프로젝트는 만든 사람과 관리자만 지울 수 있어요.', 'Only the creator or an admin can delete a team project.')); return; }
+    if (gone && gone.team) deletedTeam.set(id, gone.team);
     deletedIds.add(id); boards.delete(id); dirty.delete(id);
     removeOnServer(id);
     const next = sortedBoards()[0];
@@ -1835,7 +1868,8 @@
   }
   function sanitizeBoard(id, src) {
     const g = sanitizeGraph(src);
-    return { id, title: String(src.title || '').slice(0, 80), note: String(src.note || ''), nodes: g.nodes, edges: g.edges, createdAt: Number(src.createdAt) || now(), updatedAt: Number(src.updatedAt) || 0, v: 2, needsTidy: !!src.needsTidy, rev: Number(src.rev) || 0 };
+    const team = /^t[a-z0-9]{6,20}$/.test(String(src.team || '')) ? String(src.team) : undefined;
+    return { id, title: String(src.title || '').slice(0, 80), note: String(src.note || ''), nodes: g.nodes, edges: g.edges, createdAt: Number(src.createdAt) || now(), updatedAt: Number(src.updatedAt) || 0, v: 2, needsTidy: !!src.needsTidy, rev: Number(src.rev) || 0, team, canDelete: team ? !!src.canDelete : true };
   }
   $('#importFile').addEventListener('change', async (e) => {
     const f = e.target.files && e.target.files[0]; e.target.value = '';
@@ -1885,7 +1919,8 @@
         return o;
       }),
       edges: b.edges.map((e) => ({ id: e.id, from: e.from, to: e.to })),
-      needsTidy: !!b.needsTidy, rev: b.rev || 0
+      needsTidy: !!b.needsTidy, rev: b.rev || 0,
+      team: b.team || undefined, prevTeam: b.prevTeam !== undefined ? b.prevTeam : undefined
     };
   }
   function scheduleSave() {
@@ -1904,7 +1939,7 @@
       if (!b || deletedIds.has(id)) continue;
       writing.add(id); setSaveState('saving');
       const data = serialize(b); data.rev = (b.rev || 0) + 1;
-      try { await store.put(data); b.rev = data.rev; saveError = ''; retryDelay = 0; }
+      try { const out = await store.put(data); b.rev = data.rev; if (b.prevTeam === data.prevTeam) delete b.prevTeam; if (out && out.canDelete !== undefined) b.canDelete = !!out.canDelete; saveError = ''; retryDelay = 0; }
       catch (err) { handleSaveError(err, id, data); }
       finally { writing.delete(id); }
     }
@@ -1989,6 +2024,7 @@
   }
   // 다른 기기에서 먼저 저장했다: 이 기기에서 고친 것은 사본으로 남기고, 서버 것을 연다
   function resolveConflict(id, serverBoard) {
+    if (deletedIds.has(id)) { dirty.delete(id); return; }
     const mine = boards.get(id);
     const server = sanitizeBoard(id, serverBoard);
     const same = (a, b) => { const pick = (x) => JSON.stringify({ t: x.title, n: x.note, nodes: x.nodes, edges: x.edges }); try { return pick(serialize(a)) === pick(serialize(b)); } catch (e) { return false; } };
@@ -1998,6 +2034,7 @@
     if (mine) {
       const copy = JSON.parse(JSON.stringify(serialize(mine)));
       copy.id = newId('b'); copy.title = (copy.title || '') + L(' (이 기기 사본)', ' (this device copy)'); copy.rev = 0; copy.createdAt = copy.updatedAt = now();
+      delete copy.team; delete copy.prevTeam; copy.canDelete = true;   // 사본은 내 프로젝트로(팀 목록을 어지럽히지 않게)
       boards.set(copy.id, copy); dirty.add(copy.id);
     }
     dirty.delete(id);
@@ -2008,10 +2045,13 @@
     renderMenuIfOpen(); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 400);
   }
   let pulling = null;
+  let myTeams = [];   // [{ id, name }] 내가 속한 팀 — 팀 프로젝트 공유 선택에 쓴다
+  const teamName = (id) => { const t = myTeams.find((x) => x.id === id); return t ? t.name : L('팀', 'Team'); };
   async function pull(first) {
     if (pulling) return pulling;
     pulling = (async () => {
       const data = await api('GET');
+      myTeams = Array.isArray(data.teams) ? data.teams.filter((t) => t && /^t[a-z0-9]{6,20}$/.test(String(t.id || ''))).map((t) => ({ id: String(t.id), name: String(t.name || '').slice(0, 40) })) : [];
       const ids = new Set();
       for (const b of (data.boards || [])) { if (!b || !SAFE_ID.test(String(b.id || ''))) continue; ids.add(b.id); adopt(b.id, b); }
       for (const id of [...boards.keys()]) {   // 다른 기기에서 지운 보드
@@ -2033,7 +2073,7 @@
   async function initStore() {
     store.kind = 'portal';
     store.put = (b) => api('PUT', { board: b });
-    store.remove = (id) => api('DELETE', null, '?id=' + encodeURIComponent(id));
+    store.remove = (id, team) => api('DELETE', null, '?id=' + encodeURIComponent(id) + (team ? '&team=' + encodeURIComponent(team) : ''));
     try { await pull(true); hideLogin(); }
     catch (err) {
       if (err && err.code === 'auth') { showLogin(); return; }
@@ -2059,7 +2099,12 @@
   });
   // 다른 기기에서 고친 내용: 화면으로 돌아올 때와 1분마다 확인한다
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && store.ready) pull(false).catch(() => {}); });
-  setInterval(() => { if (store.ready && document.visibilityState === 'visible' && !dirty.size && !writing.size) pull(false).catch(() => {}); }, 60000);
+  let lastPull = 0;
+  setInterval(() => {
+    if (!store.ready || document.visibilityState !== 'visible' || dirty.size || writing.size) return;
+    const gap = board && board.team ? 20000 : 60000;   // 팀 프로젝트를 보고 있으면 팀원이 고친 내용을 더 자주 받아 온다
+    if (Date.now() - lastPull >= gap) { lastPull = Date.now(); pull(false).catch(() => {}); }
+  }, 5000);
 
   // ───────────────── 시작
   hideDone = lsGet('wolko-tasks:hideDone') === '1';
