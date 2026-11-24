@@ -3402,6 +3402,9 @@ async function loadCrpCapacities() {
       var subs = data.count ?? 0;
       var subsData = { count: subs, countMale: data.countMale ?? 0, countFemale: data.countFemale ?? 0 };
       updateCrpCapBar(el, subsData, cap);
+      // 연합캠프: 같은 응답의 참여 교회 수
+      var churchBox = document.querySelector('.crp-churches[data-church-id="' + campId + '"]');
+      if (churchBox && typeof data.churches === 'number') churchBox.querySelector('.crp-church-count').textContent = data.churches;
       if (btn) {
         if (subs >= cap + WAITLIST_SIZE) {
           btn.disabled = true;
@@ -5943,15 +5946,4 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
 })();
 </script>
 
-<script is:inline>
-  // 연합캠프 카드: 참여 신청한 교회 수
-  (function () {
-    document.querySelectorAll('.crp-churches[data-church-id]').forEach(function (box) {
-      fetch('/api/capacity/' + encodeURIComponent(box.getAttribute('data-church-id')), { cache: 'no-store' })
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (d) { if (d && typeof d.churches === 'number') box.querySelector('.crp-church-count').textContent = d.churches; })
-        .catch(function () {});
-    });
-  })();
-</script>
 </BaseLayout>

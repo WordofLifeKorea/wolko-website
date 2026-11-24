@@ -18,7 +18,11 @@ export function churchMinimum(campId) {
   return { min: UNITY_CAMP_POLICY.minChurches, by: UNITY_CAMP_POLICY.minChurchesBy };
 }
 
-export async function recountChurches(env, campId) {
+/**
+ * 다시 센다. KV 목록은 방금 쓴 값이 바로 안 보일 수 있으므로, 방금 바뀐 것을 알려 준다:
+ *   upsert — 방금 저장한 신청 기록(목록에 아직 없어도 센다), removeRegId — 방금 지운 신청(목록에 남아 있어도 뺀다)
+ */
+export async function recountChurches(env, campId, { upsert = null, removeRegId = '' } = {}) {
   if (!isUnionGroupCamp(campId)) return null;
   const prefix = `camp:${campId}:reg:`;
   const keys = [];
@@ -28,7 +32,9 @@ export async function recountChurches(env, campId) {
     keys.push(...page.keys.map(k => k.name));
     cursor = page.list_complete ? undefined : page.cursor;
   } while (cursor);
-  const regs = await Promise.all(keys.map(k => env.CAMP_KV.get(k, 'json').catch(() => null)));
+  const skip = new Set([removeRegId, upsert && upsert.regId].filter(Boolean).map(id => prefix + id));
+  const regs = await Promise.all(keys.filter(k => !skip.has(k)).map(k => env.CAMP_KV.get(k, 'json').catch(() => null)));
+  if (upsert && upsert.regId !== removeRegId) regs.push(upsert);
   const names = new Set();
   for (const reg of regs) {
     if (!reg || reg.registrationType === 'staff') continue;
@@ -36,14 +42,14 @@ export async function recountChurches(env, campId) {
     if (key) names.add(key);
   }
   const out = { count: names.size, at: new Date().toISOString() };
-  await env.CAMP_KV.put(churchesKey(campId), JSON.stringify(out));
+  const prev = await env.CAMP_KV.get(churchesKey(campId), 'json').catch(() => null);
+  if (!prev || prev.count !== out.count) await env.CAMP_KV.put(churchesKey(campId), JSON.stringify(out));   // 같으면 쓰지 않는다(KV 쓰기 한도)
   return out;
 }
 
-/** 저장된 교회 수(없으면 한 번 세어 둔다) */
+/** 저장된 교회 수 — 공개 페이지에서 쓰므로 여기서는 세지 않는다(없으면 0). 신청 · 관리 화면이 세어 둔다 */
 export async function readChurches(env, campId) {
   if (!isUnionGroupCamp(campId)) return null;
   const saved = await env.CAMP_KV.get(churchesKey(campId), 'json').catch(() => null);
-  if (saved && Number.isFinite(saved.count)) return saved;
-  return recountChurches(env, campId);
+  return saved && Number.isFinite(saved.count) ? saved : { count: 0 };
 }

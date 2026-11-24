@@ -23,6 +23,11 @@ test('연합캠프 참여 교회: 같은 교회는 한 번만(띄어쓰기 · �
   assert.equal((await readChurches(env, '2027-unity-winter')).count, 2);
   assert.deepEqual(churchMinimum('2027-unity-winter'), { min: 3, by: '2026-12-18' });
   assert.equal(churchMinimum('2027-wolko-winter'), null);
+  // 목록에 아직 안 보이는 방금 저장한 신청 · 목록에 남아 있는 방금 지운 신청
+  assert.equal((await recountChurches(env, '2027-unity-winter', { upsert: { regId: 'z', church: '빛의교회' } })).count, 3);
+  assert.equal((await recountChurches(env, '2027-unity-winter', { removeRegId: 'c' })).count, 1, '새빛교회를 지우면 시흥중앙만');
+  assert.equal((await recountChurches(env, '2027-unity-winter')).count, 2);
+  assert.equal((await readChurches(kv(), '2027-unity-winter')).count, 0, '세어 둔 값이 없으면 공개 쪽은 세지 않고 0');
   const res = await capacity({ params: { campId: '2027-unity-winter' }, env });
   assert.equal((await res.json()).churches, 2);
   const other = await capacity({ params: { campId: '2027-wolko-winter' }, env });
@@ -35,7 +40,7 @@ test('연합캠프 신청 카드: 신청 현황 위에 참여 교회와 진행 �
   assert.match(page, /까지 \$\{churchMinimum\(s\.id\)\.min\}개 교회 이상 참여 신청 시 캠프가 진행됩니다\./);
   assert.ok(page.indexOf('class="crp-churches"') < page.indexOf("const isLive = d.status === 'open' && !d.use_external_form;"), '정원(신청 현황)보다 위');
   const reg = readFileSync(new URL('../functions/api/register.js', import.meta.url), 'utf8');
-  assert.match(reg, /recountChurches\(env, campId\)/, '신청할 때 다시 센다');
+  assert.match(reg, /recountChurches\(env, campId, \{ upsert: reg \}\)/, '신청할 때 다시 센다');
   const admin = readFileSync(new URL('../functions/api/admin/registrations.js', import.meta.url), 'utf8');
   assert.match(admin, /export const onRequestDelete = withChurchRecount\(onRequestDeleteBase\);/, '지우기 · 되살리기 · 고치기 뒤에도');
 });
