@@ -4,7 +4,7 @@
  *   → { ok, code: 'AG-XXXXXX', signedAt, doc, version }
  * 서명 시각은 서버 시각이 기준이다. 문서의 버전과 글 해시를 같이 남겨서, 나중에 문구가 바뀌어도 '무엇에 서명했는지'가 남는다.
  */
-import { DOCS, docSections, docHash, ROLES, AGREEMENT_PREFIX, newAgreementCode, checkSignature, signedFor } from '../../lib/staffAgreements.js';
+import { DOCS, docSections, docHash, ROLES, AGREEMENT_PREFIX, newAgreementCode, checkSignature, signedFor, itemCountFor } from '../../lib/staffAgreements.js';
 import { clean, ipHash, rateLimited, kstMonthKey } from '../../lib/materials.js';
 import { loadSchedules, CAMP_ID_RE } from '../../lib/gospelCamps.js';
 
@@ -32,8 +32,8 @@ export async function onRequestPost({ env, request }) {
   if (body?.agree !== true) return fail('문서를 읽고 동의해 주세요.', 'Please confirm that you have read and agree to the document.', 400, { field: 'agree' });
   if (doc.declaration && body?.declared !== true) return fail('본인 진술을 확인해 주세요.', 'Please confirm your statement.', 400, { field: 'declared' });
   if (body?.consent !== true) return fail('서명과 개인정보 수집에 동의해 주세요.', 'Please agree to the collection of your signature and personal information.', 400, { field: 'consent' });
-  // 화면에서 항목마다 체크한 수(acks) — 보냈다면 문서의 항목 수와 같아야 한다(예전 화면은 보내지 않는다)
-  const itemTotal = docSections(doc).reduce((n, sec) => n + sec.items.length, 0);
+  // 화면에서 항목마다 체크한 수(acks) — 보냈다면 그 구분이 보는 항목 수와 같아야 한다(예전 화면은 보내지 않는다)
+  const itemTotal = itemCountFor(doc, role);   // 구분마다 다르다(크루만 보는 묶음이 있다)
   if (body?.acks !== undefined && body.acks !== itemTotal) return fail('모든 항목을 읽고 체크해 주세요.', 'Please read and tick every item.', 400, { field: 'items' });
   if (!checkSignature(body?.signature)) return fail('서명을 그려 주세요.', 'Please draw your signature.', 400, { field: 'signature' });
 

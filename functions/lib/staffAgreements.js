@@ -81,7 +81,7 @@ export const DOCS = {
 };
 
 /** 예전 버전의 문서(보관한 글이 있으면) — 해시 · 글 보기용. 없으면 null */
-export const archivedDoc = (doc, v) => (doc && doc.archive && doc.archive[v] ? { ...doc, version: v, items: doc.archive[v].items, archive: undefined, acceptVersions: undefined } : null);
+export const archivedDoc = (doc, v) => (doc && doc.archive && doc.archive[v] ? { ...doc, ...doc.archive[v], version: v, archive: undefined, acceptVersions: undefined } : null);
 
 /** 이 서명 버전을 지금 문서의 서명으로 인정하는가(지금 버전, 또는 그대로 인정하기로 한 예전 버전) */
 export const versionOk = (doc, v) => v === doc.version || (doc.acceptVersions || []).includes(v);
@@ -93,6 +93,11 @@ export const docList = ({ includeDrafts = false } = {}) => Object.values(DOCS).f
 export function docSections(doc) {
   return doc.sections || [{ ko: '', en: '', items: doc.items || [] }];
 }
+
+/** 이 구분(staff | crew)에게 보여 주는 묶음 — roles 가 있는 묶음(예: '크루')은 그 구분에게만 */
+export const sectionsFor = (doc, role) => docSections(doc).filter((sec) => !sec.roles || sec.roles.includes(role));
+/** 이 구분이 체크해야 하는 항목 수 */
+export const itemCountFor = (doc, role) => sectionsFor(doc, role).reduce((n, sec) => n + sec.items.length, 0);
 
 /** 문서의 글 전체를 한 덩어리로 — 해시 · 서명본 인쇄에 쓴다 */
 export function docText(doc) {
