@@ -231,7 +231,7 @@ test('캠프 필수 규칙 초안(결정 반영): 1번은 한 문장 · 즉시 �
   const first = docSections(DOCS.rules)[0].items[0];
   assert.ok(first.ko === '아래 캠프 규칙을 반복적으로 어기면 경고를 받거나 월코 캠프에서 제명당할 수 있습니다.' && /repeatedly break the camp rules below/.test(first.en), '1번은 이 한 문장만(경고 절차 · 제외 대상 설명은 문서에 넣지 않는다)');
   assert.ok(!JSON.stringify(DOCS.rules.ko) .includes('하차') && !JSON.stringify(DOCS.rules.sections).includes('하차'), '필수 규칙 문서는 "제명"으로 통일');
-  assert.match(DOCS.rules.version, /v8$/);
+  assert.match(DOCS.rules.version, /v9$/);
   const itemsOf = (t) => docSections(DOCS.rules).find((x) => x.ko === t).items.map((i) => i.ko);
   assert.ok(itemsOf('숙소')[0].includes('캠퍼는 스태프 방에, 스태프는 캠퍼 숙소에 혼자 들어가지 않으며') && itemsOf('숙소')[0].endsWith('숙소를 깨끗하게 사용하는 것에 동의합니다.'), '숙소 문구');
   assert.ok(itemsOf('외모와 복장')[0] === '문신이 보이지 않게 가리는 것에 동의합니다.', '문신 문구');
@@ -278,7 +278,7 @@ test('시간 · 외출 항목은 짧은 "동의합니다" 한 문장(지각 · �
   assert.deepEqual(time.map((i) => i.ko), ['캠프 일정(기상, 모임, 사역, 팀 미팅, 소등)을 지키려고 노력하는 것에 동의합니다.']);
   const out = docSections(DOCS.rules).find((x) => x.ko === '외출').items;
   assert.equal(out.length, 1);
-  assert.ok(out[0].ko.includes('캠프 디렉터나 코디네이터와 꼭 소통') && out[0].ko.includes('동일 성별 1인') && out[0].ko.includes('제3자를 포함해 3인이 동행') && out[0].ko.endsWith('동의합니다.') && out[0].ko.includes('밤에는 외출을 지양'));
+  assert.ok(out[0].ko.includes('캠프 디렉터나 코디네이터 또는 팀 리더와 꼭 소통') && out[0].ko.includes('동일 성별 1인 이상') && out[0].ko.includes('제3자를 포함해 3인이 동행') && out[0].ko.endsWith('동의합니다.') && out[0].ko.includes('밤에는 외출을 지양'));
   assert.ok(/Camp Director or the Coordinator/.test(out[0].en) && /third person/.test(out[0].en));
   });
 

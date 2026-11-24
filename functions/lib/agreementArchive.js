@@ -134,3 +134,170 @@ export const CHILD_PROTECTION_V13_SECTIONS = [
     ]
   }
 ];
+
+export const CAMP_RULES_V8_SECTIONS = [
+  {
+    "ko": "경고와 제명",
+    "en": "Warnings and removal",
+    "items": [
+      {
+        "ko": "아래 캠프 규칙을 반복적으로 어기면 경고를 받거나 월코 캠프에서 제명당할 수 있습니다.",
+        "en": "If I repeatedly break the camp rules below, I may receive a warning or be removed from WOLKO camps."
+      }
+    ]
+  },
+  {
+    "ko": "경고 없이 바로 제명될 수 있는 경우",
+    "en": "Cases that can lead to removal without a warning",
+    "items": [
+      {
+        "ko": "아동·청소년에 대한 학대, 성적으로 부적절한 행동, 체벌 등 아동보호 서약서를 어긴 경우.",
+        "en": "Breaking the Child Protection Agreement, including abuse of children or young people, sexually inappropriate behavior, or corporal punishment."
+      },
+      {
+        "ko": "성적 학대, 성폭력, 성희롱.",
+        "en": "Sexual abuse, sexual violence or sexual harassment."
+      },
+      {
+        "ko": "다른 사람에게 폭력을 쓰거나 폭행·위협하는 경우.",
+        "en": "Using violence against, assaulting or threatening another person."
+      },
+      {
+        "ko": "잘못된 신학이나 교리를 전하는 경우. 즉, 월코 신앙고백서에 어긋나는 내용을 캠퍼, 스태프, 크루에게 고의로 가르치거나 전달하는 것을 의미합니다. 좋은 의도로 토론하고 함께 배우는 것은 이 항목에 해당되지 않습니다.",
+        "en": "Teaching false theology or doctrine. In other words, this means deliberately teaching or passing on to campers, staff or crew anything that contradicts the WOLKO Statement of Faith. Discussing and learning together with good intentions is not included."
+      },
+      {
+        "ko": "술이나 불법 약물을 하는 경우.",
+        "en": "Using alcohol or illegal drugs."
+      },
+      {
+        "ko": "절도 등 범죄 행위를 한 경우.",
+        "en": "Committing a crime such as theft."
+      },
+      {
+        "ko": "월코에 허위 서류를 내거나 사실과 다르게 진술한 경우.",
+        "en": "Submitting false documents to WOLKO or making false statements."
+      },
+      {
+        "ko": "특히 아동보호 서약과 관련된 문제를 야기할 경우 필요에 따라 경찰에 보고할 수 있습니다.",
+        "en": "In particular, if I cause a problem related to the Child Protection Agreement, WOLKO may report it to the police as needed."
+      }
+    ]
+  },
+  {
+    "ko": "술, 담배, 약물",
+    "en": "Alcohol, tobacco and drugs",
+    "items": [
+      {
+        "ko": "캠프 장소에 도착한 때부터 해산 후 귀가할 때까지 술, 담배·전자담배, 불법 약물을 어디서든(캠프장 밖, 쉬는 시간 포함) 하지 않는 것에 동의합니다.",
+        "en": "I agree not to use alcohol, tobacco or e-cigarettes, or illegal drugs anywhere (including outside the camp site and during breaks) from the time I arrive at the camp site until I travel home after the camp is dismissed."
+      }
+    ]
+  },
+  {
+    "ko": "이성 교제",
+    "en": "Dating and romantic relationships",
+    "items": [
+      {
+        "ko": "어떠한 경우에도 캠퍼와 교제하지 않는 것에 동의합니다.",
+        "en": "I agree not to date campers under any circumstances."
+      },
+      {
+        "ko": "캠프 기간 및 준비기간에 스태프·크루 사이에서도 연인 같은 행동(손잡기, 포옹, 단둘이 있기)을 하지 않는 것에 동의합니다. 부부와 가족은 예외로 합니다.",
+        "en": "I agree not to show romantic behavior (holding hands, hugging, being alone together) during camp and the preparation period, even with other staff or crew. Married couples and family members are the exception."
+      }
+    ]
+  },
+  {
+    "ko": "휴대폰",
+    "en": "Mobile phones",
+    "items": [
+      {
+        "ko": "캠프 기간 동안 휴대폰 사용, SNS, 게임을 최대한 지양하는 것에 동의합니다. 캠프 사역에 필요한 휴대폰 및 전자기기 사용은 예외로 간주합니다.",
+        "en": "I agree to avoid using my phone, social media and games as much as possible during camp. Phone and electronic device use needed for the camp ministry is considered an exception."
+      }
+    ]
+  },
+  {
+    "ko": "외출",
+    "en": "Going out",
+    "items": [
+      {
+        "ko": "캠프 지정장소 밖으로 나갈 때는 캠프 디렉터나 코디네이터와 꼭 소통한 후, 단독행동보다는 동일 성별 1인과 함께 나가고, 이성과 나가야 할 경우에는 제3자를 포함해 3인이 동행하며, 밤에는 외출을 지양하는 것에 동의합니다.",
+        "en": "When going outside the designated camp area, I agree to talk with the Camp Director or the Coordinator first, to go out with one person of the same gender rather than acting alone, and, if I need to go out with someone of the opposite sex, to have a third person join so that three of us go together, and to avoid going out at night."
+      }
+    ]
+  },
+  {
+    "ko": "시간",
+    "en": "Schedule",
+    "items": [
+      {
+        "ko": "캠프 일정(기상, 모임, 사역, 팀 미팅, 소등)을 지키려고 노력하는 것에 동의합니다.",
+        "en": "I agree to do my best to keep the camp schedule (wake-up, meetings, ministry, team meetings, lights-out)."
+      }
+    ]
+  },
+  {
+    "ko": "숙소",
+    "en": "Lodging",
+    "items": [
+      {
+        "ko": "숙소는 성별로 나뉩니다. 이성의 숙소에 들어가지 않고, 캠퍼는 스태프 방에, 스태프는 캠퍼 숙소에 혼자 들어가지 않으며, 외부인과 가족을 숙소에 들이지 않고, 소등과 정숙 시간을 지키며 숙소를 깨끗하게 사용하는 것에 동의합니다.",
+        "en": "Lodging is separated by gender. I agree not to enter lodging of the opposite sex; campers do not enter staff rooms and staff do not enter campers’ lodging alone; I agree not to bring outside visitors or family into lodging, to keep lights-out and quiet hours, and to keep the lodging clean."
+      }
+    ]
+  },
+  {
+    "ko": "외모와 복장",
+    "en": "Appearance and dress",
+    "items": [
+      {
+        "ko": "문신이 보이지 않게 가리는 것에 동의합니다.",
+        "en": "I agree to keep any tattoos covered and not visible."
+      },
+      {
+        "ko": "불필요한 과도한 장신구(두 세트 이상의 귀걸이, 코걸이, 혓바닥 피어싱 등)로 인해서 생길 수 있는 문제를 미연에 방지하고자 과도한 액세서리를 착용하지 않는 것에 동의합니다. (귀걸이는 한 쌍(한 세트)까지는 괜찮습니다.)",
+        "en": "To prevent problems that can come from unnecessary, excessive jewelry (two or more sets of earrings, nose rings, tongue piercings, etc.), I agree not to wear excessive accessories. (One pair (one set) of earrings is fine.)"
+      },
+      {
+        "ko": "개인위생을 청결히 유지하고, 단정한 복장을 착용하는 것에 동의합니다.",
+        "en": "I agree to keep my personal hygiene clean and to wear modest clothing."
+      }
+    ]
+  },
+  {
+    "ko": "사역 태도",
+    "en": "Ministry attitude",
+    "items": [
+      {
+        "ko": "맡은 일에 책임을 지고 캠프팀의 지시를 따르며, 험담하거나 분란을 일으키지 않는 것에 동의합니다.",
+        "en": "I agree to take responsibility for the work given to me, to follow the camp team’s direction, and not to gossip or cause division."
+      }
+    ]
+  },
+  {
+    "ko": "SNS",
+    "en": "Social media",
+    "items": [
+      {
+        "ko": "사역에 방해가 될 만한 내용을 SNS에 올리지 않는 것에 동의합니다.",
+        "en": "I agree not to post anything on social media that could get in the way of the ministry."
+      }
+    ]
+  },
+  {
+    "ko": "제명된 뒤",
+    "en": "After removal",
+    "items": [
+      {
+        "ko": "만에 하나 제명이 결정되면, 월코의 결정을 존중하고, 제명된 일을 SNS에 올리거나 캠퍼에게 험담을 하는 행위를 자제하는 것에 동의합니다.",
+        "en": "If, in the unlikely case, I am removed, I agree to respect WOLKO’s decision and to refrain from posting about it on social media or speaking ill of it to campers."
+      },
+      {
+        "ko": "미성년 크루는 제명이 결정되면 디렉터가 보호자에게 직접 연락합니다. 보호자가 동의하면 혼자 귀가할 수 있고, 동의하지 않으면 보호자가 오시거나 보호자가 정한 방법으로 귀가합니다.",
+        "en": "When a minor crew member is removed, the Director contacts the guardian directly. If the guardian agrees, the crew member may travel home alone; if not, the guardian comes to pick them up or arranges how they travel."
+      }
+    ]
+  }
+];

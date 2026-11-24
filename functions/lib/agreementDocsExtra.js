@@ -17,7 +17,7 @@
  *  - 문신과 얼굴 장신구(귀걸이 두 세트 이상, 코걸이, 혀 피어싱 등)는 보이지 않게 한다. 귀걸이 한 쌍(한 세트)은 괜찮다. 모든 스태프와 크루에게 적용(2026-11-21).
  * 아직 정하지 못한 것은 문서 맨 아래 '정해야 할 것'(OPEN_QUESTIONS)에 적어 두었다.
  */
-import { CHILD_PROTECTION_V13_SECTIONS } from './agreementArchive.js';
+import { CAMP_RULES_V8_SECTIONS, CHILD_PROTECTION_V13_SECTIONS } from './agreementArchive.js';
 
 export const CHILD_PROTECTION = {
   id: 'childprotection',
@@ -127,7 +127,9 @@ export const CHILD_PROTECTION = {
 
 export const CAMP_RULES = {
   id: 'rules',
-  version: '2026-11-v8',   // v8: 잘못된 신학 항목에 '즉,' 추가 · v7: 잘못된 신학 항목을 '고의로 가르치거나 전달' · '좋은 의도의 토론은 해당 안 됨'으로 · v6: 1번은 '반복적으로 어기면 경고 또는 제명' 한 문장만(경고 절차 · 예외 설명은 문서에서 뺐다) · 교제 문구 '어떠한 경우에도' · 스태프·크루 사이 문구에 '준비기간' 추가 · 외출 · 시간 · 숙소 · 문신 · 위생과 복장 · 제명 뒤 첫 항목을 새 문구로 · 보호자 본인 확인 문장 삭제 · 소제목 '경고 없이 바로 제명될 수 있는 경우' · 외출 문구에 '밤에는 외출을 지양' 추가, 휴대폰 항목을 '최대한 지양' + 사역에 필요한 사용은 예외로 · 경찰 보고 문구를 '아동보호 서약과 관련된 문제를 야기할 경우 필요에 따라 보고할 수 있습니다'로 · v5: 항목에서 '저는'을 빼고 '~에 동의합니다' 투로 · 장신구 문구 교체 · v3: 맨 앞에 '반복적으로 어기면 경고 또는 제명' 문장 · v4: '성인 스태프 귀가' 항목을 뺐고, 경고 절차를 포함해 '경고와 제명' 설명을 1번 하나로 합치고 '중도 하차'를 모두 '제명'으로 통일
+  acceptVersions: ['2026-11-v8'],   // 문구만 다듬은 것이라 v8 에 서명한 분은 다시 서명하지 않아도 '서명 완료'
+  archive: { '2026-11-v8': { sections: CAMP_RULES_V8_SECTIONS } },
+  version: '2026-11-v9',   // v9: 외출 항목에 팀 리더 · '1인 이상' ·    // v8: 잘못된 신학 항목에 '즉,' 추가 · v7: 잘못된 신학 항목을 '고의로 가르치거나 전달' · '좋은 의도의 토론은 해당 안 됨'으로 · v6: 1번은 '반복적으로 어기면 경고 또는 제명' 한 문장만(경고 절차 · 예외 설명은 문서에서 뺐다) · 교제 문구 '어떠한 경우에도' · 스태프·크루 사이 문구에 '준비기간' 추가 · 외출 · 시간 · 숙소 · 문신 · 위생과 복장 · 제명 뒤 첫 항목을 새 문구로 · 보호자 본인 확인 문장 삭제 · 소제목 '경고 없이 바로 제명될 수 있는 경우' · 외출 문구에 '밤에는 외출을 지양' 추가, 휴대폰 항목을 '최대한 지양' + 사역에 필요한 사용은 예외로 · 경찰 보고 문구를 '아동보호 서약과 관련된 문제를 야기할 경우 필요에 따라 보고할 수 있습니다'로 · v5: 항목에서 '저는'을 빼고 '~에 동의합니다' 투로 · 장신구 문구 교체 · v3: 맨 앞에 '반복적으로 어기면 경고 또는 제명' 문장 · v4: '성인 스태프 귀가' 항목을 뺐고, 경고 절차를 포함해 '경고와 제명' 설명을 1번 하나로 합치고 '중도 하차'를 모두 '제명'으로 통일
   draft: false,   // 2026-11-21 디렉터 결정으로 공개 — 스태프 · 크루가 작성해야 하는 필수 서약서
   ko: {
     title: '월코 캠프 필수 규칙',
@@ -194,8 +196,8 @@ export const CAMP_RULES = {
     {
       ko: '외출', en: 'Going out',
       items: [
-        { ko: '캠프 지정장소 밖으로 나갈 때는 캠프 디렉터나 코디네이터와 꼭 소통한 후, 단독행동보다는 동일 성별 1인과 함께 나가고, 이성과 나가야 할 경우에는 제3자를 포함해 3인이 동행하며, 밤에는 외출을 지양하는 것에 동의합니다.',
-          en: 'When going outside the designated camp area, I agree to talk with the Camp Director or the Coordinator first, to go out with one person of the same gender rather than acting alone, and, if I need to go out with someone of the opposite sex, to have a third person join so that three of us go together, and to avoid going out at night.' },
+        { ko: '캠프 지정장소 밖으로 나갈 때는 캠프 디렉터나 코디네이터 또는 팀 리더와 꼭 소통한 후, 단독행동보다는 동일 성별 1인 이상과 함께 나가고, 이성과 나가야 할 경우에는 제3자를 포함해 3인이 동행하며, 밤에는 외출을 지양하는 것에 동의합니다.',
+          en: 'When going outside the designated camp area, I agree to talk with the Camp Director or the Coordinator or Team Leader first, to go out with at least one person of the same gender rather than acting alone, and, if I need to go out with someone of the opposite sex, to have a third person join so that three of us go together, and to avoid going out at night.' },
       ],
     },
     {
