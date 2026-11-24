@@ -11,7 +11,7 @@ test('단추 3단계: 36/14 · 32/13 · 28/12, 모서리 8px', () => {
   assert.match(css, /--wb-3-h: 28px; --wb-3-fs: 12px;/);
   assert.match(css, /--wb-radius: 8px;/);
   assert.equal((css.match(/:root:root:root :is\(/g) || []).length, 4, '단계마다 한 묶음 + 입력칸 한 묶음');
-  assert.match(css, /select, \.ip-cc, \.ct-dd-btn, \.staff-ms-btn\n\):not\([^)]*\) \{\n  box-sizing: border-box;\n  height: var\(--wb-1-h\) !important;/, '입력칸은 주요 단추와 같은 높이');
+  assert.match(css, /select, \.ip-cc, \.ct-dd-btn, \.staff-ms-btn\n\):not\([\s\S]*?\.wl-cal-sel[\s\S]*?\) \{[^\n]*\n  box-sizing: border-box;\n  height: var\(--wb-1-h\) !important;/, '입력칸은 주요 단추와 같은 높이(달력 머리 · 촘촘한 편집 칸은 빼고)');
 });
 
 test('단추 3단계: 포탈(캠프팀 제외)과 홈페이지 공통 틀이 모두 불러온다', () => {

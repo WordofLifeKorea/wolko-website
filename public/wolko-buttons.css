@@ -29,6 +29,8 @@
   .ex-btn:not(.sm, .ex-x), .ex-tab-new,
   /* 일정 */
   .sc-modal-btn, .sc-fab, .car-fab,
+  /* 입력칸(36px) 바로 옆에 붙은 단추는 입력칸과 같은 높이로 */
+  .cal-month-picker .sc-btn, .pt-row:has(.pt-in) .pt-btn, li:has(> .pt-rename-in) .pt-btn, .camp-filter-wrap :is(.camp-rename-btn, .camp-manage-btn),
   /* 자료실 */
   .save-resource, .cancel-resource,
   /* ── 홈페이지 ── 쪽마다 머리 그림 아래 큰 단추 · 문의 · 후원 · 신청 */
@@ -125,7 +127,9 @@
   input:not([type]), input[type="text"], input[type="email"], input[type="password"], input[type="tel"], input[type="url"],
   input[type="search"], input[type="number"], input[type="date"], input[type="time"], input[type="datetime-local"], input[data-datepick],
   select, .ip-cc, .ct-dd-btn, .staff-ms-btn
-):not(#tkApp *, table *, [role="grid"] *, .ap-honey, [tabindex="-1"], [aria-hidden="true"]) {
+):not(#tkApp *, table *, body > header *, .ap-honey, [tabindex="-1"], [aria-hidden="true"],
+  .wl-cal-sel, .edit-input, .edit-input-wide, .camper-select, .group-participant-select, .group-participant-input, .teacher-assign-select,
+  .camp-role-select, .cm-reg-select, .cm-select, .stage-pct-select) {   /* 달력 머리의 연 · 월 선택, 표 · 명단 안의 촘촘한 편집 칸은 각자 크기 */
   box-sizing: border-box;
   height: var(--wb-1-h) !important;
   min-height: var(--wb-1-h) !important;
@@ -141,7 +145,7 @@
   }
   :root:root :is(.hm-actions, .mh-closing-actions, .mp-cta-row, .wj-accred-links, .gv-involve-cta, .ph-actions, .pp-join-btns) > :is(a, button) {
     flex: 1 1 0 !important; min-width: 0 !important; width: auto !important;
-    justify-content: center !important; gap: 6px; padding-inline: 10px !important; white-space: nowrap;
+    justify-content: center !important; gap: 6px; padding-inline: 10px !important; white-space: normal; text-align: center;   /* 칸보다 긴 글자는 두 줄로(두 단추는 함께 늘어나 높이가 같다) */
   }
 }
 @media (max-width: 360px) {   /* 아주 좁은 폰: 글자가 넘치지 않게 화살표를 뺀다 */
