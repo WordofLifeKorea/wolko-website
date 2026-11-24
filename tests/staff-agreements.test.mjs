@@ -353,7 +353,7 @@ test('서명 페이지: 서약서를 한 화면에 늘어놓지 않고, 목록�
     assert.ok(!/(^|[^가-힣])(나는|내가|나에게|나에 대한|내 문화|내 개인)/.test(ko), `${d.id}: "나는" 대신 "저는" (낱말 안의 "…나는" 은 그대로)`);
     assert.ok(/저는|제가/.test(ko), `${d.id}: 저는 / 제가 를 쓴다`);
   }
-  assert.match(DOCS.faith.version, /v4$/, '문구를 고쳤으니 문서 버전을 올렸다');
+  assert.match(DOCS.faith.version, /v5$/, '문구를 고쳤으니 문서 버전을 올렸다');
   assert.ok(DOCS.faith.ko.pledge.includes('동의하지 않는 내용이 있다면') && DOCS.faith.ko.pledge.includes('camp@wolko.org') && DOCS.faith.en.pledge.includes('camp@wolko.org'), '신앙고백서 맺음말에 문의 이메일 안내');
 });
 
@@ -518,15 +518,15 @@ test('서명 페이지 동작(원본 검사): 정보 고치기 · 사람이 바�
 test('아동보호 서약서는 캠프 선택 없이 한 번만 작성: 캠프 칸이 없고 · 문서에 "캠프마다" 문장이 없고 · 같은 사람이 다시 쓰면 409', async () => {
   assert.equal(DOCS.childprotection.perCamp, false);
   assert.ok(!JSON.stringify(DOCS.childprotection.sections).includes('캠프마다 이 서약서를 새로'), '캠프마다 새로 작성한다는 문장을 뺐다');
-  assert.match(DOCS.childprotection.version, /v13$/, '문구를 고쳤으니 문서 버전을 올렸다');
+  assert.match(DOCS.childprotection.version, /v14$/, '문구를 고쳤으니 문서 버전을 올렸다');
   const cpKo2 = docSections(DOCS.childprotection).flatMap((x) => x.items).map((i) => i.ko).join('\n');
   for (const d of [DOCS.childprotection, DOCS.rules]) assert.ok(!/퇴출|해임|하차/.test(JSON.stringify(d)), d.id + ': 서약서는 "제명"으로 통일');
   assert.ok(cpKo2.includes('"우리 문화에서는 괜찮다"거나 "캠퍼가 먼저 원했다"는 이유로 신체 접촉을 하지 않으며, 신체 접촉에 관한 월코의 기준을 따르겠습니다.'), '신체 접촉 문구');
   const bare = cpKo2.split(/(?<=\.)\s+/).filter((x) => /(않습니다|합니다|킵니다|릅니다|립니다|룹니다)\.$/.test(x) && !/(이해합니다|동의합니다|믿습니다|확인했습니다)\.$/.test(x));
   assert.deepEqual(bare, [], '약속하는 문장은 "~하겠습니다" 형태(단정형 "~합니다"는 군대 말투 같다)');
   assert.ok(cpKo2.includes('안전벨트 착용을 확인하고 정원을 지키겠습니다.') && cpKo2.includes('캠프 차량을 운전하겠습니다.'), '이동과 안전은 미래형(~하겠습니다)');
-  assert.ok(cpKo2.includes('저는 어떤 이유로도 캠퍼 한 명과 단둘이 차량으로 이동하지 않겠습니다.') && !cpKo2.includes('캠퍼 배정과 감독 배치') && !cpKo2.includes('혼자서 캠퍼 한 명만'), '차량 단둘이 이동 금지 문구(중복 없이)');
-  assert.ok(cpKo2.includes('캠프가 진행되는 국가의 법이나 규정이 이 서약서보다 더 엄격하면 더 엄격한 쪽을 따르겠습니다.'), '캠프 국가의 법이나 규정이 더 엄격하면 그쪽');
+  assert.ok(cpKo2.includes('저는 캠퍼의 보호자 동의 없이는 캠퍼와 단둘이 차량으로 이동하지 않겠습니다.') && !cpKo2.includes('캠퍼 배정과 감독 배치') && !cpKo2.includes('혼자서 캠퍼 한 명만'), '차량 단둘이 이동 금지 문구(중복 없이)');
+  assert.ok(cpKo2.includes('캠프가 진행되는 나라의 법이나 규정이 이 서약서보다 더 엄격하면 더 엄격한 쪽을 따르겠습니다.'), '캠프 국가의 법이나 규정이 더 엄격하면 그쪽');
   assert.ok(docSections(DOCS.childprotection).flatMap((x) => x.items).every((i) => /저는|제가/.test(i.ko)), '아동보호 서약서 항목은 모두 서약하는 사람의 목소리(저는)');
   assert.ok(docSections(DOCS.childprotection).flatMap((x) => x.items).every((i) => /\bI\b/.test(i.en)), '영어도 모두 "I"로 시작하는 1인칭');
   assert.ok(DOCS.childprotection.ko.pledge.includes('월코 캠프에 참여하는 캠퍼를 지키기 위해') && DOCS.childprotection.en.pledge.includes('campers who take part in WOLKO camps'), '맺음말은 캠퍼를 지키기 위해');
@@ -566,7 +566,7 @@ test('아동보호 서약서는 한 사람(서약하는 사람)의 목소리: �
   assert.ok(secs.some((x) => x.ko === '저의 약속' && x.en === 'My commitment') && secs.some((x) => x.ko === '서약을 어긴 경우' && x.en === 'If I break this agreement'));
   assert.ok(!secs.some((x) => /우리의|미성년자/.test(x.ko)), '소제목에 "우리의" · "미성년자"가 없다');
   const items = secs.flatMap((x) => x.items), ko = items.map((i) => i.ko).join('\n'), en = items.map((i) => i.en).join('\n');
-  assert.ok(!/다른 어른/.test(ko) && ko.includes('어른 스태프'), '"다른 어른"(서명자가 어른이라는 전제) 대신 "어른 스태프"');
+  assert.ok(!/다른 어른/.test(ko), '"다른 어른"(서명자가 어른이라는 전제) 대신 "다른 스태프" · "어른 스태프"');
   assert.ok(!/반환합니다\.|보관하고 반환/.test(ko.replace('월코가 캠프 기간 동안만 보관하고, 캠프가 끝나면 원본을 반환함을 이해합니다.', '')), '서류 반환 문장의 주어가 월코임을 이해한다는 형태');
   // 신고 · 대응 항목은 모두 112 신고를 빠뜨리지 않는다(담당자만 알리면 되는 것처럼 읽히지 않게)
   const report = secs.find((x) => x.ko === '신고와 대응').items;
@@ -629,4 +629,35 @@ test('신앙고백서: 예전 11개(v3) 글을 보관해 관리자 화면에서 
   assert.ok(v3.items[2].ko.includes('7년 대환난'), '예전 문구 그대로');
   assert.equal(archivedDoc(DOCS.faith, '2026-11-v2'), null);
   assert.match(readFileSync(new URL('../functions/api/portal/agreements.js', import.meta.url), 'utf8'), /archivedDoc\(cur, record\.version\)/);
+});
+
+test('아동보호 서약서 v14: 디렉터 문구로 다듬음 — v13 에 서명한 분은 그대로 서명 완료, 관리자는 v13 글을 볼 수 있다', async () => {
+  const { archivedDoc, versionOk } = await import('../functions/lib/staffAgreements.js');
+  const d = DOCS.childprotection;
+  assert.ok(versionOk(d, '2026-11-v13') && !versionOk(d, '2026-11-v12'));
+  const ko = docSections(d).flatMap((x) => x.items).map((i) => i.ko).join('\n');
+  assert.ok(ko.includes('신체적·정서적 위협으로부터') && ko.includes('선발에 불이익이 있을 수 있음') && !ko.includes('추천인 확인'));
+  const v13 = archivedDoc(d, '2026-11-v13');
+  assert.equal(v13.version, '2026-11-v13');
+  assert.ok(docSections(v13).flatMap((x) => x.items).some((i) => i.ko.includes('신체적·정서적·성적 해악')), '예전 글 그대로 보관');
+});
+
+test("아동보호 서약서의 '크루' 묶음은 크루로 서명할 때만 보이고 체크받는다", async () => {
+  const { itemCountFor, sectionsFor } = await import('../functions/lib/staffAgreements.js');
+  const d = DOCS.childprotection;
+  assert.ok(!sectionsFor(d, 'staff').some((x) => x.ko === '크루'));
+  assert.ok(sectionsFor(d, 'crew').some((x) => x.ko === '크루'));
+  const crewItems = docSections(d).find((x) => x.ko === '크루').items.length;
+  assert.equal(itemCountFor(d, 'crew') - itemCountFor(d, 'staff'), crewItems);
+  const sign = readFileSync(new URL('../functions/api/agreements/sign.js', import.meta.url), 'utf8');
+  assert.match(sign, /const itemTotal = itemCountFor\(doc, role\);/);
+  const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
+  assert.match(page, /data-roles=\{sec\.roles \? sec\.roles\.join\(' '\) : undefined\}/);
+  assert.match(page, /article\.saApplyRole = function/);
+});
+
+test("서약서 페이지: 숨긴 묶음(스태프에게 '크루' 소제목)은 실제로 보이지 않는다 — 소제목의 display:block 보다 [hidden] 규칙이 뒤", () => {
+  const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
+  const a = page.indexOf('.sa-items li.sa-sec { display: block;'), b = page.indexOf('.sa-items li[hidden] { display: none; }');
+  assert.ok(a > 0 && b > a);
 });

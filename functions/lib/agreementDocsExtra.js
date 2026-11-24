@@ -17,10 +17,13 @@
  *  - 문신과 얼굴 장신구(귀걸이 두 세트 이상, 코걸이, 혀 피어싱 등)는 보이지 않게 한다. 귀걸이 한 쌍(한 세트)은 괜찮다. 모든 스태프와 크루에게 적용(2026-11-21).
  * 아직 정하지 못한 것은 문서 맨 아래 '정해야 할 것'(OPEN_QUESTIONS)에 적어 두었다.
  */
+import { CHILD_PROTECTION_V13_SECTIONS } from './agreementArchive.js';
 
 export const CHILD_PROTECTION = {
   id: 'childprotection',
-  version: '2026-11-v13',   // v13: 약속하는 문장은 모두 '~하겠습니다'(미래형)로('~합니다' 단정형은 군대 말투 같아서) · v12: 검토자 세 명(문체 · 아동보호 내용 · 영어)의 지적 반영 — 07 차량(어떤 이유로도 단둘이 이동 금지), 10 SNS, 13 크루, 15 담당자 · 112, 16 · 17 신고, 04 서류 이름, 소제목 정리, 영어 시제 통일 · v11: 모든 항목을 서약하는 사람의 목소리('저는')로 통일(크루 · 담당자 안내 · 신고자 보호 항목 다듬음) · v10: '퇴출 · 해임'을 모두 '제명'으로 통일 · v9: 신체 접촉 항목을 '우리 문화에서는 괜찮다 또는 캠퍼가 먼저 원해서라는 이유로 하지 않고 월코의 기준을 따르겠습니다'로 · v8: '캠퍼 배정과 감독 배치' 항목을 '차량 운행을 이유로 1명의 캠퍼와 단독 운행 금지'로 바꾸고 이동 항목의 같은 문구는 뺐다 · v7: 소제목 '단독행위와 제3자 규칙' · v6: 모든 항목을 1인칭('저는')으로 · 2번 문장을 '캠프가 진행되는 국가의 법이나 규정'으로 · 범죄경력 서류 문구(성범죄경력 및 아동학대 범죄전력회신서 · 원본 반환) · v4: '캠프마다 새로 작성' 문장을 뺐다(한 번만 작성) · v5: 맺음말을 '월코 캠프에 참여하는 캠퍼를 지키기 위해'로 고쳤다
+  version: '2026-11-v14',   // v14: '저의 약속' 1 · 2, '심사' 1, '단독행위' 1 · 2 · 3을 디렉터 문구로(성적 해악 → 위협, 국가 → 나라, 추천인 확인 빠짐, 선발 불이익, 다른 스태프가 볼 수 있는 공개된 장소, 화장실 · 탈의 공간은 허락을 받고, 차량 단둘이는 보호자 동의 없이 안 함) · '소통' 1(다른 스태프와 보호자가 있는 대화방) ·    // v13: 약속하는 문장은 모두 '~하겠습니다'(미래형)로('~합니다' 단정형은 군대 말투 같아서) · v12: 검토자 세 명(문체 · 아동보호 내용 · 영어)의 지적 반영 — 07 차량(어떤 이유로도 단둘이 이동 금지), 10 SNS, 13 크루, 15 담당자 · 112, 16 · 17 신고, 04 서류 이름, 소제목 정리, 영어 시제 통일 · v11: 모든 항목을 서약하는 사람의 목소리('저는')로 통일(크루 · 담당자 안내 · 신고자 보호 항목 다듬음) · v10: '퇴출 · 해임'을 모두 '제명'으로 통일 · v9: 신체 접촉 항목을 '우리 문화에서는 괜찮다 또는 캠퍼가 먼저 원해서라는 이유로 하지 않고 월코의 기준을 따르겠습니다'로 · v8: '캠퍼 배정과 감독 배치' 항목을 '차량 운행을 이유로 1명의 캠퍼와 단독 운행 금지'로 바꾸고 이동 항목의 같은 문구는 뺐다 · v7: 소제목 '단독행위와 제3자 규칙' · v6: 모든 항목을 1인칭('저는')으로 · 2번 문장을 '캠프가 진행되는 국가의 법이나 규정'으로 · 범죄경력 서류 문구(성범죄경력 및 아동학대 범죄전력회신서 · 원본 반환) · v4: '캠프마다 새로 작성' 문장을 뺐다(한 번만 작성) · v5: 맺음말을 '월코 캠프에 참여하는 캠퍼를 지키기 위해'로 고쳤다
+  acceptVersions: ['2026-11-v13'],   // 문구만 다듬은 것이라 v13 에 서명한 분은 다시 서명하지 않아도 '서명 완료'
+  archive: { '2026-11-v13': { sections: CHILD_PROTECTION_V13_SECTIONS } },
   perCamp: false,   // 2026-11-21: 캠프 선택 없이 한 번만 작성한다(처음에는 캠프마다였으나 사용자가 '캠프 선택은 필요 없다'고 정했다). true 로 돌리면 서명할 때 캠프를 고르는 방식이 다시 켜진다
   draft: false,   // 2026-11-21 '초안이지만 일단 공개' — 문구를 바꾸면 version 을 올려 예전 서명과 구분한다
   ko: {
@@ -38,17 +41,17 @@ export const CHILD_PROTECTION = {
     {
       ko: '저의 약속', en: 'My commitment',
       items: [
-        { ko: '저는 모든 아동·청소년이 신체적·정서적·성적 해악으로부터 안전할 권리가 있다고 믿습니다. 이 서약서가 월코 캠프의 모든 스태프와 크루가 반드시 지켜야 할 최소 기준임을 이해합니다.',
-          en: 'I believe that every child and young person (“children” below) has the right to be safe from physical, emotional and sexual harm. I understand that this agreement sets the minimum standard that every WOLKO staff member and crew member must follow.' },
-        { ko: '저는 캠프 기간뿐 아니라 캠프 전후에도 이 기준을 지키겠습니다. 캠프가 진행되는 국가의 법이나 규정이 이 서약서보다 더 엄격하면 더 엄격한 쪽을 따르겠습니다.',
+        { ko: '저는 모든 아동·청소년이 신체적·정서적 위협으로부터 안전할 권리가 있다고 믿습니다. 이 서약서가 월코 캠프의 모든 스태프와 크루가 반드시 지켜야 할 최소 기준임을 이해합니다.',
+          en: 'I believe that every child and young person (“children” below) has the right to be safe from physical and emotional threats. I understand that this agreement sets the minimum standard that every WOLKO staff member and crew member must follow.' },
+        { ko: '저는 캠프 기간뿐 아니라 캠프 전후에도 이 기준을 지키겠습니다. 캠프가 진행되는 나라의 법이나 규정이 이 서약서보다 더 엄격하면 더 엄격한 쪽을 따르겠습니다.',
           en: 'I will keep these standards not only during camp but also before and after it. If the law or regulations of the country where the camp takes place are stricter than this agreement, I will follow the stricter one.' },
       ],
     },
     {
       ko: '심사와 범죄경력 확인', en: 'Screening and criminal record checks',
       items: [
-        { ko: '저는 아동·청소년과 함께하는 역할을 맡기 전에 지원서 제출, 추천인 확인, 면접 절차를 거치는 데 동의합니다. 지원서에 거짓 내용을 적거나 중요한 내용을 빠뜨리면 선발에서 제외되거나 제명될 수 있음을 이해합니다.',
-          en: 'Before taking any role that involves children, I agree to go through the application, reference checks and interview. I understand that giving false information or leaving out important information can lead to my not being selected or to my removal from camp.' },
+        { ko: '저는 아동·청소년과 함께하는 역할을 맡기 전에 지원서 제출과 면접 절차를 거치는 데 동의합니다. 지원서에 거짓 내용을 적거나 중요한 내용을 빠뜨리면 선발에 불이익이 있을 수 있음을 이해합니다.',
+          en: 'Before taking any role that involves children, I agree to go through the application and interview. I understand that giving false information or leaving out important information may count against me in selection.' },
         { ko: '월코가 요구하면, 저는 성범죄·아동학대 범죄경력 확인에 필요한 서류(성범죄경력 조회 회신서와 아동학대관련범죄전력 조회 회신서, 외국인의 경우 본국 등 해당 나라에서 발급받은 범죄경력 증명서)를 지체 없이 제공하겠습니다. 제출한 서류는 월코가 캠프 기간 동안만 보관하고, 캠프가 끝나면 원본을 반환함을 이해합니다.',
           en: 'Whenever WOLKO asks, I will provide without delay the documents needed to check for sex-crime and child-abuse criminal records (the sex-crime record inquiry reply and the child-abuse-related crime history inquiry reply issued in Korea and, for foreign nationals, a criminal record certificate issued by the home country or the relevant country). I understand that WOLKO keeps the documents I submit only for the duration of the camp and returns the originals when the camp ends.' },
       ],
@@ -56,12 +59,12 @@ export const CHILD_PROTECTION = {
     {
       ko: '단독행위와 제3자 규칙', en: 'Solo activity and the third-person rule',
       items: [
-        { ko: '저는 아동·청소년과 단둘이 사적인 공간에 있지 않겠습니다. 면담이나 상담도 어른 스태프가 볼 수 있는 열린 공간에서 하겠습니다.',
-          en: 'I will not be alone with a child in a private space. I will hold any one-to-one meeting or counseling session in an open area where an adult staff member can see us.' },
-        { ko: '저는 캠퍼의 숙소, 화장실, 샤워실, 탈의 공간에 혼자 들어가지 않겠습니다. 점검이 필요하면 어른 스태프와 함께 입구에서 확인하고, 캠퍼의 사생활을 지키겠습니다.',
-          en: 'I will not enter campers’ sleeping quarters, toilets, showers or changing areas alone. When a check is needed, I will do it from the entrance together with an adult staff member, and I will respect campers’ privacy.' },
-        { ko: '저는 어떤 이유로도 캠퍼 한 명과 단둘이 차량으로 이동하지 않겠습니다.',
-          en: 'I will not travel alone in a vehicle with a single camper, whatever the reason.' },
+        { ko: '저는 아동·청소년과 단둘이 사적인 공간에 머물지 않겠습니다. 면담이나 상담도 다른 스태프가 볼 수 있는 공개된 장소에서 진행하겠습니다.',
+          en: 'I will not stay alone with a child in a private space. I will hold any one-to-one meeting or counseling session in an open place where other staff members can see us.' },
+        { ko: '저는 캠퍼가 사용 중인 화장실과 탈의 공간에 함부로 들어가지 않겠습니다. 점검이나 확인이 필요하면 다른 스태프와 함께 입구에서 캠퍼에게 말로 허락을 받은 뒤 들어가고, 캠퍼의 사생활을 최대한 존중하겠습니다.',
+          en: 'I will not walk into a toilet or changing area that campers are using without good reason. If a check is needed, I will go with another staff member, ask the campers aloud for permission from the entrance before going in, and respect their privacy as fully as I can.' },
+        { ko: '저는 캠퍼의 보호자 동의 없이는 캠퍼와 단둘이 차량으로 이동하지 않겠습니다.',
+          en: 'I will not travel alone with a camper in a vehicle without the consent of the camper’s parent or guardian.' },
       ],
     },
     {
@@ -76,8 +79,8 @@ export const CHILD_PROTECTION = {
     {
       ko: '소통, SNS, 사진', en: 'Communication, social media and photos',
       items: [
-        { ko: '저는 캠퍼와 개인 SNS 계정(카카오톡, 인스타그램 등)을 주고받지 않겠습니다. 친구 추가나 팔로우를 하지 않고 개인 메시지도 보내지 않으며, 연락이 필요하면 월코 공식 그룹 채널을 쓰거나 어른 스태프와 캠퍼의 보호자가 함께 있는 대화방에서 하겠습니다.',
-          en: 'I will not exchange personal social media accounts (KakaoTalk, Instagram, etc.) with campers. I will not add, follow or privately message them; when contact is needed, I will use WOLKO’s official group channels or a chat that includes an adult staff member and the camper’s parent or guardian.' },
+        { ko: '저는 캠퍼와 개인 SNS 계정을 주고받지 않겠습니다. 친구 추가나 팔로우를 하지 않고 개인 메시지도 보내지 않으며, 연락이 필요하면 월코 공식 그룹 채널을 쓰거나 다른 스태프와 캠퍼의 보호자가 함께 있는 대화방에서 하겠습니다.',
+          en: 'I will not exchange personal social media accounts with campers. I will not add, follow or privately message them; when contact is needed, I will use WOLKO’s official group channels or a chat that includes another staff member and the camper’s parent or guardian.' },
         { ko: '저는 캠프에서 찍은 사진과 영상을 월코가 정한 방법으로만 다루겠습니다. 캠퍼의 사진, 영상, 이름을 제 개인 SNS에 올리지 않으며, 촬영 동의가 없는 캠퍼의 사진과 영상은 찍지도 올리지도 않겠습니다.',
           en: 'I will handle photos and videos taken at camp only in the way WOLKO sets. I will not post campers’ photos, videos or names on my personal social media, and I will not take or post photos or videos of any camper who has not consented to being photographed.' },
       ],
@@ -91,6 +94,7 @@ export const CHILD_PROTECTION = {
     },
     {
       ko: '크루', en: 'Crew members',
+      roles: ['crew'],   // 크루로 서명할 때만 보여 주고 체크받는다(스태프 화면에는 나오지 않는다)
       items: [
         { ko: '저는 18세 미만의 크루를 포함해 모든 스태프와 크루에게 이 서약서가 똑같이 적용되며, 18세 미만의 크루도 캠퍼와 똑같이 보호받음을 이해합니다. 저는 월코가 따로 정해 안내하는 크루의 역할 범위를 지키며, 크루는 어른 스태프의 지도에 따라 활동한다는 원칙을 따르겠습니다.',
           en: 'I understand that this agreement applies equally to every staff member and crew member, including crew members under 18, and that crew members under 18 are protected in the same way as campers. I will keep to the scope of crew roles that WOLKO sets and explains separately, and to the principle that crew members act under the guidance of an adult staff member.' },

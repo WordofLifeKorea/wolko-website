@@ -102,6 +102,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
   @media (prefers-reduced-motion: reduce) { .sa-item-box, .sa-item-box::after { transition: none; } .sa-item input:checked + .sa-item-box { animation: none; } }
   .sa-item input:focus-visible + .sa-item-box { outline: 3px solid rgba(0, 79, 104, .35); outline-offset: 2px; }
   .sa-items li.sa-sec { display: block; padding: 26px 0 6px; border-top: 0; font-size: 16.5px; font-weight: 800; letter-spacing: -.01em; color: var(--sa-navy); }
+  .sa-items li[hidden] { display: none; }   /* 구분에 맞지 않는 묶음(예: 스태프에게 '크루') — 위 display: block 보다 뒤에 둔다 */
   .sa-items li.sa-sec > span::before { content: ''; display: inline-block; width: 24px; height: 2px; margin: 0 12px 4px 0; background: var(--sa-deep); vertical-align: middle; }
   .sa-items li.sa-sec + li { border-top: 0; }
   .sa-ack { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 4px 28px 0; font-size: 14px; font-weight: 700; color: var(--sa-body); }
@@ -253,14 +254,14 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
           </div>
         </div>
 
-        <p class="sa-ack" data-ack data-total={docSections(doc).reduce((n, sec) => n + sec.items.length, 0)}><span class="sa-ack-text"><span class="wl-ko">각 항목을 읽고 하나씩 체크해 주세요</span><span class="wl-en">Read each item and tick it</span></span><span class="sa-ack-count" aria-label="체크한 항목 / Items ticked"><b data-ack-n>0</b> / {docSections(doc).reduce((n, sec) => n + sec.items.length, 0)}</span></p>
+        <p class="sa-ack" data-ack data-total={docSections(doc).reduce((n, sec) => n + sec.items.length, 0)}><span class="sa-ack-text"><span class="wl-ko">각 항목을 읽고 하나씩 체크해 주세요</span><span class="wl-en">Read each item and tick it</span></span><span class="sa-ack-count" aria-label="체크한 항목 / Items ticked"><b data-ack-n>0</b> / <span data-ack-t>{docSections(doc).filter((sec) => !sec.roles || sec.roles.includes('staff')).reduce((n, sec) => n + sec.items.length, 0)}</span></span></p>
         <p class="sa-err sa-ack-err" data-err="items" role="alert" hidden></p>
         <ol class="sa-items">
           {docSections(doc).map((sec) => (
             <>
-              {sec.ko && <li class="sa-sec"><span><span class="wl-ko">{sec.ko}</span><span class="wl-en">{sec.en}</span></span></li>}
+              {sec.ko && <li class="sa-sec" data-roles={sec.roles ? sec.roles.join(' ') : undefined}><span><span class="wl-ko">{sec.ko}</span><span class="wl-en">{sec.en}</span></span></li>}
               {sec.items.map((it) => (
-                <li><label class="sa-item"><input type="checkbox" data-item-check><span class="sa-item-box" aria-hidden="true"></span><span><span class="wl-ko">{sentences(it.ko)}</span><span class="wl-en">{sentences(it.en)}</span></span></label></li>
+                <li data-roles={sec.roles ? sec.roles.join(' ') : undefined}><label class="sa-item"><input type="checkbox" data-item-check><span class="sa-item-box" aria-hidden="true"></span><span><span class="wl-ko">{sentences(it.ko)}</span><span class="wl-en">{sentences(it.en)}</span></span></label></li>
               ))}
             </>
           ))}
@@ -431,7 +432,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
     var w = window.open('', '_blank');
     if (!w) { alert(T('팝업이 막혀 있어요. 이 사이트의 팝업을 허용한 뒤 다시 눌러 주세요.', 'Pop-ups are blocked. Please allow pop-ups for this site and try again.')); return; }
     var n0 = 0;
-    var items = function (k) { n0 = 0; return doc.sections.map(function (sec) { return (sec[k] ? '<li class="sec"><span>' + esc(sec[k]) + '</span></li>' : '') + sec.items.map(function (it) { n0++; return '<li><b>' + String(n0).padStart(2, '0') + '</b><span>' + esc(sentences(it[k])) + '</span></li>'; }).join(''); }).join(''); };
+    var items = function (k) { n0 = 0; return doc.sections.filter(function (sec) { return !sec.roles || sec.roles.indexOf(rec.role) >= 0; }).map(function (sec) { return (sec[k] ? '<li class="sec"><span>' + esc(sec[k]) + '</span></li>' : '') + sec.items.map(function (it) { n0++; return '<li><b>' + String(n0).padStart(2, '0') + '</b><span>' + esc(sentences(it[k])) + '</span></li>'; }).join(''); }).join(''); };
     var decl = function (k) { return doc.declaration ? '<p class="pledge">' + esc(doc.declaration[k]) + '</p>' : ''; };
     var roleLabel = rec.role === 'crew' ? '크루 Crew' : '스태프 Staff';
     // (여는 태그를 둘로 나눠 쓴 것은 '전체 페이지는 스크롤 잠금 스크립트를 불러온다'는 검사가 이 글자열을 쪽 전체로 오해하지 않게 하려는 것)
@@ -580,6 +581,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
     var same = STATE.info && STATE.info.email === info.email && STATE.info.name === info.name;
     if (STATE.info && !same) resetArticles();   // 처음 들어올 때는 비울 것이 없다(주소의 ?camp= 로 미리 고른 캠프를 지우지 않는다)
     STATE.info = info; STATE.signed = same ? STATE.signed : {};
+    articles.forEach(function (a) { if (a.saApplyRole) a.saApplyRole(); });   // 크루만 보는 항목을 구분에 맞춰 보이고 숨긴다
     try { sessionStorage.setItem(WHO_KEY, JSON.stringify(info)); } catch (e) {}
     whoForm.hidden = true; whoSummary.hidden = false;
     whoEl.querySelector('[data-who-text]').textContent = whoSummaryText();
@@ -633,8 +635,22 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
       if (input && input.classList) input.classList.toggle('is-invalid', !!msg);
     }
     function clearErrs() { ['campId', 'signature', 'items', 'declared', 'agree', 'consent', 'form'].forEach(function (f) { showErr(f, ''); }); }
-    var itemChecks = Array.prototype.slice.call(article.querySelectorAll('[data-item-check]')), ackEl = q('[data-ack]');
-    var itemTotal = itemChecks.length;
+    var allChecks = Array.prototype.slice.call(article.querySelectorAll('[data-item-check]')), ackEl = q('[data-ack]');
+    var itemChecks = allChecks, itemTotal = allChecks.length;
+    // 구분(스태프 · 크루)에 따라 보여 줄 묶음만 남긴다 — 예: 아동보호 서약서의 '크루' 묶음은 크루에게만
+    function applyRole() {
+      var role = (STATE.info && STATE.info.role) || 'staff';
+      Array.prototype.forEach.call(article.querySelectorAll('[data-roles]'), function (li) {
+        var show = (' ' + li.getAttribute('data-roles') + ' ').indexOf(' ' + role + ' ') >= 0;
+        li.hidden = !show;
+        if (!show) { var c = li.querySelector('[data-item-check]'); if (c) c.checked = false; }
+      });
+      itemChecks = allChecks.filter(function (c) { var li = c.closest('li'); return !(li && li.hidden); });
+      itemTotal = itemChecks.length;
+      Array.prototype.forEach.call(article.querySelectorAll('[data-ack-t]'), function (el) { el.textContent = String(itemTotal); });
+    }
+    article.saApplyRole = function () { applyRole(); syncAck(); };
+    applyRole();
     function ackCount() { return itemChecks.filter(function (c) { return c.checked; }).length; }
     function syncAck() {   // 체크한 항목 수를 보여 주고, 모두 체크하면 아래 '모두 읽었으며 동의' 칸을 함께 체크한다(하나라도 풀면 같이 푼다)
       var n = ackCount();

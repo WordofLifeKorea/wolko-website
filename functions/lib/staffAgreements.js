@@ -20,10 +20,40 @@ export const MAX_SIGNATURE_BYTES = 240 * 1024;   // 서명 그림(PNG) 한도
 export const DOCS = {
   faith: {
     id: 'faith',
-    version: '2026-11-v4',   // v4: 핵심 7개로 간추렸다(v3: 맺음말을 camp@wolko.org 연락 안내로)
-    acceptVersions: ['2026-11-v3'],
+    version: '2026-11-v5',   // v5: 7개 항목의 맞춤법 · 띄어쓰기 · 뜻 다듬기(지음을 받았으므로, 모든 인간 생명 등) · v4: 핵심 7개로 간추렸다(v3: 맺음말을 camp@wolko.org 연락 안내로)
+    acceptVersions: ['2026-11-v4', '2026-11-v3'],
     // 예전 버전의 글(관리자가 예전 서명을 열면 그때 글을 보여 주고 해시를 맞춰 본다). 맺음말 · 소개는 v3 와 같다
     archive: {
+      '2026-11-v4': { items: [
+              {
+                      "ko": "우리는 신구약 성경이 하나님의 감동으로 기록된 말씀이며, 신앙과 삶의 최종 권위임을 믿습니다.",
+                      "en": "We believe that the Old and New Testament Scriptures are inspired by God and are the final authority for faith and life."
+              },
+              {
+                      "ko": "우리는 우주의 창조주이시며 섭리자이신 한 분 하나님, 곧 성부, 성자, 성령의 세 위격으로 영원히 계시는 하나님을 믿습니다.",
+                      "en": "We believe in one God, Creator and Sustainer of the universe, who exists eternally in three persons: Father, Son, and Holy Spirit."
+              },
+              {
+                      "ko": "우리는 예수 그리스도께서 참 하나님이시며 참 사람이심을 믿습니다. 그분은 동정녀에게서 나시고 죄 없이 사셨으며, 우리 죄를 위해 십자가에서 대신 죽으시고, 몸으로 부활하셔서 하나님 우편에 오르셨고, 다시 오실 것입니다.",
+                      "en": "We believe that Jesus Christ is truly God and truly man. He was born of a virgin, lived a sinless life, died on the cross in our place for our sins, rose bodily from the dead, ascended to the right hand of God, and will come again."
+              },
+              {
+                      "ko": "우리는 모든 사람이 죄를 지어 하나님 앞에 죄인이며, 오직 하나님의 은혜로 예수 그리스도를 믿음으로 구원받는다는 것을 믿습니다.",
+                      "en": "We believe that all have sinned and are guilty before God, and that salvation is by God's grace alone through faith in Jesus Christ."
+              },
+              {
+                      "ko": "우리는 성령께서 사람을 거듭나게 하시고, 믿는 사람 안에 거하시며, 거룩한 삶과 증거와 섬김으로 인도하시고 힘을 주심을 믿습니다.",
+                      "en": "We believe that the Holy Spirit gives new birth, dwells within every believer, and guides and empowers believers for a holy life, witness, and service."
+              },
+              {
+                      "ko": "우리는 모든 사람의 몸의 부활과 최후의 심판을 믿으며, 구원받은 사람은 하나님과 함께 영원한 생명을, 구원받지 못한 사람은 영원한 형벌을 받는다는 것을 믿습니다.",
+                      "en": "We believe in the bodily resurrection of all people and the final judgment: eternal life with God for the saved and eternal punishment for the lost."
+              },
+              {
+                      "ko": "우리는 하나님께서 사람을 남자와 여자로 창조하시고, 결혼을 한 남자와 한 여자 사이의 언약으로 정하셨음을 믿습니다. 또한 모든 사람이 하나님의 형상대로 지음받았으므로, 잉태된 때부터 모든 생명이 존귀하며 존중받고 보호받아야 함을 믿습니다.",
+                      "en": "We believe that God created people male and female and ordained marriage as a covenant between one man and one woman. Because every person is made in the image of God, we believe that all human life, from conception, is sacred and is to be respected and protected."
+              }
+      ] },
       '2026-11-v3': { items: [
       { ko: "우리는 구약과 신약 성경이 하나님의 감동으로 기록되었으며, 원본에 오류가 없고, 신앙과 삶에 있어 최고의 최종 권위임을 믿습니다.",
         en: "We believe that the Scriptures of the Old and New Testament are verbally inspired of God, and they are without error in the original writings, and they are the supreme and final authority for faith and life." },
@@ -64,15 +94,15 @@ export const DOCS = {
         en: "We believe that the Old and New Testament Scriptures are inspired by God and are the final authority for faith and life." },
       { ko: "우리는 우주의 창조주이시며 섭리자이신 한 분 하나님, 곧 성부, 성자, 성령의 세 위격으로 영원히 계시는 하나님을 믿습니다.",
         en: "We believe in one God, Creator and Sustainer of the universe, who exists eternally in three persons: Father, Son, and Holy Spirit." },
-      { ko: "우리는 예수 그리스도께서 참 하나님이시며 참 사람이심을 믿습니다. 그분은 동정녀에게서 나시고 죄 없이 사셨으며, 우리 죄를 위해 십자가에서 대신 죽으시고, 몸으로 부활하셔서 하나님 우편에 오르셨고, 다시 오실 것입니다.",
+      { ko: "우리는 예수 그리스도께서 참 하나님이시며 참 사람이심을 믿습니다. 그분은 동정녀에게서 나시고 죄 없이 사셨으며, 우리 죄를 위해 십자가에서 대신 죽으시고, 몸으로 부활하셔서 하나님 우편에 오르셨고, 다시 오실 것을 믿습니다.",
         en: "We believe that Jesus Christ is truly God and truly man. He was born of a virgin, lived a sinless life, died on the cross in our place for our sins, rose bodily from the dead, ascended to the right hand of God, and will come again." },
       { ko: "우리는 모든 사람이 죄를 지어 하나님 앞에 죄인이며, 오직 하나님의 은혜로 예수 그리스도를 믿음으로 구원받는다는 것을 믿습니다.",
         en: "We believe that all have sinned and are guilty before God, and that salvation is by God's grace alone through faith in Jesus Christ." },
-      { ko: "우리는 성령께서 사람을 거듭나게 하시고, 믿는 사람 안에 거하시며, 거룩한 삶과 증거와 섬김으로 인도하시고 힘을 주심을 믿습니다.",
+      { ko: "우리는 성령께서 사람을 거듭나게 하시고, 모든 믿는 사람 안에 거하시며, 거룩한 삶과 증거와 섬김으로 인도하시고 힘을 주심을 믿습니다.",
         en: "We believe that the Holy Spirit gives new birth, dwells within every believer, and guides and empowers believers for a holy life, witness, and service." },
-      { ko: "우리는 모든 사람의 몸의 부활과 최후의 심판을 믿으며, 구원받은 사람은 하나님과 함께 영원한 생명을, 구원받지 못한 사람은 영원한 형벌을 받는다는 것을 믿습니다.",
+      { ko: "우리는 모든 사람이 몸으로 부활하여 최후의 심판을 받으며, 구원받은 사람은 하나님과 함께 영원히 살고 구원받지 못한 사람은 영원한 형벌을 받는다는 것을 믿습니다.",
         en: "We believe in the bodily resurrection of all people and the final judgment: eternal life with God for the saved and eternal punishment for the lost." },
-      { ko: "우리는 하나님께서 사람을 남자와 여자로 창조하시고, 결혼을 한 남자와 한 여자 사이의 언약으로 정하셨음을 믿습니다. 또한 모든 사람이 하나님의 형상대로 지음받았으므로, 잉태된 때부터 모든 생명이 존귀하며 존중받고 보호받아야 함을 믿습니다.",
+      { ko: "우리는 하나님께서 사람을 남자와 여자로 창조하시고, 결혼을 한 남자와 한 여자 사이의 언약으로 정하셨음을 믿습니다. 또한 모든 사람이 하나님의 형상대로 지음을 받았으므로, 잉태된 때부터 모든 인간 생명이 존귀하며 존중받고 보호받아야 함을 믿습니다.",
         en: "We believe that God created people male and female and ordained marriage as a covenant between one man and one woman. Because every person is made in the image of God, we believe that all human life, from conception, is sacred and is to be respected and protected." }
     ],
   },
@@ -81,7 +111,7 @@ export const DOCS = {
 };
 
 /** 예전 버전의 문서(보관한 글이 있으면) — 해시 · 글 보기용. 없으면 null */
-export const archivedDoc = (doc, v) => (doc && doc.archive && doc.archive[v] ? { ...doc, version: v, items: doc.archive[v].items, archive: undefined, acceptVersions: undefined } : null);
+export const archivedDoc = (doc, v) => (doc && doc.archive && doc.archive[v] ? { ...doc, ...doc.archive[v], version: v, archive: undefined, acceptVersions: undefined } : null);
 
 /** 이 서명 버전을 지금 문서의 서명으로 인정하는가(지금 버전, 또는 그대로 인정하기로 한 예전 버전) */
 export const versionOk = (doc, v) => v === doc.version || (doc.acceptVersions || []).includes(v);
@@ -93,6 +123,11 @@ export const docList = ({ includeDrafts = false } = {}) => Object.values(DOCS).f
 export function docSections(doc) {
   return doc.sections || [{ ko: '', en: '', items: doc.items || [] }];
 }
+
+/** 이 구분(staff | crew)에게 보여 주는 묶음 — roles 가 있는 묶음(예: '크루')은 그 구분에게만 */
+export const sectionsFor = (doc, role) => docSections(doc).filter((sec) => !sec.roles || sec.roles.includes(role));
+/** 이 구분이 체크해야 하는 항목 수 */
+export const itemCountFor = (doc, role) => sectionsFor(doc, role).reduce((n, sec) => n + sec.items.length, 0);
 
 /** 문서의 글 전체를 한 덩어리로 — 해시 · 서명본 인쇄에 쓴다 */
 export function docText(doc) {
