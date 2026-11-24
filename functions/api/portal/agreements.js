@@ -6,7 +6,7 @@
  * DELETE /api/portal/agreements?code=AG-XXXXXX        한 건 삭제(삭제 요청용)
  */
 import { sessionFor, canWrite, error } from '../../lib/portalResources.js';
-import { DOCS, AGREEMENT_PREFIX, ROLE_LABEL, docHash, docSections } from '../../lib/staffAgreements.js';
+import { DOCS, AGREEMENT_PREFIX, ROLE_LABEL, archivedDoc, docHash, docSections } from '../../lib/staffAgreements.js';
 import { kstDateTime } from '../../lib/materials.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' };
@@ -54,8 +54,10 @@ export async function onRequestGet({ env, request }) {
     const row = rows.find((r) => r.code === code);
     const record = row ? await env.CAMP_KV.get(row.key, 'json') : null;
     if (!record) return error('서명 기록을 찾을 수 없습니다.', 404);
-    const doc = DOCS[record.doc];
-    // 서명한 때의 문서 글과 지금 글이 같을 때(버전과 글 해시가 모두 같을 때)만 글을 같이 보낸다 — 버전을 안 올리고 문구만 고쳤어도 '서명한 글'로 잘못 보이지 않게
+    // 서명한 때의 문서 글과 보여 줄 글이 같을 때(버전과 글 해시가 모두 같을 때)만 글을 같이 보낸다 — 버전을 안 올리고 문구만 고쳤어도 '서명한 글'로 잘못 보이지 않게.
+    // 예전 버전에 서명했고 그 버전의 글을 보관해 두었으면(archive) 그 글로 맞춰 본다
+    const cur = DOCS[record.doc];
+    const doc = cur && record.version !== cur.version ? archivedDoc(cur, record.version) : cur;
     const same = doc && doc.version === record.version && record.textHash === (await docHash(doc));
     return Response.json({ record, doc: same ? { ...doc, sections: docSections(doc) } : null }, { headers: CORS });
   }

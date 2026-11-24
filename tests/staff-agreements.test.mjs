@@ -44,11 +44,14 @@ async function setup() {
   return { kv, env, admin, member, call };
 }
 
-test('신앙고백서: 예전 About 페이지의 11개 항목 그대로(한·영), 문서 버전과 글 해시가 있다', async () => {
+test('신앙고백서: 교단에 상관없이 함께 고백하는 핵심 7개(한·영), 문서 버전과 글 해시가 있다', async () => {
   const d = DOCS.faith;
-  assert.equal(d.items.length, 11);
-  assert.ok(d.items.every((i) => i.ko.startsWith('우리는') && /^(We believe|Since every person)/.test(i.en)));
-  assert.ok(d.items[8].ko.includes('한 남자와 한 여자'), '결혼 항목이 들어 있다');
+  assert.equal(d.items.length, 7);
+  assert.ok(d.items.every((i) => i.ko.startsWith('우리는') && i.en.startsWith('We believe')));
+  assert.ok(d.items[6].ko.includes('한 남자와 한 여자'), '결혼 · 생명 항목이 들어 있다');
+  const all = d.items.map((i) => i.ko + i.en).join(' ');
+  assert.doesNotMatch(all, /대환난|천년|휴거|방언|tribulation|1000-year|tongues|eternally saved/, '특정 교단의 교리는 뺐다');
+  assert.ok(d.acceptVersions.includes('2026-11-v3'), '예전 11개에 서명한 분은 그대로 인정');
   assert.match(d.version, /^\d{4}-\d{2}-v\d+$/);
   assert.match(await docHash(d), /^[0-9a-f]{64}$/);
   assert.ok(docText(d).includes(d.ko.pledge) && docText(d).includes(d.en.pledge));
@@ -118,7 +121,7 @@ test('관리자 보기: 관리자만 · 목록(그림 없음) · 한 건(그림+
   assert.ok(!JSON.stringify(list).includes('data:image'), '목록에는 서명 그림이 없다');
   assert.deepEqual(list.items.map((i) => i.role).sort(), ['crew', 'staff']);
   const one = await (await t.call(adminApi, 'GET', `/api/portal/agreements?code=${a.code}`, { token: t.admin })).json();
-  assert.ok(one.record.signature.startsWith('data:image/png')); assert.equal(one.doc.items.length, 11);
+  assert.ok(one.record.signature.startsWith('data:image/png')); assert.equal(one.doc.items.length, 7);
   assert.equal((await t.call(adminApi, 'GET', '/api/portal/agreements?code=bad', { token: t.admin })).status, 400);
   assert.equal((await t.call(adminApi, 'GET', '/api/portal/agreements?code=AG-AAAAAA', { token: t.admin })).status, 404);
   const csv = await t.call(adminApi, 'GET', '/api/portal/agreements?format=csv', { token: t.admin });
@@ -350,7 +353,7 @@ test('서명 페이지: 서약서를 한 화면에 늘어놓지 않고, 목록�
     assert.ok(!/(^|[^가-힣])(나는|내가|나에게|나에 대한|내 문화|내 개인)/.test(ko), `${d.id}: "나는" 대신 "저는" (낱말 안의 "…나는" 은 그대로)`);
     assert.ok(/저는|제가/.test(ko), `${d.id}: 저는 / 제가 를 쓴다`);
   }
-  assert.match(DOCS.faith.version, /v3$/, '문구를 고쳤으니 문서 버전을 올렸다');
+  assert.match(DOCS.faith.version, /v4$/, '문구를 고쳤으니 문서 버전을 올렸다');
   assert.ok(DOCS.faith.ko.pledge.includes('동의하지 않는 내용이 있다면') && DOCS.faith.ko.pledge.includes('camp@wolko.org') && DOCS.faith.en.pledge.includes('camp@wolko.org'), '신앙고백서 맺음말에 문의 이메일 안내');
 });
 
@@ -603,4 +606,27 @@ test('서명 제출: 항목 체크 수(acks)를 보냈다면 문서의 항목 �
   const rec = [...t.kv.store.values()].map((v) => JSON.parse(v.value)).find((r) => r.email === 'acks@x.org');
   assert.equal(rec.itemsAcknowledged, total, '확인한 항목 수가 기록에 남는다');
   assert.equal((await post({ email: 'old@x.org' })).status, 200, 'acks 를 안 보낸 예전 화면도 받는다');
+});
+
+test('신앙고백서 v4: 예전 11개(v3)에 서명한 분도 서명 완료로 센다 — 그 밖의 예전 버전은 세지 않는다', async () => {
+  const { signedMap, signedFor, versionOk } = await import('../functions/lib/staffAgreements.js');
+  assert.equal(versionOk(DOCS.faith, '2026-11-v3'), true);
+  assert.equal(versionOk(DOCS.faith, '2026-11-v2'), false);
+  const store = new Map();
+  const env = { CAMP_KV: { list: async ({ prefix }) => ({ keys: [...store.entries()].filter(([k]) => k.startsWith(prefix)).map(([name, metadata]) => ({ name, metadata })), list_complete: true }) } };
+  store.set('agree:v1:faith:202611:AG-OLD111', { t: Date.now(), d: 'faith', v: '2026-11-v3', r: 'staff', n: '홍길동', e: 'old@example.com' });
+  store.set('agree:v1:faith:202611:AG-OLD222', { t: Date.now(), d: 'faith', v: '2026-11-v2', r: 'staff', n: '김철수', e: 'older@example.com' });
+  const map = await signedMap(env);
+  assert.ok((map['old@example.com'] || []).includes('faith'));
+  assert.ok(!(map['older@example.com'] || []).includes('faith'));
+  assert.ok((await signedFor(env, 'old@example.com', '홍길동')).faith);
+});
+
+test('신앙고백서: 예전 11개(v3) 글을 보관해 관리자 화면에서 예전 서명의 글을 보여 줄 수 있다', async () => {
+  const { archivedDoc } = await import('../functions/lib/staffAgreements.js');
+  const v3 = archivedDoc(DOCS.faith, '2026-11-v3');
+  assert.equal(v3.items.length, 11); assert.equal(v3.version, '2026-11-v3');
+  assert.ok(v3.items[2].ko.includes('7년 대환난'), '예전 문구 그대로');
+  assert.equal(archivedDoc(DOCS.faith, '2026-11-v2'), null);
+  assert.match(readFileSync(new URL('../functions/api/portal/agreements.js', import.meta.url), 'utf8'), /archivedDoc\(cur, record\.version\)/);
 });

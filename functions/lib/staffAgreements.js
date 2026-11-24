@@ -15,22 +15,16 @@ export const ROLES = ['staff', 'crew'];
 export const ROLE_LABEL = { staff: { ko: '스태프', en: 'Staff' }, crew: { ko: '크루', en: 'Crew' } };
 export const MAX_SIGNATURE_BYTES = 240 * 1024;   // 서명 그림(PNG) 한도
 
-/* 신앙고백서 11개 항목은 예전 About 페이지(월코소개 > 신앙고백)의 최종 문구를 그대로 옮긴 것이다(커밋 fc2a7a4c 에서 페이지를 내리기 전 상태). */
+/* 신앙고백서 — 교단에 상관없이 함께 고백할 수 있는 핵심 7개(2026-11-24). 예전 11개(예전 About 페이지 문구, 커밋 fc2a7a4c)에서
+   특정 교단의 교리(대환난 전 휴거 · 천년왕국, 표적 은사 중단, 한 번 받은 구원)는 빼고, 결혼 · 성별 · 생명은 한 항목으로 묶었다. */
 export const DOCS = {
   faith: {
     id: 'faith',
-    version: '2026-11-v3',   // v3: 맺음말을 '동의하지 않는 내용이 있으면 camp@wolko.org 로 연락' 안내로 고쳤다
-    ko: {
-      title: '신앙고백서',
-      intro: '월코 캠프에서 스태프나 크루로 섬기는 모든 분은 아래 신앙고백을 읽고 동의하며 서명합니다.',
-      pledge: '저는 위 신앙고백서를 처음부터 끝까지 읽었으며, 그 내용에 동의합니다.\n\n만약 동의하지 않는 내용이 있다면 캠프팀 이메일로 연락해 주세요.\n\ncamp@wolko.org',
-    },
-    en: {
-      title: 'Statement of Faith',
-      intro: 'Everyone who serves at a WOLKO camp as staff or crew reads, agrees to and signs the Statement of Faith below.',
-      pledge: 'I have read the Statement of Faith above from beginning to end and I agree with it.\n\nIf there is anything you do not agree with, please contact the camp team by email.\n\ncamp@wolko.org',
-    },
-    items: [
+    version: '2026-11-v4',   // v4: 핵심 7개로 간추렸다(v3: 맺음말을 camp@wolko.org 연락 안내로)
+    acceptVersions: ['2026-11-v3'],
+    // 예전 버전의 글(관리자가 예전 서명을 열면 그때 글을 보여 주고 해시를 맞춰 본다). 맺음말 · 소개는 v3 와 같다
+    archive: {
+      '2026-11-v3': { items: [
       { ko: "우리는 구약과 신약 성경이 하나님의 감동으로 기록되었으며, 원본에 오류가 없고, 신앙과 삶에 있어 최고의 최종 권위임을 믿습니다.",
         en: "We believe that the Scriptures of the Old and New Testament are verbally inspired of God, and they are without error in the original writings, and they are the supreme and final authority for faith and life." },
       { ko: "우리는 우주의 창조자이시며 섭리자이신 한 하나님, 곧 성부, 성자, 성령의 세 위격으로 영원히 존재하시는 분을 믿습니다.",
@@ -53,11 +47,44 @@ export const DOCS = {
         en: "We believe that God wonderfully and immutably creates each person as male or female for His glory. These two distinct, complementary genders together reflect the image and nature of God, and the rejection of one's biological gender is a rejection of God's decreed will and good plan for humanity and the individual." },
       { ko: "우리는 모든 사람이 하나님의 형상으로 창조되었으므로 모든 인간 생명이 존엄함을 믿습니다. 또한 생명은 잉태 때부터 시작되어 죽음 너머 영원까지 이어지므로, 하나님께서는 나이나 상태에 관계없이 모든 사람이 인간의 생명을 소중히 여기고 존중하며 지키고 보호하도록 부르심을 믿습니다.",
         en: "Since every person is uniquely created in the image of God and formed by God, we hold to the sanctity of all human life. Since the Bible reflects that life begins at conception and lasts beyond death into eternity, God calls everyone to value, respect, defend, and protect all human life regardless of age or condition." }
+      ] },
+    },   // 예전 11개(v3)에 서명한 분은 더 넓은 내용에 이미 동의했으므로 다시 서명하지 않아도 '서명 완료'로 본다
+    ko: {
+      title: '신앙고백서',
+      intro: '월코 캠프에서 스태프나 크루로 섬기는 모든 분은 아래 신앙고백을 읽고 동의하며 서명합니다.',
+      pledge: '저는 위 신앙고백서를 처음부터 끝까지 읽었으며, 그 내용에 동의합니다.\n\n만약 동의하지 않는 내용이 있다면 캠프팀 이메일로 연락해 주세요.\n\ncamp@wolko.org',
+    },
+    en: {
+      title: 'Statement of Faith',
+      intro: 'Everyone who serves at a WOLKO camp as staff or crew reads, agrees to and signs the Statement of Faith below.',
+      pledge: 'I have read the Statement of Faith above from beginning to end and I agree with it.\n\nIf there is anything you do not agree with, please contact the camp team by email.\n\ncamp@wolko.org',
+    },
+    items: [
+      { ko: "우리는 신구약 성경이 하나님의 감동으로 기록된 말씀이며, 신앙과 삶의 최종 권위임을 믿습니다.",
+        en: "We believe that the Old and New Testament Scriptures are inspired by God and are the final authority for faith and life." },
+      { ko: "우리는 우주의 창조주이시며 섭리자이신 한 분 하나님, 곧 성부, 성자, 성령의 세 위격으로 영원히 계시는 하나님을 믿습니다.",
+        en: "We believe in one God, Creator and Sustainer of the universe, who exists eternally in three persons: Father, Son, and Holy Spirit." },
+      { ko: "우리는 예수 그리스도께서 참 하나님이시며 참 사람이심을 믿습니다. 그분은 동정녀에게서 나시고 죄 없이 사셨으며, 우리 죄를 위해 십자가에서 대신 죽으시고, 몸으로 부활하셔서 하나님 우편에 오르셨고, 다시 오실 것입니다.",
+        en: "We believe that Jesus Christ is truly God and truly man. He was born of a virgin, lived a sinless life, died on the cross in our place for our sins, rose bodily from the dead, ascended to the right hand of God, and will come again." },
+      { ko: "우리는 모든 사람이 죄를 지어 하나님 앞에 죄인이며, 오직 하나님의 은혜로 예수 그리스도를 믿음으로 구원받는다는 것을 믿습니다.",
+        en: "We believe that all have sinned and are guilty before God, and that salvation is by God's grace alone through faith in Jesus Christ." },
+      { ko: "우리는 성령께서 사람을 거듭나게 하시고, 믿는 사람 안에 거하시며, 거룩한 삶과 증거와 섬김으로 인도하시고 힘을 주심을 믿습니다.",
+        en: "We believe that the Holy Spirit gives new birth, dwells within every believer, and guides and empowers believers for a holy life, witness, and service." },
+      { ko: "우리는 모든 사람의 몸의 부활과 최후의 심판을 믿으며, 구원받은 사람은 하나님과 함께 영원한 생명을, 구원받지 못한 사람은 영원한 형벌을 받는다는 것을 믿습니다.",
+        en: "We believe in the bodily resurrection of all people and the final judgment: eternal life with God for the saved and eternal punishment for the lost." },
+      { ko: "우리는 하나님께서 사람을 남자와 여자로 창조하시고, 결혼을 한 남자와 한 여자 사이의 언약으로 정하셨음을 믿습니다. 또한 모든 사람이 하나님의 형상대로 지음받았으므로, 잉태된 때부터 모든 생명이 존귀하며 존중받고 보호받아야 함을 믿습니다.",
+        en: "We believe that God created people male and female and ordained marriage as a covenant between one man and one woman. Because every person is made in the image of God, we believe that all human life, from conception, is sacred and is to be respected and protected." }
     ],
   },
   childprotection: CHILD_PROTECTION,
   rules: CAMP_RULES,
 };
+
+/** 예전 버전의 문서(보관한 글이 있으면) — 해시 · 글 보기용. 없으면 null */
+export const archivedDoc = (doc, v) => (doc && doc.archive && doc.archive[v] ? { ...doc, version: v, items: doc.archive[v].items, archive: undefined, acceptVersions: undefined } : null);
+
+/** 이 서명 버전을 지금 문서의 서명으로 인정하는가(지금 버전, 또는 그대로 인정하기로 한 예전 버전) */
+export const versionOk = (doc, v) => v === doc.version || (doc.acceptVersions || []).includes(v);
 
 /** 서명을 받는(초안이 아닌) 문서만. includeDrafts 는 로컬 미리보기용 */
 export const docList = ({ includeDrafts = false } = {}) => Object.values(DOCS).filter((d) => includeDrafts || !d.draft);
@@ -115,7 +142,7 @@ export const signedKey = (doc, campId) => (doc.perCamp ? `${doc.id}@${campId || 
 
 /**
  * 이메일별로 '지금 버전'에 서명한 필수 문서 목록 — { 'a@b.org': ['faith', 'rules', 'childprotection@2027-wolko-winter'] }
- * 문서 버전이 바뀌면 예전 서명은 세지 않는다(다시 읽고 서명해야 한다). 캠프마다 쓰는 문서는 캠프별로 센다.
+ * 문서 버전이 바뀌면 예전 서명은 세지 않는다(다시 읽고 서명해야 한다) — acceptVersions 에 적은 예전 버전은 그대로 센다. 캠프마다 쓰는 문서는 캠프별로 센다.
  */
 export async function signedMap(env) {
   const map = {};
@@ -125,7 +152,7 @@ export async function signedMap(env) {
       const res = await env.CAMP_KV.list({ prefix: `${AGREEMENT_PREFIX}${doc.id}:`, cursor, limit: 1000 });
       for (const k of res.keys || []) {
         const m = k.metadata || {};
-        if (m.v !== doc.version || !m.e) continue;
+        if (!versionOk(doc, m.v) || !m.e) continue;
         const email = String(m.e).toLowerCase();
         if (doc.perCamp && !m.c) continue;   // 캠프가 적히지 않은 서명은 캠프별 문서로 세지 않는다
         (map[email] ||= new Set()).add(signedKey(doc, m.c));
@@ -156,7 +183,7 @@ export async function signedFor(env, email, name) {
       const res = await env.CAMP_KV.list({ prefix: `${AGREEMENT_PREFIX}${doc.id}:`, cursor, limit: 1000 });
       for (const k of res.keys || []) {
         const m = k.metadata || {};
-        if (m.v !== doc.version || normEmail(m.e) !== e || nameKey(m.n) !== n) continue;
+        if (!versionOk(doc, m.v) || normEmail(m.e) !== e || nameKey(m.n) !== n) continue;
         const at = new Date(Number(m.t) || 0).toISOString();
         if (doc.perCamp) { if (m.c) (out[doc.id] ||= {})[m.c] = { at }; }
         else if (!out[doc.id] || at > out[doc.id].at) out[doc.id] = { at };
