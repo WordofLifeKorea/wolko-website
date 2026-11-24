@@ -67,8 +67,12 @@ const events = [
   .rv-fact dt { font-size: 13px; font-weight: 600; color: var(--c-label); }
   .rv-fact dd { margin: 0; font-size: 14.5px; font-weight: 500; color: var(--c-ink); line-height: 1.65; font-variant-numeric: tabular-nums; }
 
-  .rv-card-actions { margin-top: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }   /* 두 단추를 한 줄에 반씩 */
-  .rv-card-actions > :is(.rv-rsvp-btn, .rv-share-btn) { min-width: 0; justify-content: center; gap: 6px; white-space: nowrap; }
+  .rv-card-actions { margin-top: auto; display: grid; gap: 10px; }
+  /* 휴대폰(카드가 한 줄을 다 쓸 때): 두 단추를 한 줄에 반씩 — 태블릿 · 컴퓨터의 좁은 카드에서는 위아래로 */
+  @media (max-width: 640px) {
+    .rv-card-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .rv-card-actions > :is(.rv-rsvp-btn, .rv-share-btn) { min-width: 0; justify-content: center; gap: 6px; white-space: normal; text-align: center; }
+  }
   @media (max-width: 360px) { .rv-card-actions .rv-arrow { display: none; } .rv-card-actions > :is(.rv-rsvp-btn, .rv-share-btn) { white-space: normal; text-align: center; line-height: 1.25; } }
   .rv-arrow { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: square; transition: transform .25s; }
   .rv-rsvp-btn, .rv-share-btn {
