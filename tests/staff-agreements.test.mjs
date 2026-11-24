@@ -353,7 +353,7 @@ test('서명 페이지: 서약서를 한 화면에 늘어놓지 않고, 목록�
     assert.ok(!/(^|[^가-힣])(나는|내가|나에게|나에 대한|내 문화|내 개인)/.test(ko), `${d.id}: "나는" 대신 "저는" (낱말 안의 "…나는" 은 그대로)`);
     assert.ok(/저는|제가/.test(ko), `${d.id}: 저는 / 제가 를 쓴다`);
   }
-  assert.match(DOCS.faith.version, /v4$/, '문구를 고쳤으니 문서 버전을 올렸다');
+  assert.match(DOCS.faith.version, /v5$/, '문구를 고쳤으니 문서 버전을 올렸다');
   assert.ok(DOCS.faith.ko.pledge.includes('동의하지 않는 내용이 있다면') && DOCS.faith.ko.pledge.includes('camp@wolko.org') && DOCS.faith.en.pledge.includes('camp@wolko.org'), '신앙고백서 맺음말에 문의 이메일 안내');
 });
 
@@ -525,7 +525,7 @@ test('아동보호 서약서는 캠프 선택 없이 한 번만 작성: 캠프 �
   const bare = cpKo2.split(/(?<=\.)\s+/).filter((x) => /(않습니다|합니다|킵니다|릅니다|립니다|룹니다)\.$/.test(x) && !/(이해합니다|동의합니다|믿습니다|확인했습니다)\.$/.test(x));
   assert.deepEqual(bare, [], '약속하는 문장은 "~하겠습니다" 형태(단정형 "~합니다"는 군대 말투 같다)');
   assert.ok(cpKo2.includes('안전벨트 착용을 확인하고 정원을 지키겠습니다.') && cpKo2.includes('캠프 차량을 운전하겠습니다.'), '이동과 안전은 미래형(~하겠습니다)');
-  assert.ok(cpKo2.includes('저는 캠퍼 보호자의 동의 없이는 캠퍼와 단둘이 차량으로 이동하지 않겠습니다.') && !cpKo2.includes('캠퍼 배정과 감독 배치') && !cpKo2.includes('혼자서 캠퍼 한 명만'), '차량 단둘이 이동 금지 문구(중복 없이)');
+  assert.ok(cpKo2.includes('저는 캠퍼의 보호자 동의 없이는 캠퍼와 단둘이 차량으로 이동하지 않겠습니다.') && !cpKo2.includes('캠퍼 배정과 감독 배치') && !cpKo2.includes('혼자서 캠퍼 한 명만'), '차량 단둘이 이동 금지 문구(중복 없이)');
   assert.ok(cpKo2.includes('캠프가 진행되는 나라의 법이나 규정이 이 서약서보다 더 엄격하면 더 엄격한 쪽을 따르겠습니다.'), '캠프 국가의 법이나 규정이 더 엄격하면 그쪽');
   assert.ok(docSections(DOCS.childprotection).flatMap((x) => x.items).every((i) => /저는|제가/.test(i.ko)), '아동보호 서약서 항목은 모두 서약하는 사람의 목소리(저는)');
   assert.ok(docSections(DOCS.childprotection).flatMap((x) => x.items).every((i) => /\bI\b/.test(i.en)), '영어도 모두 "I"로 시작하는 1인칭');
@@ -654,4 +654,10 @@ test("아동보호 서약서의 '크루' 묶음은 크루로 서명할 때만 �
   const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
   assert.match(page, /data-roles=\{sec\.roles \? sec\.roles\.join\(' '\) : undefined\}/);
   assert.match(page, /article\.saApplyRole = function/);
+});
+
+test("서약서 페이지: 숨긴 묶음(스태프에게 '크루' 소제목)은 실제로 보이지 않는다 — 소제목의 display:block 보다 [hidden] 규칙이 뒤", () => {
+  const page = readFileSync(new URL('../src/pages/staff-agreements/index.astro', import.meta.url), 'utf8');
+  const a = page.indexOf('.sa-items li.sa-sec { display: block;'), b = page.indexOf('.sa-items li[hidden] { display: none; }');
+  assert.ok(a > 0 && b > a);
 });

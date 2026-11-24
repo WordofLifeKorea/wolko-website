@@ -102,6 +102,7 @@ const data = JSON.stringify({ camps, docs: docs.map((d) => ({ id: d.id, version:
   @media (prefers-reduced-motion: reduce) { .sa-item-box, .sa-item-box::after { transition: none; } .sa-item input:checked + .sa-item-box { animation: none; } }
   .sa-item input:focus-visible + .sa-item-box { outline: 3px solid rgba(0, 79, 104, .35); outline-offset: 2px; }
   .sa-items li.sa-sec { display: block; padding: 26px 0 6px; border-top: 0; font-size: 16.5px; font-weight: 800; letter-spacing: -.01em; color: var(--sa-navy); }
+  .sa-items li[hidden] { display: none; }   /* 구분에 맞지 않는 묶음(예: 스태프에게 '크루') — 위 display: block 보다 뒤에 둔다 */
   .sa-items li.sa-sec > span::before { content: ''; display: inline-block; width: 24px; height: 2px; margin: 0 12px 4px 0; background: var(--sa-deep); vertical-align: middle; }
   .sa-items li.sa-sec + li { border-top: 0; }
   .sa-ack { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 4px 28px 0; font-size: 14px; font-weight: 700; color: var(--sa-body); }

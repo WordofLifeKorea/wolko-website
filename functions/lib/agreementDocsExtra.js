@@ -50,7 +50,7 @@ export const CHILD_PROTECTION = {
     {
       ko: '심사와 범죄경력 확인', en: 'Screening and criminal record checks',
       items: [
-        { ko: '저는 아동·청소년과 함께하는 역할을 맡기 전에 지원서 제출, 면접 절차를 거치는 데 동의합니다. 지원서에 거짓 내용을 적거나 중요한 내용을 빠뜨리면 선발에 불이익이 있을 수 있음을 이해합니다.',
+        { ko: '저는 아동·청소년과 함께하는 역할을 맡기 전에 지원서 제출과 면접 절차를 거치는 데 동의합니다. 지원서에 거짓 내용을 적거나 중요한 내용을 빠뜨리면 선발에 불이익이 있을 수 있음을 이해합니다.',
           en: 'Before taking any role that involves children, I agree to go through the application and interview. I understand that giving false information or leaving out important information may count against me in selection.' },
         { ko: '월코가 요구하면, 저는 성범죄·아동학대 범죄경력 확인에 필요한 서류(성범죄경력 조회 회신서와 아동학대관련범죄전력 조회 회신서, 외국인의 경우 본국 등 해당 나라에서 발급받은 범죄경력 증명서)를 지체 없이 제공하겠습니다. 제출한 서류는 월코가 캠프 기간 동안만 보관하고, 캠프가 끝나면 원본을 반환함을 이해합니다.',
           en: 'Whenever WOLKO asks, I will provide without delay the documents needed to check for sex-crime and child-abuse criminal records (the sex-crime record inquiry reply and the child-abuse-related crime history inquiry reply issued in Korea and, for foreign nationals, a criminal record certificate issued by the home country or the relevant country). I understand that WOLKO keeps the documents I submit only for the duration of the camp and returns the originals when the camp ends.' },
@@ -60,11 +60,11 @@ export const CHILD_PROTECTION = {
       ko: '단독행위와 제3자 규칙', en: 'Solo activity and the third-person rule',
       items: [
         { ko: '저는 아동·청소년과 단둘이 사적인 공간에 머물지 않겠습니다. 면담이나 상담도 다른 스태프가 볼 수 있는 공개된 장소에서 진행하겠습니다.',
-          en: 'I will not stay alone with a child in a private space. I will hold any one-to-one meeting or counseling session in a public place where other staff can see us.' },
+          en: 'I will not stay alone with a child in a private space. I will hold any one-to-one meeting or counseling session in an open place where other staff members can see us.' },
         { ko: '저는 캠퍼가 사용 중인 화장실과 탈의 공간에 함부로 들어가지 않겠습니다. 점검이나 확인이 필요하면 다른 스태프와 함께 입구에서 캠퍼에게 말로 허락을 받은 뒤 들어가고, 캠퍼의 사생활을 최대한 존중하겠습니다.',
-          en: 'I will not enter a toilet or changing area while campers are using it. If a check is needed, I will go with another staff member, ask the campers out loud for permission at the entrance before going in, and respect their privacy as fully as I can.' },
-        { ko: '저는 캠퍼 보호자의 동의 없이는 캠퍼와 단둘이 차량으로 이동하지 않겠습니다.',
-          en: 'I will not travel alone in a vehicle with a camper without the consent of the camper’s parent or guardian.' },
+          en: 'I will not walk into a toilet or changing area that campers are using without good reason. If a check is needed, I will go with another staff member, ask the campers aloud for permission from the entrance before going in, and respect their privacy as fully as I can.' },
+        { ko: '저는 캠퍼의 보호자 동의 없이는 캠퍼와 단둘이 차량으로 이동하지 않겠습니다.',
+          en: 'I will not travel alone with a camper in a vehicle without the consent of the camper’s parent or guardian.' },
       ],
     },
     {
