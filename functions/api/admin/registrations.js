@@ -15,6 +15,7 @@
  *
  * 구 데이터 호환: status 없는 데이터는 confirmed 필드로 판단
  */
+import { recountChurches } from '../../lib/campChurches.js';
 import { sendAlimtalk } from '../../lib/solapi.js';
 import { sendApplicantNotice } from '../../lib/applicantNotice.js';
 import { parseHubSessionToken, portalSession } from '../../lib/hubAccounts.js';
@@ -252,7 +253,7 @@ async function syncSubmissionCounters(env, campId, registrations) {
   return totals;
 }
 
-export async function onRequestGet(context) {
+async function onRequestGetBase(context) {
   const { env, request } = context;
   if (!await verifyToken(request, env)) {
     return Response.json({ error: '인증이 필요합니다.' }, { status: 401, headers: CORS });
@@ -334,7 +335,7 @@ export async function onRequestGet(context) {
   }
 }
 
-export async function onRequestDelete(context) {
+async function onRequestDeleteBase(context) {
   const { env, request } = context;
   if (!await verifyEditor(request, env)) {
     return Response.json({ error: '인증이 필요합니다.' }, { status: 401, headers: CORS });
@@ -385,7 +386,7 @@ export async function onRequestDelete(context) {
  * restore — 휴지통에서 신청을 되살린다 (같은 이름·전화번호로 새 신청이 이미 있으면 409)
  * purge   — 휴지통에서 즉시 영구 삭제
  */
-export async function onRequestPost(context) {
+async function onRequestPostBase(context) {
   const { env, request } = context;
   if (!await verifyEditor(request, env)) {
     return Response.json({ error: '인증이 필요합니다.' }, { status: 401, headers: CORS });
@@ -795,3 +796,33 @@ export async function onRequestOptions() {
     },
   });
 }
+
+// 신청을 지우거나 되살린 뒤 연합캠프의 참여 교회 수를 다시 센다(성공한 응답일 때만, 응답은 기다리지 않음).
+// 고치기(PUT)는 교회 이름을 바꾸지 않으므로 세지 않는다. 관리 화면을 열 때(GET)도 한 번 세어 어긋난 수를 바로잡는다.
+function withChurchRecount(handler) {
+  return async (context) => {
+    const { request, env } = context;
+    const q = new URL(request.url).searchParams;
+    let campId = q.get('campId') || '', regId = q.get('regId') || '', action = '';
+    if (request.method === 'POST') { try { const b = await request.clone().json(); campId = campId || b?.campId || ''; regId = regId || b?.regId || ''; action = b?.action || ''; } catch (e) { /* 본문 없음 */ } }
+    const res = await handler(context);
+    if (!res || !res.ok) return res;
+    let jobs = [];
+    if (request.method === 'GET') jobs = (campId ? [campId] : UNION_CAMP_IDS).map(id => recountChurches(env, id));
+    else if (campId && action !== 'purge') {
+      // 되살리기는 응답에 담긴 기록을 쓴다(방금 지웠다 되살린 키는 KV 가 잠깐 '없음'을 돌려줄 수 있다)
+      const restored = request.method === 'POST' ? await res.clone().json().then(d => d && d.reg).catch(() => null) : null;
+      const opts = request.method === 'DELETE' ? { removeRegId: regId } : { upsert: restored || await env.CAMP_KV.get(`camp:${campId}:reg:${regId}`, 'json').catch(() => null) };
+      jobs = [recountChurches(env, String(campId), opts)];
+    }
+    if (jobs.length) {
+      const job = Promise.all(jobs).catch(e => console.error('church recount failed:', e));
+      if (context.waitUntil) context.waitUntil(job); else await job;
+    }
+    return res;
+  };
+}
+const UNION_CAMP_IDS = ['2027-unity-winter'];
+export const onRequestDelete = withChurchRecount(onRequestDeleteBase);
+export const onRequestPost = withChurchRecount(onRequestPostBase);
+export const onRequestGet = withChurchRecount(onRequestGetBase);
