@@ -3,6 +3,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 import { getCollection } from 'astro:content';
 import { isCampVisibleOnPublicSite } from '../../utils/campVisibility';
+import { churchMinimum } from '../../../functions/lib/campChurches.js';
+import { UNITY_CAMP_POLICY } from '../../../functions/lib/winterCampPolicy.js';
 
 const allSchedules = await getCollection('camp_schedules');
 const visibleAll = allSchedules
@@ -225,6 +227,12 @@ html, body { overflow-x: hidden; max-width: 100%; }
 
 /* ── CAPACITY BAR — 가는 막대, 각진 끝 ── */
 .crp-cap { margin-bottom: 20px; }
+/* 연합캠프: 참여 교회 수(신청 현황 위) — 정원 줄과 같은 글자 · 간격 */
+.crp-churches { margin-bottom: 16px; }
+.crp-reg-card > .crp-churches { margin-top: auto; }
+.crp-reg-card > .crp-churches + .crp-cap { margin-top: 0; }
+.crp-churches .crp-cap-info { margin-bottom: 6px; }
+.crp-church-note { margin: 0; font-size: 13px; line-height: 1.55; color: var(--c-body); }
 /* 정원 막대와 버튼은 카드 아래쪽에 붙인다 (카드 높이가 달라도 버튼 줄이 맞는다) */
 .crp-reg-card > .crp-cap { margin-top: auto; }
 .crp-reg-card > .crp-cap ~ .crp-reg-btn,
@@ -1797,6 +1805,18 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                           </p>
                         )}
                       </details>
+                    )}
+                    {churchMinimum(s.id) && d.status === 'open' && !d.use_external_form && (
+                      <div class="crp-churches" data-church-id={s.id}>
+                        <div class="crp-cap-info">
+                          <span><span class="wl-ko">참여 교회</span><span class="wl-en">Churches</span></span>
+                          <strong><span class="crp-church-count">—</span>{` / ${churchMinimum(s.id).min}`}<span class="wl-ko">곳</span></strong>
+                        </div>
+                        <p class="crp-church-note">
+                          <span class="wl-ko">{`${UNITY_CAMP_POLICY.minChurchesByKo}까지 ${churchMinimum(s.id).min}개 교회 이상 참여 신청 시 캠프가 진행됩니다.`}</span>
+                          <span class="wl-en">{`The camp goes ahead if at least ${churchMinimum(s.id).min} churches apply by ${UNITY_CAMP_POLICY.minChurchesByEn}.`}</span>
+                        </p>
+                      </div>
                     )}
                     {(() => {
                       const isLive = d.status === 'open' && !d.use_external_form;
@@ -5923,4 +5943,15 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
 })();
 </script>
 
+<script is:inline>
+  // 연합캠프 카드: 참여 신청한 교회 수
+  (function () {
+    document.querySelectorAll('.crp-churches[data-church-id]').forEach(function (box) {
+      fetch('/api/capacity/' + encodeURIComponent(box.getAttribute('data-church-id')), { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { if (d && typeof d.churches === 'number') box.querySelector('.crp-church-count').textContent = d.churches; })
+        .catch(function () {});
+    });
+  })();
+</script>
 </BaseLayout>

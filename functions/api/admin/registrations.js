@@ -15,6 +15,7 @@
  *
  * 구 데이터 호환: status 없는 데이터는 confirmed 필드로 판단
  */
+import { recountChurches } from '../../lib/campChurches.js';
 import { sendAlimtalk } from '../../lib/solapi.js';
 import { sendApplicantNotice } from '../../lib/applicantNotice.js';
 import { parseHubSessionToken, portalSession } from '../../lib/hubAccounts.js';
@@ -334,7 +335,7 @@ export async function onRequestGet(context) {
   }
 }
 
-export async function onRequestDelete(context) {
+async function onRequestDeleteBase(context) {
   const { env, request } = context;
   if (!await verifyEditor(request, env)) {
     return Response.json({ error: '인증이 필요합니다.' }, { status: 401, headers: CORS });
@@ -385,7 +386,7 @@ export async function onRequestDelete(context) {
  * restore — 휴지통에서 신청을 되살린다 (같은 이름·전화번호로 새 신청이 이미 있으면 409)
  * purge   — 휴지통에서 즉시 영구 삭제
  */
-export async function onRequestPost(context) {
+async function onRequestPostBase(context) {
   const { env, request } = context;
   if (!await verifyEditor(request, env)) {
     return Response.json({ error: '인증이 필요합니다.' }, { status: 401, headers: CORS });
@@ -601,7 +602,7 @@ export async function onRequestPatch(context) {
  * Body: { regId, campId, field, value }
  * 개별 필드 업데이트 (gender 등)
  */
-export async function onRequestPut(context) {
+async function onRequestPutBase(context) {
   const { env, request } = context;
   if (!await verifyToken(request, env)) {
     return Response.json({ error: '인증이 필요합니다.' }, { status: 401, headers: CORS });
@@ -795,3 +796,21 @@ export async function onRequestOptions() {
     },
   });
 }
+
+// 신청을 지우거나 되살리거나 고친 뒤 연합캠프의 참여 교회 수를 다시 센다(성공한 응답일 때만, 응답은 기다리지 않음)
+function withChurchRecount(handler) {
+  return async (context) => {
+    const { request, env } = context;
+    let campId = new URL(request.url).searchParams.get('campId') || '';
+    if (!campId && request.method !== 'GET') { try { campId = (await request.clone().json())?.campId || ''; } catch (e) { campId = ''; } }
+    const res = await handler(context);
+    if (campId && res && res.ok) {
+      const job = recountChurches(env, String(campId)).catch(e => console.error('church recount failed:', e));
+      if (context.waitUntil) context.waitUntil(job); else await job;
+    }
+    return res;
+  };
+}
+export const onRequestDelete = withChurchRecount(onRequestDeleteBase);
+export const onRequestPost = withChurchRecount(onRequestPostBase);
+export const onRequestPut = withChurchRecount(onRequestPutBase);

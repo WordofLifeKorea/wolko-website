@@ -100,6 +100,11 @@ export const UNITY_CAMP_POLICY = {
   earlyUntil: '2026-12-14T23:59:59.999+09:00',
   earlyKo: '12월 15일 전 등록 할인',
   earlyEn: 'Registered before Dec 15',
+  // 참여 교회가 이 수 이상 모여야 캠프를 진행한다(기한까지). 캠프 신청 카드에 '참여 교회 n / 3'과 안내를 보여 준다
+  minChurches: 3,
+  minChurchesBy: '2026-12-18',
+  minChurchesByKo: '12월 18일',
+  minChurchesByEn: 'Dec 18',
 };
 
 export function usesUnityCampPolicy(campId) {
