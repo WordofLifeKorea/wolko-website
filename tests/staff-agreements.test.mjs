@@ -597,10 +597,10 @@ test('신앙고백서: 예전 11개(v3) 글을 보관해 관리자 화면에서 
   assert.match(readFileSync(new URL('../functions/api/portal/agreements.js', import.meta.url), 'utf8'), /archivedDoc\(cur, record\.version\)/);
 });
 
-test('아동보호 서약서 v15: 원본 문서로 글이 통째로 바뀌었다 — v14 · v13 서명은 서명 완료로 세지 않고, 관리자는 그때 글을 그대로 볼 수 있다', async () => {
+test('아동보호 서약서 v15: 원본 문서로 글이 통째로 바뀌었다 — v14 · v13 서명은 그대로 서명 완료로 세고(2026-11-26 결정), 관리자는 그때 글을 그대로 볼 수 있다', async () => {
   const { archivedDoc, versionOk, docHash, signedMap } = await import('../functions/lib/staffAgreements.js');
   const d = DOCS.childprotection;
-  assert.ok(versionOk(d, '2026-11-v15') && !versionOk(d, '2026-11-v14') && !versionOk(d, '2026-11-v13'));
+  assert.ok(versionOk(d, '2026-11-v15') && versionOk(d, '2026-11-v14') && versionOk(d, '2026-11-v13') && !versionOk(d, '2026-11-v12'));
   const v14 = archivedDoc(d, '2026-11-v14'), v13 = archivedDoc(d, '2026-11-v13');
   assert.equal(v14.version, '2026-11-v14'); assert.equal(v13.version, '2026-11-v13');
   assert.equal(v14.en.title, 'Child Protection Agreement', '제목 · 안내 · 맺음말도 그때 것');
@@ -614,7 +614,7 @@ test('아동보호 서약서 v15: 원본 문서로 글이 통째로 바뀌었다
   const env = { CAMP_KV: { list: async ({ prefix }) => ({ keys: [...store.entries()].filter(([k]) => k.startsWith(prefix)).map(([name, metadata]) => ({ name, metadata })), list_complete: true }) } };
   const map = await signedMap(env);
   assert.equal(await docHash(d), 'ba9a55462696a9fdb22c86fbed0c33774dbdddc0e8ef37e466294e890722b7a1', 'v15 글 전체의 해시 — 글을 한 글자라도 고치면 version 을 올리고 이 값을 바꾼다');
-  assert.ok(!(map['old14@example.com'] || []).includes('childprotection'), 'v14 서명은 다시 받아야 한다');
+  assert.ok((map['old14@example.com'] || []).includes('childprotection'), 'v14 서명은 그대로 서명 완료');
   assert.ok((map['new15@example.com'] || []).includes('childprotection'));
 });
 

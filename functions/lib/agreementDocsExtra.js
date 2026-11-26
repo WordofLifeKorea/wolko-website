@@ -22,8 +22,8 @@ import { CAMP_RULES_V8_SECTIONS, CHILD_PROTECTION_V13_SECTIONS, CHILD_PROTECTION
 
 export const CHILD_PROTECTION = {
   id: 'childprotection',
-  version: '2026-11-v15',   // v15(2026-11-26): 글 전체를 원본 문서 'Child Protection Code of Conduct'(한 · 영 병기 PDF)로 바꿨다. 내용이 달라졌으므로 v14 까지의 서명은 '서명 완료'로 세지 않는다(다시 읽고 서명) · v14 까지는 월코가 따로 쓴 19개 항목의 서약서였다(글은 agreementArchive.js 에 보관)
-  acceptVersions: [],   // 원본 문서로 글이 통째로 바뀌었다 — 예전 버전 서명을 그대로 인정하지 않는다
+  version: '2026-11-v15',   // v15(2026-11-26): 글 전체를 원본 문서 'Child Protection Code of Conduct'(한 · 영 병기 PDF)로 바꿨다. v14 · v13 서명은 그대로 인정한다(acceptVersions) · v14 까지는 월코가 따로 쓴 19개 항목의 서약서였다(글은 agreementArchive.js 에 보관)
+  acceptVersions: ['2026-11-v14', '2026-11-v13'],   // 2026-11-26 결정: 글은 통째로 바뀌었지만 v14 · v13 에 서명한 분은 다시 서명하지 않아도 '서명 완료'로 센다(그분들이 서명한 글은 보관본으로 남는다)
   archive: {
     '2026-11-v14': { ...CHILD_PROTECTION_V14_TEXT, sections: CHILD_PROTECTION_V14_SECTIONS },
     '2026-11-v13': { ...CHILD_PROTECTION_V14_TEXT, sections: CHILD_PROTECTION_V13_SECTIONS },   // v13 의 제목 · 안내 · 맺음말은 v14 와 같았다
