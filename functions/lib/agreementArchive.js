@@ -450,3 +450,225 @@ export const CHILD_PROTECTION_V14_SECTIONS = [
     ]
   }
 ];
+
+/* 아동보호 서약서 v15(2026-11-26) — 원본 문서 글. 소제목에 '3가지 T:' · '3가지 W' · '3가지 R' 이 붙어 있던 때의 글(v16 에서 뺐다) */
+export const CHILD_PROTECTION_V15_TEXT = {
+  "ko": {
+    "title": "아동보호 서약서",
+    "intro": "월코 캠프에서 스태프나 크루로 섬기는 모든 분은 아래 아동보호 행동 수칙을 읽고 서명합니다.",
+    "pledge": "저는 WOLKO 행동 수칙을 주의 깊게 읽고 명확하게 이해했습니다.\n본인은 위의 행동 수칙에 설명된 행동 기준을 항상 준수할 것에 동의합니다."
+  },
+  "en": {
+    "title": "Child Protection Code of Conduct",
+    "intro": "Everyone who serves at a WOLKO camp as staff or crew reads and signs the Child Protection Code of Conduct below.",
+    "pledge": "I have carefully read and clearly understand the WOL Code of Conduct.\nI agree to uphold at all times the standards of behavior described in the Code of Conduct above."
+  }
+};
+export const CHILD_PROTECTION_V15_SECTIONS = [
+  {
+    "ko": "나의 약속",
+    "en": "I will",
+    "items": [
+      {
+        "ko": "나는 어린이(캠퍼들)에게 모범이 되고, WOLKO와 그리스도를 대표하는 사람으로서 좋은 본이 되는 행동을 취할 것입니다.",
+        "en": "I will conduct myself in a manner consistent with my position as a positive role model to children and as a representative of WOL and the Lord Jesus Christ."
+      },
+      {
+        "ko": "나는 어린이(캠퍼들)가 하나님의 형상을 따라 만들어진 하나의 인격체로서 경청되고, 존중받는 안전하고 긍정적인 환경을 조성할 것입니다.",
+        "en": "I will contribute to create and/or uphold a safe, positive and encouraging environment where children are listened to and respected as individuals made in the image of God."
+      },
+      {
+        "ko": "나는 모든 어린이(캠퍼들)를 존중하며, 나의 말투와 태도에 대한 어린이(캠퍼들)의 반응을 잘 살필 것입니다.",
+        "en": "I will treat all children with respect and take notice of their reactions to my tone of voice and manner."
+      },
+      {
+        "ko": "나는 48시간 이내 상태를 보고해야 하는 방침에 따라 모든 우려 사항이나 증거 없는 혐의 사실에 대해 대응할 것입니다.",
+        "en": "I will respond to all concerns or allegations according to the Reporting Protocol within 48 hours."
+      },
+      {
+        "ko": "나는 이번 캠프에 참여하는 캠퍼들과 스태프(손님)들의 안전을 위해 다음의 행동 수칙을 따를 것입니다.",
+        "en": "I will follow the following guidelines in this Code of Conduct to protect the safety of the children and guests who participate in our programs."
+      }
+    ]
+  },
+  {
+    "ko": "3가지 T: 허용되는 신체접촉",
+    "en": "Three T’s: Appropriate TOUCH",
+    "items": [
+      {
+        "ko": "악수, 하이파이브, 주먹 인사",
+        "en": "handshakes, high-fives, fist bumps"
+      },
+      {
+        "ko": "손잡고 걷기 (동성끼리)",
+        "en": "walking hand-and-hand (same sex)"
+      },
+      {
+        "ko": "축하나 인사할 때 가벼운 포옹",
+        "en": "short, congratulatory or greeting hugs"
+      },
+      {
+        "ko": "사이드허그, 어깨동무",
+        "en": "side hugs, arm around the shoulders"
+      },
+      {
+        "ko": "업어 주기 (어린이들)",
+        "en": "piggybacks with young children"
+      }
+    ]
+  },
+  {
+    "ko": "3가지 T: 허용되지 않는 신체접촉",
+    "en": "Three T’s: Not Appropriate TOUCH",
+    "items": [
+      {
+        "ko": "이성간 등 문지르기 및 마사지해주기, 간지럽히기, 레슬링",
+        "en": "back rubs, massages, tickling, intimate wrestling"
+      },
+      {
+        "ko": "성적 포옹, 정면포옹, 키스",
+        "en": "sexual embraces, frontal hugs, kissing"
+      },
+      {
+        "ko": "다른 사람의 아이를 때리거나 훈육",
+        "en": "hit or discipline someone else’s child"
+      },
+      {
+        "ko": "분노나 혐오감을 가지고 만지는 행위",
+        "en": "touch a child in anger, disgust, or frustration"
+      },
+      {
+        "ko": "아이가 혼자 할 수 있는 일을 과하게 돕는 것 (화장실에 가는 것, 목욕, 옷을 갈아 입기)",
+        "en": "assist a child in tasks they can do alone (taking them to the toilet, bathing or changing clothes)"
+      },
+      {
+        "ko": "무릎에 앉는 것",
+        "en": "lap sitting"
+      },
+      {
+        "ko": "신체 은밀한 부분을 만지는 것 (절대금지 예외 없음)",
+        "en": "touching of private parts (no exceptions!)"
+      }
+    ]
+  },
+  {
+    "ko": "3가지 T: 허용되는 말",
+    "en": "Three T’s: Appropriate TALK",
+    "items": [
+      {
+        "ko": "성취나 행동에 대한 칭찬",
+        "en": "verbal praise for achievement or behavior"
+      },
+      {
+        "ko": "격려의 말",
+        "en": "verbal encouragement"
+      },
+      {
+        "ko": "성경에 기초한 가르침 (남녀의 성적인 내용 제외)",
+        "en": "scripturally based teaching (non-sexual)"
+      }
+    ]
+  },
+  {
+    "ko": "3가지 T: 허용되지 않는 말",
+    "en": "Three T’s: Not Appropriate TALK",
+    "items": [
+      {
+        "ko": "신체발육 (몸)에 관한 칭찬이나 질문",
+        "en": "compliments or questions relating to physical or body development"
+      },
+      {
+        "ko": "성적인 발언이나 농담",
+        "en": "sexual comments or jokes"
+      },
+      {
+        "ko": "욕설 또는 저속한 말",
+        "en": "swearing or vulgar language"
+      },
+      {
+        "ko": "언어적 괴롭힘 또는 언어폭력",
+        "en": "verbal harassment or abuse"
+      },
+      {
+        "ko": "사적인 비밀이나 특별한 선물 교환하는 일",
+        "en": "individual secrets or special gifts"
+      },
+      {
+        "ko": "성적 코칭이나 성적인 대화",
+        "en": "sexual coaching or conversation"
+      }
+    ]
+  },
+  {
+    "ko": "3가지 T: 허용되는 활동",
+    "en": "Three T’s: Appropriate TERRITORY",
+    "items": [
+      {
+        "ko": "공공장소에서 1대1 대화",
+        "en": "public one-on-one interaction"
+      },
+      {
+        "ko": "그룹으로 모이거나 또는 다같이 참여하는 행사",
+        "en": "group or public events"
+      }
+    ]
+  },
+  {
+    "ko": "3가지 T: 허용되지 않는 활동",
+    "en": "Three T’s: Not Appropriate TERRITORY",
+    "items": [
+      {
+        "ko": "캠퍼(어린이)와 함께 침대에 눕기",
+        "en": "lying on a bed with a child"
+      },
+      {
+        "ko": "사적인 일대일 대화 (교실 창문을 가려서는 안 됩니다.)",
+        "en": "private one-on-one talks (do NOT cover windows)"
+      },
+      {
+        "ko": "캠퍼들이 옷을 갈아입거나 샤워하는 것을 보는 행위",
+        "en": "watching children get undressed or take showers."
+      },
+      {
+        "ko": "캠퍼들 앞에서 나체로 있는 행위 (장난으로도 안됨)",
+        "en": "being naked in front of children, even as a joke."
+      }
+    ]
+  },
+  {
+    "ko": "3가지 W",
+    "en": "Three W’s: Who, What & Where",
+    "items": [
+      {
+        "ko": "프로그램 현장에서 각자가 누구인지 명확히 밝혀야 합니다.",
+        "en": "WHO each person is must be clearly identified"
+      },
+      {
+        "ko": "행동 수칙과 일정에 따라 하고 있는 행동과 일이 분명해야 합니다.",
+        "en": "WHAT they are doing must be evident, within the Code of Conduct and their schedule"
+      },
+      {
+        "ko": "그들이 어디 있는지가 중요합니다(공공장소 또는 비공공 장소)",
+        "en": "WHERE they are is critical (public or non-public areas)"
+      }
+    ]
+  },
+  {
+    "ko": "3가지 R",
+    "en": "Three R’s: Recognize, Respond & Report",
+    "items": [
+      {
+        "ko": "행동수칙에 따라 허용되는 행동과 허용되지 않는 행동을 알아야 합니다.",
+        "en": "RECOGNIZE what is acceptable and what is not (from this Code of Conduct)"
+      },
+      {
+        "ko": "허용되지 않는 행동을 목격하거나 알고 있다면 대응해야 합니다.",
+        "en": "RESPOND to unacceptable behavior"
+      },
+      {
+        "ko": "아동학대를 보거나 들은 경우 리더에게 보고 해야 합니다",
+        "en": "REPORT to your authority if you see or hear that a child has been abused."
+      }
+    ]
+  }
+];

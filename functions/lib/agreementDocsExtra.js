@@ -18,13 +18,14 @@
  *  - 문신과 얼굴 장신구(귀걸이 두 세트 이상, 코걸이, 혀 피어싱 등)는 보이지 않게 한다. 귀걸이 한 쌍(한 세트)은 괜찮다. 모든 스태프와 크루에게 적용(2026-11-21).
  * 아직 정하지 못한 것은 문서 맨 아래 '정해야 할 것'(OPEN_QUESTIONS)에 적어 두었다.
  */
-import { CAMP_RULES_V8_SECTIONS, CHILD_PROTECTION_V13_SECTIONS, CHILD_PROTECTION_V14_SECTIONS, CHILD_PROTECTION_V14_TEXT } from './agreementArchive.js';
+import { CAMP_RULES_V8_SECTIONS, CHILD_PROTECTION_V13_SECTIONS, CHILD_PROTECTION_V14_SECTIONS, CHILD_PROTECTION_V14_TEXT, CHILD_PROTECTION_V15_SECTIONS, CHILD_PROTECTION_V15_TEXT } from './agreementArchive.js';
 
 export const CHILD_PROTECTION = {
   id: 'childprotection',
-  version: '2026-11-v15',   // v15(2026-11-26): 글 전체를 원본 문서 'Child Protection Code of Conduct'(한 · 영 병기 PDF)로 바꿨다. v14 · v13 서명은 그대로 인정한다(acceptVersions) · v14 까지는 월코가 따로 쓴 19개 항목의 서약서였다(글은 agreementArchive.js 에 보관)
-  acceptVersions: ['2026-11-v14', '2026-11-v13'],   // 2026-11-26 결정: 글은 통째로 바뀌었지만 v14 · v13 에 서명한 분은 다시 서명하지 않아도 '서명 완료'로 센다(그분들이 서명한 글은 보관본으로 남는다)
+  version: '2026-11-v16',   // v16(2026-11-26): 소제목에서 '3가지 T:' · '3가지 W' · '3가지 R'(Three T’s / W’s / R’s)을 뺐다 — W 와 R 묶음의 한국어 제목은 영어 제목을 옮긴 것 · v15(2026-11-26): 글 전체를 원본 문서 'Child Protection Code of Conduct'(한 · 영 병기 PDF)로 바꿨다. v14 · v13 서명은 그대로 인정한다(acceptVersions) · v14 까지는 월코가 따로 쓴 19개 항목의 서약서였다(글은 agreementArchive.js 에 보관)
+  acceptVersions: ['2026-11-v15', '2026-11-v14', '2026-11-v13'],   // 2026-11-26 결정: 글은 통째로 바뀌었지만 v14 · v13 에 서명한 분은 다시 서명하지 않아도 '서명 완료'로 센다(그분들이 서명한 글은 보관본으로 남는다)
   archive: {
+    '2026-11-v15': { ...CHILD_PROTECTION_V15_TEXT, sections: CHILD_PROTECTION_V15_SECTIONS },
     '2026-11-v14': { ...CHILD_PROTECTION_V14_TEXT, sections: CHILD_PROTECTION_V14_SECTIONS },
     '2026-11-v13': { ...CHILD_PROTECTION_V14_TEXT, sections: CHILD_PROTECTION_V13_SECTIONS },   // v13 의 제목 · 안내 · 맺음말은 v14 와 같았다
   },
@@ -32,7 +33,8 @@ export const CHILD_PROTECTION = {
   draft: false,
   /* 원본 문서의 글을 그대로 옮겼다. 원본과 다른 곳은 이것뿐이다:
      붙인 것 — 문서 안내(intro), 첫 묶음의 한국어 제목, 'TALK' 두 묶음의 한국어 제목, 영어 첫 다섯 항목 앞의 'I will'(원본은 'I WILL' 아래에 소문자로 이어 쓴다),
-              T 여섯 묶음 제목 앞의 '3가지 T:' / 'Three T’s:'(원본은 'Three T’s: Touch, Talk & Territory' 큰 제목 아래에 묶음이 있다).
+              W · R 묶음의 한국어 제목(영어 제목 'Who, What & Where' · 'Recognize, Respond & Report'를 옮긴 것).
+     뺀 것 — 묶음 제목의 'Three T’s: Touch, Talk & Territory' · 'Three W’s' · 'Three R’s'(3가지 T · W · R) 표현,
      뺀 것 — 항목 앞의 a. b. c. 글자, 맨 아래 Name / Signature / Date 줄(서명 칸이 대신한다).
      고친 것 — 영어 오타 하나(complements → compliments). */
   ko: {
@@ -63,7 +65,7 @@ export const CHILD_PROTECTION = {
       ],
     },
     {
-      ko: '3가지 T: 허용되는 신체접촉', en: 'Three T’s: Appropriate TOUCH',
+      ko: '허용되는 신체접촉', en: 'Appropriate TOUCH',
       items: [
         { ko: '악수, 하이파이브, 주먹 인사', en: 'handshakes, high-fives, fist bumps' },
         { ko: '손잡고 걷기 (동성끼리)', en: 'walking hand-and-hand (same sex)' },
@@ -73,7 +75,7 @@ export const CHILD_PROTECTION = {
       ],
     },
     {
-      ko: '3가지 T: 허용되지 않는 신체접촉', en: 'Three T’s: Not Appropriate TOUCH',
+      ko: '허용되지 않는 신체접촉', en: 'Not Appropriate TOUCH',
       items: [
         { ko: '이성간 등 문지르기 및 마사지해주기, 간지럽히기, 레슬링', en: 'back rubs, massages, tickling, intimate wrestling' },
         { ko: '성적 포옹, 정면포옹, 키스', en: 'sexual embraces, frontal hugs, kissing' },
@@ -85,7 +87,7 @@ export const CHILD_PROTECTION = {
       ],
     },
     {
-      ko: '3가지 T: 허용되는 말', en: 'Three T’s: Appropriate TALK',
+      ko: '허용되는 말', en: 'Appropriate TALK',
       items: [
         { ko: '성취나 행동에 대한 칭찬', en: 'verbal praise for achievement or behavior' },
         { ko: '격려의 말', en: 'verbal encouragement' },
@@ -93,7 +95,7 @@ export const CHILD_PROTECTION = {
       ],
     },
     {
-      ko: '3가지 T: 허용되지 않는 말', en: 'Three T’s: Not Appropriate TALK',
+      ko: '허용되지 않는 말', en: 'Not Appropriate TALK',
       items: [
         { ko: '신체발육 (몸)에 관한 칭찬이나 질문', en: 'compliments or questions relating to physical or body development' },
         { ko: '성적인 발언이나 농담', en: 'sexual comments or jokes' },
@@ -104,14 +106,14 @@ export const CHILD_PROTECTION = {
       ],
     },
     {
-      ko: '3가지 T: 허용되는 활동', en: 'Three T’s: Appropriate TERRITORY',
+      ko: '허용되는 활동', en: 'Appropriate TERRITORY',
       items: [
         { ko: '공공장소에서 1대1 대화', en: 'public one-on-one interaction' },
         { ko: '그룹으로 모이거나 또는 다같이 참여하는 행사', en: 'group or public events' },
       ],
     },
     {
-      ko: '3가지 T: 허용되지 않는 활동', en: 'Three T’s: Not Appropriate TERRITORY',
+      ko: '허용되지 않는 활동', en: 'Not Appropriate TERRITORY',
       items: [
         { ko: '캠퍼(어린이)와 함께 침대에 눕기', en: 'lying on a bed with a child' },
         { ko: '사적인 일대일 대화 (교실 창문을 가려서는 안 됩니다.)', en: 'private one-on-one talks (do NOT cover windows)' },
@@ -120,7 +122,7 @@ export const CHILD_PROTECTION = {
       ],
     },
     {
-      ko: '3가지 W', en: 'Three W’s: Who, What & Where',
+      ko: '누가 · 무엇을 · 어디서', en: 'Who, What & Where',
       items: [
         { ko: '프로그램 현장에서 각자가 누구인지 명확히 밝혀야 합니다.', en: 'WHO each person is must be clearly identified' },
         { ko: '행동 수칙과 일정에 따라 하고 있는 행동과 일이 분명해야 합니다.', en: 'WHAT they are doing must be evident, within the Code of Conduct and their schedule' },
@@ -128,7 +130,7 @@ export const CHILD_PROTECTION = {
       ],
     },
     {
-      ko: '3가지 R', en: 'Three R’s: Recognize, Respond & Report',
+      ko: '인식 · 대응 · 보고', en: 'Recognize, Respond & Report',
       items: [
         { ko: '행동수칙에 따라 허용되는 행동과 허용되지 않는 행동을 알아야 합니다.', en: 'RECOGNIZE what is acceptable and what is not (from this Code of Conduct)' },
         { ko: '허용되지 않는 행동을 목격하거나 알고 있다면 대응해야 합니다.', en: 'RESPOND to unacceptable behavior' },

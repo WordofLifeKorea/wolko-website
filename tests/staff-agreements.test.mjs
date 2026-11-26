@@ -188,14 +188,15 @@ test('아동보호 서약서: 본인 진술(유죄 판결 · 수사 · 재판 �
   } finally { delete DOCS.childprotection.declaration; }
 });
 
-test('아동보호 서약서 내용: 원본 문서(Child Protection Code of Conduct)의 글 그대로 — I WILL 다섯 항목 · 3가지 T · 3가지 W · 3가지 R · 맺음말, 한·영이 짝을 이룬다', () => {
+test('아동보호 서약서 내용: 원본 문서(Child Protection Code of Conduct)의 글 그대로 — I WILL 다섯 항목 · 신체접촉 · 말 · 활동 · Who/What/Where · Recognize/Respond/Report · 맺음말(소제목에 "3가지 T" 같은 표현은 넣지 않는다), 한·영이 짝을 이룬다', () => {
   const d = DOCS.childprotection;
   const secs = docSections(d), all = secs.flatMap((s) => s.items);
   const ko = all.map((i) => i.ko).join('\n'), en = all.map((i) => i.en).join('\n');
   assert.ok(all.every((i) => i.ko && i.en) && secs.every((x) => x.ko && x.en), '모든 항목 · 소제목에 한국어와 영어가 있다');
   assert.equal(d.en.title, 'Child Protection Code of Conduct');
+  assert.ok(!secs.some((x) => /3가지|Three /.test(x.ko + x.en)), "소제목에 '3가지 T · W · R' 표현이 없다");
   assert.deepEqual(secs.map((x) => x.items.length), [5, 5, 7, 3, 6, 2, 4, 3, 3], '원본의 묶음과 항목 수 그대로');
-  assert.deepEqual(secs.map((x) => x.en), ['I will', 'Three T’s: Appropriate TOUCH', 'Three T’s: Not Appropriate TOUCH', 'Three T’s: Appropriate TALK', 'Three T’s: Not Appropriate TALK', 'Three T’s: Appropriate TERRITORY', 'Three T’s: Not Appropriate TERRITORY', 'Three W’s: Who, What & Where', 'Three R’s: Recognize, Respond & Report']);
+  assert.deepEqual(secs.map((x) => x.en), ['I will', 'Appropriate TOUCH', 'Not Appropriate TOUCH', 'Appropriate TALK', 'Not Appropriate TALK', 'Appropriate TERRITORY', 'Not Appropriate TERRITORY', 'Who, What & Where', 'Recognize, Respond & Report']);
   assert.ok(ko.includes('나는 48시간 이내 상태를 보고해야 하는 방침에 따라 모든 우려 사항이나 증거 없는 혐의 사실에 대해 대응할 것입니다.') && en.includes('according to the Reporting Protocol within 48 hours'));
   assert.ok(ko.includes('신체 은밀한 부분을 만지는 것 (절대금지 예외 없음)') && en.includes('touching of private parts (no exceptions!)'));
   assert.ok(ko.includes('사적인 일대일 대화 (교실 창문을 가려서는 안 됩니다.)') && en.includes('private one-on-one talks (do NOT cover windows)'));
@@ -517,7 +518,7 @@ test('서명 페이지 동작(원본 검사): 정보 고치기 · 사람이 바�
 test('아동보호 서약서는 캠프 선택 없이 한 번만 작성: 캠프 칸이 없고 · 문서에 "캠프마다" 문장이 없고 · 같은 사람이 다시 쓰면 409', async () => {
   assert.equal(DOCS.childprotection.perCamp, false);
   assert.ok(!JSON.stringify(DOCS.childprotection.sections).includes('캠프마다 이 서약서를 새로'), '캠프마다 새로 작성한다는 문장을 뺐다');
-  assert.match(DOCS.childprotection.version, /v15$/, '글을 바꿨으니 문서 버전을 올렸다');
+  assert.match(DOCS.childprotection.version, /v16$/, '글을 바꿨으니 문서 버전을 올렸다');
   assert.ok(!/퇴출|해임|하차/.test(JSON.stringify({ ko: DOCS.rules.ko, en: DOCS.rules.en, sections: DOCS.rules.sections })), '필수 규칙은 "제명"으로 통일');
   const t = await setup();
   const post = async (patch = {}) => { const r = await t.call(signApi, 'POST', '/api/agreements/sign', { body: { ...good(), doc: 'childprotection', version: DOCS.childprotection.version, declared: true, ...patch } }); return { status: r.status, ...(await r.json()) }; };
@@ -609,10 +610,10 @@ test('신앙고백서: 예전 11개(v3) 글을 보관해 관리자 화면에서 
   assert.match(readFileSync(new URL('../functions/api/portal/agreements.js', import.meta.url), 'utf8'), /archivedDoc\(cur, record\.version\)/);
 });
 
-test('아동보호 서약서 v15: 원본 문서로 글이 통째로 바뀌었다 — v14 · v13 서명은 그대로 서명 완료로 세고(2026-11-26 결정), 관리자는 그때 글을 그대로 볼 수 있다', async () => {
+test('아동보호 서약서 v15 · v16: 원본 문서로 글이 통째로 바뀌었다(v16 은 소제목만 다듬음) — v14 · v13 서명은 그대로 서명 완료로 세고(2026-11-26 결정), 관리자는 그때 글을 그대로 볼 수 있다', async () => {
   const { archivedDoc, versionOk, docHash, signedMap } = await import('../functions/lib/staffAgreements.js');
   const d = DOCS.childprotection;
-  assert.ok(versionOk(d, '2026-11-v15') && versionOk(d, '2026-11-v14') && versionOk(d, '2026-11-v13') && !versionOk(d, '2026-11-v12'));
+  assert.ok(versionOk(d, '2026-11-v16') && versionOk(d, '2026-11-v15') && versionOk(d, '2026-11-v14') && versionOk(d, '2026-11-v13') && !versionOk(d, '2026-11-v12'));
   const v14 = archivedDoc(d, '2026-11-v14'), v13 = archivedDoc(d, '2026-11-v13');
   assert.equal(v14.version, '2026-11-v14'); assert.equal(v13.version, '2026-11-v13');
   assert.equal(v14.en.title, 'Child Protection Agreement', '제목 · 안내 · 맺음말도 그때 것');
@@ -625,7 +626,8 @@ test('아동보호 서약서 v15: 원본 문서로 글이 통째로 바뀌었다
   const store = new Map([['agree:v1:childprotection:202611:AG-OLD014', { t: 1, d: 'childprotection', v: '2026-11-v14', r: 'staff', n: '홍길동', e: 'old14@example.com' }], ['agree:v1:childprotection:202611:AG-NEW015', { t: 2, d: 'childprotection', v: '2026-11-v15', r: 'staff', n: '김새롬', e: 'new15@example.com' }]]);
   const env = { CAMP_KV: { list: async ({ prefix }) => ({ keys: [...store.entries()].filter(([k]) => k.startsWith(prefix)).map(([name, metadata]) => ({ name, metadata })), list_complete: true }) } };
   const map = await signedMap(env);
-  assert.equal(await docHash(d), 'ba9a55462696a9fdb22c86fbed0c33774dbdddc0e8ef37e466294e890722b7a1', 'v15 글 전체의 해시 — 글을 한 글자라도 고치면 version 을 올리고 이 값을 바꾼다');
+  assert.equal(await docHash(archivedDoc(d, '2026-11-v15')), 'ba9a55462696a9fdb22c86fbed0c33774dbdddc0e8ef37e466294e890722b7a1', 'v15 보관본');
+  assert.equal(await docHash(d), 'df2670988a5908a1f24ba6691a4cf2645ca284a5c36c2111bc5a6f9441288735', 'v16 글 전체의 해시 — 글을 한 글자라도 고치면 version 을 올리고 이 값을 바꾼다');
   assert.ok((map['old14@example.com'] || []).includes('childprotection'), 'v14 서명은 그대로 서명 완료');
   assert.ok((map['new15@example.com'] || []).includes('childprotection'));
 });
