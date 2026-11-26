@@ -45,7 +45,7 @@ export const DOCS = {
     id: 'faith',
     version: '2026-11-v6',   // v6(2026-11-26): 맺음말 앞에 '전체 Statement of Faith 가 아닌 발췌문' 안내를 붙였다(항목은 v5 그대로) · v5: 7개 항목의 맞춤법 · 띄어쓰기 · 뜻 다듬기(지음을 받았으므로, 모든 인간 생명 등) · v4: 핵심 7개로 간추렸다(v3: 맺음말을 camp@wolko.org 연락 안내로)
     acceptVersions: ['2026-11-v5', '2026-11-v4', '2026-11-v3'],
-    // 예전 버전의 글(관리자가 예전 서명을 열면 그때 글을 보여 주고 해시를 맞춰 본다). 맺음말 · 소개는 v3 와 같다
+    // 예전 버전의 글(관리자가 예전 서명을 열면 그때 글을 보여 주고 해시를 맞춰 본다). 제목 · 안내 · 맺음말은 v5 까지 같았다(FAITH_V5_TEXT). 항목을 고치게 되면 v5 보관본이 FAITH_ITEMS 를 같이 쓰고 있으니 먼저 그 글을 v5 보관본으로 복사해 둔다
     archive: {
       '2026-11-v5': { ...FAITH_V5_TEXT, items: FAITH_ITEMS },
       '2026-11-v4': { ...FAITH_V5_TEXT, items: [
@@ -111,7 +111,7 @@ export const DOCS = {
     en: {
       title: 'Statement of Faith',
       intro: 'Everyone who serves at a WOLKO camp as staff or crew reads, agrees to and signs the Statement of Faith below.',
-      pledge: '※ Please note that the Statement of Faith above is an excerpt, not WOLKO’s full Statement of Faith.\n\nI have read the Statement of Faith above from beginning to end and I agree with it.\n\nIf there is anything you do not agree with, please contact the camp team by email.\n\ncamp@wolko.org',
+      pledge: '※ Please note that the Statement of Faith above is an excerpt, not WOLKO\'s full Statement of Faith.\n\nI have read the Statement of Faith above from beginning to end and I agree with it.\n\nIf there is anything you do not agree with, please contact the camp team by email.\n\ncamp@wolko.org',
     },
     items: FAITH_ITEMS,
   },

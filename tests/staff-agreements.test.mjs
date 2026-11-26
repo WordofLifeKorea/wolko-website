@@ -589,6 +589,16 @@ test('신앙고백서 v4: 예전 11개(v3)에 서명한 분도 서명 완료로 
   assert.ok((await signedFor(env, 'old@example.com', '홍길동')).faith);
 });
 
+test('신앙고백서 v6: 맺음말 앞에 발췌문 안내 — v5 · v4 · v3 서명은 그대로 서명 완료, 보관본의 글 해시는 그때 서명에 남은 해시와 같다', async () => {
+  const { archivedDoc, versionOk, docHash } = await import('../functions/lib/staffAgreements.js');
+  const d = DOCS.faith;
+  assert.ok(['2026-11-v6', '2026-11-v5', '2026-11-v4', '2026-11-v3'].every((v) => versionOk(d, v)) && !versionOk(d, '2026-11-v2'));
+  assert.equal(await docHash(archivedDoc(d, '2026-11-v5')), '3e2186a53ee493ff8bed6f8a3bf3d74b0e1aaf2d4433586c0d862d9cc9341da1');
+  assert.equal(await docHash(archivedDoc(d, '2026-11-v4')), '7375b2d9101850029d5f04bd8b3f5a206cb6ca07842a9f6a88e928022b07e264');
+  assert.equal(await docHash(archivedDoc(d, '2026-11-v3')), '4e9e84276add850ee8a3841d61609d6ce623c0c4d81f5ceac7a45f8e92f6a857');
+  assert.ok(!archivedDoc(d, '2026-11-v5').ko.pledge.includes('발췌문') && d.ko.pledge.includes('발췌문'), '안내는 v6 부터');
+});
+
 test('신앙고백서: 예전 11개(v3) 글을 보관해 관리자 화면에서 예전 서명의 글을 보여 줄 수 있다', async () => {
   const { archivedDoc } = await import('../functions/lib/staffAgreements.js');
   const v3 = archivedDoc(DOCS.faith, '2026-11-v3');
