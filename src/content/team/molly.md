@@ -15,6 +15,7 @@ role_badge: Intern
 campus: pyeongtaek
 category: stw
 order: 3
+active: false
 photo_url: /images/uploads/molly.jpg
 photo_position: "center 10%"
 hero_tagline_ko: 아시아를 향한
