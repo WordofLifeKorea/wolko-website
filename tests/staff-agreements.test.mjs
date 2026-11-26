@@ -613,6 +613,7 @@ test('아동보호 서약서 v15: 원본 문서로 글이 통째로 바뀌었다
   const store = new Map([['agree:v1:childprotection:202611:AG-OLD014', { t: 1, d: 'childprotection', v: '2026-11-v14', r: 'staff', n: '홍길동', e: 'old14@example.com' }], ['agree:v1:childprotection:202611:AG-NEW015', { t: 2, d: 'childprotection', v: '2026-11-v15', r: 'staff', n: '김새롬', e: 'new15@example.com' }]]);
   const env = { CAMP_KV: { list: async ({ prefix }) => ({ keys: [...store.entries()].filter(([k]) => k.startsWith(prefix)).map(([name, metadata]) => ({ name, metadata })), list_complete: true }) } };
   const map = await signedMap(env);
+  assert.equal(await docHash(d), 'ba9a55462696a9fdb22c86fbed0c33774dbdddc0e8ef37e466294e890722b7a1', 'v15 글 전체의 해시 — 글을 한 글자라도 고치면 version 을 올리고 이 값을 바꾼다');
   assert.ok(!(map['old14@example.com'] || []).includes('childprotection'), 'v14 서명은 다시 받아야 한다');
   assert.ok((map['new15@example.com'] || []).includes('childprotection'));
 });

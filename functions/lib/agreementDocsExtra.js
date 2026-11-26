@@ -30,8 +30,11 @@ export const CHILD_PROTECTION = {
   },
   perCamp: false,   // 2026-11-21: 캠프 선택 없이 한 번만 작성한다(처음에는 캠프마다였으나 사용자가 '캠프 선택은 필요 없다'고 정했다). true 로 돌리면 서명할 때 캠프를 고르는 방식이 다시 켜진다
   draft: false,
-  /* 원본 문서의 글을 그대로 옮겼다. 원본에 없어서 붙인 것은 이것뿐이다: 문서 안내(intro), 첫 묶음의 한국어 제목, 'TALK' 두 묶음의 한국어 제목,
-     영어 첫 다섯 항목 앞의 'I will'(원본은 'I WILL' 아래에 소문자로 이어 쓴다), 영어 오타 하나(complements → compliments). */
+  /* 원본 문서의 글을 그대로 옮겼다. 원본과 다른 곳은 이것뿐이다:
+     붙인 것 — 문서 안내(intro), 첫 묶음의 한국어 제목, 'TALK' 두 묶음의 한국어 제목, 영어 첫 다섯 항목 앞의 'I will'(원본은 'I WILL' 아래에 소문자로 이어 쓴다),
+              T 여섯 묶음 제목 앞의 '3가지 T:' / 'Three T’s:'(원본은 'Three T’s: Touch, Talk & Territory' 큰 제목 아래에 묶음이 있다).
+     뺀 것 — 항목 앞의 a. b. c. 글자, 맨 아래 Name / Signature / Date 줄(서명 칸이 대신한다).
+     고친 것 — 영어 오타 하나(complements → compliments). */
   ko: {
     title: '아동보호 서약서',
     intro: '월코 캠프에서 스태프나 크루로 섬기는 모든 분은 아래 아동보호 행동 수칙을 읽고 서명합니다.',
