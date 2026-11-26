@@ -35,6 +35,11 @@ const FAITH_ITEMS = [
     en: "We believe that God created people male and female and ordained marriage as a covenant between one man and one woman. Because every person is made in the image of God, we believe that all human life, from conception, is sacred and is to be respected and protected." }
 ];
 /* v5 까지의 제목 · 안내 · 맺음말(v6 에서 맺음말 앞에 '발췌문' 안내를 붙였다) — 예전 서명의 글과 해시를 그대로 보여 주려고 보관한다 */
+/* v6 의 맺음말('발췌문' 안내) — v7 에서 '요약본'으로 바꿨다. 제목 · 안내는 그대로 */
+const FAITH_V6_PLEDGE = {
+  ko: '※ 위 신앙고백서는 월코의 전체 Statement of Faith가 아닌 일부 발췌문임을 미리 고지드립니다.\n\n저는 위 신앙고백서를 처음부터 끝까지 읽었으며, 그 내용에 동의합니다.\n\n만약 동의하지 않는 내용이 있다면 캠프팀 이메일로 연락해 주세요.\n\ncamp@wolko.org',
+  en: '※ Please note that the Statement of Faith above is an excerpt, not WOLKO\'s full Statement of Faith.\n\nI have read the Statement of Faith above from beginning to end and I agree with it.\n\nIf there is anything you do not agree with, please contact the camp team by email.\n\ncamp@wolko.org',
+};
 const FAITH_V5_TEXT = {
   ko: { title: '신앙고백서', intro: '월코 캠프에서 스태프나 크루로 섬기는 모든 분은 아래 신앙고백을 읽고 동의하며 서명합니다.', pledge: '저는 위 신앙고백서를 처음부터 끝까지 읽었으며, 그 내용에 동의합니다.\n\n만약 동의하지 않는 내용이 있다면 캠프팀 이메일로 연락해 주세요.\n\ncamp@wolko.org' },
   en: { title: 'Statement of Faith', intro: 'Everyone who serves at a WOLKO camp as staff or crew reads, agrees to and signs the Statement of Faith below.', pledge: 'I have read the Statement of Faith above from beginning to end and I agree with it.\n\nIf there is anything you do not agree with, please contact the camp team by email.\n\ncamp@wolko.org' },
@@ -43,10 +48,11 @@ const FAITH_V5_TEXT = {
 export const DOCS = {
   faith: {
     id: 'faith',
-    version: '2026-11-v6',   // v6(2026-11-26): 맺음말 앞에 '전체 Statement of Faith 가 아닌 발췌문' 안내를 붙였다(항목은 v5 그대로) · v5: 7개 항목의 맞춤법 · 띄어쓰기 · 뜻 다듬기(지음을 받았으므로, 모든 인간 생명 등) · v4: 핵심 7개로 간추렸다(v3: 맺음말을 camp@wolko.org 연락 안내로)
-    acceptVersions: ['2026-11-v5', '2026-11-v4', '2026-11-v3'],
-    // 예전 버전의 글(관리자가 예전 서명을 열면 그때 글을 보여 주고 해시를 맞춰 본다). 제목 · 안내 · 맺음말은 v5 까지 같았다(FAITH_V5_TEXT). 항목을 고치게 되면 v5 보관본이 FAITH_ITEMS 를 같이 쓰고 있으니 먼저 그 글을 v5 보관본으로 복사해 둔다
+    version: '2026-11-v7',   // v7(2026-11-26): 안내의 '일부 발췌문'을 '요약본'으로(7개 항목은 원문을 그대로 떼어 온 것이 아니라 간추려 쓴 글이다) · v6(2026-11-26): 맺음말 앞에 '전체 Statement of Faith 가 아닌 발췌문' 안내를 붙였다(항목은 v5 그대로) · v5: 7개 항목의 맞춤법 · 띄어쓰기 · 뜻 다듬기(지음을 받았으므로, 모든 인간 생명 등) · v4: 핵심 7개로 간추렸다(v3: 맺음말을 camp@wolko.org 연락 안내로)
+    acceptVersions: ['2026-11-v6', '2026-11-v5', '2026-11-v4', '2026-11-v3'],
+    // 예전 버전의 글(관리자가 예전 서명을 열면 그때 글을 보여 주고 해시를 맞춰 본다). 제목 · 안내 · 맺음말은 v5 까지 같았다(FAITH_V5_TEXT). 항목을 고치게 되면 v6 · v5 보관본이 FAITH_ITEMS 를 같이 쓰고 있으니 먼저 그 글을 두 보관본으로 복사해 둔다
     archive: {
+      '2026-11-v6': { ko: { ...FAITH_V5_TEXT.ko, pledge: FAITH_V6_PLEDGE.ko }, en: { ...FAITH_V5_TEXT.en, pledge: FAITH_V6_PLEDGE.en }, items: FAITH_ITEMS },
       '2026-11-v5': { ...FAITH_V5_TEXT, items: FAITH_ITEMS },
       '2026-11-v4': { ...FAITH_V5_TEXT, items: [
               {
@@ -106,12 +112,12 @@ export const DOCS = {
     ko: {
       title: '신앙고백서',
       intro: '월코 캠프에서 스태프나 크루로 섬기는 모든 분은 아래 신앙고백을 읽고 동의하며 서명합니다.',
-      pledge: '※ 위 신앙고백서는 월코의 전체 Statement of Faith가 아닌 일부 발췌문임을 미리 고지드립니다.\n\n저는 위 신앙고백서를 처음부터 끝까지 읽었으며, 그 내용에 동의합니다.\n\n만약 동의하지 않는 내용이 있다면 캠프팀 이메일로 연락해 주세요.\n\ncamp@wolko.org',
+      pledge: '※ 위 신앙고백서는 월코의 전체 Statement of Faith가 아닌 요약본임을 미리 고지드립니다.\n\n저는 위 신앙고백서를 처음부터 끝까지 읽었으며, 그 내용에 동의합니다.\n\n만약 동의하지 않는 내용이 있다면 캠프팀 이메일로 연락해 주세요.\n\ncamp@wolko.org',
     },
     en: {
       title: 'Statement of Faith',
       intro: 'Everyone who serves at a WOLKO camp as staff or crew reads, agrees to and signs the Statement of Faith below.',
-      pledge: '※ Please note that the Statement of Faith above is an excerpt, not WOLKO\'s full Statement of Faith.\n\nI have read the Statement of Faith above from beginning to end and I agree with it.\n\nIf there is anything you do not agree with, please contact the camp team by email.\n\ncamp@wolko.org',
+      pledge: '※ Please note that the Statement of Faith above is a summary, not WOLKO\'s full Statement of Faith.\n\nI have read the Statement of Faith above from beginning to end and I agree with it.\n\nIf there is anything you do not agree with, please contact the camp team by email.\n\ncamp@wolko.org',
     },
     items: FAITH_ITEMS,
   },
