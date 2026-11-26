@@ -54,6 +54,8 @@ test('신앙고백서 v8: 예전 11개 원문(한·영)에서 3번의 휴거 문
   assert.ok(d.items[2].ko.includes('천년왕국') && d.items[2].en.includes('1000-year-reign') && d.items[4].en.includes('eternally saved'), '휴거 말고는 원문 그대로');
   const v3 = archivedDoc(d, '2026-11-v3');
   d.items.forEach((it, i) => { if (i !== 2) assert.equal(it.ko + it.en, v3.items[i].ko + v3.items[i].en, `${i + 1}번은 예전 원문과 한 글자도 다르지 않다`); });
+  assert.equal(d.items[2].ko, v3.items[2].ko.replace('7년 대환난 이전에 그분의 교회를 휴거하시고, 그 후 ', ''), '3번 한글: 휴거 부분만 뺐다');
+  assert.equal(d.items[2].en, v3.items[2].en.replace('take His Church to heaven before the seven-year tribulation, after which He will ', ''), '3번 영문: 휴거 부분만 뺐다');
   assert.ok(d.acceptVersions.includes('2026-11-v3'), '예전 11개에 서명한 분은 그대로 인정');
   assert.match(d.version, /^\d{4}-\d{2}-v\d+$/);
   assert.match(await docHash(d), /^[0-9a-f]{64}$/);

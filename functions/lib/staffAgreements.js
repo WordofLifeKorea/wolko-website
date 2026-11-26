@@ -16,7 +16,7 @@ export const ROLE_LABEL = { staff: { ko: '스태프', en: 'Staff' }, crew: { ko:
 export const MAX_SIGNATURE_BYTES = 240 * 1024;   // 서명 그림(PNG) 한도
 
 /* 신앙고백서 — v8(2026-11-26)부터 예전 11개(예전 About 페이지 문구, 커밋 fc2a7a4c) 원문을 다시 쓰고, 3번의 '7년 대환난 전 휴거' 문장만 뺐다.
-   v4 ~ v7 은 교단에 상관없이 함께 고백할 수 있게 간추린 7개(FAITH_SUMMARY_ITEMS)였다. */
+   v4 ~ v7 은 교단에 상관없이 함께 고백할 수 있게 간추린 7개였다(v5 ~ v7 은 FAITH_SUMMARY_ITEMS, v4 는 보관본 안의 글). */
 /* v5 ~ v7 의 7개 항목(요약본) — 예전 서명의 글과 해시를 그대로 보여 주려고 보관한다 */
 const FAITH_SUMMARY_ITEMS = [
   { ko: "우리는 신구약 성경이 하나님의 감동으로 기록된 말씀이며, 신앙과 삶의 최종 권위임을 믿습니다.",
