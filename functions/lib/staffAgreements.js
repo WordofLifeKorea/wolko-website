@@ -17,14 +17,38 @@ export const MAX_SIGNATURE_BYTES = 240 * 1024;   // 서명 그림(PNG) 한도
 
 /* 신앙고백서 — 교단에 상관없이 함께 고백할 수 있는 핵심 7개(2026-11-24). 예전 11개(예전 About 페이지 문구, 커밋 fc2a7a4c)에서
    특정 교단의 교리(대환난 전 휴거 · 천년왕국, 표적 은사 중단, 한 번 받은 구원)는 빼고, 결혼 · 성별 · 생명은 한 항목으로 묶었다. */
+/* 신앙고백서의 지금 항목(v5 부터 같다) */
+const FAITH_ITEMS = [
+  { ko: "우리는 신구약 성경이 하나님의 감동으로 기록된 말씀이며, 신앙과 삶의 최종 권위임을 믿습니다.",
+    en: "We believe that the Old and New Testament Scriptures are inspired by God and are the final authority for faith and life." },
+  { ko: "우리는 우주의 창조주이시며 섭리자이신 한 분 하나님, 곧 성부, 성자, 성령의 세 위격으로 영원히 계시는 하나님을 믿습니다.",
+    en: "We believe in one God, Creator and Sustainer of the universe, who exists eternally in three persons: Father, Son, and Holy Spirit." },
+  { ko: "우리는 예수 그리스도께서 참 하나님이시며 참 사람이심을 믿습니다. 그분은 동정녀에게서 나시고 죄 없이 사셨으며, 우리 죄를 위해 십자가에서 대신 죽으시고, 몸으로 부활하셔서 하나님 우편에 오르셨고, 다시 오실 것을 믿습니다.",
+    en: "We believe that Jesus Christ is truly God and truly man. He was born of a virgin, lived a sinless life, died on the cross in our place for our sins, rose bodily from the dead, ascended to the right hand of God, and will come again." },
+  { ko: "우리는 모든 사람이 죄를 지어 하나님 앞에 죄인이며, 오직 하나님의 은혜로 예수 그리스도를 믿음으로 구원받는다는 것을 믿습니다.",
+    en: "We believe that all have sinned and are guilty before God, and that salvation is by God's grace alone through faith in Jesus Christ." },
+  { ko: "우리는 성령께서 사람을 거듭나게 하시고, 모든 믿는 사람 안에 거하시며, 거룩한 삶과 증거와 섬김으로 인도하시고 힘을 주심을 믿습니다.",
+    en: "We believe that the Holy Spirit gives new birth, dwells within every believer, and guides and empowers believers for a holy life, witness, and service." },
+  { ko: "우리는 모든 사람이 몸으로 부활하여 최후의 심판을 받으며, 구원받은 사람은 하나님과 함께 영원히 살고 구원받지 못한 사람은 영원한 형벌을 받는다는 것을 믿습니다.",
+    en: "We believe in the bodily resurrection of all people and the final judgment: eternal life with God for the saved and eternal punishment for the lost." },
+  { ko: "우리는 하나님께서 사람을 남자와 여자로 창조하시고, 결혼을 한 남자와 한 여자 사이의 언약으로 정하셨음을 믿습니다. 또한 모든 사람이 하나님의 형상대로 지음을 받았으므로, 잉태된 때부터 모든 인간 생명이 존귀하며 존중받고 보호받아야 함을 믿습니다.",
+    en: "We believe that God created people male and female and ordained marriage as a covenant between one man and one woman. Because every person is made in the image of God, we believe that all human life, from conception, is sacred and is to be respected and protected." }
+];
+/* v5 까지의 제목 · 안내 · 맺음말(v6 에서 맺음말 앞에 '발췌문' 안내를 붙였다) — 예전 서명의 글과 해시를 그대로 보여 주려고 보관한다 */
+const FAITH_V5_TEXT = {
+  ko: { title: '신앙고백서', intro: '월코 캠프에서 스태프나 크루로 섬기는 모든 분은 아래 신앙고백을 읽고 동의하며 서명합니다.', pledge: '저는 위 신앙고백서를 처음부터 끝까지 읽었으며, 그 내용에 동의합니다.\n\n만약 동의하지 않는 내용이 있다면 캠프팀 이메일로 연락해 주세요.\n\ncamp@wolko.org' },
+  en: { title: 'Statement of Faith', intro: 'Everyone who serves at a WOLKO camp as staff or crew reads, agrees to and signs the Statement of Faith below.', pledge: 'I have read the Statement of Faith above from beginning to end and I agree with it.\n\nIf there is anything you do not agree with, please contact the camp team by email.\n\ncamp@wolko.org' },
+};
+
 export const DOCS = {
   faith: {
     id: 'faith',
-    version: '2026-11-v5',   // v5: 7개 항목의 맞춤법 · 띄어쓰기 · 뜻 다듬기(지음을 받았으므로, 모든 인간 생명 등) · v4: 핵심 7개로 간추렸다(v3: 맺음말을 camp@wolko.org 연락 안내로)
-    acceptVersions: ['2026-11-v4', '2026-11-v3'],
+    version: '2026-11-v6',   // v6(2026-11-26): 맺음말 앞에 '전체 Statement of Faith 가 아닌 발췌문' 안내를 붙였다(항목은 v5 그대로) · v5: 7개 항목의 맞춤법 · 띄어쓰기 · 뜻 다듬기(지음을 받았으므로, 모든 인간 생명 등) · v4: 핵심 7개로 간추렸다(v3: 맺음말을 camp@wolko.org 연락 안내로)
+    acceptVersions: ['2026-11-v5', '2026-11-v4', '2026-11-v3'],
     // 예전 버전의 글(관리자가 예전 서명을 열면 그때 글을 보여 주고 해시를 맞춰 본다). 맺음말 · 소개는 v3 와 같다
     archive: {
-      '2026-11-v4': { items: [
+      '2026-11-v5': { ...FAITH_V5_TEXT, items: FAITH_ITEMS },
+      '2026-11-v4': { ...FAITH_V5_TEXT, items: [
               {
                       "ko": "우리는 신구약 성경이 하나님의 감동으로 기록된 말씀이며, 신앙과 삶의 최종 권위임을 믿습니다.",
                       "en": "We believe that the Old and New Testament Scriptures are inspired by God and are the final authority for faith and life."
@@ -54,7 +78,7 @@ export const DOCS = {
                       "en": "We believe that God created people male and female and ordained marriage as a covenant between one man and one woman. Because every person is made in the image of God, we believe that all human life, from conception, is sacred and is to be respected and protected."
               }
       ] },
-      '2026-11-v3': { items: [
+      '2026-11-v3': { ...FAITH_V5_TEXT, items: [
       { ko: "우리는 구약과 신약 성경이 하나님의 감동으로 기록되었으며, 원본에 오류가 없고, 신앙과 삶에 있어 최고의 최종 권위임을 믿습니다.",
         en: "We believe that the Scriptures of the Old and New Testament are verbally inspired of God, and they are without error in the original writings, and they are the supreme and final authority for faith and life." },
       { ko: "우리는 우주의 창조자이시며 섭리자이신 한 하나님, 곧 성부, 성자, 성령의 세 위격으로 영원히 존재하시는 분을 믿습니다.",
@@ -82,29 +106,14 @@ export const DOCS = {
     ko: {
       title: '신앙고백서',
       intro: '월코 캠프에서 스태프나 크루로 섬기는 모든 분은 아래 신앙고백을 읽고 동의하며 서명합니다.',
-      pledge: '저는 위 신앙고백서를 처음부터 끝까지 읽었으며, 그 내용에 동의합니다.\n\n만약 동의하지 않는 내용이 있다면 캠프팀 이메일로 연락해 주세요.\n\ncamp@wolko.org',
+      pledge: '※ 위 신앙고백서는 월코의 전체 Statement of Faith가 아닌 일부 발췌문임을 미리 고지드립니다.\n\n저는 위 신앙고백서를 처음부터 끝까지 읽었으며, 그 내용에 동의합니다.\n\n만약 동의하지 않는 내용이 있다면 캠프팀 이메일로 연락해 주세요.\n\ncamp@wolko.org',
     },
     en: {
       title: 'Statement of Faith',
       intro: 'Everyone who serves at a WOLKO camp as staff or crew reads, agrees to and signs the Statement of Faith below.',
-      pledge: 'I have read the Statement of Faith above from beginning to end and I agree with it.\n\nIf there is anything you do not agree with, please contact the camp team by email.\n\ncamp@wolko.org',
+      pledge: '※ Please note that the Statement of Faith above is an excerpt, not WOLKO’s full Statement of Faith.\n\nI have read the Statement of Faith above from beginning to end and I agree with it.\n\nIf there is anything you do not agree with, please contact the camp team by email.\n\ncamp@wolko.org',
     },
-    items: [
-      { ko: "우리는 신구약 성경이 하나님의 감동으로 기록된 말씀이며, 신앙과 삶의 최종 권위임을 믿습니다.",
-        en: "We believe that the Old and New Testament Scriptures are inspired by God and are the final authority for faith and life." },
-      { ko: "우리는 우주의 창조주이시며 섭리자이신 한 분 하나님, 곧 성부, 성자, 성령의 세 위격으로 영원히 계시는 하나님을 믿습니다.",
-        en: "We believe in one God, Creator and Sustainer of the universe, who exists eternally in three persons: Father, Son, and Holy Spirit." },
-      { ko: "우리는 예수 그리스도께서 참 하나님이시며 참 사람이심을 믿습니다. 그분은 동정녀에게서 나시고 죄 없이 사셨으며, 우리 죄를 위해 십자가에서 대신 죽으시고, 몸으로 부활하셔서 하나님 우편에 오르셨고, 다시 오실 것을 믿습니다.",
-        en: "We believe that Jesus Christ is truly God and truly man. He was born of a virgin, lived a sinless life, died on the cross in our place for our sins, rose bodily from the dead, ascended to the right hand of God, and will come again." },
-      { ko: "우리는 모든 사람이 죄를 지어 하나님 앞에 죄인이며, 오직 하나님의 은혜로 예수 그리스도를 믿음으로 구원받는다는 것을 믿습니다.",
-        en: "We believe that all have sinned and are guilty before God, and that salvation is by God's grace alone through faith in Jesus Christ." },
-      { ko: "우리는 성령께서 사람을 거듭나게 하시고, 모든 믿는 사람 안에 거하시며, 거룩한 삶과 증거와 섬김으로 인도하시고 힘을 주심을 믿습니다.",
-        en: "We believe that the Holy Spirit gives new birth, dwells within every believer, and guides and empowers believers for a holy life, witness, and service." },
-      { ko: "우리는 모든 사람이 몸으로 부활하여 최후의 심판을 받으며, 구원받은 사람은 하나님과 함께 영원히 살고 구원받지 못한 사람은 영원한 형벌을 받는다는 것을 믿습니다.",
-        en: "We believe in the bodily resurrection of all people and the final judgment: eternal life with God for the saved and eternal punishment for the lost." },
-      { ko: "우리는 하나님께서 사람을 남자와 여자로 창조하시고, 결혼을 한 남자와 한 여자 사이의 언약으로 정하셨음을 믿습니다. 또한 모든 사람이 하나님의 형상대로 지음을 받았으므로, 잉태된 때부터 모든 인간 생명이 존귀하며 존중받고 보호받아야 함을 믿습니다.",
-        en: "We believe that God created people male and female and ordained marriage as a covenant between one man and one woman. Because every person is made in the image of God, we believe that all human life, from conception, is sacred and is to be respected and protected." }
-    ],
+    items: FAITH_ITEMS,
   },
   childprotection: CHILD_PROTECTION,
   rules: CAMP_RULES,

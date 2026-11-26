@@ -351,7 +351,8 @@ test('서명 페이지: 서약서를 한 화면에 늘어놓지 않고, 목록�
     assert.ok(!/(^|[^가-힣])(나는|내가|나에게|나에 대한|내 문화|내 개인)/.test(ko), `${d.id}: "나는" 대신 "저는" (낱말 안의 "…나는" 은 그대로)`);
     assert.ok(/저는|제가/.test(ko), `${d.id}: 저는 / 제가 를 쓴다`);
   }
-  assert.match(DOCS.faith.version, /v5$/, '문구를 고쳤으니 문서 버전을 올렸다');
+  assert.match(DOCS.faith.version, /v6$/, '문구를 고쳤으니 문서 버전을 올렸다');
+  assert.ok(DOCS.faith.ko.pledge.startsWith('※ 위 신앙고백서는 월코의 전체 Statement of Faith가 아닌 일부 발췌문임을 미리 고지드립니다.\n\n저는 위 신앙고백서를') && DOCS.faith.en.pledge.startsWith('※ Please note that the Statement of Faith above is an excerpt'), '맺음말 앞에 발췌문 안내');
   assert.ok(DOCS.faith.ko.pledge.includes('동의하지 않는 내용이 있다면') && DOCS.faith.ko.pledge.includes('camp@wolko.org') && DOCS.faith.en.pledge.includes('camp@wolko.org'), '신앙고백서 맺음말에 문의 이메일 안내');
 });
 
