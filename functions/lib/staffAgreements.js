@@ -16,6 +16,7 @@ export const ROLE_LABEL = { staff: { ko: '스태프', en: 'Staff' }, crew: { ko:
 export const MAX_SIGNATURE_BYTES = 240 * 1024;   // 서명 그림(PNG) 한도
 
 /* 신앙고백서 — v8(2026-11-26)부터 예전 11개(예전 About 페이지 문구, 커밋 fc2a7a4c) 원문을 다시 쓰고, 3번의 '7년 대환난 전 휴거' 문장만 뺐다.
+   v9(2026-11-27)에서 6번의 가운데 문장(방언 · 치유 같은 표적 은사는 초대 교회에 국한)을 뺐다 — 5번 · 6번은 다음 주 회의에서 다시 논의한다.
    v4 ~ v7 은 교단에 상관없이 함께 고백할 수 있게 간추린 7개였다(v5 ~ v7 은 FAITH_SUMMARY_ITEMS, v4 는 보관본 안의 글). */
 /* v5 ~ v7 의 7개 항목(요약본) — 예전 서명의 글과 해시를 그대로 보여 주려고 보관한다 */
 const FAITH_SUMMARY_ITEMS = [
@@ -34,8 +35,8 @@ const FAITH_SUMMARY_ITEMS = [
   { ko: "우리는 하나님께서 사람을 남자와 여자로 창조하시고, 결혼을 한 남자와 한 여자 사이의 언약으로 정하셨음을 믿습니다. 또한 모든 사람이 하나님의 형상대로 지음을 받았으므로, 잉태된 때부터 모든 인간 생명이 존귀하며 존중받고 보호받아야 함을 믿습니다.",
     en: "We believe that God created people male and female and ordained marriage as a covenant between one man and one woman. Because every person is made in the image of God, we believe that all human life, from conception, is sacred and is to be respected and protected." }
 ];
-/* 신앙고백서의 지금 항목(v8) — 예전 11개 원문에서 3번의 휴거 문장만 뺐다 */
-const FAITH_ITEMS = [
+/* v8 의 11개 항목 — 예전 11개 원문에서 3번의 휴거 문장만 뺐다(예전 서명의 글과 해시를 그대로 보여 주려고 보관한다) */
+const FAITH_V8_ITEMS = [
   { ko: "우리는 구약과 신약 성경이 하나님의 감동으로 기록되었으며, 원본에 오류가 없고, 신앙과 삶에 있어 최고의 최종 권위임을 믿습니다.",
     en: "We believe that the Scriptures of the Old and New Testament are verbally inspired of God, and they are without error in the original writings, and they are the supreme and final authority for faith and life." },
   { ko: "우리는 우주의 창조자이시며 섭리자이신 한 하나님, 곧 성부, 성자, 성령의 세 위격으로 영원히 존재하시는 분을 믿습니다.",
@@ -59,6 +60,16 @@ const FAITH_ITEMS = [
   { ko: "우리는 모든 사람이 하나님의 형상으로 창조되었으므로 모든 인간 생명이 존엄함을 믿습니다. 또한 생명은 잉태 때부터 시작되어 죽음 너머 영원까지 이어지므로, 하나님께서는 나이나 상태에 관계없이 모든 사람이 인간의 생명을 소중히 여기고 존중하며 지키고 보호하도록 부르심을 믿습니다.",
     en: "Since every person is uniquely created in the image of God and formed by God, we hold to the sanctity of all human life. Since the Bible reflects that life begins at conception and lasts beyond death into eternity, God calls everyone to value, respect, defend, and protect all human life regardless of age or condition." }
 ];
+/* 신앙고백서의 지금 항목(v9) — v8 에서 6번의 가운데 문장(표적 은사 중단)만 뺐다 */
+const FAITH_ITEMS = FAITH_V8_ITEMS.map((it, i) => (i !== 5 ? it : {
+  ko: "우리는 하나님께서 예수님을 믿는 모든 사람에게 그리스도의 몸을 세우기 위한 영적 은사를 주심을 믿습니다. 또한 우리는 하나님께서 그분의 목적을 이루시고 영광을 나타내시기 위해 언제든지 인간의 역사에 기적적으로 개입하실 수 있음을 믿습니다.",
+  en: "We believe that God gives spiritual gifts to all believers for the building up of the body of Christ. We also believe that God may miraculously intervene in the affairs of humanity anytime to accomplish His purposes and to manifest His glory.",
+}));
+/* v8 부터의 맺음말('일부 내용을 뺀 것' 안내) — v8 보관본과 지금 문서가 같이 쓴다. 지금 맺음말을 고치게 되면 v8 보관본에는 이 글을 그대로 남긴다 */
+const FAITH_V8_PLEDGE = {
+  ko: '※ 위 신앙고백서는 월코의 전체 Statement of Faith에서 일부 내용을 뺀 것임을 미리 고지드립니다.\n\n저는 위 신앙고백서를 처음부터 끝까지 읽었으며, 그 내용에 동의합니다.\n\n만약 동의하지 않는 내용이 있다면 캠프팀 이메일로 연락해 주세요.\n\ncamp@wolko.org',
+  en: '※ Please note that the Statement of Faith above leaves out part of WOLKO\'s full Statement of Faith.\n\nI have read the Statement of Faith above from beginning to end and I agree with it.\n\nIf there is anything you do not agree with, please contact the camp team by email.\n\ncamp@wolko.org',
+};
 /* v7 의 맺음말('요약본' 안내) — v8 에서 '일부 내용을 뺀 것'으로 바꿨다 */
 const FAITH_V7_PLEDGE = {
   ko: '※ 위 신앙고백서는 월코의 전체 Statement of Faith가 아닌 요약본임을 미리 고지드립니다.\n\n저는 위 신앙고백서를 처음부터 끝까지 읽었으며, 그 내용에 동의합니다.\n\n만약 동의하지 않는 내용이 있다면 캠프팀 이메일로 연락해 주세요.\n\ncamp@wolko.org',
@@ -78,10 +89,11 @@ const FAITH_V5_TEXT = {
 export const DOCS = {
   faith: {
     id: 'faith',
-    version: '2026-11-v8',   // v8(2026-11-26): 예전 11개 원문으로 돌아가고 3번의 휴거 문장만 뺐다 · 맺음말 안내를 '일부 내용을 뺀 것'으로(v7 까지 서명한 분은 그대로 인정 — 2026-11-26 결정) · v7(2026-11-26): 안내의 '일부 발췌문'을 '요약본'으로(7개 항목은 원문을 그대로 떼어 온 것이 아니라 간추려 쓴 글이다) · v6(2026-11-26): 맺음말 앞에 '전체 Statement of Faith 가 아닌 발췌문' 안내를 붙였다(항목은 v5 그대로) · v5: 7개 항목의 맞춤법 · 띄어쓰기 · 뜻 다듬기(지음을 받았으므로, 모든 인간 생명 등) · v4: 핵심 7개로 간추렸다(v3: 맺음말을 camp@wolko.org 연락 안내로)
-    acceptVersions: ['2026-11-v7', '2026-11-v6', '2026-11-v5', '2026-11-v4', '2026-11-v3'],
+    version: '2026-11-v9',   // v9(2026-11-27): 6번의 가운데 문장(표적 은사 중단)을 뺐다(v8 까지 서명한 분은 그대로 인정) · v8(2026-11-26): 예전 11개 원문으로 돌아가고 3번의 휴거 문장만 뺐다 · 맺음말 안내를 '일부 내용을 뺀 것'으로(v7 까지 서명한 분은 그대로 인정 — 2026-11-26 결정) · v7(2026-11-26): 안내의 '일부 발췌문'을 '요약본'으로(7개 항목은 원문을 그대로 떼어 온 것이 아니라 간추려 쓴 글이다) · v6(2026-11-26): 맺음말 앞에 '전체 Statement of Faith 가 아닌 발췌문' 안내를 붙였다(항목은 v5 그대로) · v5: 7개 항목의 맞춤법 · 띄어쓰기 · 뜻 다듬기(지음을 받았으므로, 모든 인간 생명 등) · v4: 핵심 7개로 간추렸다(v3: 맺음말을 camp@wolko.org 연락 안내로)
+    acceptVersions: ['2026-11-v8', '2026-11-v7', '2026-11-v6', '2026-11-v5', '2026-11-v4', '2026-11-v3'],
     // 예전 버전의 글(관리자가 예전 서명을 열면 그때 글을 보여 주고 해시를 맞춰 본다). 제목 · 안내 · 맺음말은 v5 까지 같았다(FAITH_V5_TEXT). v7 · v6 · v5 보관본은 FAITH_SUMMARY_ITEMS 를 같이 쓴다. 지금 항목(FAITH_ITEMS)을 고치게 되면 먼저 그 글을 새 보관본으로 복사해 둔다
     archive: {
+      '2026-11-v8': { ko: { ...FAITH_V5_TEXT.ko, pledge: FAITH_V8_PLEDGE.ko }, en: { ...FAITH_V5_TEXT.en, pledge: FAITH_V8_PLEDGE.en }, items: FAITH_V8_ITEMS },
       '2026-11-v7': { ko: { ...FAITH_V5_TEXT.ko, pledge: FAITH_V7_PLEDGE.ko }, en: { ...FAITH_V5_TEXT.en, pledge: FAITH_V7_PLEDGE.en }, items: FAITH_SUMMARY_ITEMS },
       '2026-11-v6': { ko: { ...FAITH_V5_TEXT.ko, pledge: FAITH_V6_PLEDGE.ko }, en: { ...FAITH_V5_TEXT.en, pledge: FAITH_V6_PLEDGE.en }, items: FAITH_SUMMARY_ITEMS },
       '2026-11-v5': { ...FAITH_V5_TEXT, items: FAITH_SUMMARY_ITEMS },
@@ -143,12 +155,12 @@ export const DOCS = {
     ko: {
       title: '신앙고백서',
       intro: '월코 캠프에서 스태프나 크루로 섬기는 모든 분은 아래 신앙고백을 읽고 동의하며 서명합니다.',
-      pledge: '※ 위 신앙고백서는 월코의 전체 Statement of Faith에서 일부 내용을 뺀 것임을 미리 고지드립니다.\n\n저는 위 신앙고백서를 처음부터 끝까지 읽었으며, 그 내용에 동의합니다.\n\n만약 동의하지 않는 내용이 있다면 캠프팀 이메일로 연락해 주세요.\n\ncamp@wolko.org',
+      pledge: FAITH_V8_PLEDGE.ko,
     },
     en: {
       title: 'Statement of Faith',
       intro: 'Everyone who serves at a WOLKO camp as staff or crew reads, agrees to and signs the Statement of Faith below.',
-      pledge: '※ Please note that the Statement of Faith above leaves out part of WOLKO\'s full Statement of Faith.\n\nI have read the Statement of Faith above from beginning to end and I agree with it.\n\nIf there is anything you do not agree with, please contact the camp team by email.\n\ncamp@wolko.org',
+      pledge: FAITH_V8_PLEDGE.en,
     },
     items: FAITH_ITEMS,
   },

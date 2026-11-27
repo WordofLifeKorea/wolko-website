@@ -44,18 +44,23 @@ async function setup() {
   return { kv, env, admin, member, call };
 }
 
-test('신앙고백서 v8: 예전 11개 원문(한·영)에서 3번의 휴거 문장만 뺐다, 문서 버전과 글 해시가 있다', async () => {
+test('신앙고백서 v9: 예전 11개 원문(한·영)에서 3번의 휴거 문장과 6번의 표적 은사 중단 문장만 뺐다, 문서 버전과 글 해시가 있다', async () => {
   const d = DOCS.faith;
   assert.equal(d.items.length, 11);
   assert.ok(d.items.every((i) => i.ko.startsWith('우리는') && (i.en.startsWith('We believe') || i.en.startsWith('Since every person'))));
   assert.ok(d.items[8].ko.includes('한 남자와 한 여자') && d.items[10].ko.includes('잉태'), '결혼 · 생명 항목이 들어 있다');
   const all = d.items.map((i) => i.ko + i.en).join(' ');
   assert.doesNotMatch(all, /대환난|휴거|tribulation|take His Church to heaven/, '휴거 문장은 뺐다');
+  assert.doesNotMatch(all, /표적 은사|초대 교회 시대에 국한|sign-gifts|limited to the early church/, '표적 은사 중단 문장은 뺐다');
   assert.ok(d.items[2].ko.includes('천년왕국') && d.items[2].en.includes('1000-year-reign') && d.items[4].en.includes('eternally saved'), '휴거 말고는 원문 그대로');
   const v3 = archivedDoc(d, '2026-11-v3');
-  d.items.forEach((it, i) => { if (i !== 2) assert.equal(it.ko + it.en, v3.items[i].ko + v3.items[i].en, `${i + 1}번은 예전 원문과 한 글자도 다르지 않다`); });
+  d.items.forEach((it, i) => { if (i !== 2 && i !== 5) assert.equal(it.ko + it.en, v3.items[i].ko + v3.items[i].en, `${i + 1}번은 예전 원문과 한 글자도 다르지 않다`); });
   assert.equal(d.items[2].ko, v3.items[2].ko.replace('7년 대환난 이전에 그분의 교회를 휴거하시고, 그 후 ', ''), '3번 한글: 휴거 부분만 뺐다');
   assert.equal(d.items[2].en, v3.items[2].en.replace('take His Church to heaven before the seven-year tribulation, after which He will ', ''), '3번 영문: 휴거 부분만 뺐다');
+  assert.equal(d.items[5].ko, v3.items[5].ko.replace(' 다만 방언과 치유와 같은 기적적인 표적 은사는 초대 교회 시대에 국한되었음을 믿습니다.', ''), '6번 한글: 가운데 문장만 뺐다');
+  assert.equal(d.items[5].en, v3.items[5].en.replace(' However, the miraculous sign-gifts of the Spirit, such as tongues and healings, were limited to the early church.', ''), '6번 영문: 가운데 문장만 뺐다');
+  const v8 = archivedDoc(d, '2026-11-v8');
+  assert.ok(v8.items[5].ko.includes('초대 교회 시대에 국한') && v8.items[2].ko === d.items[2].ko, 'v8 보관본은 6번 가운데 문장이 있던 그때 글');
   assert.ok(d.acceptVersions.includes('2026-11-v3'), '예전 11개에 서명한 분은 그대로 인정');
   assert.match(d.version, /^\d{4}-\d{2}-v\d+$/);
   assert.match(await docHash(d), /^[0-9a-f]{64}$/);
@@ -357,7 +362,7 @@ test('서명 페이지: 서약서를 한 화면에 늘어놓지 않고, 목록�
     assert.ok(!/(^|[^가-힣])(나는|내가|나에게|나에 대한|내 문화|내 개인)/.test(ko), `${d.id}: "나는" 대신 "저는" (낱말 안의 "…나는" 은 그대로)`);
     assert.ok(/저는|제가/.test(ko), `${d.id}: 저는 / 제가 를 쓴다`);
   }
-  assert.match(DOCS.faith.version, /v8$/, '문구를 고쳤으니 문서 버전을 올렸다');
+  assert.match(DOCS.faith.version, /v9$/, '문구를 고쳤으니 문서 버전을 올렸다');
   assert.ok(DOCS.faith.ko.pledge.startsWith('※ 위 신앙고백서는 월코의 전체 Statement of Faith에서 일부 내용을 뺀 것임을 미리 고지드립니다.\n\n저는 위 신앙고백서를') && DOCS.faith.en.pledge.startsWith('※ Please note that the Statement of Faith above leaves out part of WOLKO'), '맺음말 앞에 일부 내용을 뺀 것이라는 안내');
   assert.ok(DOCS.faith.ko.pledge.includes('동의하지 않는 내용이 있다면') && DOCS.faith.ko.pledge.includes('camp@wolko.org') && DOCS.faith.en.pledge.includes('camp@wolko.org'), '신앙고백서 맺음말에 문의 이메일 안내');
 });
@@ -598,14 +603,15 @@ test('신앙고백서 v4: 예전 11개(v3)에 서명한 분도 서명 완료로 
 test('신앙고백서 v8: 맺음말 안내는 "일부 내용을 뺀 것"(v7 은 "요약본", v6 은 "발췌문") — v7 · v6 · v5 · v4 · v3 서명은 그대로 서명 완료, 보관본의 글 해시는 그때 서명에 남은 해시와 같다', async () => {
   const { archivedDoc, versionOk, docHash } = await import('../functions/lib/staffAgreements.js');
   const d = DOCS.faith;
-  assert.ok(['2026-11-v8', '2026-11-v7', '2026-11-v6', '2026-11-v5', '2026-11-v4', '2026-11-v3'].every((v) => versionOk(d, v)) && !versionOk(d, '2026-11-v2'));
+  assert.ok(['2026-11-v9', '2026-11-v8', '2026-11-v7', '2026-11-v6', '2026-11-v5', '2026-11-v4', '2026-11-v3'].every((v) => versionOk(d, v)) && !versionOk(d, '2026-11-v2'));
   assert.equal(await docHash(archivedDoc(d, '2026-11-v5')), '3e2186a53ee493ff8bed6f8a3bf3d74b0e1aaf2d4433586c0d862d9cc9341da1');
   assert.equal(await docHash(archivedDoc(d, '2026-11-v4')), '7375b2d9101850029d5f04bd8b3f5a206cb6ca07842a9f6a88e928022b07e264');
   assert.equal(await docHash(archivedDoc(d, '2026-11-v3')), '4e9e84276add850ee8a3841d61609d6ce623c0c4d81f5ceac7a45f8e92f6a857');
   assert.equal(await docHash(archivedDoc(d, '2026-11-v6')), '32a120b66d3816197179ff1b6365fa91fe2ba754b08fb626fc23c8ca61e7437a');
   assert.equal(await docHash(archivedDoc(d, '2026-11-v7')), '198626d8bcb6fea3bf5778f3627ad82b991488a615304dea603fe35cfa4c4b6b', 'v7 보관본 = v7 때 서명에 남은 해시');
   assert.equal(archivedDoc(d, '2026-11-v7').items.length, 7);
-  assert.equal(await docHash(d), '5b29879e84243fe55422dd17969510b3e25d23640144870f54fc050823212571', 'v8 글 전체의 해시 — 글을 한 글자라도 고치면 version 을 올리고 이 값을 바꾼다');
+  assert.equal(await docHash(archivedDoc(d, '2026-11-v8')), '5b29879e84243fe55422dd17969510b3e25d23640144870f54fc050823212571', 'v8 보관본 = v8 때 서명에 남은 해시');
+  assert.equal(await docHash(d), 'c33a3f02f31dc082fb3a6b7b4b065887cbdde59e21490654c3d21888908642a2', 'v9 글 전체의 해시 — 글을 한 글자라도 고치면 version 을 올리고 이 값을 바꾼다');
   assert.ok(!/발췌문|요약본/.test(archivedDoc(d, '2026-11-v5').ko.pledge) && archivedDoc(d, '2026-11-v6').ko.pledge.includes('일부 발췌문') && archivedDoc(d, '2026-11-v7').ko.pledge.includes('요약본') && d.ko.pledge.includes('일부 내용을 뺀 것') && !/발췌문|요약본/.test(d.ko.pledge), '안내는 v6 부터, 요약본은 v7, 일부 내용을 뺀 것은 v8 부터');
 });
 
