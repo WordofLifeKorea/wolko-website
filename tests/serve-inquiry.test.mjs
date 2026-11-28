@@ -124,5 +124,20 @@ test('홈페이지 문의: 캠프 문의는 캠프팀 그룹 메일(camp@wolko.o
     const camp = t.emails.find(e => (e.subject || '').includes('홍길동')), general = t.emails.find(e => (e.subject || '').includes('김철수'));
     assert.deepEqual(camp.to, ['camp@wolko.org']); assert.equal(camp.reply_to, 'hong@x.com');
     assert.deepEqual(general.to, ['wolkorea1@gmail.com']);
+    assert.equal((await t.send({ name: '이영희', email: 'lee@x.com', message: '종류를 고르지 않은 문의입니다.' })).status, 200);
+    assert.deepEqual(t.emails.find(e => (e.subject || '').includes('이영희')).to, ['wolkorea1@gmail.com'], '종류가 없으면 일반 문의');
+    assert.ok(!t.emails.some(e => (e.subject || '').includes('홍길동') && e.to.includes('wolkorea1@gmail.com')), '캠프 문의는 사무실 메일로 겹쳐 가지 않는다');
   } finally { t.restore(); }
+});
+
+test('캠프 알림 메일(신청 · 스태프/크루 지원 · 보호자 동의)은 캠프팀 그룹 메일 camp@wolko.org 로 가고, 보호자 동의 요청의 문의처 · 답장 주소도 camp@wolko.org', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = (f) => readFileSync(new URL('../' + f, import.meta.url), 'utf8');
+  for (const f of ['functions/api/register.js', 'functions/api/staff-register.js', 'functions/api/staff-consent.js']) {
+    assert.match(src(f), /to: \['camp@wolko\.org'\]/, f);
+    assert.doesNotMatch(src(f), /wolkorea1@gmail\.com/, f);
+  }
+  const crew = src('functions/lib/staffCrew.js');
+  assert.match(crew, /reply_to: 'camp@wolko\.org'/); assert.match(crew, /문의: 월코 캠프 010-7310-9216 · camp@wolko\.org/);
+  assert.doesNotMatch(crew, /wolkorea1@gmail\.com/);
 });

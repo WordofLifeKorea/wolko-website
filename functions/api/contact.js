@@ -2,7 +2,7 @@
  * POST /api/contact
  * Body (JSON): { name, email, phone, type, message }
  *
- * Sends an email to wolkorea@gmail.com via Resend API.
+ * Sends an email via Resend API: camp inquiries (type 'camp') to camp@wolko.org, everything else to wolkorea1@gmail.com.
  * Requires env var: RESEND_API_KEY
  * Optional Kakao receipt notice: SOLAPI_API_KEY, SOLAPI_API_SECRET, KAKAO_PF_ID,
  * KAKAO_TEMPLATE_CONTACT
