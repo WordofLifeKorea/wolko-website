@@ -116,7 +116,8 @@ export async function onRequestPost(context) {
 
   // 제주 관련 문의(제주월비 입학)는 홈페이지 제주 사무소 이메일로도 함께 발송
   const JEJU_TYPES = ['wolbi'];
-  const toList = ['wolkorea1@gmail.com'];
+  // 캠프 문의는 캠프팀 그룹 메일(camp@wolko.org)로, 나머지는 사무실 메일로
+  const toList = type === 'camp' ? ['camp@wolko.org'] : ['wolkorea1@gmail.com'];
   // 필요 시 제주 별도 수신자 추가: if (JEJU_TYPES.includes(type)) toList.push('jeju@wolko.org');
 
   const resendRes = await fetch('https://api.resend.com/emails', {

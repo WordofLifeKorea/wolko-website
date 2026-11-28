@@ -51,7 +51,7 @@ async function notifyAdmin(env, info, signerName) {
     headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       from: 'WOLKO Camp <contact@wolko.org>',
-      to: ['wolkorea1@gmail.com'],
+      to: ['camp@wolko.org'],   // 캠프팀 그룹 메일(팀원 모두에게 전달)
       subject: `[크루 보호자 동의] ${info.applicantName} · ${info.campNames || ''}`,
       html: `<div style="font-family:'Apple SD Gothic Neo',Arial,sans-serif;font-size:15px;line-height:1.8;color:#10252e;">
         <p><b>${escHtml(info.applicantName)}</b> 님의 캠프 크루 지원에 보호자(${escHtml(signerName)})가 동의했습니다.</p>

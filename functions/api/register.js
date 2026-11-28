@@ -296,7 +296,7 @@ async function sendRegistrationEmail(env, reg) {
     },
     body: JSON.stringify({
       from: 'WOLKO Camp <contact@wolko.org>',
-      to: ['wolkorea1@gmail.com'],
+      to: ['camp@wolko.org'],   // 캠프팀 그룹 메일(팀원 모두에게 전달)
       ...(reg.email ? { reply_to: reg.email } : {}),
       subject,
       html: buildRegistrationEmailHtml(reg),

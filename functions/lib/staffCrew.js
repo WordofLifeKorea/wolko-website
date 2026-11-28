@@ -73,7 +73,7 @@ export function consentEmailHtml(info) {
       <p style="margin:22px 0 0;font-size:13px;color:#587383;">버튼이 열리지 않으면 이 주소를 브라우저에 붙여 넣어 주세요.<br>${url}</p>
     </div>
     <div style="padding:16px 32px;background:#f3f7f9;border-top:1px solid #e3e9ec;font-size:12px;color:#587383;line-height:1.6;">
-      문의: 월코 캠프 010-7310-9216 · wolkorea1@gmail.com
+      문의: 월코 캠프 010-7310-9216 · camp@wolko.org
     </div>
   </div>
 </body></html>`;
@@ -99,7 +99,7 @@ export async function sendConsentRequest(env, info) {
       body: JSON.stringify({
         from: 'WOLKO Camp <contact@wolko.org>',
         to: [info.guardianEmail],
-        reply_to: 'wolkorea1@gmail.com',
+        reply_to: 'camp@wolko.org',
         subject: `[월코 캠프] ${info.applicantName} 님 캠프 크루 참여 보호자 동의 요청`,
         html: consentEmailHtml(info),
       }),

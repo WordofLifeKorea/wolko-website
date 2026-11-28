@@ -115,3 +115,14 @@ test('처리: 인터뷰 진행 승인 · 보류 · 거절 · 다시 열기 · �
     assert.equal((await t.portal('PATCH', master, { id: 'nope', action: 'hold' })).status, 404);
   } finally { t.restore(); }
 });
+
+test('홈페이지 문의: 캠프 문의는 캠프팀 그룹 메일(camp@wolko.org)로, 그 밖의 문의는 사무실 메일로 간다', async () => {
+  const t = setup();
+  try {
+    assert.equal((await t.send({ type: 'camp', name: '홍길동', email: 'hong@x.com', message: '겨울 캠프 일정이 궁금합니다.' })).status, 200);
+    assert.equal((await t.send({ type: 'general', name: '김철수', email: 'kim@x.com', message: '일반 문의입니다.' })).status, 200);
+    const camp = t.emails.find(e => (e.subject || '').includes('홍길동')), general = t.emails.find(e => (e.subject || '').includes('김철수'));
+    assert.deepEqual(camp.to, ['camp@wolko.org']); assert.equal(camp.reply_to, 'hong@x.com');
+    assert.deepEqual(general.to, ['wolkorea1@gmail.com']);
+  } finally { t.restore(); }
+});
