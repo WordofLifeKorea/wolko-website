@@ -13,10 +13,14 @@ const promoCamps = campSchedules
   .slice(0, 4);
 const promoCampsEnd = promoCamps.length ? String(promoCamps[promoCamps.length - 1].data.start_date ?? '').slice(0, 10) : '';
 const shortCampDate = (s) => String(s ?? '').split(' · ')[0];   // '2027년 1월 11일(월) – 16일(토) · 5박 6일' → 날짜 부분만
-// 캠프 장소(지역 이름만): 제주 캠프는 '제주', 나머지는 안내 글(notes_ko)의 '○○시'에서 — 없으면 영어 캠프는 월코센터가 있는 '평택'
+// 캠프 장소(지역 이름만): 제주 캠프는 '제주', 나머지는 안내 글(notes_ko)의 '장소' 줄에서 '○○시'를 찾는다.
+// 장소 줄이 없으면 월코 영어 캠프(제목에 '월코')만 월코센터가 있는 '평택' — 그 밖에는 지역을 비워 둔다(틀린 지역을 보이지 않게)
 const PLACE_EN = { 제주: 'Jeju', 평택: 'Pyeongtaek', 당진: 'Dangjin', 시흥: 'Siheung' };
 const campPlace = (d) => {
-  const ko = d.camp_type === 'jeju' ? '제주' : (String(d.notes_ko ?? '').match(/([가-힣]{2,})시(?=[\s,)·]|$)/) || [])[1] || (d.camp_type === 'english' ? '평택' : '');
+  const placeLine = String(d.notes_ko ?? '').split('\n').find((l) => l.includes('장소')) || '';
+  const ko = d.camp_type === 'jeju' ? '제주'
+    : (placeLine.match(/([가-힣]{2,})시(?=[\s,)·]|$)/) || [])[1]
+    || (d.camp_type === 'english' && String(d.title_ko ?? '').includes('월코') ? '평택' : '');
   return ko ? { ko, en: PLACE_EN[ko] || ko } : null;
 };
 // 제주 캠퍼스 데이 안내 팝업: 일정 파일의 접수(status: open)가 열려 있을 때만 만든다 (시작일이 지나면 화면에서 자동으로 숨긴다)
