@@ -16,7 +16,7 @@ const events = [
     theme_en: 'An evening to reflect and give thanks together',
     note_ko: '월코 사역에 참여하고 동참해 주신 분들께 감사를 전하는 자리입니다.',
     note_en: 'An evening to thank everyone who has taken part in and partnered with the ministry of WOLKO.',
-    open: true,
+    open: false,   // 2026-11-26 행사를 마쳐 참석 신청을 닫았다(2026-11-28)
     invite: '/rsvp/thanksgiving/',
   },
 ];
@@ -57,6 +57,9 @@ const events = [
   .rv-type { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--c-label); }
   .rv-status { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--c-deep); white-space: nowrap; }
   .rv-status::before { content: ''; width: 6px; height: 6px; background: currentColor; flex: none; }
+  .rv-status--closed { color: var(--c-muted); }
+  .rv-closed-note { margin: 0 0 16px; padding: 12px 14px; background: var(--c-fill); font-size: 14px; line-height: 1.65; color: var(--c-sub); }
+  @media (max-width: 640px) { .rv-card-actions--closed { grid-template-columns: minmax(0, 1fr); } }
   .rv-card h3 { margin: 0 0 10px; font-family: var(--f-serif); font-size: 24px; font-weight: 700; color: var(--c-navy); line-height: 1.3; letter-spacing: -.03em; }
   .rv-card-lead { margin: 0 0 20px; font-size: 14px; line-height: 1.75; color: var(--c-muted); }
 
@@ -136,7 +139,9 @@ const events = [
             <div class="rv-card">
               <div class="rv-card-top">
                 <span class="rv-type">Event</span>
-                <span class="rv-status"><span class="wl-ko">참석 신청 받는 중</span><span class="wl-en">RSVP open</span></span>
+                {event.open
+                  ? <span class="rv-status"><span class="wl-ko">참석 신청 받는 중</span><span class="wl-en">RSVP open</span></span>
+                  : <span class="rv-status rv-status--closed"><span class="wl-ko">신청 마감</span><span class="wl-en">RSVP closed</span></span>}
               </div>
               <h3>
                 <span class="wl-ko">{event.title_ko}</span>
@@ -158,6 +163,13 @@ const events = [
                 </div>
               </dl>
 
+              {!event.open && (
+                <p class="rv-closed-note">
+                  <span class="wl-ko">참석 신청이 마감되었습니다. 함께해 주셔서 감사합니다.</span>
+                  <span class="wl-en">RSVP is now closed. Thank you for joining us.</span>
+                </p>
+              )}
+              {event.open ? (
               <div class="rv-card-actions">
                 <a class="rv-rsvp-btn" href={event.invite}>
                   <span><span class="wl-ko">참석 신청하기</span><span class="wl-en">RSVP</span></span>
@@ -168,6 +180,14 @@ const events = [
                   <svg class="rv-link" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>
                 </button>
               </div>
+              ) : (
+              <div class="rv-card-actions rv-card-actions--closed">
+                <a class="rv-share-btn" href={event.invite}>
+                  <span><span class="wl-ko">초대장 다시 보기</span><span class="wl-en">View invitation</span></span>
+                  <svg class="rv-arrow" aria-hidden="true" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+                </a>
+              </div>
+              )}
             </div>
           ))}
         </div>

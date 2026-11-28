@@ -124,3 +124,22 @@ test('RSVP pages supply a Kakao-compatible social preview', async () => {
   assert.match(invite, /rsvp-share\.png/);
   assert.ok(image.length > 10_000);
 });
+
+test('감사의 밤 참석 신청은 닫혔다(2026-11-28): 서버가 받지 않고, 목록 · 초대장은 마감 안내를 보여 준다', async () => {
+  const api = await import('../functions/api/rsvp.js');
+  assert.equal(api.EVENTS['thanksgiving-night'].closed, true);
+  const store = new Map();
+  const env = { CAMP_KV: { get: async k => store.get(k) ?? null, put: async (k, v) => { store.set(k, v); }, delete: async k => { store.delete(k); }, list: async () => ({ keys: [], list_complete: true }) } };
+  const body = { eventId: 'thanksgiving-night', name: '홍길동', phone: '010-1234-5678', email: 'hong@x.com', partySize: 1 };
+  const res = await api.onRequestPost({ request: new Request('https://t.co/api/rsvp', { method: 'POST', body: JSON.stringify(body) }), env, waitUntil: () => {} });
+  assert.equal(res.status, 410);
+  assert.match((await res.json()).error, /마감/);
+  assert.equal(store.size, 0, '아무것도 저장하지 않는다');
+  const [listing, invite] = await Promise.all([read('src/pages/rsvp/index.astro'), read('src/pages/rsvp/thanksgiving.astro')]);
+  assert.match(listing, /open: false,/);
+  assert.match(listing, /신청 마감/); assert.match(listing, /참석 신청이 마감되었습니다/);
+  assert.match(invite, /const rsvpOpen = false;/);
+  assert.match(invite, /<form class="inv-form" id="invForm" novalidate hidden=\{!rsvpOpen\}>/);
+  assert.match(invite, /\.inv-form\[hidden\] \{ display:none; \}/);
+  assert.match(invite, /참석 신청이 마감되었습니다/);
+});

@@ -16,8 +16,8 @@ const CORS = {
   'Access-Control-Allow-Origin': '*',
 };
 
-const EVENTS = {
-  'thanksgiving-night': { ko: '감사의 밤', en: 'Night of Thanksgiving' },
+export const EVENTS = {
+  'thanksgiving-night': { ko: '감사의 밤', en: 'Night of Thanksgiving', closed: true },   // 2026-11-26 행사를 마쳐 참석 신청을 닫았다(2026-11-28). 목록 보기 · 관리자 수동 추가는 그대로
 };
 
 const MAX_PARTY_SIZE = 200;
@@ -114,6 +114,9 @@ export async function onRequestPost(context) {
     const partySize = Number(data.partySize);
     const notes = clean(data.notes, 1000);
 
+    if (event && event.closed) {
+      return Response.json({ error: '참석 신청이 마감되었습니다. 함께해 주셔서 감사합니다.' }, { status: 410, headers: CORS });
+    }
     if (!event || !name || !phone || !email) {
       return Response.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400, headers: CORS });
     }

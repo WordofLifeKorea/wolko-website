@@ -64,6 +64,8 @@ test('신청서 번역: 저장된 기록에 tr 만 더하고 원문은 그대로
 test('이벤트 참석 신청: 응답은 바로, 메모 번역은 뒤에서 붙는다', async () => {
   const { store, CAMP_KV } = kv(); const pending = [];
   const calls = []; const realFetch = globalThis.fetch; globalThis.fetch = fakeApi(calls);
+  const wasClosed = rsvpApi.EVENTS['thanksgiving-night'].closed;
+  rsvpApi.EVENTS['thanksgiving-night'].closed = false;   // 감사의 밤은 신청을 닫았으므로(2026-11-28), 번역 동작은 열린 행사로 확인한다
   try {
     const env = { CAMP_KV, ANTHROPIC_API_KEY: 'k' };
     const body = { eventId: 'thanksgiving-night', name: '이혁재', phone: '010-2637-8561', email: 'a@b.co', partySize: 2, notes: '시흥중앙성결교회' };
@@ -76,7 +78,7 @@ test('이벤트 참석 신청: 응답은 바로, 메모 번역은 뒤에서 붙�
     assert.deepEqual(saved.tr, { notes: { lang: 'en', text: 'EN:시흥중앙성결교회' } });
     assert.ok(calls.some(c => c.items.notes), '이름 · 연락처는 보내지 않고 메모만');
     assert.ok(calls.every(c => !JSON.stringify(c.items).includes('010-2637-8561')));
-  } finally { globalThis.fetch = realFetch; }
+  } finally { globalThis.fetch = realFetch; rsvpApi.EVENTS['thanksgiving-night'].closed = wasClosed; }
 });
 
 test('관리 화면: RSVP 목록 · CSV 와 캠프/스태프 상세 · CSV 가 번역을 보여 준다', () => {

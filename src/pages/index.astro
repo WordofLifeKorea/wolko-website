@@ -1,8 +1,20 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
+import { isCampVisibleOnPublicSite } from '../utils/campVisibility';
+const campSchedules = await getCollection('camp_schedules');
+// 다가오는 캠프 안내 팝업(감사의 밤 팝업 자리, 2026-11-28 교체): /camp 다가오는 캠프와 같은 거름(공개 · 시작 전 · 카드 숨김 아님)에
+// 신청 중 · 준비 중인 캠프만, 시작일 순으로 네 개까지. 한 개도 없으면 카드를 만들지 않는다.
+// 카드는 맨 마지막 캠프의 시작일이 지나면 화면에서 자동으로 숨긴다(data-start).
+const promoCamps = campSchedules
+  .filter(isCampVisibleOnPublicSite)
+  .filter((c) => !c.data.public_card_hidden && (c.data.status === 'open' || c.data.status === 'upcoming'))
+  .sort((a, b) => String(a.data.start_date ?? '').localeCompare(String(b.data.start_date ?? '')))
+  .slice(0, 4);
+const promoCampsEnd = promoCamps.length ? String(promoCamps[promoCamps.length - 1].data.start_date ?? '').slice(0, 10) : '';
+const shortCampDate = (s) => String(s ?? '').split(' · ')[0];   // '2027년 1월 11일(월) – 16일(토) · 5박 6일' → 날짜 부분만
 // 제주 캠퍼스 데이 안내 팝업: 일정 파일의 접수(status: open)가 열려 있을 때만 만든다 (시작일이 지나면 화면에서 자동으로 숨긴다)
-const campusDayEntry = (await getCollection('camp_schedules')).find((c) => String(c.id).startsWith('2026-jeju-campus-day'));
+const campusDayEntry = campSchedules.find((c) => String(c.id).startsWith('2026-jeju-campus-day'));
 const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? campusDayEntry.data : null;
 
 // 맨 위 배너 — 첫 장은 사역 현장 영상(약 15초, 소리 없음 — 예배 · 학교 사역 · 기도 · 캠프 · 소그룹 · 제주 월비 · 교회 사역 장면만), 그 뒤로 사진 4장이 6초마다 바뀐다. 오른쪽 아래 숫자(01 / 05)와 막대가 함께 바뀌고, 막대를 누르면 그 장으로 간다.
@@ -596,7 +608,7 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 }
 
 /* ═══════════════════════════
-   감사의 밤 안내 팝업
+   홈 안내 팝업 (다가오는 캠프 · 제주 캠퍼스 데이)
 ═══════════════════════════ */
 .wh-promo-overlay {
   position: fixed; inset: 0; z-index: 1000;
@@ -676,6 +688,21 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 .wh-promo-dismiss {
   background: none; border: none; padding: 4px; font-size: 12px; color: #6b5346;   /* 날짜 줄(.wh-promo-meta)과 같은 색 — 흰 카드 위 7.1:1 */
   cursor: pointer; text-decoration: underline; text-underline-offset: 2px; font-family: var(--ff-sans);
+}
+/* 다가오는 캠프 카드: 캠프 신청 화면과 같은 남색 · 청록 — 캠프 이름과 날짜를 가는 선으로 나눈 줄로 */
+.wh-promo-card--camp .wh-promo-eyebrow { color: #004f68; }
+.wh-promo-card--camp .wh-promo-title { color: #0b2430; margin-bottom: 14px; }
+.wh-promo-card--camp .wh-promo-btn { background: #004f68; box-shadow: 0 10px 24px rgba(0,79,104,.24); }
+.wh-promo-card--camp .wh-promo-btn:hover { background: #003d52; }
+.wh-promo-card--camp .wh-promo-btn:focus-visible, .wh-promo-card--camp .wh-promo-dismiss:focus-visible { outline-color: #004f68; }
+.wh-promo-card--camp .wh-promo-dismiss { color: #4a5d66; }
+.wh-promo-camps { list-style: none; margin: 0 0 18px; padding: 0; text-align: left; border-bottom: 1px solid #e3e9ec; }
+.wh-promo-camps li { display: flex; flex-direction: column; gap: 2px; padding: 9px 2px; border-top: 1px solid #e3e9ec; }
+.wh-promo-camp-name { font-size: 14.5px; font-weight: 700; color: #0b2430; line-height: 1.4; }
+.wh-promo-camp-date { font-size: 13px; color: #4a5d66; line-height: 1.45; font-variant-numeric: tabular-nums; }
+@media (max-width: 420px) {
+  .wh-promo-card--camp .wh-promo-body { padding: 18px 20px 20px; }
+  .wh-promo-camps li { padding: 8px 2px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .wh-promo-overlay, .wh-promo-card { transition: none !important; }
@@ -1136,43 +1163,49 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 
 </div>
 
-<!-- ══ 홈 안내 팝업: 감사의 밤 · 제주 캠퍼스 데이 (한 장씩 3초마다 교체 + 아래 점으로 이동, "다시 보지 않기"는 카드별) ══ -->
+<!-- ══ 홈 안내 팝업: 다가오는 캠프 · 제주 캠퍼스 데이 (한 장씩 3초마다 교체 + 아래 점으로 이동, "다시 보지 않기"는 카드별) ══ -->
 <!-- 화면에는 가운데 떠 있지만(position: fixed), 문서 순서에서는 홈 본문 뒤에 둔다 — 첫 제목이 홈의 h1이 되도록. -->
 <!-- 대화상자 이름(aria-labelledby)과 초점은 아래 "팝업 대화상자 접근성" 스크립트가 지금 보이는 카드에 맞춘다. -->
 <div class="wh-promo-overlay" id="homePromos" hidden>
-  <div class="wh-promo-row" role="dialog" aria-modal="true" aria-labelledby="thanksgivingPromoTitle">
+  <div class="wh-promo-row" role="dialog" aria-modal="true" aria-labelledby="campsPromoTitle">
   <div class="wh-promo-stage" id="homePromoStage">
-  <div class="wh-promo-card" id="thanksgivingPromo">
-    <button type="button" class="wh-promo-close" id="thanksgivingPromoClose">
+  {promoCamps.length > 0 && (
+  <div class="wh-promo-card wh-promo-card--camp" id="campsPromo" data-start={promoCampsEnd}>
+    <button type="button" class="wh-promo-close" id="campsPromoClose">
       <span class="hm-sr"><span class="wl-ko">닫기</span><span class="wl-en">Close</span></span>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
-    <img class="wh-promo-image" src="/images/rsvp-share.png" alt="" loading="lazy">
+    <img class="wh-promo-image" src="/images/heroes/give-band-winter-camp.jpg" alt="" loading="lazy">
     <div class="wh-promo-body">
       <div class="wh-promo-eyebrow">
-        <span class="wl-ko">감사의 밤에 초대합니다</span>
-        <span class="wl-en">You're Invited</span>
+        <span class="wl-ko">캠프 신청 안내</span>
+        <span class="wl-en">Camp Registration</span>
       </div>
-      <h2 class="wh-promo-title" id="thanksgivingPromoTitle" tabindex="-1">
-        <span class="wl-ko">감사의 밤</span>
-        <span class="wl-en">Night of Thanksgiving</span>
+      <h2 class="wh-promo-title" id="campsPromoTitle" tabindex="-1">
+        <span class="wl-ko">다가오는 캠프</span>
+        <span class="wl-en">Upcoming Camps</span>
       </h2>
-      <p class="wh-promo-meta">
-        <span class="wl-ko">2026년 11월 26일(목) 오후 6시 · 월코센터</span>
-        <span class="wl-en">Thu, Nov 26, 2026 · 6:00 PM · WOLKO Center</span>
-      </p>
+      <ul class="wh-promo-camps">
+        {promoCamps.map((c) => (
+          <li>
+            <span class="wh-promo-camp-name"><span class="wl-ko">{c.data.title_ko}</span><span class="wl-en">{c.data.title_en}</span></span>
+            <span class="wh-promo-camp-date"><span class="wl-ko">{shortCampDate(c.data.date_ko)}</span><span class="wl-en">{shortCampDate(c.data.date_en)}</span></span>
+          </li>
+        ))}
+      </ul>
       <div class="wh-promo-actions">
-        <a class="wh-promo-btn" href="/rsvp/thanksgiving/" id="thanksgivingPromoCta">
-          <span class="wl-ko">초대장 보기 · 참석 신청</span>
-          <span class="wl-en">View Invitation &amp; RSVP</span>
+        <a class="wh-promo-btn" href="/camp-register/" id="campsPromoCta">
+          <span class="wl-ko">캠프 자세히 보기 · 신청</span>
+          <span class="wl-en">See Camps &amp; Register</span>
         </a>
-        <button type="button" class="wh-promo-dismiss" id="thanksgivingPromoDismiss">
+        <button type="button" class="wh-promo-dismiss" id="campsPromoDismiss">
           <span class="wl-ko">다시 보지 않기</span>
           <span class="wl-en">Don't show again</span>
         </button>
       </div>
     </div>
   </div>
+  )}
     {campusDay && (
       <div class="wh-promo-card" id="campusDayPromo" data-start={campusDay.start_date ?? ''}>
             <button type="button" class="wh-promo-close" id="campusDayPromoClose">
@@ -1421,8 +1454,8 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
     function markSeen(item) { try { sessionStorage.setItem(item.cfg.session, '1'); } catch (e) {} }
 
     var items = [
-      setup({ card: 'thanksgivingPromo', close: 'thanksgivingPromoClose', cta: 'thanksgivingPromoCta', dismiss: 'thanksgivingPromoDismiss',
-              perma: 'wolko-promo-thanksgiving-2026-11-26-hide', session: 'wolko-promo-thanksgiving-2026-11-26-seen' }),
+      setup({ card: 'campsPromo', close: 'campsPromoClose', cta: 'campsPromoCta', dismiss: 'campsPromoDismiss',
+              perma: 'wolko-promo-camps-2027-winter-hide', session: 'wolko-promo-camps-2027-winter-seen' }),
       setup({ card: 'campusDayPromo', close: 'campusDayPromoClose', cta: 'campusDayPromoCta', dismiss: 'campusDayPromoDismiss',
               perma: 'wolko-promo-jeju-campus-day-2026-hide', session: 'wolko-promo-jeju-campus-day-2026-seen' }),
     ].filter(Boolean);

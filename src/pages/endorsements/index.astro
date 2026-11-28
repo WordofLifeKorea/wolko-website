@@ -125,6 +125,20 @@ import PageHero from '../../components/PageHero.astro';
 .wr-card-feature .wr-person-title { margin-top: 8px; }
 .wr-title-line { display: block; }
 .wr-title-role, .wr-title-org { white-space: nowrap; }
+/* 특별 카드 두 장: 넓은 화면에서 좌우로 나란히 — 두 칸은 같은 높이, 서명(사진 · 이름)은 칸 맨 아래에 맞춘다 */
+.wr-feature-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin: 40px 0 8px; }
+.wr-feature-pair .wr-card-feature { display: flex; flex-direction: column; margin: 0; padding: 52px 44px 44px; }
+.wr-feature-pair .wr-card-feature .wr-quote-text { max-width: none; font-size: 18px; line-height: 1.85; }
+.wr-feature-pair .wr-card-feature .wr-person { margin-top: auto; align-self: stretch; }   /* 칸이 세로 flex 라 기본 규칙의 align-self: start 가 가로 폭을 줄이므로, 서명 위 가는 선이 칸 너비만큼 오게 */
+.wr-feature-pair .wr-card-feature .wr-quote-text { margin-bottom: 36px; }
+.wr-feature-pair .wr-card-feature .wr-avatar { width: 76px; height: 76px; }
+.wr-feature-pair .wr-card-feature .wr-person-name { font-size: 20px; }
+/* 칸이 좁아지므로 직함은 휴대폰처럼: 영어는 '역할' 줄과 '기관' 줄로 나누고, 긴 기관 이름은 낱말 단위로 줄바꿈 */
+.wr-feature-pair .wl-en .wr-title-line + .wr-title-line { margin-top: 6px; }
+.wr-feature-pair .wl-en .wr-title-role { display: block; }
+.wr-feature-pair .wr-title-sep { display: none; }
+.wr-feature-pair .wl-ko .wr-title-org { white-space: normal; }
+.wr-feature-pair .wl-en .wr-title-org { display: block; white-space: normal; text-wrap: balance; }
 
 /* ── 마무리 — 남색 띠: 왼쪽 제목 · 설명, 오른쪽 교회 협력 단추 (/ministry · /churches 마무리와 같은 구조) ── */
 .wr-closing { padding: 104px 0; background: var(--wr-navy); color: #fff; }
@@ -163,6 +177,10 @@ import PageHero from '../../components/PageHero.astro';
   .wr-person { grid-column: 1; grid-row: 3; margin-top: 28px; }
   .wr-closing-inner { flex-direction: column; align-items: flex-start; gap: 32px; }
   .wr-card-feature { padding: 52px 48px 48px; }
+  /* 태블릿부터는 특별 카드도 위아래로 */
+  .wr-feature-pair { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .wr-feature-pair .wr-card-feature { padding: 52px 48px 48px; }
+  .wr-feature-pair .wr-card-feature .wr-quote-text { font-size: 20px; line-height: 1.8; }
 }
 /* ── 모바일 ── */
 @media (max-width: 740px) {
@@ -178,6 +196,11 @@ import PageHero from '../../components/PageHero.astro';
   .wr-person-name { font-size: 17px; }
   .wr-person-title { margin-top: 4px; font-size: 13.5px; }
   .wr-card-feature { margin-top: 28px; padding: 36px 24px 32px; }
+  .wr-feature-pair { margin-top: 28px; gap: 16px; }
+  .wr-feature-pair .wr-card-feature { padding: 36px 24px 32px; }
+  .wr-feature-pair .wr-card-feature .wr-quote-text { font-size: 17px; line-height: 1.8; margin-bottom: 28px; }
+  .wr-feature-pair .wr-card-feature .wr-avatar { width: 68px; height: 68px; }
+  .wr-feature-pair .wr-card-feature .wr-person-name { font-size: 18px; }
   .wr-feature-kicker { margin-bottom: 20px; font-size: 12.5px; }
   .wr-card-feature .wr-quote-text { font-size: 18px; line-height: 1.75; }
   .wr-card-feature .wr-person { margin-top: 28px; padding-top: 22px; gap: 16px; }
@@ -229,6 +252,8 @@ import PageHero from '../../components/PageHero.astro';
 
     <div class="wr-grid">
 
+      <!-- 특별 카드 두 장(임진수 목사 · 이혁재 목사): 넓은 화면에서는 좌우로 나란히, 태블릿 · 휴대폰에서는 위아래로 -->
+      <div class="wr-feature-pair">
       <!-- 카드 1 — 임진수 목사 (특별 카드, 2026-11 받음): 이혁재 목사 카드와 같은 모양 -->
       <div class="wr-card wr-card-wide wr-card-feature">
         <p class="wr-feature-kicker"><span class="wl-ko">인생의 방향이 바뀐 자리</span><span class="wl-en">Where My Life Changed Direction</span></p>
@@ -269,6 +294,7 @@ import PageHero from '../../components/PageHero.astro';
             <div class="wr-person-title wl-en"><span class="wr-title-line"><span class="wr-title-role">Principal<span class="wr-title-sep">,</span></span> <span class="wr-title-org">Grace Garden Christian School</span></span><span class="wr-title-line"><span class="wr-title-role">Former Chair<span class="wr-title-sep">,</span></span> <span class="wr-title-org">Korean Association of Alternative Education Institutions</span></span></div>
           </div>
         </div>
+      </div>
       </div>
 
       <!-- 카드 2 — 이동원 목사 -->

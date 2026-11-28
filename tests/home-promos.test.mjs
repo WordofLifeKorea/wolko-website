@@ -9,7 +9,12 @@ test('홈 팝업: 5초마다 교체되고, 아래 점으로 넘기며, "다시 �
   assert.match(src, /<div class="wh-promo-overlay" id="homePromos" hidden>/);
   assert.match(src, /id="homePromoStage"/);
   assert.match(src, /id="homePromoDots"/);
-  assert.match(src, /<div class="wh-promo-card" id="thanksgivingPromo">/);
+  assert.match(src, /<div class="wh-promo-card wh-promo-card--camp" id="campsPromo" data-start=\{promoCampsEnd\}>/);
+  assert.doesNotMatch(src, /thanksgivingPromo|rsvp\/thanksgiving/, '감사의 밤 팝업은 내렸다(2026-11-28)');
+  assert.match(src, /\.filter\(isCampVisibleOnPublicSite\)/, '다가오는 캠프: /camp 와 같은 거름');
+  assert.match(src, /c\.data\.status === 'open' \|\| c\.data\.status === 'upcoming'/);
+  assert.match(src, /\.slice\(0, 4\)/);
+  assert.match(src, /href="\/camp-register\/" id="campsPromoCta"/);
   assert.match(src, /<div class="wh-promo-card" id="campusDayPromo" data-start=/);
   assert.match(src, /startsWith\('2026-jeju-campus-day'\)/);
   assert.match(src, /campusDayEntry\.data\.status === 'open'/);
@@ -18,7 +23,7 @@ test('홈 팝업: 5초마다 교체되고, 아래 점으로 넘기며, "다시 �
   assert.match(src, /prefers-reduced-motion: reduce/);                               // 움직임 줄이기 설정이면 자동 교체 없음
   assert.match(src, /\['mouseenter', 'focusin', 'touchstart'\]/);                  // 읽는 동안은 멈춘다
   assert.match(src, /wolko-promo-jeju-campus-day-2026-hide/);
-  assert.match(src, /wolko-promo-thanksgiving-2026-11-26-hide/);
+  assert.match(src, /wolko-promo-camps-2027-winter-hide/);
   assert.match(src, /skip = start && todayKst >= start/);
   assert.match(src, /\.wh-promo-stage > \.wh-promo-card\.is-active \{ opacity: 1;/);
   assert.match(src, /\.wh-promo-dots :global\(button\) \{ width: 12px !important; height: 12px !important;/);   // 스크립트로 만든 점이라 전역 스타일로 지정해야 적용된다
@@ -67,7 +72,7 @@ test('스와이프 후 카드가 변경되고 5초 자동 넘김이 다시 시�
   });
   timeouts.shift()();
   const fire = (id, type, event) => element(id).listeners[type].forEach(fn => fn(event));
-  const first = element('thanksgivingPromo'), second = element('campusDayPromo');
+  const first = element('campsPromo'), second = element('campusDayPromo');
   assert.equal(first.classList.contains('is-active'), true);
   assert.equal([...intervals.values()][0].ms, 5000);
   fire('homePromoStage', 'touchstart', { touches: [{ clientX: 200, clientY: 100 }] });
