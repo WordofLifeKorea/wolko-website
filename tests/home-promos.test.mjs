@@ -15,6 +15,8 @@ test('홈 팝업: 5초마다 교체되고, 아래 점으로 넘기며, "다시 �
   assert.match(src, /c\.data\.status === 'open' \|\| c\.data\.status === 'upcoming'/);
   assert.match(src, /\.slice\(0, 4\)/);
   assert.match(src, /href="\/camp-register\/" id="campsPromoCta"/);
+  assert.match(src, /d\.camp_type === 'jeju' \? '제주'/, '캠프마다 장소(지역): 제주 캠프는 제주');
+  assert.match(src, /class="wh-promo-camp-place"/);
   assert.match(src, /<div class="wh-promo-card" id="campusDayPromo" data-start=/);
   assert.match(src, /startsWith\('2026-jeju-campus-day'\)/);
   assert.match(src, /campusDayEntry\.data\.status === 'open'/);

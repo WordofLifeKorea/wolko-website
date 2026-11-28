@@ -13,6 +13,12 @@ const promoCamps = campSchedules
   .slice(0, 4);
 const promoCampsEnd = promoCamps.length ? String(promoCamps[promoCamps.length - 1].data.start_date ?? '').slice(0, 10) : '';
 const shortCampDate = (s) => String(s ?? '').split(' · ')[0];   // '2027년 1월 11일(월) – 16일(토) · 5박 6일' → 날짜 부분만
+// 캠프 장소(지역 이름만): 제주 캠프는 '제주', 나머지는 안내 글(notes_ko)의 '○○시'에서 — 없으면 영어 캠프는 월코센터가 있는 '평택'
+const PLACE_EN = { 제주: 'Jeju', 평택: 'Pyeongtaek', 당진: 'Dangjin', 시흥: 'Siheung' };
+const campPlace = (d) => {
+  const ko = d.camp_type === 'jeju' ? '제주' : (String(d.notes_ko ?? '').match(/([가-힣]{2,})시(?=[\s,)·]|$)/) || [])[1] || (d.camp_type === 'english' ? '평택' : '');
+  return ko ? { ko, en: PLACE_EN[ko] || ko } : null;
+};
 // 제주 캠퍼스 데이 안내 팝업: 일정 파일의 접수(status: open)가 열려 있을 때만 만든다 (시작일이 지나면 화면에서 자동으로 숨긴다)
 const campusDayEntry = campSchedules.find((c) => String(c.id).startsWith('2026-jeju-campus-day'));
 const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? campusDayEntry.data : null;
@@ -698,7 +704,10 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
 .wh-promo-card--camp .wh-promo-dismiss { color: #4a5d66; }
 .wh-promo-camps { list-style: none; margin: 0 0 18px; padding: 0; text-align: left; border-bottom: 1px solid #e3e9ec; }
 .wh-promo-camps li { display: flex; flex-direction: column; gap: 2px; padding: 9px 2px; border-top: 1px solid #e3e9ec; }
-.wh-promo-camp-name { font-size: 14.5px; font-weight: 700; color: #0b2430; line-height: 1.4; }
+.wh-promo-camp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.wh-promo-camp-name { min-width: 0; font-size: 14.5px; font-weight: 700; color: #0b2430; line-height: 1.4; }
+/* 장소: 오른쪽 끝에 지역 이름만 — 점 · 알약 모양 없이 글자로 */
+.wh-promo-camp-place { flex: none; font-size: 12.5px; font-weight: 700; letter-spacing: .02em; color: #004f68; white-space: nowrap; }
 .wh-promo-camp-date { font-size: 13px; color: #4a5d66; line-height: 1.45; font-variant-numeric: tabular-nums; }
 /* 휴대폰: 캠프 목록이 길어 카드가 화면을 넘지 않게 — 사진은 낮게, 화면이 짧으면(아이폰 SE 등) 사진을 빼서 신청 단추가 처음부터 보이게 */
 @media (max-width: 900px), (max-height: 760px) {
@@ -1202,12 +1211,18 @@ const wmRegions = WOL_REGIONS.map((r) => ({ ...r, items: WOL_FIELDS.filter((f) =
         <span class="wl-en">Upcoming Camps</span>
       </h2>
       <ul class="wh-promo-camps">
-        {promoCamps.map((c) => (
+        {promoCamps.map((c) => {
+          const place = campPlace(c.data);
+          return (
           <li data-start={String(c.data.start_date ?? '').slice(0, 10)}>
-            <span class="wh-promo-camp-name"><span class="wl-ko">{c.data.title_ko}</span><span class="wl-en">{c.data.title_en}</span></span>
+            <span class="wh-promo-camp-head">
+              <span class="wh-promo-camp-name"><span class="wl-ko">{c.data.title_ko}</span><span class="wl-en">{c.data.title_en}</span></span>
+              {place && <span class="wh-promo-camp-place"><span class="hm-sr"><span class="wl-ko">장소: </span><span class="wl-en">Location: </span></span><span class="wl-ko">{place.ko}</span><span class="wl-en">{place.en}</span></span>}
+            </span>
             <span class="wh-promo-camp-date"><span class="wl-ko">{shortCampDate(c.data.date_ko)}</span><span class="wl-en">{shortCampDate(c.data.date_en)}</span></span>
           </li>
-        ))}
+          );
+        })}
       </ul>
       <div class="wh-promo-actions">
         <a class="wh-promo-btn" href="/camp-register/" id="campsPromoCta">
