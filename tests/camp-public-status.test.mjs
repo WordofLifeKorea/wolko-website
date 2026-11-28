@@ -5,28 +5,31 @@ import { campPublicStatus, campStatusTone } from '../src/utils/campPublicStatus.
 
 const root = new URL('..', import.meta.url).pathname;
 const read = p => readFileSync(root + p, 'utf8');
-const camp = id => ({ id, data: JSON.parse(read(`src/content/camp_schedules/${id}.json`)) });
 const at = iso => Date.parse(iso);
 
-const winter = camp('2027-wolko-winter');
-const jeju = camp('2027-jeju-english');
-const unity = camp('2027-unity-winter');
+// 캠프 데이터는 실제 파일(src/content/camp_schedules/*.json)이 아니라 고정 사본을 쓴다 — 자동 작업(auto-open-camps)이
+// 신청 상태를 바꿀 때마다 테스트가 깨지지 않게. 규칙(campPublicStatus)이 읽는 칸만 그때 내용 그대로 옮겼다(2026-11-28 기준).
+const winter = { id: '2027-wolko-winter', data: { status: 'open', camp_type: 'english', registration_url: '', use_external_form: false } };
+const unity = { id: '2027-unity-winter', data: { status: 'open', camp_type: 'union', registration_url: '', use_external_form: false } };
+const jeju = { id: '2027-jeju-english', data: { status: 'open', camp_type: 'jeju', use_external_form: true } };
 // 11월 18일 0시에 자동 작업이 연합 캠프를 'open' 으로 바꿨다(open_date 삭제) — 그 전 시각은 바뀌기 전 내용으로 본다
 const unityBeforeOpen = { id: unity.id, data: { ...unity.data, status: 'upcoming', open_date: '2026-11-18T00:00:00+09:00' } };
+// 11월 28일 오전 7시에 자동 작업이 제주 캠프를 'open' 으로 바꿨다(open_date 삭제) — 그 전 시각은 바뀌기 전 내용으로 본다
+const jejuBeforeOpen = { id: jeju.id, data: { ...jeju.data, status: 'upcoming', open_date: '2026-11-28T07:00:00+09:00' } };
 
 // 계획서 A2-3 · A2-6의 세 시각 — 캠프 신청 화면 배지와 같은 글자여야 한다
 test('2026-11-10 12:00 KST: 겨울 영어캠프는 1 · 2차 사이라 일시 마감, 연합 · 제주는 준비 중', () => {
   const now = at('2026-11-10T12:00:00+09:00');
   assert.deepEqual(campPublicStatus(winter, now), { key: 'paused', ko: '신청 일시 마감', en: 'Closed for now' });
   assert.deepEqual(campPublicStatus(unityBeforeOpen, now), { key: 'upcoming', ko: '준비 중', en: 'Upcoming' });
-  assert.deepEqual(campPublicStatus(jeju, now), { key: 'upcoming', ko: '준비 중', en: 'Upcoming' });
+  assert.deepEqual(campPublicStatus(jejuBeforeOpen, now), { key: 'upcoming', ko: '준비 중', en: 'Upcoming' });
 });
 
 test('2026-11-20 12:00 KST: 겨울 영어캠프 2차 접수 중, 연합 캠프 열림, 제주는 아직 준비 중', () => {
   const now = at('2026-11-20T12:00:00+09:00');
   assert.deepEqual(campPublicStatus(winter, now), { key: 'open', ko: '신청 중', en: 'Open' });
   assert.deepEqual(campPublicStatus(unity, now), { key: 'open', ko: '신청 중', en: 'Open' });
-  assert.deepEqual(campPublicStatus(jeju, now), { key: 'upcoming', ko: '준비 중', en: 'Upcoming' });
+  assert.deepEqual(campPublicStatus(jejuBeforeOpen, now), { key: 'upcoming', ko: '준비 중', en: 'Upcoming' });
 });
 
 test('2026-11-28 08:00 KST: 제주 캠프도 열린 뒤라 세 캠프 모두 신청 중', () => {
@@ -41,8 +44,9 @@ test('경계: 신청창 · 카운트다운이 열리는 그 시각부터 신청 
   assert.equal(campPublicStatus(winter, at('2026-11-18T10:00:00+09:00')).key, 'open');
   assert.equal(campPublicStatus(winter, at('2026-10-15T09:00:00+09:00')).key, 'opens-soon');
   assert.equal(campPublicStatus(winter, at('2026-10-15T09:00:00+09:00')).ko, '오픈 예정');
-  assert.equal(campPublicStatus(jeju, at('2026-11-28T06:59:59+09:00')).key, 'upcoming');
-  assert.equal(campPublicStatus(jeju, at('2026-11-28T07:00:00+09:00')).key, 'open');
+  assert.equal(campPublicStatus(jejuBeforeOpen, at('2026-11-28T06:59:59+09:00')).key, 'upcoming');
+  assert.equal(campPublicStatus(jejuBeforeOpen, at('2026-11-28T07:00:00+09:00')).key, 'open');
+  assert.equal(campPublicStatus(jeju, at('2026-11-28T07:00:00+09:00')).key, 'open', '자동 작업이 바꾼 지금 내용도 신청 중');
 });
 
 test('신청창 · 카운트다운이 없는 캠프는 JSON status 글자 그대로 (캠프 신청 화면 statusLabel)', () => {
